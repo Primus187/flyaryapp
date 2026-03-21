@@ -136,19 +136,25 @@ export default function FlightForm() {
       // Upload IGC
       if (igcFile) {
         const path = `${user.id}/${flightId}/${igcFile.name}`;
-        await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true });
-        await supabase.from("igc_tracks").insert([{
+        const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true });
+        if (storageErr) throw storageErr;
+        // Limit stored points to avoid huge payloads
+        const limitedPoints = igcData ? igcData.points.filter((_, i) => i % Math.max(1, Math.floor(igcData.points.length / 2000)) === 0) : null;
+        const { error: trackErr } = await supabase.from("igc_tracks").insert([{
           flight_id: flightId,
           storage_path: path,
-          track_data: igcData ? { points: igcData.points } as any : null,
+          track_data: limitedPoints ? { points: limitedPoints } as any : null,
         }]);
+        if (trackErr) throw trackErr;
       }
 
       // Upload photos
       for (const photo of photoFiles) {
         const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`;
-        await supabase.storage.from("flight-photos").upload(path, photo);
-        await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path });
+        const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo);
+        if (photoErr) throw photoErr;
+        const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path });
+        if (insertErr) throw insertErr;
       }
 
       // Save YouTube links
