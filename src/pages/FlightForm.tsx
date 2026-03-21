@@ -74,6 +74,24 @@ export default function FlightForm() {
         if (data) setYoutubeUrls(data.map((v) => v.youtube_url));
       });
     }
+    // If coming from FlightRecorder with IGC data
+    if (locationState?.igcFile && locationState?.igcContent) {
+      try {
+        const parsed = parseIGC(locationState.igcContent);
+        setIgcData(parsed);
+        setIgcFile(locationState.igcFile);
+        setForm((prev) => ({
+          ...prev,
+          date: parsed.date || prev.date,
+          duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes,
+          altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain,
+          glider: parsed.glider || prev.glider,
+        }));
+        toast({ title: "Aufzeichnung importiert", description: `${parsed.points.length} Trackpunkte geladen` });
+      } catch (err) {
+        console.error("Failed to parse recorded IGC:", err);
+      }
+    }
   }, [user, id, isEdit]);
 
   const handleIGCUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
