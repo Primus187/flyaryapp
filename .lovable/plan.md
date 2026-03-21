@@ -1,23 +1,21 @@
 
 
-# Termin duplizieren
+# Chat-Link-Feld für Termine
 
 ## Änderungen
 
-### 1. EventDetail.tsx — Duplizieren-Button
-- Neben dem Bearbeiten-Button (Pencil) einen neuen "Duplizieren"-Button hinzufügen (Icon: `Copy`)
-- Nur für Admins sichtbar
-- Beim Klick: Navigation zu `/events/new?duplicate={id}`
+### 1. Migration: Neue Spalte `chat_link` auf `flight_events`
+- `ALTER TABLE flight_events ADD COLUMN chat_link text;`
 
-### 2. EventForm.tsx — Duplizierungs-Logik
-- URL-Parameter `duplicate` auslesen via `useSearchParams`
-- Wenn `duplicate` vorhanden: Event-Daten laden (wie bei Edit), aber **nicht** als Edit-Modus behandeln
-- Datum-Feld leer lassen (damit der User ein neues Datum wählen muss)
-- Titel mit "(Kopie)" Suffix vorbelegen
-- Status auf "announced" zurücksetzen
-- Beim Speichern wird ein neuer Termin erstellt (INSERT, nicht UPDATE)
+### 2. EventForm.tsx
+- Neues Feld "Gruppenlink (Telegram/WhatsApp)" als optionales Input-Feld
+- Wert wird als `chat_link` gespeichert
+
+### 3. EventDetail.tsx
+- Wenn `chat_link` vorhanden: Button "Gruppenchat öffnen" anzeigen (Icon: `MessageCircle`, öffnet Link in neuem Tab)
 
 ### Dateien
-- **Edit**: `src/pages/EventDetail.tsx` — Copy-Button hinzufügen
-- **Edit**: `src/pages/EventForm.tsx` — `duplicate` Query-Parameter verarbeiten
+- **Migration**: `chat_link` Spalte hinzufügen
+- **Edit**: `src/pages/EventForm.tsx`
+- **Edit**: `src/pages/EventDetail.tsx`
 
