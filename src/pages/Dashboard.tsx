@@ -4,13 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Plane, Clock, Mountain, TrendingUp } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3 } from "lucide-react";
 
 interface Stats {
   totalFlights: number;
   totalMinutes: number;
-  totalAltitude: number;
-  totalDistance: number;
+  uniqueTakeoffs: number;
+  uniqueLandings: number;
 }
 
 interface RecentFlight {
@@ -25,7 +25,7 @@ interface RecentFlight {
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState<Stats>({ totalFlights: 0, totalMinutes: 0, totalAltitude: 0, totalDistance: 0 });
+  const [stats, setStats] = useState<Stats>({ totalFlights: 0, totalMinutes: 0, uniqueTakeoffs: 0, uniqueLandings: 0 });
   const [recent, setRecent] = useState<RecentFlight[]>([]);
 
   useEffect(() => {
@@ -33,16 +33,18 @@ export default function Dashboard() {
     const fetchData = async () => {
       const { data: flights } = await supabase
         .from("flights")
-        .select("id, date, glider, duration_minutes, altitude_gain, distance_km, takeoff_location_id, locations!flights_takeoff_location_id_fkey(name)")
+        .select("id, date, glider, duration_minutes, altitude_gain, distance_km, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name)")
         .eq("user_id", user.id)
         .order("date", { ascending: false });
 
       if (flights) {
+        const takeoffIds = new Set(flights.map(f => f.takeoff_location_id).filter(Boolean));
+        const landingIds = new Set(flights.map(f => f.landing_location_id).filter(Boolean));
         setStats({
           totalFlights: flights.length,
           totalMinutes: flights.reduce((s, f) => s + (f.duration_minutes || 0), 0),
-          totalAltitude: flights.reduce((s, f) => s + (f.altitude_gain || 0), 0),
-          totalDistance: flights.reduce((s, f) => s + (Number(f.distance_km) || 0), 0),
+          uniqueTakeoffs: takeoffIds.size,
+          uniqueLandings: landingIds.size,
         });
         setRecent(flights.slice(0, 5).map((f: any) => ({
           ...f,
@@ -66,17 +68,22 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold tracking-tight">Flugtagebuch</h1>
           <p className="text-sm text-muted-foreground">Deine Übersicht</p>
         </div>
-        <Button size="sm" onClick={() => navigate("/flights/new")} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Flug
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => navigate("/stats")} className="gap-1.5">
+            <BarChart3 className="h-4 w-4" /> Stats
+          </Button>
+          <Button size="sm" onClick={() => navigate("/flights/new")} className="gap-1.5">
+            <Plus className="h-4 w-4" /> Flug
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         {[
           { icon: Plane, label: "Flüge", value: stats.totalFlights.toString() },
           { icon: Clock, label: "Flugzeit", value: formatDuration(stats.totalMinutes) },
-          { icon: Mountain, label: "Höhenmeter", value: `${stats.totalAltitude.toLocaleString()} m` },
-          { icon: TrendingUp, label: "Strecke", value: `${stats.totalDistance.toFixed(1)} km` },
+          { icon: MapPin, label: "Startplätze", value: stats.uniqueTakeoffs.toString() },
+          { icon: MapPin, label: "Landeplätze", value: stats.uniqueLandings.toString() },
         ].map(({ icon: Icon, label, value }) => (
           <Card key={label} className="border-0 shadow-sm bg-card">
             <CardContent className="p-4">

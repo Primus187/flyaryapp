@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
+import Stats from "@/pages/Stats";
 import Flights from "@/pages/Flights";
 import FlightForm from "@/pages/FlightForm";
 import FlightDetail from "@/pages/FlightDetail";
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/flights/:id/edit" element={<FlightForm />} />
               <Route path="/locations" element={<Locations />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/stats" element={<Stats />} />
               <Route path="/import" element={<ImportFlights />} />
               <Route path="/import-locations" element={<ImportLocations />} />
             </Route>
