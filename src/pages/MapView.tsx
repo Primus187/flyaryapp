@@ -50,7 +50,7 @@ export default function MapView() {
   useEffect(() => {
     if (!user) return;
     supabase.from("locations").select("*").eq("user_id", user.id).then(({ data }) => {
-      if (data) setLocations(data);
+      if (data) setLocations(data.filter((l) => l.latitude !== 0 || l.longitude !== 0));
     });
 
     if (flightId) {
