@@ -18,6 +18,14 @@ interface LocationOption {
   type: string;
 }
 
+interface GliderOption {
+  id: string;
+  manufacturer: string;
+  model: string;
+  size: string | null;
+  is_default: boolean;
+}
+
 export default function FlightForm() {
   const { id } = useParams();
   const locationState = useLocation().state as any;
