@@ -269,7 +269,19 @@ export default function FlightForm() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Schirm</Label>
-                <Input value={form.glider} onChange={set("glider")} placeholder="z.B. Gin Explorer 3" />
+                {gliders.length > 0 ? (
+                  <Select value={form.glider} onValueChange={(v) => setForm({ ...form, glider: v })}>
+                    <SelectTrigger><SelectValue placeholder="Schirm wählen..." /></SelectTrigger>
+                    <SelectContent>
+                      {gliders.map((g) => {
+                        const label = `${g.manufacturer} ${g.model}${g.size ? ` (${g.size})` : ""}`;
+                        return <SelectItem key={g.id} value={label}>{label}</SelectItem>;
+                      })}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input value={form.glider} onChange={set("glider")} placeholder="z.B. Gin Explorer 3" />
+                )}
               </div>
             </div>
             <div className="space-y-1.5">
