@@ -13,6 +13,8 @@ import { ArrowLeft } from "lucide-react";
 
 export default function EventForm() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const duplicateId = searchParams.get("duplicate");
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
