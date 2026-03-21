@@ -16,6 +16,7 @@ import MapView from "@/pages/MapView";
 import Locations from "@/pages/Locations";
 import Profile from "@/pages/Profile";
 import ImportFlights from "@/pages/ImportFlights";
+import ImportLocations from "@/pages/ImportLocations";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
