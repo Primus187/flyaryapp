@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Plane, Clock, MapPin, BarChart3 } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Stats {
   totalFlights: number;
@@ -22,11 +23,21 @@ interface RecentFlight {
   takeoff_location: { name: string } | null;
 }
 
+interface UpcomingEvent {
+  id: string;
+  title: string;
+  event_date: string;
+  status: string;
+  meeting_point: string | null;
+  group_name: string;
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({ totalFlights: 0, totalMinutes: 0, uniqueTakeoffs: 0, uniqueLandings: 0 });
   const [recent, setRecent] = useState<RecentFlight[]>([]);
+  const [events, setEvents] = useState<UpcomingEvent[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -51,6 +62,35 @@ export default function Dashboard() {
           takeoff_location: f.locations,
         })));
       }
+
+      // Fetch upcoming events from user's groups
+      const { data: memberships } = await supabase
+        .from("group_members")
+        .select("group_id, groups(name)")
+        .eq("user_id", user.id);
+
+      if (memberships && memberships.length > 0) {
+        const groupIds = memberships.map(m => m.group_id);
+        const groupNames: Record<string, string> = {};
+        memberships.forEach((m: any) => {
+          groupNames[m.group_id] = m.groups?.name || "";
+        });
+
+        const { data: upcomingEvents } = await supabase
+          .from("flight_events")
+          .select("id, title, event_date, status, meeting_point, group_id")
+          .in("group_id", groupIds)
+          .gte("event_date", new Date().toISOString())
+          .order("event_date", { ascending: true })
+          .limit(3);
+
+        if (upcomingEvents) {
+          setEvents(upcomingEvents.map(e => ({
+            ...e,
+            group_name: groupNames[e.group_id] || "",
+          })));
+        }
+      }
     };
     fetchData();
   }, [user]);
@@ -60,6 +100,15 @@ export default function Dashboard() {
     const m = min % 60;
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
+
+  const statusLabel: Record<string, string> = {
+    announced: "Geplant",
+    confirmed: "Bestätigt",
+    cancelled: "Abgesagt",
+  };
+
+  const statusVariant = (s: string) =>
+    s === "confirmed" ? "default" : s === "cancelled" ? "destructive" : "secondary";
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
@@ -96,6 +145,34 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Upcoming Events */}
+      {events.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Nächste Termine</h2>
+          <div className="space-y-2">
+            {events.map((e) => (
+              <Card key={e.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/events/${e.id}`)}>
+                <CardContent className="p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-4 w-4 text-primary shrink-0" />
+                    <div>
+                      <p className="font-medium text-sm">{e.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(e.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}
+                        {e.meeting_point ? ` · ${e.meeting_point}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={statusVariant(e.status) as any} className="text-[10px] shrink-0">
+                    {statusLabel[e.status] || e.status}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Letzte Flüge</h2>
