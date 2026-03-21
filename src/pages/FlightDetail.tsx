@@ -20,6 +20,7 @@ export default function FlightDetail() {
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
