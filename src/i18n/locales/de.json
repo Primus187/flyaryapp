@@ -262,7 +262,9 @@
     "settings": "Einstellungen",
     "signOut": "Abmelden",
     "notLoggedIn": "Nicht angemeldet",
-    "exportFailed": "Export fehlgeschlagen"
+    "exportFailed": "Export fehlgeschlagen",
+    "changePassword": "Passwort ändern",
+    "newPasswordPlaceholder": "Neues Passwort eingeben (mind. 6 Zeichen)"
   },
   "auth": {
     "signIn": "Melde dich an",
