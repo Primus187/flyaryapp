@@ -66,7 +66,7 @@ export default function EventDetail() {
   const isSignedUp = signups.find(s => s.user_id === user?.id)?.signed_up ?? false;
   const totalSignedUp = signups.filter(s => s.signed_up).length;
   const statusLabel = event.status === "confirmed" ? "Bestätigt" : event.status === "cancelled" ? "Abgesagt" : "Angekündigt";
-  const statusVariant: "default" | "secondary" | "destructive" = event.status === "confirmed" ? "default" : event.status === "cancelled" ? "destructive" : "secondary";
+  const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
   const isPast = new Date(event.event_date) < new Date();
 
   return (
@@ -77,7 +77,7 @@ export default function EventDetail() {
           <h1 className="text-xl font-bold tracking-tight">{event.title}</h1>
           <p className="text-xs text-muted-foreground">{event.groups?.name}</p>
         </div>
-        <Badge variant={statusVariant}>{statusLabel}</Badge>
+        <Badge className={statusColor}>{statusLabel}</Badge>
         {isAdmin && (
           <>
             <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}>
@@ -92,7 +92,7 @@ export default function EventDetail() {
 
       {!isPast && event.status !== "cancelled" && (
         <Button
-          className="w-full gap-2"
+          className={`w-full gap-2 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`}
           variant={isSignedUp ? "default" : "outline"}
           onClick={toggleSignup}
         >

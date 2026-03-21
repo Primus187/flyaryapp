@@ -166,7 +166,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
   const isSignedUp = mySignup?.signed_up ?? false;
   const totalSignedUp = signups.filter(s => s.event_id === event.id && s.signed_up).length;
   const statusLabel = event.status === "confirmed" ? "Bestätigt" : event.status === "cancelled" ? "Abgesagt" : "Angekündigt";
-  const statusVariant: "default" | "secondary" | "destructive" = event.status === "confirmed" ? "default" : event.status === "cancelled" ? "destructive" : "secondary";
+  const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
 
   return (
     <Card className={`border-0 shadow-sm transition-colors ${past ? "opacity-60" : "hover:bg-accent/50 cursor-pointer"}`}>
@@ -175,7 +175,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <p className="font-medium text-sm truncate">{event.title}</p>
-              <Badge variant={statusVariant} className="text-[10px] shrink-0">{statusLabel}</Badge>
+              <Badge className={`text-[10px] shrink-0 ${statusColor}`}>{statusLabel}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               {new Date(event.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
@@ -195,7 +195,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
             <Button
               variant={isSignedUp ? "default" : "outline"}
               size="sm"
-              className="shrink-0 gap-1"
+              className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`}
               onClick={(e) => { e.stopPropagation(); onToggle(event.id); }}
             >
               {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
