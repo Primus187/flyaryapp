@@ -74,16 +74,22 @@ export default function FlightRecorder() {
     };
   }, []);
 
+  // Ref to hold latest barometer altitude (updated at high frequency)
+  const baroAltRef = useRef<number | null>(null);
+
   const handleGPSPosition = useCallback((pos: GeolocationPosition) => {
     const { latitude, longitude, altitude: alt, speed: spd } = pos.coords;
     const now = Date.now();
     const gpsAlt = alt ?? 0;
 
-    setCurrentPos([latitude, longitude]);
-    setAltitude(Math.round(gpsAlt));
-    if (spd !== null && spd >= 0) setSpeed(Math.round(spd * 3.6)); // m/s → km/h
+    // Use barometer altitude if available, otherwise GPS
+    const effectiveAlt = baroAltRef.current !== null ? baroAltRef.current : gpsAlt;
 
-    altitudesRef.current.push(gpsAlt);
+    setCurrentPos([latitude, longitude]);
+    setAltitude(Math.round(effectiveAlt));
+    if (spd !== null && spd >= 0) setSpeed(Math.round(spd * 3.6));
+
+    altitudesRef.current.push(effectiveAlt);
     timestampsRef.current.push(now);
     if (altitudesRef.current.length > 20) {
       altitudesRef.current = altitudesRef.current.slice(-20);
@@ -94,9 +100,9 @@ export default function FlightRecorder() {
     setVario(v);
     varioAudio.current?.update(v);
 
-    if (gpsAlt > maxAlt) setMaxAlt(Math.round(gpsAlt));
+    if (effectiveAlt > maxAlt) setMaxAlt(Math.round(effectiveAlt));
 
-    const point: RecordedPoint = { lat: latitude, lng: longitude, altitude: gpsAlt, timestamp: now };
+    const point: RecordedPoint = { lat: latitude, lng: longitude, altitude: effectiveAlt, timestamp: now };
     pointsRef.current = [...pointsRef.current, point];
     setPoints([...pointsRef.current]);
   }, [maxAlt]);
