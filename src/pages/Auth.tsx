@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Mountain } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function Auth() {
@@ -66,13 +65,12 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-      <Card className="w-full max-w-sm shadow-xl border-0">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "linear-gradient(145deg, hsl(199 89% 28%) 0%, hsl(199 89% 38%) 35%, hsl(152 44% 40%) 100%)" }}>
+      <Card className="w-full max-w-sm shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
         <CardHeader className="text-center space-y-3">
-          <div className="mx-auto w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
-            <Mountain className="h-7 w-7 text-primary" />
-          </div>
-          <CardTitle className="text-xl">Flugtagebuch</CardTitle>
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Flyary
+          </h2>
           <CardDescription>
             {resetMode ? "Passwort zurücksetzen" : isLogin ? "Melde dich an" : "Erstelle ein Konto"}
           </CardDescription>

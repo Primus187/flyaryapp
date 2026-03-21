@@ -126,9 +126,10 @@ export default function Dashboard() {
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+      {/* Header with gradient accent */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Flugtagebuch</h1>
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Flyary</h1>
           <p className="text-sm text-muted-foreground">Deine Übersicht</p>
         </div>
         <div className="flex gap-2">
@@ -148,10 +149,12 @@ export default function Dashboard() {
           { icon: MapPin, label: "Startplätze", value: stats.uniqueTakeoffs.toString() },
           { icon: MapPin, label: "Landeplätze", value: stats.uniqueLandings.toString() },
         ].map(({ icon: Icon, label, value }) => (
-          <Card key={label} className="border-0 shadow-sm bg-card">
+          <Card key={label} className="border-0 shadow-sm bg-card/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Icon className="h-4 w-4 text-primary" />
+                <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+                  <Icon className="h-3.5 w-3.5 text-primary" />
+                </div>
                 <span className="text-xs text-muted-foreground">{label}</span>
               </div>
               <p className="text-lg font-semibold tabular-nums">{value}</p>
