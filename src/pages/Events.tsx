@@ -121,17 +121,15 @@ export default function Events() {
         </div>
       ) : (
         <>
-          {groups.length > 1 && (
-            <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Alle Gruppen" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Gruppen</SelectItem>
-                {groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          )}
+          <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Alle Gruppen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Gruppen</SelectItem>
+              {groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
 
           {upcoming.length === 0 && past.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
@@ -180,6 +178,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
             <p className="text-xs text-muted-foreground">
               {new Date(event.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
               {event.event_type && ` · ${event.event_type}`}
+              {event.groups?.name && ` · ${event.groups.name}`}
             </p>
             {event.meeting_point && (
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
