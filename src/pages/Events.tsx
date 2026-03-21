@@ -121,17 +121,15 @@ export default function Events() {
         </div>
       ) : (
         <>
-          {groups.length > 1 && (
-            <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Alle Gruppen" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Gruppen</SelectItem>
-                {groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          )}
+          <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Alle Gruppen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Gruppen</SelectItem>
+              {groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
 
           {upcoming.length === 0 && past.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
