@@ -1,30 +1,29 @@
 
 
-# Eingebettete Karte auf der Flugdetail-Seite
+# Bottom-Nav: Karte → Orte & Aufnahme entfernen
 
-## Was sich ändert
+## Änderungen
 
-Eine neue Kartenkomponente (`FlightDetailMap`) wird direkt auf der FlightDetail-Seite zwischen der Route-Card und den Stats eingebettet. Sie zeigt:
+### 1. Bottom-Navigation (`src/components/BottomNav.tsx`)
+- **"Karte"**-Tab ersetzen durch **"Orte"** (Icon: `MapPin`, Pfad: `/locations`)
+- **"Aufnahme"**-Tab (der runde Button) komplett entfernen
+- Verbleibende Tabs: Dashboard | Flugbuch | Orte | Profil
 
-- **Startplatz** als grünen Marker (wenn Koordinaten vorhanden)
-- **Landeplatz** als roten Marker (wenn Koordinaten vorhanden)
-- **IGC-Track** als blaue Polyline (wenn `track_data` vorhanden)
-- Karte passt sich automatisch an die Bounds an (Track oder Marker)
+### 2. Orte-Seite (`src/pages/Locations.tsx`)
+- Button "Kartenansicht" oben hinzufügen → navigiert zu `/map`
+- "Orte verwalten"-Link auf der Profil-Seite entfernen (da jetzt direkt in der Nav)
 
-## Dateien
+### 3. Profil-Seite (`src/pages/Profile.tsx`)
+- "Orte verwalten"-Button entfernen (redundant, da Orte jetzt eigener Tab)
 
-### 1. Neue Komponente: `src/components/FlightDetailMap.tsx`
-- Leaflet `MapContainer` mit OpenTopoMap-Tiles
-- Props: `takeoff` (name/lat/lng), `landing` (name/lat/lng), `trackData` (points-Array, optional)
-- Grüner/roter Marker (gleiche Icons wie MapView), Polyline für Track
-- `FitBounds`-Logik: Track vorhanden → fit to track, sonst → fit to markers
-- Höhe: ~250px, abgerundete Ecken, kein Zoom-Control
-- Popups auf den Markern mit Ortsnamen
+### 4. Routing (`src/App.tsx`)
+- `/record`-Route entfernen
+- `/map`-Route beibehalten (erreichbar über Orte-Seite)
+- `FlightRecorder`-Import entfernen
 
-### 2. Edit: `src/pages/FlightDetail.tsx`
-- Import `FlightDetailMap`
-- Karte einfügen nach der Route-Card, vor den Stats
-- Zeigt die Karte wenn mindestens ein Ort mit Koordinaten ≠ 0,0 vorhanden ist
-- Track-Punkte aus dem bereits geladenen `track`-State extrahieren
-- Der separate "Track auf Karte anzeigen"-Button entfällt (Karte ist jetzt inline)
+### 5. Aufräumen — Dateien die entfernt werden
+- `src/pages/FlightRecorder.tsx`
+- `src/lib/vario-audio.ts`
+- `src/lib/barometer.ts`
+- `src/lib/igc-writer.ts`
 
