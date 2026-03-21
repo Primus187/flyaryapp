@@ -101,6 +101,15 @@ export default function EventDetail() {
         </Button>
       )}
 
+      {event.chat_link && (
+        <Button variant="outline" className="w-full gap-2" asChild>
+          <a href={event.chat_link} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="h-4 w-4" />
+            Gruppenchat öffnen
+          </a>
+        </Button>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <InfoCard icon={Calendar} label="Datum" value={new Date(event.event_date).toLocaleDateString("de-CH", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
         {event.event_type && <InfoCard icon={Calendar} label="Art" value={event.event_type} />}

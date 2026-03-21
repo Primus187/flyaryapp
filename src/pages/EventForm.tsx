@@ -190,6 +190,11 @@ export default function EventForm() {
           </div>
 
           <div className="space-y-1.5">
+            <Label className="text-xs">Gruppenlink (Telegram/WhatsApp)</Label>
+            <Input value={form.chat_link} onChange={e => setForm({ ...form, chat_link: e.target.value })} placeholder="https://t.me/... oder https://chat.whatsapp.com/..." />
+          </div>
+
+          <div className="space-y-1.5">
             <Label className="text-xs">Beschreibung</Label>
             <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
           </div>
