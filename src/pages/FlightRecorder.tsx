@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from "react-l
 import { Button } from "@/components/ui/button";
 import { Play, Square, Pause, Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import { VarioAudio } from "@/lib/vario-audio";
+import { BarometerService } from "@/lib/barometer";
 import { generateIGC, type RecordedPoint } from "@/lib/igc-writer";
 import "leaflet/dist/leaflet.css";
 
@@ -52,8 +53,10 @@ export default function FlightRecorder() {
   const [elapsed, setElapsed] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [altSource, setAltSource] = useState<'gps' | 'barometer'>('gps');
 
   const varioAudio = useRef<VarioAudio | null>(null);
+  const barometerService = useRef<BarometerService | null>(null);
   const watchId = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef(0);
@@ -67,19 +70,26 @@ export default function FlightRecorder() {
       if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current);
       if (timerRef.current) clearInterval(timerRef.current);
       varioAudio.current?.destroy();
+      barometerService.current?.stop();
     };
   }, []);
+
+  // Ref to hold latest barometer altitude (updated at high frequency)
+  const baroAltRef = useRef<number | null>(null);
 
   const handleGPSPosition = useCallback((pos: GeolocationPosition) => {
     const { latitude, longitude, altitude: alt, speed: spd } = pos.coords;
     const now = Date.now();
     const gpsAlt = alt ?? 0;
 
-    setCurrentPos([latitude, longitude]);
-    setAltitude(Math.round(gpsAlt));
-    if (spd !== null && spd >= 0) setSpeed(Math.round(spd * 3.6)); // m/s → km/h
+    // Use barometer altitude if available, otherwise GPS
+    const effectiveAlt = baroAltRef.current !== null ? baroAltRef.current : gpsAlt;
 
-    altitudesRef.current.push(gpsAlt);
+    setCurrentPos([latitude, longitude]);
+    setAltitude(Math.round(effectiveAlt));
+    if (spd !== null && spd >= 0) setSpeed(Math.round(spd * 3.6));
+
+    altitudesRef.current.push(effectiveAlt);
     timestampsRef.current.push(now);
     if (altitudesRef.current.length > 20) {
       altitudesRef.current = altitudesRef.current.slice(-20);
@@ -90,9 +100,9 @@ export default function FlightRecorder() {
     setVario(v);
     varioAudio.current?.update(v);
 
-    if (gpsAlt > maxAlt) setMaxAlt(Math.round(gpsAlt));
+    if (effectiveAlt > maxAlt) setMaxAlt(Math.round(effectiveAlt));
 
-    const point: RecordedPoint = { lat: latitude, lng: longitude, altitude: gpsAlt, timestamp: now };
+    const point: RecordedPoint = { lat: latitude, lng: longitude, altitude: effectiveAlt, timestamp: now };
     pointsRef.current = [...pointsRef.current, point];
     setPoints([...pointsRef.current]);
   }, [maxAlt]);
@@ -103,6 +113,19 @@ export default function FlightRecorder() {
       varioAudio.current = new VarioAudio();
     }
     await varioAudio.current.init();
+
+    // Try to start barometer (native only)
+    if (!barometerService.current) {
+      barometerService.current = new BarometerService();
+    }
+    const hasBaro = await barometerService.current.start((alt, source) => {
+      baroAltRef.current = alt;
+      setAltSource(source);
+    });
+    if (!hasBaro) {
+      baroAltRef.current = null;
+      setAltSource('gps');
+    }
 
     pointsRef.current = [];
     altitudesRef.current = [];
@@ -152,7 +175,7 @@ export default function FlightRecorder() {
     setState("recording");
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (watchId.current !== null) {
       navigator.geolocation.clearWatch(watchId.current);
       watchId.current = null;
@@ -163,6 +186,8 @@ export default function FlightRecorder() {
     }
     varioAudio.current?.destroy();
     varioAudio.current = null;
+    await barometerService.current?.stop();
+    baroAltRef.current = null;
     setState("done");
   };
 
@@ -237,9 +262,11 @@ export default function FlightRecorder() {
             </div>
             <div className="h-12 w-px bg-border" />
             <div className="text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Höhe</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Höhe {altSource === 'barometer' ? '⬡' : '📡'}
+              </p>
               <p className="text-2xl font-mono font-bold">{altitude}</p>
-              <p className="text-[10px] text-muted-foreground">m</p>
+              <p className="text-[10px] text-muted-foreground">m {altSource === 'barometer' ? '(Baro)' : '(GPS)'}</p>
             </div>
             <div className="h-12 w-px bg-border" />
             <div className="text-center">
