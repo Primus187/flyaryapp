@@ -159,7 +159,7 @@ export default function Locations() {
       ) : (
         <div className="space-y-2">
           {locations.map((loc) => (
-            <Card key={loc.id} className="border-0 shadow-sm">
+            <Card key={loc.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
               <CardContent className="p-3 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-sm flex items-center gap-1.5">
