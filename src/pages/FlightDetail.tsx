@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
+import FlightDetailMap from "@/components/FlightDetailMap";
 
 export default function FlightDetail() {
   const { id } = useParams();
@@ -115,6 +116,13 @@ export default function FlightDetail() {
         </Card>
       )}
 
+      {/* Map */}
+      <FlightDetailMap
+        takeoff={flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null}
+        landing={flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null}
+        trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
+      />
+
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         {[
@@ -177,23 +185,12 @@ export default function FlightDetail() {
         </Card>
       )}
 
-      {/* IGC Track / Upload */}
+      {/* IGC Upload */}
       <input ref={igcInputRef} type="file" accept=".igc" className="hidden" onChange={handleIGCUpload} />
-      {track ? (
-        <div className="space-y-2">
-          <Button variant="outline" className="w-full" onClick={() => navigate(`/map?flight=${id}`)}>
-            Track auf Karte anzeigen
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
-            {uploading ? "Wird hochgeladen..." : "IGC-Datei ersetzen"}
-          </Button>
-        </div>
-      ) : (
-        <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
-          <Upload className="h-4 w-4" />
-          {uploading ? "Wird hochgeladen..." : "IGC-Datei nachträglich anhängen"}
-        </Button>
-      )}
+      <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
+        <Upload className="h-4 w-4" />
+        {uploading ? "Wird hochgeladen..." : track ? "IGC-Datei ersetzen" : "IGC-Datei anhängen"}
+      </Button>
     </div>
   );
 }
