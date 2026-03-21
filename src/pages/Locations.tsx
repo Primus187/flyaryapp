@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import LocationMapPicker from "@/components/LocationMapPicker";
 
 export default function Locations() {
