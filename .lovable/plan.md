@@ -1,34 +1,23 @@
 
 
-# Dashboard-Stats anpassen & Statistik-Seite
+# Ort-Detailseite
 
-## 1. Dashboard anpassen (`src/pages/Dashboard.tsx`)
-
-- **Höhenmeter-Kachel ersetzen** durch zwei neue Kacheln:
-  - "Startplätze": Anzahl unique `takeoff_location_id` (nicht null)
-  - "Landeplätze": Anzahl unique `landing_location_id` (nicht null)
-- Stats-Grid wird 2x2 → bleibt 2x2 aber mit: Flüge, Flugzeit, Startplätze, Landeplätze (Strecke entfällt auch, da 4 Kacheln)
-- Alternativ 3x2 Grid mit 5 Kacheln (Flüge, Flugzeit, Strecke, Startplätze, Landeplätze) — ich schlage vor, die bisherigen 4 zu ersetzen: **Flüge, Flugzeit, Startplätze, Landeplätze**
-- Zusätzliche Query auf `flights` mit `landing_location_id` um unique Counts zu berechnen
-- **Neuer Button** "Stats" neben "+ Flug" (Icon: `BarChart3`), navigiert zu `/stats`
-
-## 2. Neue Statistik-Seite (`src/pages/Stats.tsx`)
-
-- **Zeitfilter** oben: Buttons/Tabs für "Monat" / "Jahr" / "Alle" mit Dropdown für konkreten Monat/Jahr
-- **Kennzahlen-Cards**: 
-  - Flüge gesamt, Gesamtflugzeit, Durchschnittliche Flugzeit, Längster Flug
-  - Gesamtstrecke, Durchschnittliche Strecke, Gesamthöhenmeter
-  - Häufigster Startplatz, Häufigster Schirm
-- **Diagramme** (mit Recharts, bereits als Dependency vorhanden via `chart.tsx`):
-  - Balkendiagramm: Flüge pro Monat
-  - Balkendiagramm: Flugzeit pro Monat
-- Daten werden client-seitig aus allen Flügen gefiltert (gleiche Query wie Dashboard, aber alle Felder)
-
-## 3. Routing (`src/App.tsx`)
-- Neue Route `/stats` → `Stats` Komponente innerhalb AppLayout
+## Übersicht
+Neue Seite `/locations/:id` zeigt alle Infos zu einem Ort: Karte, Metadaten und eine Liste aller Flüge von/zu diesem Ort.
 
 ## Dateien
-- **Edit**: `src/pages/Dashboard.tsx` — Stats anpassen, Stats-Button hinzufügen
-- **Neu**: `src/pages/Stats.tsx` — Statistik-Seite mit Filter und Charts
-- **Edit**: `src/App.tsx` — Route `/stats` hinzufügen
+
+### 1. Neue Seite: `src/pages/LocationDetail.tsx`
+- **Header**: Zurück-Button, Ortsname, Bearbeiten/Löschen-Buttons
+- **Karte**: Leaflet-Karte mit Marker auf der Position (wie `FlightDetailMap`, aber nur ein Marker). Nur anzeigen wenn Koordinaten ≠ 0,0
+- **Info-Cards** (2x2 Grid): Typ (Startplatz/Landeplatz/Beides), Höhe, Koordinaten, Beschreibung
+- **Flug-Liste**: Query auf `flights` wo `takeoff_location_id = id OR landing_location_id = id`, sortiert nach Datum absteigend. Jeder Flug als klickbare Card (Datum, Dauer, Gegenort) → navigiert zu `/flights/:flightId`
+- Daten laden via Supabase: Location by ID + Flights mit Join auf den jeweiligen Gegenort
+
+### 2. Edit: `src/App.tsx`
+- Route `/locations/:id` → `LocationDetail` hinzufügen (innerhalb AppLayout)
+
+### 3. Edit: `src/pages/Locations.tsx`
+- Ort-Card klickbar machen → `navigate(/locations/${loc.id})` beim Klick auf den Namen/Card-Bereich
+- Bearbeiten/Löschen-Buttons bleiben als Aktionen rechts
 
