@@ -92,7 +92,7 @@ export default function EventDetail() {
 
       {!isPast && event.status !== "cancelled" && (
         <Button
-          className="w-full gap-2"
+          className={`w-full gap-2 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`}
           variant={isSignedUp ? "default" : "outline"}
           onClick={toggleSignup}
         >

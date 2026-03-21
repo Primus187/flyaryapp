@@ -195,7 +195,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
             <Button
               variant={isSignedUp ? "default" : "outline"}
               size="sm"
-              className="shrink-0 gap-1"
+              className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`}
               onClick={(e) => { e.stopPropagation(); onToggle(event.id); }}
             >
               {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
