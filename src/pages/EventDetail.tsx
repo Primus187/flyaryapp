@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle } from "lucide-react";
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -98,6 +98,15 @@ export default function EventDetail() {
         >
           {isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
           {isSignedUp ? "Angemeldet — Abmelden?" : "Anmelden"}
+        </Button>
+      )}
+
+      {event.chat_link && (
+        <Button variant="outline" className="w-full gap-2" asChild>
+          <a href={event.chat_link} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="h-4 w-4" />
+            Gruppenchat öffnen
+          </a>
         </Button>
       )}
 

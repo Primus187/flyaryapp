@@ -1,0 +1,1 @@
+ALTER TABLE public.flight_events ADD COLUMN chat_link text;

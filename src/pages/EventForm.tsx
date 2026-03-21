@@ -34,6 +34,7 @@ export default function EventForm() {
     instructor: "",
     launch_helper: "",
     max_participants: "",
+    chat_link: "",
   });
 
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function EventForm() {
         instructor: data.instructor || "",
         launch_helper: data.launch_helper || "",
         max_participants: data.max_participants?.toString() || "",
+        chat_link: data.chat_link || "",
       });
     });
   }, [isEdit, id, duplicateId]);
@@ -91,6 +93,7 @@ export default function EventForm() {
       instructor: form.instructor || null,
       launch_helper: form.launch_helper || null,
       max_participants: form.max_participants ? parseInt(form.max_participants) : null,
+      chat_link: form.chat_link || null,
       created_by: user.id,
     };
 
@@ -184,6 +187,11 @@ export default function EventForm() {
               <Label className="text-xs">Max. Teilnehmer</Label>
               <Input type="number" value={form.max_participants} onChange={e => setForm({ ...form, max_participants: e.target.value })} />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Gruppenlink (Telegram/WhatsApp)</Label>
+            <Input value={form.chat_link} onChange={e => setForm({ ...form, chat_link: e.target.value })} placeholder="https://t.me/... oder https://chat.whatsapp.com/..." />
           </div>
 
           <div className="space-y-1.5">
