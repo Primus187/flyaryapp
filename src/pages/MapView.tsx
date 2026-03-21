@@ -55,8 +55,9 @@ export default function MapView() {
 
     if (flightId) {
       supabase.from("igc_tracks").select("track_data").eq("flight_id", flightId).maybeSingle().then(({ data }) => {
-        if (data?.track_data?.points) {
-          setTrackPoints(data.track_data.points.map((p: any) => [p.lat, p.lng]));
+        const td = data?.track_data as any;
+        if (td?.points) {
+          setTrackPoints(td.points.map((p: any) => [p.lat, p.lng]));
         }
       });
     }

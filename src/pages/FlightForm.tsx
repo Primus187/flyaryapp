@@ -132,11 +132,11 @@ export default function FlightForm() {
       if (igcFile) {
         const path = `${user.id}/${flightId}/${igcFile.name}`;
         await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true });
-        await supabase.from("igc_tracks").insert({
+        await supabase.from("igc_tracks").insert([{
           flight_id: flightId,
           storage_path: path,
-          track_data: igcData ? { points: igcData.points } : null,
-        });
+          track_data: igcData ? { points: igcData.points } as any : null,
+        }]);
       }
 
       // Upload photos
