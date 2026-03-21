@@ -75,9 +75,13 @@ export function parseIGC(content: string): IGCData {
     }
   }
 
-  const altitudes = points.map((p) => p.altitude);
-  const maxAltitude = altitudes.length ? Math.max(...altitudes) : 0;
-  const minAltitude = altitudes.length ? Math.min(...altitudes) : 0;
+  let maxAltitude = 0;
+  let minAltitude = Infinity;
+  for (const p of points) {
+    if (p.altitude > maxAltitude) maxAltitude = p.altitude;
+    if (p.altitude < minAltitude) minAltitude = p.altitude;
+  }
+  if (points.length === 0) minAltitude = 0;
   const startTime = points[0]?.time ?? null;
   const endTime = points[points.length - 1]?.time ?? null;
 
