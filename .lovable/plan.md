@@ -1,33 +1,48 @@
 
 
-# Dark Mode Fixen
+# PWA-Optimierung: Offline-Support, Install-Prompt & Icons
 
-## Probleme
-1. **AppLayout.tsx**: Hardcodierter heller Gradient (`hsl(210 20% 98%)` → `hsl(199 30% 96%)`) — bleibt weiss im Dark Mode
-2. **Dark-Mode CSS-Variablen**: Card/Background zu ähnlich, muted-foreground zu blass, Farben passen nicht zum Flyary-Branding (Blau/Grün)
-3. **Dashboard**: `bg-card/80` Cards mit weissem Durchscheinen
-4. **BottomNav**: `bg-card/90` bleibt hell im Dark Mode (card variable fix reicht)
+## Aktueller Stand
+- Einfaches `manifest.json` mit nur 2 Icons (192, 512)
+- Kein Service Worker / kein Offline-Support
+- Kein Install-Prompt
+- `vite-plugin-pwa` nicht installiert
 
 ## Änderungen
 
-### 1. `src/index.css` — Dark-Mode Variablen überarbeiten
-- Background: tiefes Dunkelblau (`215 28% 8%`)
-- Card: leicht heller als Background (`215 25% 12%`)
-- Muted: sichtbarer Kontrast (`215 20% 18%`)
-- Muted-foreground: heller für Lesbarkeit (`200 15% 65%`)
-- Primary/Secondary: leicht gesättigt für Flyary-Branding
-- Border/Input: subtiler, passend zum dunklen Hintergrund (`215 20% 16%`)
-- Sidebar-Variablen analog anpassen
+### 1. `vite-plugin-pwa` einrichten
+- Dependency: `vite-plugin-pwa`
+- In `vite.config.ts`: Plugin mit Workbox-Config hinzufügen
+  - Runtime-Caching für API-Calls, Bilder, Fonts
+  - `navigateFallbackDenylist: [/^\/~oauth/]` (OAuth nicht cachen)
+  - Precaching der App-Shell
+  - Manifest direkt im Plugin generieren (ersetzt `manifest.json`)
 
-### 2. `src/components/AppLayout.tsx` — Dynamischer Gradient
-- CSS-Klassen statt inline style verwenden
-- Im Dark Mode: dunkler Gradient passend zu `--background`
-- Lösung: `useTheme` Hook nutzen und Gradient conditional setzen, oder besser: CSS-Variable/Tailwind `dark:` Klasse
+### 2. Manifest erweitern
+- Mehr Icon-Grössen: 72, 96, 128, 144, 152, 192, 384, 512 (SVG-basiert generiert)
+- `maskable` Icon für Android Adaptive Icons
+- `shortcuts` für Schnellzugriff (Neuer Flug, Termine)
+- `categories`, `orientation`, `scope`
 
-### 3. Prüfung der Status-Badge-Farben und Icon-Farben
-- Hardcodierte `text-green-600`, `bg-green-100` etc. brauchen `dark:` Varianten (teilweise schon vorhanden laut Code)
+### 3. Install-Prompt Komponente
+- Neuer Hook `src/hooks/useInstallPrompt.ts`: `beforeinstallprompt` Event abfangen
+- Banner/Button auf dem Dashboard: "Flyary installieren" — nur anzeigen wenn noch nicht installiert
+- Dismissible, Zustand in `localStorage` merken
+
+### 4. Offline-Fallback
+- Offline-Seite (`/offline.html`) als Fallback wenn kein Netz
+- Workbox: NavigationRoute mit Offline-Fallback
+
+### 5. Icons generieren
+- Da wir keine Build-Tools für Icon-Generierung haben: SVG-Icon als Basis in verschiedenen Grössen im `public/` Ordner bereitstellen
+- Bestehende `icon-192.png` und `icon-512.png` bleiben, zusätzliche Grössen ergänzen
 
 ## Dateien
-- **Edit**: `src/index.css` — Dark-Palette verfeinern
-- **Edit**: `src/components/AppLayout.tsx` — Dark-Mode-fähiger Gradient
+- **Edit**: `vite.config.ts` — `VitePWA` Plugin
+- **Delete**: `public/manifest.json` — wird vom Plugin generiert
+- **Neu**: `src/hooks/useInstallPrompt.ts` — Install-Prompt Hook
+- **Neu**: `public/offline.html` — Offline-Fallback-Seite
+- **Edit**: `src/pages/Dashboard.tsx` — Install-Banner einbauen
+- **Edit**: `index.html` — `<link rel="manifest">` entfernen (Plugin macht das)
+- **Edit**: `src/i18n/locales/{de,fr,en}.json` — Übersetzungen für Install-Prompt
 
