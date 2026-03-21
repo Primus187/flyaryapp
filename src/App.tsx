@@ -20,6 +20,7 @@ import Events from "@/pages/Events";
 import EventDetail from "@/pages/EventDetail";
 import EventForm from "@/pages/EventForm";
 import Groups from "@/pages/Groups";
+import GroupDetail from "@/pages/GroupDetail";
 import Profile from "@/pages/Profile";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="/events/:id" element={<EventDetail />} />
               <Route path="/events/:id/edit" element={<EventForm />} />
               <Route path="/groups" element={<Groups />} />
+              <Route path="/groups/:id" element={<GroupDetail />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/import" element={<ImportFlights />} />
