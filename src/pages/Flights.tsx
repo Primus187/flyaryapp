@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Plane } from "lucide-react";
+import { Search, Plane, Plus } from "lucide-react";
 
 interface Flight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; }
 
@@ -29,7 +30,13 @@ export default function Flights() {
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">{t("flights.title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">{t("flights.title")}</h1>
+        <Button size="sm" onClick={() => navigate("/flights/new")}>
+          <Plus className="h-4 w-4 mr-1" />
+          {t("dashboard.newFlight")}
+        </Button>
+      </div>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder={t("flights.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
