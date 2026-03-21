@@ -1,7 +1,7 @@
 {
-  "name": "Flugtagebuch",
-  "short_name": "Flugbuch",
-  "description": "Gleitschirm Flugtagebuch PWA",
+  "name": "Flyary",
+  "short_name": "Flyary",
+  "description": "Dein Gleitschirm Flugtagebuch",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f7fa",
