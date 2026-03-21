@@ -69,6 +69,7 @@ export default function EventForm() {
         instructor: data.instructor || "",
         launch_helper: data.launch_helper || "",
         max_participants: data.max_participants?.toString() || "",
+        chat_link: data.chat_link || "",
       });
     });
   }, [isEdit, id, duplicateId]);
