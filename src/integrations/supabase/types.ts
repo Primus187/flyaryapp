@@ -14,6 +14,97 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_signups: {
+        Row: {
+          event_id: string
+          id: string
+          signed_up: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          signed_up?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          signed_up?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_signups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flight_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          event_date: string
+          event_type: string | null
+          group_id: string
+          id: string
+          instructor: string | null
+          launch_helper: string | null
+          max_participants: number | null
+          meeting_point: string | null
+          signup_deadline: string | null
+          status: Database["public"]["Enums"]["event_status"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_date: string
+          event_type?: string | null
+          group_id: string
+          id?: string
+          instructor?: string | null
+          launch_helper?: string | null
+          max_participants?: number | null
+          meeting_point?: string | null
+          signup_deadline?: string | null
+          status?: Database["public"]["Enums"]["event_status"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_date?: string
+          event_type?: string | null
+          group_id?: string
+          id?: string
+          instructor?: string | null
+          launch_helper?: string | null
+          max_participants?: number | null
+          meeting_point?: string | null
+          signup_deadline?: string | null
+          status?: Database["public"]["Enums"]["event_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_photos: {
         Row: {
           created_at: string
@@ -140,6 +231,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["group_role"]
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["group_role"]
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["group_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          invite_code: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name?: string
+        }
+        Relationships: []
       }
       igc_tracks: {
         Row: {
@@ -272,10 +422,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_group_admin: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      event_status: "announced" | "confirmed" | "cancelled"
+      group_role: "admin" | "member"
       location_type: "takeoff" | "landing" | "both"
     }
     CompositeTypes: {
@@ -405,6 +565,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      event_status: ["announced", "confirmed", "cancelled"],
+      group_role: ["admin", "member"],
       location_type: ["takeoff", "landing", "both"],
     },
   },
