@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, MapPin, Settings } from "lucide-react";
+import { LogOut, MapPin, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
@@ -62,6 +62,10 @@ export default function Profile() {
 
       <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/locations")}>
         <MapPin className="h-4 w-4" /> Orte verwalten
+      </Button>
+
+      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/import")}>
+        <Upload className="h-4 w-4" /> Flüge importieren (.xlsx)
       </Button>
 
       <Button variant="ghost" className="w-full gap-2 text-destructive" onClick={signOut}>
