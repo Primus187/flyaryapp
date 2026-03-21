@@ -53,6 +53,7 @@ export default function FlightRecorder() {
   const [elapsed, setElapsed] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [altSource, setAltSource] = useState<'gps' | 'barometer'>('gps');
 
   const varioAudio = useRef<VarioAudio | null>(null);
   const watchId = useRef<number | null>(null);
