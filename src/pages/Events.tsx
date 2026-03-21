@@ -175,7 +175,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <p className="font-medium text-sm truncate">{event.title}</p>
-              <Badge variant={statusVariant} className="text-[10px] shrink-0">{statusLabel}</Badge>
+              <Badge className={`text-[10px] shrink-0 ${statusColor}`}>{statusLabel}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               {new Date(event.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
