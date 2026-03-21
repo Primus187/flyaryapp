@@ -35,20 +35,8 @@ function MapFollower({ position }: { position: [number, number] | null }) {
   return null;
 }
 
-function MapContent({ currentPos, trackPositions }: { currentPos: [number, number] | null; trackPositions: [number, number][] }) {
-  return (
-    <>
-      <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} />
-      <MapFollower position={currentPos} />
-      {trackPositions.length > 1 && (
-        <Polyline positions={trackPositions} pathOptions={{ color: "#3b82f6", weight: 3 }} />
-      )}
-      {currentPos && (
-        <CircleMarker center={currentPos} radius={8} pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 1, weight: 2 }} />
-      )}
-    </>
-  );
-}
+// All map children rendered directly inside MapContainer (no wrapper component)
+// to avoid react-leaflet context consumer issues with React 18
 
 type RecordingState = "idle" | "recording" | "paused" | "done";
 
@@ -206,7 +194,14 @@ export default function FlightRecorder() {
     <div className="relative h-screen w-full">
       {/* Map */}
       <MapContainer center={defaultCenter} zoom={14} className="h-full w-full z-0" zoomControl={false}>
-        <MapContent currentPos={currentPos} trackPositions={trackPositions} />
+        <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} />
+        <MapFollower position={currentPos} />
+        {trackPositions.length > 1 && (
+          <Polyline positions={trackPositions} pathOptions={{ color: "#3b82f6", weight: 3 }} />
+        )}
+        {currentPos && (
+          <CircleMarker center={currentPos} radius={8} pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 1, weight: 2 }} />
+        )}
       </MapContainer>
 
       {/* Top bar */}
