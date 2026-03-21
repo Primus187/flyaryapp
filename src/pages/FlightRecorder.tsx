@@ -262,9 +262,11 @@ export default function FlightRecorder() {
             </div>
             <div className="h-12 w-px bg-border" />
             <div className="text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Höhe</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Höhe {altSource === 'barometer' ? '⬡' : '📡'}
+              </p>
               <p className="text-2xl font-mono font-bold">{altitude}</p>
-              <p className="text-[10px] text-muted-foreground">m</p>
+              <p className="text-[10px] text-muted-foreground">m {altSource === 'barometer' ? '(Baro)' : '(GPS)'}</p>
             </div>
             <div className="h-12 w-px bg-border" />
             <div className="text-center">
