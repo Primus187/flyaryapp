@@ -81,17 +81,22 @@ export default function FlightForm() {
     setIgcFile(file);
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const content = ev.target?.result as string;
-      const parsed = parseIGC(content);
-      setIgcData(parsed);
-      setForm((prev) => ({
-        ...prev,
-        date: parsed.date || prev.date,
-        duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes,
-        altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain,
-        glider: parsed.glider || prev.glider,
-      }));
-      toast({ title: "IGC importiert", description: `${parsed.points.length} Trackpunkte geladen` });
+      try {
+        const content = ev.target?.result as string;
+        const parsed = parseIGC(content);
+        setIgcData(parsed);
+        setForm((prev) => ({
+          ...prev,
+          date: parsed.date || prev.date,
+          duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes,
+          altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain,
+          glider: parsed.glider || prev.glider,
+        }));
+        toast({ title: "IGC importiert", description: `${parsed.points.length} Trackpunkte geladen` });
+      } catch (err: any) {
+        toast({ title: "IGC-Fehler", description: err.message || "Datei konnte nicht gelesen werden", variant: "destructive" });
+        setIgcFile(null);
+      }
     };
     reader.readAsText(file);
   };
