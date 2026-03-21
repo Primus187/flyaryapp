@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
+import Stats from "@/pages/Stats";
 import Flights from "@/pages/Flights";
 import FlightForm from "@/pages/FlightForm";
 import FlightDetail from "@/pages/FlightDetail";
