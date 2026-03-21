@@ -175,7 +175,7 @@ export default function FlightRecorder() {
     setState("recording");
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (watchId.current !== null) {
       navigator.geolocation.clearWatch(watchId.current);
       watchId.current = null;
@@ -186,6 +186,8 @@ export default function FlightRecorder() {
     }
     varioAudio.current?.destroy();
     varioAudio.current = null;
+    await barometerService.current?.stop();
+    baroAltRef.current = null;
     setState("done");
   };
 
