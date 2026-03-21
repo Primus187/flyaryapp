@@ -77,7 +77,7 @@ export default function EventDetail() {
           <h1 className="text-xl font-bold tracking-tight">{event.title}</h1>
           <p className="text-xs text-muted-foreground">{event.groups?.name}</p>
         </div>
-        <Badge variant={statusVariant}>{statusLabel}</Badge>
+        <Badge className={statusColor}>{statusLabel}</Badge>
         {isAdmin && (
           <>
             <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}>
