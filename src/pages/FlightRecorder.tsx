@@ -194,7 +194,14 @@ export default function FlightRecorder() {
     <div className="relative h-screen w-full">
       {/* Map */}
       <MapContainer center={defaultCenter} zoom={14} className="h-full w-full z-0" zoomControl={false}>
-        <MapContent currentPos={currentPos} trackPositions={trackPositions} />
+        <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} />
+        <MapFollower position={currentPos} />
+        {trackPositions.length > 1 && (
+          <Polyline positions={trackPositions} pathOptions={{ color: "#3b82f6", weight: 3 }} />
+        )}
+        {currentPos && (
+          <CircleMarker center={currentPos} radius={8} pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 1, weight: 2 }} />
+        )}
       </MapContainer>
 
       {/* Top bar */}
