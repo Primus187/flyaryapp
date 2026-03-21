@@ -93,6 +93,7 @@ export default function EventForm() {
       instructor: form.instructor || null,
       launch_helper: form.launch_helper || null,
       max_participants: form.max_participants ? parseInt(form.max_participants) : null,
+      chat_link: form.chat_link || null,
       created_by: user.id,
     };
 
