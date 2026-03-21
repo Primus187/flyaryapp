@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ interface LocationOption {
 
 export default function FlightForm() {
   const { id } = useParams();
+  const locationState = useLocation().state as any;
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -72,6 +73,24 @@ export default function FlightForm() {
       supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => {
         if (data) setYoutubeUrls(data.map((v) => v.youtube_url));
       });
+    }
+    // If coming from FlightRecorder with IGC data
+    if (locationState?.igcFile && locationState?.igcContent) {
+      try {
+        const parsed = parseIGC(locationState.igcContent);
+        setIgcData(parsed);
+        setIgcFile(locationState.igcFile);
+        setForm((prev) => ({
+          ...prev,
+          date: parsed.date || prev.date,
+          duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes,
+          altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain,
+          glider: parsed.glider || prev.glider,
+        }));
+        toast({ title: "Aufzeichnung importiert", description: `${parsed.points.length} Trackpunkte geladen` });
+      } catch (err) {
+        console.error("Failed to parse recorded IGC:", err);
+      }
     }
   }, [user, id, isEdit]);
 

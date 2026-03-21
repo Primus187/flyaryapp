@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Plus, Map, User } from "lucide-react";
+import { LayoutDashboard, BookOpen, Radio, Map, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/flights", icon: BookOpen, label: "Flugbuch" },
-  { path: "/flights/new", icon: Plus, label: "Neu", isAction: true },
+  { path: "/record", icon: Radio, label: "Aufnahme", isAction: true },
   { path: "/map", icon: Map, label: "Karte" },
   { path: "/profile", icon: User, label: "Profil" },
 ];
