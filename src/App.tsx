@@ -65,6 +65,7 @@ const App = () => (
               <Route path="/events/:id" element={<EventDetail />} />
               <Route path="/events/:id/edit" element={<EventForm />} />
               <Route path="/groups" element={<Groups />} />
+              <Route path="/groups/:id" element={<GroupDetail />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/import" element={<ImportFlights />} />
