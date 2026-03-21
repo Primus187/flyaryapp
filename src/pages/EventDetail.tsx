@@ -79,9 +79,14 @@ export default function EventDetail() {
         </div>
         <Badge variant={statusVariant}>{statusLabel}</Badge>
         {isAdmin && (
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <>
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}>
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </>
         )}
       </div>
 
