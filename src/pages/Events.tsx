@@ -180,6 +180,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
             <p className="text-xs text-muted-foreground">
               {new Date(event.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
               {event.event_type && ` · ${event.event_type}`}
+              {event.groups?.name && ` · ${event.groups.name}`}
             </p>
             {event.meeting_point && (
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
