@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, MapPin, Upload, FileDown, Users, Camera, Plus, Trash2, Star, Shield, Settings } from "lucide-react";
+import { LogOut, MapPin, Upload, FileDown, Users, Camera, Plus, Trash2, Star, Shield, Settings, Key } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Glider { id?: string; manufacturer: string; model: string; size: string; is_default: boolean; }
