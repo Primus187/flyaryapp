@@ -61,6 +61,16 @@ export default function FlightForm() {
     supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => {
       if (data) setLocations(data);
     });
+    supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
+      if (data) {
+        setGliders(data);
+        // If creating new flight and no glider set yet, pre-select default
+        if (!isEdit && !form.glider) {
+          const def = data.find((g) => g.is_default);
+          if (def) setForm((prev) => ({ ...prev, glider: `${def.manufacturer} ${def.model}${def.size ? ` (${def.size})` : ""}` }));
+        }
+      }
+    });
     if (isEdit) {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
         if (data) {
