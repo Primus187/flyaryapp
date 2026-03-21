@@ -262,7 +262,9 @@
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
     "notLoggedIn": "Non connecté",
-    "exportFailed": "Échec de l'export"
+    "exportFailed": "Échec de l'export",
+    "changePassword": "Changer le mot de passe",
+    "newPasswordPlaceholder": "Nouveau mot de passe (min. 6 caractères)"
   },
   "auth": {
     "signIn": "Connectez-vous",
