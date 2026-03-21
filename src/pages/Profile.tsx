@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, MapPin, Upload, FileDown } from "lucide-react";
+import { LogOut, MapPin, Upload, FileDown, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
