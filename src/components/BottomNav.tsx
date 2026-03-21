@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, BookOpen, MapPin, User } from "lucide-react";
+import { LayoutDashboard, BookOpen, Calendar, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/flights", icon: BookOpen, label: "Flugbuch" },
+  { path: "/events", icon: Calendar, label: "Termine" },
   { path: "/locations", icon: MapPin, label: "Orte" },
   { path: "/profile", icon: User, label: "Profil" },
 ];
