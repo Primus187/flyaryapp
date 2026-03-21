@@ -11,7 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Flights from "@/pages/Flights";
 import FlightForm from "@/pages/FlightForm";
 import FlightDetail from "@/pages/FlightDetail";
-import FlightRecorder from "@/pages/FlightRecorder";
+
 import MapView from "@/pages/MapView";
 import Locations from "@/pages/Locations";
 import Profile from "@/pages/Profile";
@@ -57,7 +57,7 @@ const App = () => (
               <Route path="/import-locations" element={<ImportLocations />} />
             </Route>
             <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
-            <Route path="/record" element={<ProtectedRoute><FlightRecorder /></ProtectedRoute>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

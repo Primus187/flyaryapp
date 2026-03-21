@@ -60,9 +60,6 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/locations")}>
-        <MapPin className="h-4 w-4" /> Orte verwalten
-      </Button>
 
       <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/import")}>
         <Upload className="h-4 w-4" /> Flüge importieren (.xlsx)

@@ -9,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import LocationMapPicker from "@/components/LocationMapPicker";
 
 export default function Locations() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [locations, setLocations] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -87,10 +89,14 @@ export default function Locations() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Orte</h1>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Ort</Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/map")}>
+            <MapPin className="h-4 w-4" /> Karte
+          </Button>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Ort</Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editId ? "Ort bearbeiten" : "Neuer Ort"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
@@ -141,7 +147,8 @@ export default function Locations() {
               <Button className="w-full" onClick={handleSave}>{editId ? "Aktualisieren" : "Speichern"}</Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {locations.length === 0 ? (
