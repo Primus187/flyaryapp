@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { ArrowLeft } from "lucide-react";
 
 export default function EventForm() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const duplicateId = searchParams.get("duplicate");
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -48,17 +50,18 @@ export default function EventForm() {
   }, [user]);
 
   useEffect(() => {
-    if (!isEdit || !id) return;
-    supabase.from("flight_events").select("*").eq("id", id).single().then(({ data }) => {
+    const loadId = isEdit ? id : duplicateId;
+    if (!loadId) return;
+    supabase.from("flight_events").select("*").eq("id", loadId).single().then(({ data }) => {
       if (!data) return;
       const d = new Date(data.event_date);
       setForm({
         group_id: data.group_id,
-        title: data.title,
+        title: duplicateId ? `${data.title} (Kopie)` : data.title,
         description: data.description || "",
-        status: data.status,
-        event_date: d.toISOString().split("T")[0],
-        event_time: d.toTimeString().slice(0, 5),
+        status: duplicateId ? "announced" : data.status,
+        event_date: duplicateId ? "" : d.toISOString().split("T")[0],
+        event_time: duplicateId ? "09:00" : d.toTimeString().slice(0, 5),
         signup_deadline: data.signup_deadline ? new Date(data.signup_deadline).toISOString().split("T")[0] : "",
         event_type: data.event_type || "",
         meeting_point: data.meeting_point || "",
@@ -67,7 +70,7 @@ export default function EventForm() {
         max_participants: data.max_participants?.toString() || "",
       });
     });
-  }, [isEdit, id]);
+  }, [isEdit, id, duplicateId]);
 
   const handleSave = async () => {
     if (!user || !form.title || !form.event_date || !form.group_id) {

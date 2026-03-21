@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy } from "lucide-react";
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -79,9 +79,14 @@ export default function EventDetail() {
         </div>
         <Badge variant={statusVariant}>{statusLabel}</Badge>
         {isAdmin && (
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <>
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}>
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </>
         )}
       </div>
 
