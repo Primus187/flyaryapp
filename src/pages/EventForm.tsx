@@ -57,7 +57,7 @@ export default function EventForm() {
       const d = new Date(data.event_date);
       setForm({
         group_id: data.group_id,
-        title: duplicateId ? `${data.title} (Kopie)` : data.title,
+        title: data.title,
         description: data.description || "",
         status: duplicateId ? "announced" : data.status,
         event_date: duplicateId ? "" : d.toISOString().split("T")[0],
