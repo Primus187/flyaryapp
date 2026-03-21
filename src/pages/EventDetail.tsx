@@ -66,7 +66,7 @@ export default function EventDetail() {
   const isSignedUp = signups.find(s => s.user_id === user?.id)?.signed_up ?? false;
   const totalSignedUp = signups.filter(s => s.signed_up).length;
   const statusLabel = event.status === "confirmed" ? "Bestätigt" : event.status === "cancelled" ? "Abgesagt" : "Angekündigt";
-  const statusVariant: "default" | "secondary" | "destructive" = event.status === "confirmed" ? "default" : event.status === "cancelled" ? "destructive" : "secondary";
+  const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
   const isPast = new Date(event.event_date) < new Date();
 
   return (
