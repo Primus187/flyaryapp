@@ -86,7 +86,6 @@ export default function Dashboard() {
           .limit(3);
 
         if (upcomingEvents && upcomingEvents.length > 0) {
-          // Fetch signups for these events
           const eventIds = upcomingEvents.map(e => e.id);
           const { data: signups } = await supabase
             .from("event_signups")
@@ -161,7 +160,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Upcoming Events */}
       {events.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Nächste Termine</h2>
@@ -183,152 +181,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <Badge className={statusColor(e.status) + " text-[10px] shrink-0"}>
-                    {statusLabel[e.status] || e.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div>
-        <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Letzte Flüge</h2>
-        {recent.length === 0 ? (
-          <Card className="border-dashed border-2">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground text-sm mb-3">Noch keine Flüge erfasst</p>
-              <Button variant="outline" size="sm" onClick={() => navigate("/flights/new")}>
-                Ersten Flug erfassen
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-2">
-            {recent.map((f) => (
-              <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-sm">{f.takeoff_location?.name || "–"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(f.date).toLocaleDateString("de-CH")} · {f.glider || "–"}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium tabular-nums">{f.duration_minutes ? formatDuration(f.duration_minutes) : "–"}</p>
-                    <p className="text-xs text-muted-foreground tabular-nums">{f.altitude_gain ? `+${f.altitude_gain}m` : ""}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-      // Fetch upcoming events from user's groups
-      const { data: memberships } = await supabase
-        .from("group_members")
-        .select("group_id, groups(name)")
-        .eq("user_id", user.id);
-
-      if (memberships && memberships.length > 0) {
-        const groupIds = memberships.map(m => m.group_id);
-        const groupNames: Record<string, string> = {};
-        memberships.forEach((m: any) => {
-          groupNames[m.group_id] = m.groups?.name || "";
-        });
-
-        const { data: upcomingEvents } = await supabase
-          .from("flight_events")
-          .select("id, title, event_date, status, meeting_point, group_id")
-          .in("group_id", groupIds)
-          .gte("event_date", new Date().toISOString())
-          .order("event_date", { ascending: true })
-          .limit(3);
-
-        if (upcomingEvents) {
-          setEvents(upcomingEvents.map(e => ({
-            ...e,
-            group_name: groupNames[e.group_id] || "",
-          })));
-        }
-      }
-    };
-    fetchData();
-  }, [user]);
-
-  const formatDuration = (min: number) => {
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
-  };
-
-  const statusLabel: Record<string, string> = {
-    announced: "Geplant",
-    confirmed: "Bestätigt",
-    cancelled: "Abgesagt",
-  };
-
-  const statusVariant = (s: string) =>
-    s === "confirmed" ? "default" : s === "cancelled" ? "destructive" : "secondary";
-
-  return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Flugtagebuch</h1>
-          <p className="text-sm text-muted-foreground">Deine Übersicht</p>
-        </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => navigate("/stats")} className="gap-1.5">
-            <BarChart3 className="h-4 w-4" /> Stats
-          </Button>
-          <Button size="sm" onClick={() => navigate("/flights/new")} className="gap-1.5">
-            <Plus className="h-4 w-4" /> Flug
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { icon: Plane, label: "Flüge", value: stats.totalFlights.toString() },
-          { icon: Clock, label: "Flugzeit", value: formatDuration(stats.totalMinutes) },
-          { icon: MapPin, label: "Startplätze", value: stats.uniqueTakeoffs.toString() },
-          { icon: MapPin, label: "Landeplätze", value: stats.uniqueLandings.toString() },
-        ].map(({ icon: Icon, label, value }) => (
-          <Card key={label} className="border-0 shadow-sm bg-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Icon className="h-4 w-4 text-primary" />
-                <span className="text-xs text-muted-foreground">{label}</span>
-              </div>
-              <p className="text-lg font-semibold tabular-nums">{value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Upcoming Events */}
-      {events.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Nächste Termine</h2>
-          <div className="space-y-2">
-            {events.map((e) => (
-              <Card key={e.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/events/${e.id}`)}>
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="h-4 w-4 text-primary shrink-0" />
-                    <div>
-                      <p className="font-medium text-sm">{e.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(e.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}
-                        {e.meeting_point ? ` · ${e.meeting_point}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant={statusVariant(e.status) as any} className="text-[10px] shrink-0">
                     {statusLabel[e.status] || e.status}
                   </Badge>
                 </CardContent>
