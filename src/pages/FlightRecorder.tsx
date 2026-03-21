@@ -56,6 +56,7 @@ export default function FlightRecorder() {
   const [altSource, setAltSource] = useState<'gps' | 'barometer'>('gps');
 
   const varioAudio = useRef<VarioAudio | null>(null);
+  const barometerService = useRef<BarometerService | null>(null);
   const watchId = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef(0);
