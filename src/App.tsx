@@ -20,6 +20,7 @@ import Events from "@/pages/Events";
 import EventDetail from "@/pages/EventDetail";
 import EventForm from "@/pages/EventForm";
 import Groups from "@/pages/Groups";
+import GroupDetail from "@/pages/GroupDetail";
 import Profile from "@/pages/Profile";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
