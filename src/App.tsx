@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
@@ -24,6 +25,7 @@ import EventForm from "@/pages/EventForm";
 import Groups from "@/pages/Groups";
 import GroupDetail from "@/pages/GroupDetail";
 import Profile from "@/pages/Profile";
+import Settings from "@/pages/Settings";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
 import NotFound from "@/pages/NotFound";
@@ -32,7 +34,7 @@ const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Laden...</div>;
+  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">...</div>;
   if (!user) return <Navigate to="/auth" replace />;
   return <>{children}</>;
 }
@@ -49,43 +51,46 @@ const App = () => {
   const handleSplashFinished = useCallback(() => setShowSplash(false), []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/flights" element={<Flights />} />
-                <Route path="/flights/new" element={<FlightForm />} />
-                <Route path="/flights/:id" element={<FlightDetail />} />
-                <Route path="/flights/:id/edit" element={<FlightForm />} />
-                <Route path="/locations" element={<Locations />} />
-                <Route path="/locations/:id" element={<LocationDetail />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/events/new" element={<EventForm />} />
-                <Route path="/events/:id" element={<EventDetail />} />
-                <Route path="/events/:id/edit" element={<EventForm />} />
-                <Route path="/groups" element={<Groups />} />
-                <Route path="/groups/:id" element={<GroupDetail />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/stats" element={<Stats />} />
-                <Route path="/import" element={<ImportFlights />} />
-                <Route path="/import-locations" element={<ImportLocations />} />
-              </Route>
-              <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
+          <BrowserRouter>
+            <AuthProvider>
+              <Routes>
+                <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/flights" element={<Flights />} />
+                  <Route path="/flights/new" element={<FlightForm />} />
+                  <Route path="/flights/:id" element={<FlightDetail />} />
+                  <Route path="/flights/:id/edit" element={<FlightForm />} />
+                  <Route path="/locations" element={<Locations />} />
+                  <Route path="/locations/:id" element={<LocationDetail />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/events/new" element={<EventForm />} />
+                  <Route path="/events/:id" element={<EventDetail />} />
+                  <Route path="/events/:id/edit" element={<EventForm />} />
+                  <Route path="/groups" element={<Groups />} />
+                  <Route path="/groups/:id" element={<GroupDetail />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/stats" element={<Stats />} />
+                  <Route path="/import" element={<ImportFlights />} />
+                  <Route path="/import-locations" element={<ImportLocations />} />
+                </Route>
+                <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
