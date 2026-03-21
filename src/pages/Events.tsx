@@ -166,7 +166,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, past }: {
   const isSignedUp = mySignup?.signed_up ?? false;
   const totalSignedUp = signups.filter(s => s.event_id === event.id && s.signed_up).length;
   const statusLabel = event.status === "confirmed" ? "Bestätigt" : event.status === "cancelled" ? "Abgesagt" : "Angekündigt";
-  const statusVariant: "default" | "secondary" | "destructive" = event.status === "confirmed" ? "default" : event.status === "cancelled" ? "destructive" : "secondary";
+  const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
 
   return (
     <Card className={`border-0 shadow-sm transition-colors ${past ? "opacity-60" : "hover:bg-accent/50 cursor-pointer"}`}>
