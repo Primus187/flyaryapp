@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Plus, MapPin, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
 
 export default function Locations() {
@@ -155,10 +155,18 @@ export default function Locations() {
             <Card key={loc.id} className="border-0 shadow-sm">
               <CardContent className="p-3 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-sm">{loc.name}</p>
+                  <p className="font-medium text-sm flex items-center gap-1.5">
+                    {loc.latitude === 0 && loc.longitude === 0 && (
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    )}
+                    {loc.name}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     <span className={typeColor(loc.type)}>{typeLabel(loc.type)}</span>
                     {loc.altitude && <span> · {loc.altitude}m</span>}
+                    {loc.latitude === 0 && loc.longitude === 0 && (
+                      <span className="text-amber-500"> · Keine Position</span>
+                    )}
                   </p>
                 </div>
                 <div className="flex gap-1">
