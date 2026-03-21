@@ -14,16 +14,269 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      flight_photos: {
+        Row: {
+          created_at: string
+          flight_id: string
+          id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          flight_id: string
+          id?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          flight_id?: string
+          id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_photos_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flight_videos: {
+        Row: {
+          created_at: string
+          flight_id: string
+          id: string
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string
+          flight_id: string
+          id?: string
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string
+          flight_id?: string
+          id?: string
+          youtube_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_videos_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flights: {
+        Row: {
+          altitude_gain: number | null
+          comments: string | null
+          created_at: string
+          date: string
+          distance_km: number | null
+          duration_minutes: number | null
+          glider: string | null
+          id: string
+          landing_location_id: string | null
+          takeoff_location_id: string | null
+          thermals: string | null
+          updated_at: string
+          user_id: string
+          wind_direction: string | null
+          wind_speed: number | null
+        }
+        Insert: {
+          altitude_gain?: number | null
+          comments?: string | null
+          created_at?: string
+          date?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          glider?: string | null
+          id?: string
+          landing_location_id?: string | null
+          takeoff_location_id?: string | null
+          thermals?: string | null
+          updated_at?: string
+          user_id: string
+          wind_direction?: string | null
+          wind_speed?: number | null
+        }
+        Update: {
+          altitude_gain?: number | null
+          comments?: string | null
+          created_at?: string
+          date?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          glider?: string | null
+          id?: string
+          landing_location_id?: string | null
+          takeoff_location_id?: string | null
+          thermals?: string | null
+          updated_at?: string
+          user_id?: string
+          wind_direction?: string | null
+          wind_speed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flights_landing_location_id_fkey"
+            columns: ["landing_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flights_takeoff_location_id_fkey"
+            columns: ["takeoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      igc_tracks: {
+        Row: {
+          created_at: string
+          flight_id: string
+          id: string
+          storage_path: string
+          track_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          flight_id: string
+          id?: string
+          storage_path: string
+          track_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          flight_id?: string
+          id?: string
+          storage_path?: string
+          track_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "igc_tracks_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locations: {
+        Row: {
+          altitude: number | null
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          type: Database["public"]["Enums"]["location_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          altitude?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          type?: Database["public"]["Enums"]["location_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          altitude?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          type?: Database["public"]["Enums"]["location_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          glider_info: string | null
+          id: string
+          pilot_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          glider_info?: string | null
+          id?: string
+          pilot_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          glider_info?: string | null
+          id?: string
+          pilot_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      location_type: "takeoff" | "landing" | "both"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +403,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      location_type: ["takeoff", "landing", "both"],
+    },
   },
 } as const
