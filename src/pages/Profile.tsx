@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, MapPin, Upload } from "lucide-react";
+import { LogOut, MapPin, Upload, FileDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
@@ -14,6 +14,7 @@ export default function Profile() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [form, setForm] = useState({ pilot_name: "", glider_info: "" });
 
   useEffect(() => {
@@ -33,6 +34,39 @@ export default function Profile() {
       toast({ title: "Profil gespeichert" });
     }
     setLoading(false);
+  };
+
+  const handleExportPdf = async () => {
+    setExporting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Nicht angemeldet");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-flightbook-pdf`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Export fehlgeschlagen");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `flugbuch.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "PDF exportiert" });
+    } catch (e: any) {
+      toast({ title: "Fehler", description: e.message, variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -60,6 +94,9 @@ export default function Profile() {
         </CardContent>
       </Card>
 
+      <Button variant="outline" className="w-full gap-2" onClick={handleExportPdf} disabled={exporting}>
+        <FileDown className="h-4 w-4" /> {exporting ? "Exportiere..." : "Flugbuch als PDF exportieren"}
+      </Button>
 
       <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/import")}>
         <Upload className="h-4 w-4" /> Flüge importieren (.xlsx)
