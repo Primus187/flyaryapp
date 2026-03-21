@@ -48,6 +48,7 @@ export type Database = {
       }
       flight_events: {
         Row: {
+          chat_link: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -64,6 +65,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          chat_link?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           title: string
         }
         Update: {
+          chat_link?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
