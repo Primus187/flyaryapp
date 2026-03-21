@@ -53,6 +53,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
             </Route>
             <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
+            <Route path="/record" element={<ProtectedRoute><FlightRecorder /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
