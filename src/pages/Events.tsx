@@ -33,6 +33,7 @@ export default function Events() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
   const [isAdmin, setIsAdmin] = useState<Record<string, boolean>>({});
+  const [canCreate, setCanCreate] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,14 +41,21 @@ export default function Events() {
     const fetchGroups = async () => {
       const { data: members } = await supabase
         .from("group_members")
-        .select("group_id, role, groups(id, name)")
+        .select("group_id, role, groups(id, name, group_type)")
         .eq("user_id", user.id);
       if (members) {
         const g = members.map((m: any) => m.groups).filter(Boolean);
         setGroups(g);
         const adminMap: Record<string, boolean> = {};
-        members.forEach((m: any) => { if (m.groups) adminMap[m.groups.id] = m.role === "admin"; });
+        const canCreateMap: Record<string, boolean> = {};
+        members.forEach((m: any) => {
+          if (m.groups) {
+            adminMap[m.groups.id] = m.role === "admin";
+            canCreateMap[m.groups.id] = m.role === "admin" || m.groups.group_type === "pilot_group";
+          }
+        });
         setIsAdmin(adminMap);
+        setCanCreate(canCreateMap);
       }
       setLoading(false);
     };
@@ -92,7 +100,7 @@ export default function Events() {
   const statusVariant = (s: string): "default" | "secondary" | "destructive" => s === "confirmed" ? "default" : s === "cancelled" ? "destructive" : "secondary";
 
   const isPast = (d: string) => new Date(d) < new Date();
-  const anyAdmin = Object.values(isAdmin).some(Boolean);
+  const anyCanCreate = Object.values(canCreate).some(Boolean);
 
   const now = new Date();
   const upcoming = events.filter(e => new Date(e.event_date) >= now);
@@ -104,7 +112,7 @@ export default function Events() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Termine</h1>
-        {anyAdmin && (
+        {anyCanCreate && (
           <Button size="sm" className="gap-1.5" onClick={() => navigate("/events/new")}>
             <Plus className="h-4 w-4" /> Termin
           </Button>

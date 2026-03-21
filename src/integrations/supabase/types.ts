@@ -272,6 +272,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          group_type: Database["public"]["Enums"]["group_type"]
           id: string
           invite_code: string
           name: string
@@ -280,6 +281,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          group_type?: Database["public"]["Enums"]["group_type"]
           id?: string
           invite_code?: string
           name: string
@@ -288,6 +290,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          group_type?: Database["public"]["Enums"]["group_type"]
           id?: string
           invite_code?: string
           name?: string
@@ -439,6 +442,7 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
       event_status: "announced" | "confirmed" | "cancelled"
       group_role: "admin" | "member"
+      group_type: "school" | "pilot_group"
       location_type: "takeoff" | "landing" | "both"
     }
     CompositeTypes: {
@@ -570,6 +574,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       event_status: ["announced", "confirmed", "cancelled"],
       group_role: ["admin", "member"],
+      group_type: ["school", "pilot_group"],
       location_type: ["takeoff", "landing", "both"],
     },
   },

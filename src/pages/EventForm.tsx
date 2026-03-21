@@ -42,10 +42,13 @@ export default function EventForm() {
     const fetchGroups = async () => {
       const { data } = await supabase
         .from("group_members")
-        .select("group_id, role, groups(id, name)")
-        .eq("user_id", user.id)
-        .eq("role", "admin");
-      if (data) setGroups(data.map((m: any) => m.groups).filter(Boolean));
+        .select("group_id, role, groups(id, name, group_type)")
+        .eq("user_id", user.id);
+      if (data) {
+        // Admin can always create events; members only for pilot_group
+        const eligible = data.filter((m: any) => m.role === "admin" || m.groups?.group_type === "pilot_group");
+        setGroups(eligible.map((m: any) => m.groups).filter(Boolean));
+      }
     };
     fetchGroups();
   }, [user]);
