@@ -35,6 +35,21 @@ function MapFollower({ position }: { position: [number, number] | null }) {
   return null;
 }
 
+function MapContent({ currentPos, trackPositions }: { currentPos: [number, number] | null; trackPositions: [number, number][] }) {
+  return (
+    <>
+      <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} />
+      <MapFollower position={currentPos} />
+      {trackPositions.length > 1 && (
+        <Polyline positions={trackPositions} pathOptions={{ color: "#3b82f6", weight: 3 }} />
+      )}
+      {currentPos && (
+        <CircleMarker center={currentPos} radius={8} pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 1, weight: 2 }} />
+      )}
+    </>
+  );
+}
+
 type RecordingState = "idle" | "recording" | "paused" | "done";
 
 export default function FlightRecorder() {
