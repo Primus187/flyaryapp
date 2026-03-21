@@ -192,7 +192,7 @@ export default function Groups() {
             <Card key={g.id} className="border-0 shadow-sm">
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleExpand(g.id)}>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/groups/${g.id}`)}>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-sm truncate">{g.name}</p>
                       <Badge variant="secondary" className="text-[10px] gap-1 shrink-0">
