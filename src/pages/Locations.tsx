@@ -15,6 +15,7 @@ import LocationMapPicker from "@/components/LocationMapPicker";
 export default function Locations() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [locations, setLocations] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
