@@ -59,6 +59,11 @@ const App = () => (
               <Route path="/flights/:id/edit" element={<FlightForm />} />
               <Route path="/locations" element={<Locations />} />
               <Route path="/locations/:id" element={<LocationDetail />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/events/new" element={<EventForm />} />
+              <Route path="/events/:id" element={<EventDetail />} />
+              <Route path="/events/:id/edit" element={<EventForm />} />
+              <Route path="/groups" element={<Groups />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/import" element={<ImportFlights />} />
