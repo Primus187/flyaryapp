@@ -1,61 +1,55 @@
 
 
-# Native App mit Barometer-Zugriff
+# XLSX-Flugimport
 
-## Zwei Optionen
+## Übersicht
+Neue Import-Funktion auf der Profil-Seite, die eine `.xlsx`-Datei im Format der bestehenden App einliest und alle Flüge inklusive Orte in die Datenbank importiert.
 
-**Option 1: Installierbare Web-App (PWA)** — bereits fast fertig
-- Direkt vom Browser auf den Homescreen installierbar
-- Funktioniert offline, fühlt sich wie eine echte App an
-- Kein App Store nötig
-- **Einschränkung**: Kein Zugriff auf das Barometer (Web-APIs unterstützen das nicht)
+## Spalten-Mapping (Excel → Datenbank)
 
-**Option 2: Echte Native App mit Capacitor**
-- Wird als richtige Android-App gebaut, kann in den Play Store
-- **Voller Zugriff auf alle Sensoren**, inklusive Barometer
-- Deutlich genaueres Variometer (barometrische Höhe statt GPS-Höhe)
-- **Voraussetzung**: Du brauchst Android Studio auf deinem Computer
+| Excel-Spalte | DB-Feld | Logik |
+|---|---|---|
+| Datum | `flights.date` | DD.MM.YYYY → YYYY-MM-DD |
+| Start | `locations.name` (type=takeoff) | Ort anlegen falls nicht vorhanden, dann `takeoff_location_id` setzen |
+| Start Land | — | Wird in Location-Beschreibung gespeichert |
+| Landung | `locations.name` (type=landing) | Ort anlegen falls nicht vorhanden, dann `landing_location_id` setzen |
+| Landung Land | — | Wird in Location-Beschreibung gespeichert |
+| Flugdauer | `flights.duration_minutes` | HH:MM:SS → Minuten |
+| Km | `flights.distance_km` | Direkt übernehmen |
+| Beschreibung | `flights.comments` | Direkt übernehmen |
+| Gleitschirm | `flights.glider` | Direkt übernehmen |
+| Preis | — | Ignoriert (kein Feld vorhanden) |
+| Tandem | — | Ignoriert |
+| IGC-Datei | — | Nur Dateiname, kein Import möglich |
 
-## Empfehlung
+## Implementierung
 
-Für dein Ziel (Barometer auf dem Pixel nutzen) brauchst du **Option 2: Capacitor**. Die bestehende App bleibt identisch — Capacitor verpackt sie als native Android-App und gibt dir Zugriff auf die Sensoren.
+### 1. Neue Seite: `/import` (oder Abschnitt auf Profil-Seite)
+- Datei-Upload-Button für `.xlsx`
+- Client-seitiges Parsing mit `xlsx` (SheetJS) Library
+- Vorschau-Tabelle: zeigt erkannte Flüge mit Datum, Start, Landung, Dauer
+- Anzeige: "153 Flüge erkannt, 28 Orte werden erstellt"
+- Import-Button startet den Vorgang
 
-## Was ich umsetzen würde
+### 2. Import-Logik
+1. **Orte deduplizieren**: Alle einzigartigen Start-/Landeplatz-Namen sammeln
+2. **Existierende Orte prüfen**: Gegen die DB abgleichen (Name + User)
+3. **Fehlende Orte erstellen**: Neue Locations mit Dummy-Koordinaten (0,0) anlegen — User kann sie später auf der Karte positionieren
+4. **Flüge einfügen**: Batch-Insert aller Flüge mit den korrekten Location-IDs
+5. **Duplikat-Erkennung**: Gleicher User + gleiches Datum + gleicher Startplatz = Warnung
 
-### 1. Capacitor einrichten
-- `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` installieren
-- Capacitor-Konfiguration mit App-ID und Live-Reload vom Lovable-Preview
+### 3. Dateien
+- **Neue Datei**: `src/pages/ImportFlights.tsx` — Import-Seite mit Upload, Vorschau, Fortschritt
+- **Neue Datei**: `src/lib/xlsx-import.ts` — Parsing-Logik (Excel → strukturierte Daten)
+- **Edit**: `src/App.tsx` — Route `/import` hinzufügen
+- **Edit**: `src/pages/Profile.tsx` — Link zum Import hinzufügen
+- **Dependency**: `xlsx` (SheetJS) NPM-Paket
 
-### 2. Barometer-Plugin integrieren
-- Capacitor-Plugin für den Barometer-Sensor (z.B. `capacitor-barometer` oder ein generisches Sensor-Plugin)
-- Alternativ: Eigenes kleines Capacitor-Plugin, das den Android `SensorManager` für `TYPE_PRESSURE` nutzt
-
-### 3. Variometer verbessern
-- `vario-audio.ts` erweitern: Barometer-Druck statt GPS-Höhe verwenden, wenn verfügbar
-- Barometrische Höhe berechnen (Internationale Höhenformel aus Luftdruck)
-- Fallback auf GPS-Höhe, wenn kein Barometer vorhanden (z.B. im Browser)
-
-### 4. Schritte für dich auf dem Computer
-1. Projekt über "Export to GitHub" auf dein GitHub übertragen
-2. Repository klonen, `npm install`
-3. `npx cap add android`
-4. `npm run build && npx cap sync`
-5. `npx cap run android` — App startet auf deinem Pixel (per USB verbunden)
-
-## Technische Details
-
-```text
-Architektur:
-┌─────────────────────────┐
-│   React App (Vite)      │  ← bleibt unverändert
-├─────────────────────────┤
-│   Capacitor Bridge      │  ← neu
-├─────────────────────────┤
-│   Android Native Layer  │  ← Barometer-Sensor
-└─────────────────────────┘
-```
-
-- **Barometer-Daten**: ~25 Hz Abtastrate, Auflösung ~0.01 hPa → ca. 10 cm Höhenauflösung (vs. ±10-30m bei GPS)
-- **Vario-Berechnung**: Exponentieller Glättungsfilter auf barometrische Höhe, deutlich präziser als GPS-basiert
-- Plattform-Erkennung via `Capacitor.isNativePlatform()` für automatischen Fallback
+### 4. UX-Flow
+1. User geht auf Profil → "Flüge importieren"
+2. Wählt `.xlsx`-Datei aus
+3. Sieht Vorschau mit Anzahl Flüge und neuen Orten
+4. Klickt "Importieren"
+5. Fortschrittsbalken während des Imports
+6. Erfolgsmeldung: "153 Flüge und 28 Orte importiert"
 
