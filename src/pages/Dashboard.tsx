@@ -128,7 +128,7 @@ export default function Dashboard() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Flugtagebuch</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Flyary</h1>
           <p className="text-sm text-muted-foreground">Deine Übersicht</p>
         </div>
         <div className="flex gap-2">

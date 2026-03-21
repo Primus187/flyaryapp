@@ -72,7 +72,7 @@ export default function Auth() {
           <div className="mx-auto w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
             <Mountain className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-xl">Flugtagebuch</CardTitle>
+          <CardTitle className="text-xl">Flyary</CardTitle>
           <CardDescription>
             {resetMode ? "Passwort zurücksetzen" : isLogin ? "Melde dich an" : "Erstelle ein Konto"}
           </CardDescription>

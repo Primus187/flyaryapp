@@ -44,43 +44,49 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/flights" element={<Flights />} />
-              <Route path="/flights/new" element={<FlightForm />} />
-              <Route path="/flights/:id" element={<FlightDetail />} />
-              <Route path="/flights/:id/edit" element={<FlightForm />} />
-              <Route path="/locations" element={<Locations />} />
-              <Route path="/locations/:id" element={<LocationDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/new" element={<EventForm />} />
-              <Route path="/events/:id" element={<EventDetail />} />
-              <Route path="/events/:id/edit" element={<EventForm />} />
-              <Route path="/groups" element={<Groups />} />
-              <Route path="/groups/:id" element={<GroupDetail />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/stats" element={<Stats />} />
-              <Route path="/import" element={<ImportFlights />} />
-              <Route path="/import-locations" element={<ImportLocations />} />
-            </Route>
-            <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinished = useCallback(() => setShowSplash(false), []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/flights" element={<Flights />} />
+                <Route path="/flights/new" element={<FlightForm />} />
+                <Route path="/flights/:id" element={<FlightDetail />} />
+                <Route path="/flights/:id/edit" element={<FlightForm />} />
+                <Route path="/locations" element={<Locations />} />
+                <Route path="/locations/:id" element={<LocationDetail />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/events/new" element={<EventForm />} />
+                <Route path="/events/:id" element={<EventDetail />} />
+                <Route path="/events/:id/edit" element={<EventForm />} />
+                <Route path="/groups" element={<Groups />} />
+                <Route path="/groups/:id" element={<GroupDetail />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/stats" element={<Stats />} />
+                <Route path="/import" element={<ImportFlights />} />
+                <Route path="/import-locations" element={<ImportLocations />} />
+              </Route>
+              <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
