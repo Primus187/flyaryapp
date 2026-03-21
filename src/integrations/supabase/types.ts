@@ -368,30 +368,78 @@ export type Database = {
         }
         Relationships: []
       }
+      pilot_gliders: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          manufacturer: string
+          model: string
+          size: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          manufacturer: string
+          model: string
+          size?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          manufacturer?: string
+          model?: string
+          size?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          allergies: string | null
           avatar_url: string | null
+          bio: string | null
+          blood_type: string | null
           created_at: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           glider_info: string | null
           id: string
+          medical_notes: string | null
           pilot_name: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          allergies?: string | null
           avatar_url?: string | null
+          bio?: string | null
+          blood_type?: string | null
           created_at?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           glider_info?: string | null
           id?: string
+          medical_notes?: string | null
           pilot_name?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          allergies?: string | null
           avatar_url?: string | null
+          bio?: string | null
+          blood_type?: string | null
           created_at?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           glider_info?: string | null
           id?: string
+          medical_notes?: string | null
           pilot_name?: string | null
           updated_at?: string
           user_id?: string
