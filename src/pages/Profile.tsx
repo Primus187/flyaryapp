@@ -68,6 +68,10 @@ export default function Profile() {
         <Upload className="h-4 w-4" /> Flüge importieren (.xlsx)
       </Button>
 
+      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/import-locations")}>
+        <MapPin className="h-4 w-4" /> Orte importieren (.csv)
+      </Button>
+
       <Button variant="ghost" className="w-full gap-2 text-destructive" onClick={signOut}>
         <LogOut className="h-4 w-4" /> Abmelden
       </Button>
