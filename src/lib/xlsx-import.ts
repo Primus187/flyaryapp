@@ -45,6 +45,11 @@ function parseNum(raw: any): number | null {
   return isNaN(n) ? null : n;
 }
 
+/** Strip common SP/LP prefixes from location names */
+function stripLocationPrefix(name: string): string {
+  return name.replace(/^(SP|LP)\s+/i, "").trim();
+}
+
 export function parseXlsx(data: ArrayBuffer): ParsedFlight[] {
   const wb = XLSX.read(data, { type: "array", cellDates: true });
   const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -54,9 +59,9 @@ export function parseXlsx(data: ArrayBuffer): ParsedFlight[] {
     .filter((r: any) => r["Datum"])
     .map((r: any) => ({
       date: parseDate(r["Datum"]),
-      takeoff: String(r["Start"] || "").trim(),
+      takeoff: stripLocationPrefix(String(r["Start"] || "").trim()),
       takeoffCountry: String(r["Start Land"] || "").trim(),
-      landing: String(r["Landung"] || "").trim(),
+      landing: stripLocationPrefix(String(r["Landung"] || "").trim()),
       landingCountry: String(r["Landung Land"] || "").trim(),
       durationMinutes: parseDuration(r["Flugdauer"]),
       distanceKm: parseNum(r["Km"]),
