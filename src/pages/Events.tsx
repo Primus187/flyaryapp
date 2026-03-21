@@ -40,14 +40,21 @@ export default function Events() {
     const fetchGroups = async () => {
       const { data: members } = await supabase
         .from("group_members")
-        .select("group_id, role, groups(id, name)")
+        .select("group_id, role, groups(id, name, group_type)")
         .eq("user_id", user.id);
       if (members) {
         const g = members.map((m: any) => m.groups).filter(Boolean);
         setGroups(g);
         const adminMap: Record<string, boolean> = {};
-        members.forEach((m: any) => { if (m.groups) adminMap[m.groups.id] = m.role === "admin"; });
+        const canCreateMap: Record<string, boolean> = {};
+        members.forEach((m: any) => {
+          if (m.groups) {
+            adminMap[m.groups.id] = m.role === "admin";
+            canCreateMap[m.groups.id] = m.role === "admin" || m.groups.group_type === "pilot_group";
+          }
+        });
         setIsAdmin(adminMap);
+        setCanCreate(canCreateMap);
       }
       setLoading(false);
     };
