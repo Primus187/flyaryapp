@@ -160,12 +160,29 @@ export default function FlightDetail() {
             <div className="grid grid-cols-3 gap-2">
               {photos.map((p) => {
                 const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path);
-                return <img key={p.id} src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover" />;
+                return (
+                  <img
+                    key={p.id}
+                    src={data.publicUrl}
+                    alt=""
+                    className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform"
+                    onClick={() => setLightboxUrl(data.publicUrl)}
+                  />
+                );
               })}
             </div>
           </CardContent>
         </Card>
       )}
+
+      {/* Photo Lightbox */}
+      <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent shadow-none [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1">
+          {lightboxUrl && (
+            <img src={lightboxUrl} alt="" className="w-full h-auto max-h-[90vh] object-contain rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Videos */}
       {videos.length > 0 && (
