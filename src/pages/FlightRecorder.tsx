@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from "react-l
 import { Button } from "@/components/ui/button";
 import { Play, Square, Pause, Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import { VarioAudio } from "@/lib/vario-audio";
+import { BarometerService } from "@/lib/barometer";
 import { generateIGC, type RecordedPoint } from "@/lib/igc-writer";
 import "leaflet/dist/leaflet.css";
 
