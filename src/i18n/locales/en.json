@@ -262,7 +262,9 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "notLoggedIn": "Not logged in",
-    "exportFailed": "Export failed"
+    "exportFailed": "Export failed",
+    "changePassword": "Change password",
+    "newPasswordPlaceholder": "Enter new password (min. 6 characters)"
   },
   "auth": {
     "signIn": "Sign in",
