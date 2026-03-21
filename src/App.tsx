@@ -57,7 +57,7 @@ const App = () => (
               <Route path="/import-locations" element={<ImportLocations />} />
             </Route>
             <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
-            <Route path="/record" element={<ProtectedRoute><FlightRecorder /></ProtectedRoute>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

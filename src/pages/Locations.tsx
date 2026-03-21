@@ -147,7 +147,8 @@ export default function Locations() {
               <Button className="w-full" onClick={handleSave}>{editId ? "Aktualisieren" : "Speichern"}</Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {locations.length === 0 ? (
