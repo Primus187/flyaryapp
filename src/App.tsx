@@ -52,6 +52,7 @@ const App = () => (
               <Route path="/flights/:id/edit" element={<FlightForm />} />
               <Route path="/locations" element={<Locations />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/import" element={<ImportFlights />} />
             </Route>
             <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
             <Route path="/record" element={<ProtectedRoute><FlightRecorder /></ProtectedRoute>} />
