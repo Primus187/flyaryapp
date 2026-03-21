@@ -29,7 +29,7 @@ export default function ResetPassword() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-sm"><CardHeader><CardTitle>{t("auth.newPassword")}</CardTitle></CardHeader><CardContent>
         <form onSubmit={handleReset} className="space-y-4">
-          <div className="space-y-2"><Label>{t("auth.newPasswordLabel")}</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
+          <div className="space-y-2"><Label>{t("auth.newPasswordLabel")}</Label><PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
           <Button type="submit" className="w-full" disabled={loading}>{loading ? "..." : t("auth.changePassword")}</Button>
         </form>
       </CardContent></Card>
