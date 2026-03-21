@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
+import FlightDetailMap from "@/components/FlightDetailMap";
 
 export default function FlightDetail() {
   const { id } = useParams();
