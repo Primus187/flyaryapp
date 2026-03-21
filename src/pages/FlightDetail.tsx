@@ -185,23 +185,12 @@ export default function FlightDetail() {
         </Card>
       )}
 
-      {/* IGC Track / Upload */}
+      {/* IGC Upload */}
       <input ref={igcInputRef} type="file" accept=".igc" className="hidden" onChange={handleIGCUpload} />
-      {track ? (
-        <div className="space-y-2">
-          <Button variant="outline" className="w-full" onClick={() => navigate(`/map?flight=${id}`)}>
-            Track auf Karte anzeigen
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
-            {uploading ? "Wird hochgeladen..." : "IGC-Datei ersetzen"}
-          </Button>
-        </div>
-      ) : (
-        <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
-          <Upload className="h-4 w-4" />
-          {uploading ? "Wird hochgeladen..." : "IGC-Datei nachträglich anhängen"}
-        </Button>
-      )}
+      <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
+        <Upload className="h-4 w-4" />
+        {uploading ? "Wird hochgeladen..." : track ? "IGC-Datei ersetzen" : "IGC-Datei anhängen"}
+      </Button>
     </div>
   );
 }
