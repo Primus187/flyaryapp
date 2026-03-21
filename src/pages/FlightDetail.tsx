@@ -116,6 +116,13 @@ export default function FlightDetail() {
         </Card>
       )}
 
+      {/* Map */}
+      <FlightDetailMap
+        takeoff={flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null}
+        landing={flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null}
+        trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
+      />
+
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         {[
