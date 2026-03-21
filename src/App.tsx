@@ -15,6 +15,7 @@ import FlightDetail from "@/pages/FlightDetail";
 
 import MapView from "@/pages/MapView";
 import Locations from "@/pages/Locations";
+import LocationDetail from "@/pages/LocationDetail";
 import Profile from "@/pages/Profile";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
