@@ -20,6 +20,7 @@ interface LocationOption {
 
 export default function FlightForm() {
   const { id } = useParams();
+  const locationState = useLocation().state as any;
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
