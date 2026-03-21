@@ -1,19 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Edit, Trash2, Youtube, MapPin } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { parseIGC } from "@/lib/igc-parser";
 
 export default function FlightDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [flight, setFlight] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
+  const igcInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -28,6 +33,41 @@ export default function FlightDetail() {
     await supabase.from("flights").delete().eq("id", id);
     toast({ title: "Flug gelöscht" });
     navigate("/flights");
+  };
+
+  const handleIGCUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !id) return;
+    setUploading(true);
+    try {
+      const content = await file.text();
+      const parsed = parseIGC(content);
+
+      const path = `${user.id}/${id}/${file.name}`;
+      const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, file, { upsert: true });
+      if (storageErr) throw storageErr;
+
+      const limitedPoints = parsed.points.filter((_, i) => i % Math.max(1, Math.floor(parsed.points.length / 2000)) === 0);
+
+      // Delete existing track if any, then insert new
+      if (track) {
+        await supabase.from("igc_tracks").delete().eq("id", track.id);
+      }
+      const { data: newTrack, error: trackErr } = await supabase.from("igc_tracks").insert({
+        flight_id: id,
+        storage_path: path,
+        track_data: { points: limitedPoints } as any,
+      }).select().single();
+      if (trackErr) throw trackErr;
+
+      setTrack(newTrack);
+      toast({ title: "IGC hochgeladen", description: `${parsed.points.length} Trackpunkte geladen` });
+    } catch (err: any) {
+      toast({ title: "Upload fehlgeschlagen", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (igcInputRef.current) igcInputRef.current.value = "";
+    }
   };
 
   if (!flight) return <div className="p-4 text-center text-muted-foreground">Laden...</div>;
@@ -137,10 +177,21 @@ export default function FlightDetail() {
         </Card>
       )}
 
-      {/* Track info */}
-      {track && (
-        <Button variant="outline" className="w-full" onClick={() => navigate(`/map?flight=${id}`)}>
-          Track auf Karte anzeigen
+      {/* IGC Track / Upload */}
+      <input ref={igcInputRef} type="file" accept=".igc" className="hidden" onChange={handleIGCUpload} />
+      {track ? (
+        <div className="space-y-2">
+          <Button variant="outline" className="w-full" onClick={() => navigate(`/map?flight=${id}`)}>
+            Track auf Karte anzeigen
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
+            {uploading ? "Wird hochgeladen..." : "IGC-Datei ersetzen"}
+          </Button>
+        </div>
+      ) : (
+        <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
+          <Upload className="h-4 w-4" />
+          {uploading ? "Wird hochgeladen..." : "IGC-Datei nachträglich anhängen"}
         </Button>
       )}
     </div>
