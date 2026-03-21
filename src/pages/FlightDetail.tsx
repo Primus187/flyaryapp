@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
