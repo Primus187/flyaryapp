@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Plane, Clock, MapPin, BarChart3, Calendar } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, Calendar, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Stats {
@@ -30,6 +30,7 @@ interface UpcomingEvent {
   status: string;
   meeting_point: string | null;
   group_name: string;
+  isSignedUp: boolean;
 }
 
 export default function Dashboard() {
@@ -84,10 +85,21 @@ export default function Dashboard() {
           .order("event_date", { ascending: true })
           .limit(3);
 
-        if (upcomingEvents) {
+        if (upcomingEvents && upcomingEvents.length > 0) {
+          const eventIds = upcomingEvents.map(e => e.id);
+          const { data: signups } = await supabase
+            .from("event_signups")
+            .select("event_id, signed_up")
+            .eq("user_id", user.id)
+            .in("event_id", eventIds);
+
+          const signupMap: Record<string, boolean> = {};
+          signups?.forEach(s => { signupMap[s.event_id] = s.signed_up; });
+
           setEvents(upcomingEvents.map(e => ({
             ...e,
             group_name: groupNames[e.group_id] || "",
+            isSignedUp: signupMap[e.id] ?? false,
           })));
         }
       }
@@ -107,8 +119,10 @@ export default function Dashboard() {
     cancelled: "Abgesagt",
   };
 
-  const statusVariant = (s: string) =>
-    s === "confirmed" ? "default" : s === "cancelled" ? "destructive" : "secondary";
+  const statusColor = (s: string) =>
+    s === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80" :
+    s === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80" :
+    "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
@@ -146,7 +160,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Upcoming Events */}
       {events.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Nächste Termine</h2>
@@ -157,14 +170,17 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-primary shrink-0" />
                     <div>
-                      <p className="font-medium text-sm">{e.title}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-medium text-sm">{e.title}</p>
+                        {e.isSignedUp && <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" />}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {new Date(e.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}
                         {e.meeting_point ? ` · ${e.meeting_point}` : ""}
                       </p>
                     </div>
                   </div>
-                  <Badge variant={statusVariant(e.status) as any} className="text-[10px] shrink-0">
+                  <Badge className={statusColor(e.status) + " text-[10px] shrink-0"}>
                     {statusLabel[e.status] || e.status}
                   </Badge>
                 </CardContent>
