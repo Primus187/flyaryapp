@@ -28,6 +28,8 @@ export default function Profile() {
   const [gliders, setGliders] = useState<Glider[]>([]);
   const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
   const [showAddGlider, setShowAddGlider] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (!user) return;
