@@ -1,18 +1,20 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { LayoutDashboard, BookOpen, Calendar, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const tabs = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/flights", icon: BookOpen, label: "Flugbuch" },
-  { path: "/events", icon: Calendar, label: "Termine" },
-  { path: "/locations", icon: MapPin, label: "Orte" },
-  { path: "/profile", icon: User, label: "Profil" },
-];
 
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const tabs = [
+    { path: "/", icon: LayoutDashboard, label: t("nav.dashboard") },
+    { path: "/flights", icon: BookOpen, label: t("nav.logbook") },
+    { path: "/events", icon: Calendar, label: t("nav.events") },
+    { path: "/locations", icon: MapPin, label: t("nav.locations") },
+    { path: "/profile", icon: User, label: t("nav.profile") },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-card/90 backdrop-blur-md safe-area-bottom">

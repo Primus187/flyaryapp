@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,43 +13,26 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash.includes("type=recovery")) {
-      navigate("/auth");
-    }
-  }, [navigate]);
+  useEffect(() => { if (!window.location.hash.includes("type=recovery")) navigate("/auth"); }, [navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault(); setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      toast({ title: "Fehler", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Passwort geändert", description: "Du kannst dich jetzt anmelden." });
-      navigate("/");
-    }
+    if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("auth.passwordChanged"), description: t("auth.passwordChangedDesc") }); navigate("/"); }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader><CardTitle>Neues Passwort setzen</CardTitle></CardHeader>
-        <CardContent>
-          <form onSubmit={handleReset} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Neues Passwort</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "..." : "Passwort ändern"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <Card className="w-full max-w-sm"><CardHeader><CardTitle>{t("auth.newPassword")}</CardTitle></CardHeader><CardContent>
+        <form onSubmit={handleReset} className="space-y-4">
+          <div className="space-y-2"><Label>{t("auth.newPasswordLabel")}</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
+          <Button type="submit" className="w-full" disabled={loading}>{loading ? "..." : t("auth.changePassword")}</Button>
+        </form>
+      </CardContent></Card>
     </div>
   );
 }
