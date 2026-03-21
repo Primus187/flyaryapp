@@ -70,6 +70,7 @@ export default function FlightRecorder() {
       if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current);
       if (timerRef.current) clearInterval(timerRef.current);
       varioAudio.current?.destroy();
+      barometerService.current?.stop();
     };
   }, []);
 
