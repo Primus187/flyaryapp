@@ -133,28 +133,37 @@ export default function FlightForm() {
         flightId = data.id;
       }
 
-      // Upload IGC
+      // Upload IGC (non-blocking – flight is saved even if upload fails)
       if (igcFile) {
-        const path = `${user.id}/${flightId}/${igcFile.name}`;
-        const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true });
-        if (storageErr) throw storageErr;
-        // Limit stored points to avoid huge payloads
-        const limitedPoints = igcData ? igcData.points.filter((_, i) => i % Math.max(1, Math.floor(igcData.points.length / 2000)) === 0) : null;
-        const { error: trackErr } = await supabase.from("igc_tracks").insert([{
-          flight_id: flightId,
-          storage_path: path,
-          track_data: limitedPoints ? { points: limitedPoints } as any : null,
-        }]);
-        if (trackErr) throw trackErr;
+        try {
+          const path = `${user.id}/${flightId}/${igcFile.name}`;
+          const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true });
+          if (storageErr) throw storageErr;
+          const limitedPoints = igcData ? igcData.points.filter((_, i) => i % Math.max(1, Math.floor(igcData.points.length / 2000)) === 0) : null;
+          const { error: trackErr } = await supabase.from("igc_tracks").insert([{
+            flight_id: flightId,
+            storage_path: path,
+            track_data: limitedPoints ? { points: limitedPoints } as any : null,
+          }]);
+          if (trackErr) throw trackErr;
+        } catch (igcErr: any) {
+          console.error("IGC upload failed:", igcErr);
+          toast({ title: "IGC-Upload fehlgeschlagen", description: "Der Flug wurde gespeichert, aber die IGC-Datei konnte nicht hochgeladen werden. Du kannst sie später erneut anhängen.", variant: "destructive" });
+        }
       }
 
-      // Upload photos
+      // Upload photos (non-blocking)
       for (const photo of photoFiles) {
-        const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`;
-        const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo);
-        if (photoErr) throw photoErr;
-        const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path });
-        if (insertErr) throw insertErr;
+        try {
+          const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`;
+          const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo);
+          if (photoErr) throw photoErr;
+          const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path });
+          if (insertErr) throw insertErr;
+        } catch (photoErr: any) {
+          console.error("Photo upload failed:", photoErr);
+          toast({ title: "Foto-Upload fehlgeschlagen", description: photo.name, variant: "destructive" });
+        }
       }
 
       // Save YouTube links
