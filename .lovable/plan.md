@@ -1,55 +1,30 @@
 
 
-# XLSX-Flugimport
+# Eingebettete Karte auf der Flugdetail-Seite
 
-## Übersicht
-Neue Import-Funktion auf der Profil-Seite, die eine `.xlsx`-Datei im Format der bestehenden App einliest und alle Flüge inklusive Orte in die Datenbank importiert.
+## Was sich ändert
 
-## Spalten-Mapping (Excel → Datenbank)
+Eine neue Kartenkomponente (`FlightDetailMap`) wird direkt auf der FlightDetail-Seite zwischen der Route-Card und den Stats eingebettet. Sie zeigt:
 
-| Excel-Spalte | DB-Feld | Logik |
-|---|---|---|
-| Datum | `flights.date` | DD.MM.YYYY → YYYY-MM-DD |
-| Start | `locations.name` (type=takeoff) | Ort anlegen falls nicht vorhanden, dann `takeoff_location_id` setzen |
-| Start Land | — | Wird in Location-Beschreibung gespeichert |
-| Landung | `locations.name` (type=landing) | Ort anlegen falls nicht vorhanden, dann `landing_location_id` setzen |
-| Landung Land | — | Wird in Location-Beschreibung gespeichert |
-| Flugdauer | `flights.duration_minutes` | HH:MM:SS → Minuten |
-| Km | `flights.distance_km` | Direkt übernehmen |
-| Beschreibung | `flights.comments` | Direkt übernehmen |
-| Gleitschirm | `flights.glider` | Direkt übernehmen |
-| Preis | — | Ignoriert (kein Feld vorhanden) |
-| Tandem | — | Ignoriert |
-| IGC-Datei | — | Nur Dateiname, kein Import möglich |
+- **Startplatz** als grünen Marker (wenn Koordinaten vorhanden)
+- **Landeplatz** als roten Marker (wenn Koordinaten vorhanden)
+- **IGC-Track** als blaue Polyline (wenn `track_data` vorhanden)
+- Karte passt sich automatisch an die Bounds an (Track oder Marker)
 
-## Implementierung
+## Dateien
 
-### 1. Neue Seite: `/import` (oder Abschnitt auf Profil-Seite)
-- Datei-Upload-Button für `.xlsx`
-- Client-seitiges Parsing mit `xlsx` (SheetJS) Library
-- Vorschau-Tabelle: zeigt erkannte Flüge mit Datum, Start, Landung, Dauer
-- Anzeige: "153 Flüge erkannt, 28 Orte werden erstellt"
-- Import-Button startet den Vorgang
+### 1. Neue Komponente: `src/components/FlightDetailMap.tsx`
+- Leaflet `MapContainer` mit OpenTopoMap-Tiles
+- Props: `takeoff` (name/lat/lng), `landing` (name/lat/lng), `trackData` (points-Array, optional)
+- Grüner/roter Marker (gleiche Icons wie MapView), Polyline für Track
+- `FitBounds`-Logik: Track vorhanden → fit to track, sonst → fit to markers
+- Höhe: ~250px, abgerundete Ecken, kein Zoom-Control
+- Popups auf den Markern mit Ortsnamen
 
-### 2. Import-Logik
-1. **Orte deduplizieren**: Alle einzigartigen Start-/Landeplatz-Namen sammeln
-2. **Existierende Orte prüfen**: Gegen die DB abgleichen (Name + User)
-3. **Fehlende Orte erstellen**: Neue Locations mit Dummy-Koordinaten (0,0) anlegen — User kann sie später auf der Karte positionieren
-4. **Flüge einfügen**: Batch-Insert aller Flüge mit den korrekten Location-IDs
-5. **Duplikat-Erkennung**: Gleicher User + gleiches Datum + gleicher Startplatz = Warnung
-
-### 3. Dateien
-- **Neue Datei**: `src/pages/ImportFlights.tsx` — Import-Seite mit Upload, Vorschau, Fortschritt
-- **Neue Datei**: `src/lib/xlsx-import.ts` — Parsing-Logik (Excel → strukturierte Daten)
-- **Edit**: `src/App.tsx` — Route `/import` hinzufügen
-- **Edit**: `src/pages/Profile.tsx` — Link zum Import hinzufügen
-- **Dependency**: `xlsx` (SheetJS) NPM-Paket
-
-### 4. UX-Flow
-1. User geht auf Profil → "Flüge importieren"
-2. Wählt `.xlsx`-Datei aus
-3. Sieht Vorschau mit Anzahl Flüge und neuen Orten
-4. Klickt "Importieren"
-5. Fortschrittsbalken während des Imports
-6. Erfolgsmeldung: "153 Flüge und 28 Orte importiert"
+### 2. Edit: `src/pages/FlightDetail.tsx`
+- Import `FlightDetailMap`
+- Karte einfügen nach der Route-Card, vor den Stats
+- Zeigt die Karte wenn mindestens ein Ort mit Koordinaten ≠ 0,0 vorhanden ist
+- Track-Punkte aus dem bereits geladenen `track`-State extrahieren
+- Der separate "Track auf Karte anzeigen"-Button entfällt (Karte ist jetzt inline)
 
