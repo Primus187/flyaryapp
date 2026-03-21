@@ -33,6 +33,7 @@ export default function Events() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
   const [isAdmin, setIsAdmin] = useState<Record<string, boolean>>({});
+  const [canCreate, setCanCreate] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
