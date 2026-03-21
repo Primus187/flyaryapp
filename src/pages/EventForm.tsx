@@ -34,6 +34,7 @@ export default function EventForm() {
     instructor: "",
     launch_helper: "",
     max_participants: "",
+    chat_link: "",
   });
 
   useEffect(() => {
