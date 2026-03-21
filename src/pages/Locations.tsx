@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, Pencil, Trash2 } from "lucide-react";
+import LocationMapPicker from "@/components/LocationMapPicker";
 
 export default function Locations() {
   const { user } = useAuth();
@@ -75,6 +76,10 @@ export default function Locations() {
     fetchLocations();
   };
 
+  const handleMapSelect = (lat: number, lng: number) => {
+    setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() }));
+  };
+
   const typeLabel = (t: string) => t === "takeoff" ? "Startplatz" : t === "landing" ? "Landeplatz" : "Beides";
   const typeColor = (t: string) => t === "takeoff" ? "text-secondary" : t === "landing" ? "text-destructive" : "text-primary";
 
@@ -86,7 +91,7 @@ export default function Locations() {
           <DialogTrigger asChild>
             <Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Ort</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editId ? "Ort bearbeiten" : "Neuer Ort"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div className="space-y-1.5">
@@ -103,6 +108,15 @@ export default function Locations() {
                     <SelectItem value="both">Beides</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Position auf Karte wählen</Label>
+                <LocationMapPicker
+                  latitude={parseFloat(form.latitude) || 0}
+                  longitude={parseFloat(form.longitude) || 0}
+                  onSelect={handleMapSelect}
+                />
+                <p className="text-xs text-muted-foreground">Tippe auf die Karte, um die Position zu setzen.</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
