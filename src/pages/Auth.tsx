@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import { Separator } from "@/components/ui/separator";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
