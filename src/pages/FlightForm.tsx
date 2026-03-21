@@ -18,6 +18,14 @@ interface LocationOption {
   type: string;
 }
 
+interface GliderOption {
+  id: string;
+  manufacturer: string;
+  model: string;
+  size: string | null;
+  is_default: boolean;
+}
+
 export default function FlightForm() {
   const { id } = useParams();
   const locationState = useLocation().state as any;
@@ -27,6 +35,7 @@ export default function FlightForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [gliders, setGliders] = useState<GliderOption[]>([]);
   const [igcData, setIgcData] = useState<IGCData | null>(null);
   const [igcFile, setIgcFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
@@ -51,6 +60,16 @@ export default function FlightForm() {
     if (!user) return;
     supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => {
       if (data) setLocations(data);
+    });
+    supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
+      if (data) {
+        setGliders(data);
+        // If creating new flight and no glider set yet, pre-select default
+        if (!isEdit && !form.glider) {
+          const def = data.find((g) => g.is_default);
+          if (def) setForm((prev) => ({ ...prev, glider: `${def.manufacturer} ${def.model}${def.size ? ` (${def.size})` : ""}` }));
+        }
+      }
     });
     if (isEdit) {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
@@ -250,7 +269,19 @@ export default function FlightForm() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Schirm</Label>
-                <Input value={form.glider} onChange={set("glider")} placeholder="z.B. Gin Explorer 3" />
+                {gliders.length > 0 ? (
+                  <Select value={form.glider} onValueChange={(v) => setForm({ ...form, glider: v })}>
+                    <SelectTrigger><SelectValue placeholder="Schirm wählen..." /></SelectTrigger>
+                    <SelectContent>
+                      {gliders.map((g) => {
+                        const label = `${g.manufacturer} ${g.model}${g.size ? ` (${g.size})` : ""}`;
+                        return <SelectItem key={g.id} value={label}>{label}</SelectItem>;
+                      })}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input value={form.glider} onChange={set("glider")} placeholder="z.B. Gin Explorer 3" />
+                )}
               </div>
             </div>
             <div className="space-y-1.5">
