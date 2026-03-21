@@ -100,7 +100,7 @@ export default function Events() {
   const statusVariant = (s: string): "default" | "secondary" | "destructive" => s === "confirmed" ? "default" : s === "cancelled" ? "destructive" : "secondary";
 
   const isPast = (d: string) => new Date(d) < new Date();
-  const anyAdmin = Object.values(isAdmin).some(Boolean);
+  const anyCanCreate = Object.values(canCreate).some(Boolean);
 
   const now = new Date();
   const upcoming = events.filter(e => new Date(e.event_date) >= now);
