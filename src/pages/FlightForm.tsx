@@ -35,6 +35,7 @@ export default function FlightForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [gliders, setGliders] = useState<GliderOption[]>([]);
   const [igcData, setIgcData] = useState<IGCData | null>(null);
   const [igcFile, setIgcFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
