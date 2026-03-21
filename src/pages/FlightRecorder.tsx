@@ -114,6 +114,19 @@ export default function FlightRecorder() {
     }
     await varioAudio.current.init();
 
+    // Try to start barometer (native only)
+    if (!barometerService.current) {
+      barometerService.current = new BarometerService();
+    }
+    const hasBaro = await barometerService.current.start((alt, source) => {
+      baroAltRef.current = alt;
+      setAltSource(source);
+    });
+    if (!hasBaro) {
+      baroAltRef.current = null;
+      setAltSource('gps');
+    }
+
     pointsRef.current = [];
     altitudesRef.current = [];
     timestampsRef.current = [];
