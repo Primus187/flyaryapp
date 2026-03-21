@@ -3,7 +3,7 @@ import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface Location {
@@ -29,8 +29,7 @@ interface Flight {
 function formatDuration(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  const s = 0;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
 }
 
 function formatDate(dateStr: string): string {
@@ -60,15 +59,12 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
 
-    // Fetch profile
     const { data: profile } = await supabase.from("profiles").select("pilot_name, glider_info").eq("user_id", user.id).single();
     const pilotName = profile?.pilot_name || "Pilot";
     const email = user.email || "";
 
-    // Fetch locations
     const { data: locations } = await supabase.from("locations").select("id, name, altitude, type, description").eq("user_id", user.id).order("name");
 
-    // Fetch flights with locations
     const { data: flightsRaw } = await supabase
       .from("flights")
       .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, takeoff:locations!flights_takeoff_location_id_fkey(name, altitude), landing:locations!flights_landing_location_id_fkey(name, altitude)")
@@ -83,35 +79,35 @@ Deno.serve(async (req) => {
 
     const takeoffs = (locations || []).filter((l: Location) => l.type === "takeoff" || l.type === "both");
     const landings = (locations || []).filter((l: Location) => l.type === "landing" || l.type === "both");
-
     const totalMinutes = flights.reduce((s, f) => s + (f.duration_minutes || 0), 0);
+    const today = formatDate(new Date().toISOString());
 
-    // Create PDF
-    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-    const pageW = 297;
-    const pageH = 210;
+    // ===== Start in PORTRAIT =====
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const marginL = 12;
     const marginR = 12;
     const marginT = 15;
-    const contentW = pageW - marginL - marginR;
+
+    // Portrait dimensions
+    const pW = 210;
+    const pH = 297;
+
     let y = marginT;
 
-    const addFooter = (pageNum: number, totalPages: string) => {
+    const addPortraitFooter = () => {
       doc.setFontSize(7);
       doc.setTextColor(150);
-      doc.text("Stempel / Unterschrift: _______________________________", marginL, pageH - 12);
-      const today = formatDate(new Date().toISOString());
-      doc.text(`${pageNum}`, pageW / 2, pageH - 7, { align: "center" });
-      doc.text(today, pageW - marginR, pageH - 7, { align: "right" });
+      doc.text("Stempel / Unterschrift: _______________________________", marginL, pH - 18);
+      doc.text(`${doc.getNumberOfPages()}`, pW / 2, pH - 10, { align: "center" });
+      doc.text(today, pW - marginR, pH - 10, { align: "right" });
       doc.setTextColor(0);
     };
 
-    const ensureSpace = (needed: number): boolean => {
-      if (y + needed > pageH - 20) {
-        addFooter(doc.getNumberOfPages(), "");
-        doc.addPage();
+    const ensurePortraitSpace = (needed: number): boolean => {
+      if (y + needed > pH - 25) {
+        addPortraitFooter();
+        doc.addPage("a4", "p");
         y = marginT;
-        // Add pilot header on new page
         doc.setFontSize(9);
         doc.setTextColor(100);
         doc.text(`Pilot: ${pilotName}`, marginL, y);
@@ -122,7 +118,7 @@ Deno.serve(async (req) => {
       return false;
     };
 
-    // ===== PAGE 1: Cover =====
+    // ===== PAGE 1: Cover (Portrait) =====
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
     doc.text("Flugbuch", marginL, y + 5);
@@ -142,72 +138,63 @@ Deno.serve(async (req) => {
       doc.text(line, marginL, y);
       y += 6;
     }
-    y += 6;
+    y += 8;
 
     // Takeoff table
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Startplätze", marginL, y);
-    y += 7;
+    const drawLocTable = (title: string, locs: Location[]) => {
+      ensurePortraitSpace(20);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(title, marginL, y);
+      y += 7;
 
-    const colsLoc = [
-      { label: "Name", w: 60, x: marginL },
-      { label: "Höhe", w: 20, x: marginL + 60 },
-      { label: "Notizen", w: 80, x: marginL + 80 },
-    ];
+      const cols = [
+        { label: "Name", x: marginL },
+        { label: "Höhe", x: marginL + 70 },
+        { label: "Notizen", x: marginL + 95 },
+      ];
 
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    for (const c of colsLoc) {
-      doc.text(c.label, c.x, y);
-    }
-    y += 1;
-    doc.setLineWidth(0.3);
-    doc.line(marginL, y, marginL + 160, y);
-    y += 4;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      for (const c of cols) doc.text(c.label, c.x, y);
+      y += 1;
+      doc.setLineWidth(0.3);
+      doc.line(marginL, y, pW - marginR, y);
+      y += 4;
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    for (const loc of takeoffs) {
-      ensureSpace(5);
-      doc.text(loc.name, colsLoc[0].x, y);
-      doc.text(loc.altitude ? String(loc.altitude) : "", colsLoc[1].x, y);
-      doc.text(loc.description || "", colsLoc[2].x, y);
-      y += 4.5;
-    }
-    y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      for (const loc of locs) {
+        ensurePortraitSpace(5);
+        doc.text(loc.name, cols[0].x, y);
+        doc.text(loc.altitude ? String(loc.altitude) : "", cols[1].x, y);
+        doc.text(loc.description || "", cols[2].x, y);
+        y += 4.5;
+      }
+      y += 6;
+    };
 
-    // Landing table
-    ensureSpace(20);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Landeplätze", marginL, y);
-    y += 7;
+    drawLocTable("Startplätze", takeoffs);
+    drawLocTable("Landeplätze", landings);
 
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    for (const c of colsLoc) {
-      doc.text(c.label, c.x, y);
-    }
-    y += 1;
-    doc.line(marginL, y, marginL + 160, y);
-    y += 4;
+    addPortraitFooter();
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    for (const loc of landings) {
-      ensureSpace(5);
-      doc.text(loc.name, colsLoc[0].x, y);
-      doc.text(loc.altitude ? String(loc.altitude) : "", colsLoc[1].x, y);
-      doc.text(loc.description || "", colsLoc[2].x, y);
-      y += 4.5;
-    }
+    // ===== FLIGHT PAGES (Landscape) =====
+    const lW = 297; // landscape width
+    const lH = 210; // landscape height
 
-    addFooter(1, "");
-
-    // ===== FLIGHT PAGES =====
-    doc.addPage();
+    doc.addPage("a4", "l");
     y = marginT;
+
+    const addLandscapeFooter = () => {
+      doc.setFontSize(7);
+      doc.setTextColor(150);
+      doc.text("Stempel / Unterschrift: _______________________________", marginL, lH - 12);
+      doc.text(`${doc.getNumberOfPages()}`, lW / 2, lH - 7, { align: "center" });
+      doc.text(today, lW - marginR, lH - 7, { align: "right" });
+      doc.setTextColor(0);
+    };
+
     doc.setFontSize(9);
     doc.setTextColor(100);
     doc.text(`Pilot: ${pilotName}`, marginL, y);
@@ -219,28 +206,26 @@ Deno.serve(async (req) => {
     doc.text("Flüge", marginL, y);
     y += 7;
 
-    // Flight table columns
     const colsF = [
-      { label: "Nr", w: 10, x: marginL },
-      { label: "Datum", w: 22, x: marginL + 10 },
-      { label: "Gleitschirm", w: 35, x: marginL + 32 },
-      { label: "Start", w: 40, x: marginL + 67 },
-      { label: "Landung", w: 35, x: marginL + 107 },
-      { label: "Flugdauer", w: 20, x: marginL + 142 },
-      { label: "Km", w: 12, x: marginL + 162 },
-      { label: "Diff.", w: 14, x: marginL + 174 },
-      { label: "Beschreibung", w: 85, x: marginL + 188 },
+      { label: "Nr", x: marginL },
+      { label: "Datum", x: marginL + 10 },
+      { label: "Gleitschirm", x: marginL + 32 },
+      { label: "Start", x: marginL + 67 },
+      { label: "Landung", x: marginL + 107 },
+      { label: "Flugdauer", x: marginL + 142 },
+      { label: "Km", x: marginL + 162 },
+      { label: "Diff.", x: marginL + 174 },
+      { label: "Beschreibung", x: marginL + 188 },
     ];
+    const descW = lW - marginR - colsF[8].x;
 
     const drawFlightHeader = () => {
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      for (const c of colsF) {
-        doc.text(c.label, c.x, y);
-      }
+      for (const c of colsF) doc.text(c.label, c.x, y);
       y += 1;
       doc.setLineWidth(0.3);
-      doc.line(marginL, y, pageW - marginR, y);
+      doc.line(marginL, y, lW - marginR, y);
       y += 4;
       doc.setFont("helvetica", "normal");
     };
@@ -251,13 +236,12 @@ Deno.serve(async (req) => {
     for (let i = 0; i < flights.length; i++) {
       const f = flights[i];
       const desc = f.comments || "";
-      // Calculate description lines
-      const descLines = doc.splitTextToSize(desc, colsF[8].w);
+      const descLines = doc.splitTextToSize(desc, descW);
       const rowH = Math.max(4.5, descLines.length * 3.5);
 
-      if (y + rowH > pageH - 20) {
-        addFooter(doc.getNumberOfPages(), "");
-        doc.addPage();
+      if (y + rowH > lH - 20) {
+        addLandscapeFooter();
+        doc.addPage("a4", "l");
         y = marginT;
         doc.setFontSize(9);
         doc.setTextColor(100);
@@ -276,15 +260,12 @@ Deno.serve(async (req) => {
       doc.text(f.duration_minutes ? formatDuration(f.duration_minutes) : "", colsF[5].x, y);
       doc.text(f.distance_km ? String(Number(f.distance_km).toFixed(1)) : "", colsF[6].x, y);
       doc.text(f.altitude_gain ? String(f.altitude_gain) : "", colsF[7].x, y);
-
-      if (descLines.length > 0) {
-        doc.text(descLines, colsF[8].x, y);
-      }
+      if (descLines.length > 0) doc.text(descLines, colsF[8].x, y);
 
       y += rowH + 1;
     }
 
-    addFooter(doc.getNumberOfPages(), "");
+    addLandscapeFooter();
 
     const pdfBytes = doc.output("arraybuffer");
 
