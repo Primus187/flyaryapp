@@ -32,6 +32,7 @@ import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
 import Training from "@/pages/Training";
 import TrainingItemDetail from "@/pages/TrainingItemDetail";
+import Legal from "@/pages/Legal";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
