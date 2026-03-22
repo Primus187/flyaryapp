@@ -285,7 +285,19 @@
     "examTheoryDate": "Theorieprüfung bestanden",
     "examPracticalDate": "Praktische Prüfung bestanden",
     "flightSchool": "Flugschule / Verein",
-    "flightSchoolPlaceholder": "z.B. Flugschule Appenzell"
+    "flightSchoolPlaceholder": "z.B. Flugschule Appenzell",
+    "xcontestTitle": "XContest-Synchronisation",
+    "xcontestUsername": "XContest Benutzername",
+    "xcontestUsernamePlaceholder": "Dein XContest-Login (E-Mail)",
+    "xcontestPassword": "XContest Passwort",
+    "xcontestPasswordPlaceholder": "Dein XContest-Passwort",
+    "xcontestSync": "Jetzt synchronisieren",
+    "xcontestSyncing": "Synchronisiere...",
+    "xcontestSyncDone": "{{count}} neue Flüge importiert",
+    "xcontestSyncDone_zero": "Keine neuen Flüge gefunden",
+    "xcontestWarning": "Deine Zugangsdaten werden verschlüsselt gespeichert und nur für den Flug-Import verwendet.",
+    "xcontestSaved": "XContest-Zugangsdaten gespeichert",
+    "xcontestError": "Synchronisation fehlgeschlagen"
   },
   "auth": {
     "signIn": "Melde dich an",
