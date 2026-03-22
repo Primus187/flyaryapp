@@ -248,6 +248,28 @@ export default function Profile() {
         </div>
       </Card>
 
+      {/* Badges / Achievements */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-amber-500" /> {t("badges.title")}
+          </CardTitle>
+          <button onClick={() => setShowAllBadges(!showAllBadges)} className="text-xs text-primary font-medium">
+            {showAllBadges ? t("common.close") : t("badges.showAll")}
+          </button>
+        </CardHeader>
+        <CardContent>
+          {showAllBadges ? (
+            <BadgeGrid unlockedBadges={badges} stats={badgeStats} />
+          ) : (
+            <BadgeGrid unlockedBadges={badges} stats={badgeStats} compact />
+          )}
+          {badges.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center mt-2">{t("badges.noBadges")}</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-col items-center gap-4">
           <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
