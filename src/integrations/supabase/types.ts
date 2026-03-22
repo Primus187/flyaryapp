@@ -14,6 +14,55 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookmarks: {
+        Row: {
+          achievement_id: string | null
+          created_at: string
+          event_id: string | null
+          flight_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          flight_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          flight_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "feed_achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_goals: {
         Row: {
           challenge_id: string
@@ -157,6 +206,35 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "feed_comments"
             referencedColumns: ["id"]
           },
         ]
@@ -738,6 +816,39 @@ export type Database = {
           name?: string
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          read: boolean
+          reference_id: string | null
+          reference_type: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          reference_id?: string | null
+          reference_type?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: string
           user_id?: string
         }
         Relationships: []

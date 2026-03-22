@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Calendar, MapPin, Users, Clock, ChevronRight, Heart, MessageCircle, Send } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, ChevronRight, Heart, MessageCircle, Send, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FeedEvent {
@@ -24,6 +24,7 @@ export interface FeedEvent {
   user_signed_up: boolean;
   likes: { user_id: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string }[];
+  isBookmarked?: boolean;
 }
 
 interface FeedEventCardProps {
@@ -31,6 +32,8 @@ interface FeedEventCardProps {
   onSignup?: (eventId: string) => void;
   onLikeToggle: (eventId: string) => void;
   onComment: (eventId: string, message: string) => void;
+  onBookmarkToggle?: (eventId: string) => void;
+  onCommentLike?: (commentId: string) => void;
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
@@ -44,7 +47,7 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment }: FeedEventCardProps) {
+export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: FeedEventCardProps) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -142,15 +145,17 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
         {/* Social interactions */}
         <div className="flex items-center gap-3 pt-1 border-t border-border/50">
           <button onClick={handleLike} className="active:scale-90 transition-transform">
-            <Heart className={cn(
-              "h-5 w-5 transition-transform",
-              isLiked ? "fill-red-500 text-red-500" : "text-foreground",
-              likeAnimating && "animate-like-bounce"
-            )} />
+            <Heart className={cn("h-5 w-5 transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
           </button>
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-5 w-5" />
           </button>
+          <div className="flex-1" />
+          {onBookmarkToggle && (
+            <button onClick={() => onBookmarkToggle(event.id)} className="active:scale-90 transition-transform">
+              <Bookmark className={cn("h-5 w-5", event.isBookmarked ? "fill-foreground text-foreground" : "text-foreground")} />
+            </button>
+          )}
         </div>
 
         {event.likes.length > 0 && (
@@ -165,17 +170,23 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
               </button>
             )}
             {(showComments ? event.comments : event.comments.slice(-2)).map(c => (
-              <p key={c.id} className="text-sm">
-                <span className="font-semibold mr-1">{c.pilot_name}</span>{c.message}
-              </p>
+              <div key={c.id} className="flex items-start gap-1 group">
+                <p className="text-sm flex-1">
+                  <span className="font-semibold mr-1">{c.pilot_name}</span>{c.message}
+                </p>
+                {onCommentLike && (
+                  <button onClick={() => onCommentLike(c.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90">
+                    <Heart className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
 
         <div className="flex items-center gap-2">
           <Input value={comment} onChange={e => setComment(e.target.value)}
-            placeholder={t("feed.addComment")}
-            className="h-8 text-sm bg-muted/50 border-0"
+            placeholder={t("feed.addComment")} className="h-8 text-sm bg-muted/50 border-0"
             onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
           {comment.trim() && (
             <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>

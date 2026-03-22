@@ -7,6 +7,7 @@ import FeedCard, { type FeedFlight } from "@/components/FeedCard";
 import FeedEventCard, { type FeedEvent } from "@/components/FeedEventCard";
 import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchievementCard";
 import FeedStoryBar from "@/components/FeedStoryBar";
+import NotificationBell from "@/components/NotificationBell";
 import EmptyState from "@/components/EmptyState";
 import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -99,10 +100,25 @@ export default function Feed() {
       fetchAchievements(user.id, gIds, groupMap, cursor),
     ]);
 
+    // Load bookmarks for current user
+    const allFlightIds = flightsRes.map(f => f.id);
+    const allEventIds = eventsRes.map(e => e.id);
+    const allAchIds = achievementsRes.map(a => a.id);
+
+    const bookmarkQueries = await Promise.all([
+      allFlightIds.length > 0 ? supabase.from("bookmarks").select("flight_id").eq("user_id", user.id).in("flight_id", allFlightIds) : { data: [] },
+      allEventIds.length > 0 ? supabase.from("bookmarks").select("event_id").eq("user_id", user.id).in("event_id", allEventIds) : { data: [] },
+      allAchIds.length > 0 ? supabase.from("bookmarks").select("achievement_id").eq("user_id", user.id).in("achievement_id", allAchIds) : { data: [] },
+    ]);
+
+    const bookmarkedFlights = new Set((bookmarkQueries[0].data || []).map((b: any) => b.flight_id));
+    const bookmarkedEvents = new Set((bookmarkQueries[1].data || []).map((b: any) => b.event_id));
+    const bookmarkedAchs = new Set((bookmarkQueries[2].data || []).map((b: any) => b.achievement_id));
+
     const allItems: FeedItem[] = [
-      ...flightsRes.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: f })),
-      ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: e })),
-      ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: a })),
+      ...flightsRes.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: { ...f, isBookmarked: bookmarkedFlights.has(f.id) } })),
+      ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: { ...e, isBookmarked: bookmarkedEvents.has(e.id) } })),
+      ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: { ...a, isBookmarked: bookmarkedAchs.has(a.id) } })),
     ];
 
     allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -243,6 +259,50 @@ export default function Feed() {
     }
   };
 
+  // ── Bookmark toggle ──
+  const handleBookmarkToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
+    if (!user) return;
+    const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
+
+    // Check if already bookmarked
+    const { data: existing } = await supabase
+      .from("bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq(colName, itemId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from("bookmarks").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("bookmarks").insert({ user_id: user.id, [colName]: itemId } as any);
+    }
+
+    // Update local state
+    setItems(prev => prev.map(i => {
+      if (i.data.id !== itemId) return i;
+      return { ...i, data: { ...i.data, isBookmarked: !existing } } as FeedItem;
+    }));
+  };
+
+  // ── Comment like toggle ──
+  const handleCommentLikeToggle = async (commentId: string) => {
+    if (!user) return;
+
+    const { data: existing } = await supabase
+      .from("comment_likes")
+      .select("id")
+      .eq("comment_id", commentId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from("comment_likes").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("comment_likes").insert({ comment_id: commentId, user_id: user.id });
+    }
+  };
+
   if (loading) return <FeedSkeleton />;
 
   return (
@@ -265,7 +325,10 @@ export default function Feed() {
         </div>
       </div>
 
-      <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
+        <NotificationBell />
+      </div>
 
       {/* Story bar — active pilots */}
       {user && groupIds.length > 0 && (
@@ -286,18 +349,24 @@ export default function Feed() {
             if (item.type === "flight") {
               return <FeedCard key={`f-${item.data.id}`} flight={item.data}
                 onLikeToggle={(id) => handleLikeToggle("flight", id)}
-                onComment={(id, msg) => handleComment("flight", id, msg)} />;
+                onComment={(id, msg) => handleComment("flight", id, msg)}
+                onBookmarkToggle={(id) => handleBookmarkToggle("flight", id)}
+                onCommentLike={handleCommentLikeToggle} />;
             }
             if (item.type === "event") {
               return <FeedEventCard key={`e-${item.data.id}`} event={item.data}
                 onSignup={handleEventSignup}
                 onLikeToggle={(id) => handleLikeToggle("event", id)}
-                onComment={(id, msg) => handleComment("event", id, msg)} />;
+                onComment={(id, msg) => handleComment("event", id, msg)}
+                onBookmarkToggle={(id) => handleBookmarkToggle("event", id)}
+                onCommentLike={handleCommentLikeToggle} />;
             }
             if (item.type === "achievement") {
               return <FeedAchievementCard key={`a-${item.data.id}`} achievement={item.data}
                 onLikeToggle={(id) => handleLikeToggle("achievement", id)}
-                onComment={(id, msg) => handleComment("achievement", id, msg)} />;
+                onComment={(id, msg) => handleComment("achievement", id, msg)}
+                onBookmarkToggle={(id) => handleBookmarkToggle("achievement", id)}
+                onCommentLike={handleCommentLikeToggle} />;
             }
             return null;
           })}

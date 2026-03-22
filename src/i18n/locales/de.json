@@ -522,6 +522,15 @@
     "you": "Du",
     "loadingMore": "Mehr laden..."
   },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Keine Benachrichtigungen",
+    "liked": "hat geliked",
+    "commented": "hat kommentiert",
+    "yourFlight": "deinen Flug",
+    "yourEvent": "deinen Termin",
+    "yourAchievement": "deine Errungenschaft"
+  },
   "leaderboard": {
     "title": "Rangliste",
     "allGroups": "Alle Gruppen",
