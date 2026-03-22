@@ -42,6 +42,7 @@ interface FeedCardProps {
   onComment: (flightId: string, message: string) => void;
   onBookmarkToggle?: (flightId: string) => void;
   onCommentLike?: (commentId: string) => void;
+  groupMembers?: { user_id: string; pilot_name: string }[];
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
