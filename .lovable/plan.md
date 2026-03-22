@@ -1,67 +1,35 @@
 
 
-# UI-Verbesserung: Orte in Navigation, Profil aufräumen, Manöver bei Flügen
+# Länder-Flaggen bei Orten anzeigen
 
-## 3 Probleme, 3 Lösungen
+## Problem
+Die `locations`-Tabelle hat kein `country`-Feld. Flaggen können daher nicht angezeigt werden.
 
-### 1. Orte zurück in die Navigation
+## Lösung
 
-**Problem**: Orte sind nur noch über Profil erreichbar, aber wichtig für den täglichen Gebrauch.
+### 1. Migration: `country` Spalte hinzufügen
+- Neue Spalte `country_code text` (2-Buchstaben ISO-Code, z.B. "CH", "DE", "AT") auf `locations`
+- Nullable, da bestehende Orte keinen Ländercode haben
 
-**Lösung**: BottomNav von 5 auf 5 Tabs belassen, aber "Mehr"-Sektion im Profil durch ein **"Mehr"-Tab** ersetzen, das Dashboard + Orte + Profil vereint. Alternativ besser: **Orte als Unterseite des Logbuchs** integrieren — aber das passt nicht wirklich.
+### 2. Flaggen-Emoji aus Country-Code
+- Einfache Hilfsfunktion: ISO-Code → Flaggen-Emoji (z.B. "CH" → 🇨🇭) via Unicode Regional Indicator Symbols
+- Keine Library nötig, nur 2 Zeilen Code
 
-**Besserer Ansatz**: BottomNav bekommt einen **"Mehr"-Tab** (Grid-Icon) statt "Profil". Dieser öffnet eine Übersichtsseite mit Kacheln: Profil, Orte/Karte, Gruppen, Import, Export, Einstellungen. So bleiben 5 Tabs, aber Orte sind nur 1 Tap entfernt.
+### 3. Locations-Liste: Flagge anzeigen
+- In `renderLocationCard` neben dem Ortsnamen die Flagge als Emoji anzeigen
+- Nur wenn `country_code` gesetzt
 
-```text
-BottomNav: Dashboard | Logbuch | Training | Termine | Mehr
-                                                      ↓
-                                              Profil, Orte, Gruppen,
-                                              Import, Export, Settings
-```
+### 4. Formular: Country-Code Feld
+- Im Create/Edit-Dialog ein neues Feld "Land" als Select mit den gängigsten Ländern (CH, DE, AT, FR, IT, ES, etc.) oder als freies Input für den 2-Buchstaben-Code
+- `form`-State um `country_code` erweitern
 
-### 2. Profil aufräumen
-
-**Problem**: Profil enthält zu viel: Persönliche Daten, Schirme, Notfall-Infos, Passwort-Änderung, plus 6 Navigations-Buttons (Gruppen, Export, Import, Import-Orte, Einstellungen, Abmelden).
-
-**Lösung**: Die Navigations-Buttons (Gruppen, Export, Import, Import-Orte, Einstellungen) wandern in die neue "Mehr"-Seite. Profil wird schlank:
-- Persönliche Daten (Name, Foto, Bio, Email)
-- Schirme
-- Notfall-Infos
-- Speichern-Button
-
-Passwort-Änderung und Abmelden wandern in die Einstellungen-Seite.
-
-### 3. Trainierte Manöver beim Flug erfassen
-
-**Problem**: Beim Flug erfassen fehlt die Möglichkeit, trainierte Manöver zu dokumentieren.
-
-**Lösung**: 
-- Neue DB-Tabelle `flight_training_items` (flight_id, item_id) — Many-to-Many Verknüpfung
-- Im FlightForm: Multi-Select Dropdown mit den wichtigsten Training-Items (aus `training_items` Tabelle geladen)
-- Nur Anzeige der Items, keine Bewertung — die geschieht weiterhin auf der Training-Seite
-- In der Flight-Detailansicht: trainierte Manöver als Badges anzeigen
+### 5. LocationDetail, ImportLocations
+- `LocationDetail.tsx`: Country-Flagge neben dem Namen anzeigen
+- `ImportLocations` / CSV-Import: bestehende `country`-Spalte aus CSV in `country_code` mappen
 
 ## Dateien
-
-### Migration
-- **Neu**: `flight_training_items` Tabelle (flight_id uuid FK → flights, item_id uuid FK → training_items, PK auf beide)
-- RLS: Eigene Flüge (via `is_owner_of_flight`)
-
-### Neue Seite
-- **Neu**: `src/pages/More.tsx` — "Mehr"-Übersichtsseite mit Kacheln (Profil, Orte, Gruppen, Import, Export, Einstellungen, Abmelden)
-
-### Edits
-- **`src/components/BottomNav.tsx`** — "Profil" → "Mehr" (/more, Grid-Icon)
-- **`src/pages/Profile.tsx`** — Navigations-Buttons entfernen, Passwort-Änderung entfernen (→ Settings), Abmelden entfernen (→ Mehr-Seite)
-- **`src/pages/Settings.tsx`** — Passwort-Änderung hierhin verschieben
-- **`src/pages/FlightForm.tsx`** — Multi-Select für trainierte Manöver hinzufügen
-- **`src/pages/FlightDetail.tsx`** — Trainierte Manöver als Badges anzeigen
-- **`src/App.tsx`** — Route `/more` hinzufügen
-- **`src/i18n/locales/{de,fr,en}.json`** — Neue Übersetzungen
-
-## Technische Details
-
-- `flight_training_items`: Composite PK `(flight_id, item_id)`, RLS via `is_owner_of_flight(flight_id)`
-- Multi-Select im FlightForm: Training-Items laden, Popover mit Checkboxen, ausgewählte als Chips anzeigen
-- "Mehr"-Seite: Einfaches Grid mit Icons und Labels, kein komplexes Layout
+- **Migration**: `ALTER TABLE locations ADD COLUMN country_code text`
+- **Edit**: `src/pages/Locations.tsx` — Form + Flaggen-Anzeige
+- **Edit**: `src/pages/LocationDetail.tsx` — Flagge anzeigen
+- **Edit**: `src/pages/ImportLocations.tsx` — Country-Code beim Import setzen
 
