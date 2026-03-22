@@ -485,10 +485,14 @@ export type Database = {
           created_at: string
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          exam_practical_date: string | null
+          exam_theory_date: string | null
+          flight_school: string | null
           glider_info: string | null
           id: string
           medical_notes: string | null
           pilot_name: string | null
+          shv_number: string | null
           updated_at: string
           user_id: string
         }
@@ -500,10 +504,14 @@ export type Database = {
           created_at?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          exam_practical_date?: string | null
+          exam_theory_date?: string | null
+          flight_school?: string | null
           glider_info?: string | null
           id?: string
           medical_notes?: string | null
           pilot_name?: string | null
+          shv_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -515,10 +523,14 @@ export type Database = {
           created_at?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          exam_practical_date?: string | null
+          exam_theory_date?: string | null
+          flight_school?: string | null
           glider_info?: string | null
           id?: string
           medical_notes?: string | null
           pilot_name?: string | null
+          shv_number?: string | null
           updated_at?: string
           user_id?: string
         }
