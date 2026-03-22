@@ -110,6 +110,9 @@ export default function FlightForm() {
         catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
       if (!isEdit && youtubeUrls.length > 0) { await supabase.from("flight_videos").insert(youtubeUrls.map((url) => ({ flight_id: flightId, youtube_url: url }))); }
+      // Save training items
+      if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
+      if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items" as any).insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
