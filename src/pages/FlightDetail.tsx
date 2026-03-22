@@ -154,7 +154,7 @@ export default function FlightDetail() {
 
   if (!flight) return <div className="p-4 text-center text-muted-foreground">{t("common.loading")}</div>;
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m} min`; };
-  const getYoutubeThumbnail = (url: string) => { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/); return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null; };
+  const getYoutubeEmbedUrl = (url: string) => { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/); return match ? `https://www.youtube.com/embed/${match[1]}` : null; };
 
   return (
     <div className="px-4 pt-4 pb-4 max-w-lg mx-auto space-y-4">
