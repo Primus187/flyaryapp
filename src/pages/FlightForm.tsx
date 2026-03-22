@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import LocationCombobox from "@/components/LocationCombobox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
@@ -162,16 +163,26 @@ export default function FlightForm() {
               </div>
             </div>
             <div className="space-y-1.5"><Label className="text-xs">{t("flights.takeoff")}</Label>
-              <Select value={form.takeoff_location_id} onValueChange={(v) => setForm({ ...form, takeoff_location_id: v })}>
-                <SelectTrigger><SelectValue placeholder={t("flights.select")} /></SelectTrigger>
-                <SelectContent>{takeoffs.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <LocationCombobox
+                locations={locations}
+                value={form.takeoff_location_id}
+                onChange={(v) => setForm({ ...form, takeoff_location_id: v })}
+                filterType="takeoff"
+                onLocationCreated={() => {
+                  if (user) supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                }}
+              />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">{t("flights.landing")}</Label>
-              <Select value={form.landing_location_id} onValueChange={(v) => setForm({ ...form, landing_location_id: v })}>
-                <SelectTrigger><SelectValue placeholder={t("flights.select")} /></SelectTrigger>
-                <SelectContent>{landings.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <LocationCombobox
+                locations={locations}
+                value={form.landing_location_id}
+                onChange={(v) => setForm({ ...form, landing_location_id: v })}
+                filterType="landing"
+                onLocationCreated={() => {
+                  if (user) supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                }}
+              />
             </div>
           </CardContent>
         </Card>

@@ -197,7 +197,10 @@
     "duplicated": "Site duplicated",
     "lastFlight": "last",
     "flightCount": "{{count}} flights",
-    "flightCount_one": "1 flight"
+    "flightCount_one": "1 flight",
+    "searchLocation": "Search location...",
+    "createNew": "+ Create new location",
+    "noResults": "No location found"
   },
   "groups": {
     "title": "Groups",
