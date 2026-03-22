@@ -266,7 +266,10 @@ export default function Feed() {
         </div>
       </div>
 
-      <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
+        <NotificationBell />
+      </div>
 
       {/* Story bar — active pilots */}
       {user && groupIds.length > 0 && (
