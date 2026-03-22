@@ -36,6 +36,8 @@ export default function FlightForm() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [youtubeUrls, setYoutubeUrls] = useState<string[]>([]);
   const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
+  const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
+  const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
