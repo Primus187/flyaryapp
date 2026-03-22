@@ -55,7 +55,15 @@ export default function Locations() {
   };
   const handleEdit = (loc: any) => { setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "" }); setEditId(loc.id); setOpen(true); };
   const handleDelete = async (id: string) => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id); toast({ title: t("locations.locationDeleted") }); fetchLocations(); };
-  const handleMapSelect = (lat: number, lng: number) => { setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() })); };
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=3`, { headers: { "Accept-Language": "en" } });
+      const data = await res.json();
+      const code = data?.address?.country_code?.toUpperCase();
+      if (code && code.length === 2) setForm((prev) => ({ ...prev, country_code: code }));
+    } catch {}
+  };
+  const handleMapSelect = (lat: number, lng: number) => { setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() })); reverseGeocode(lat, lng); };
 
   const toggleSection = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
