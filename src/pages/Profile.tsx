@@ -32,7 +32,7 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
-      if (data) setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "" });
+      if (data) setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "", shv_number: (data as any).shv_number || "", exam_theory_date: (data as any).exam_theory_date || "", exam_practical_date: (data as any).exam_practical_date || "", flight_school: (data as any).flight_school || "" });
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
   }, [user]);
