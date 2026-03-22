@@ -39,7 +39,7 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!user) return; setLoading(true);
-    const { error } = await supabase.from("profiles").update({ pilot_name: form.pilot_name, glider_info: form.glider_info, avatar_url: form.avatar_url, bio: form.bio, emergency_contact_name: form.emergency_contact_name, emergency_contact_phone: form.emergency_contact_phone, blood_type: form.blood_type, allergies: form.allergies, medical_notes: form.medical_notes } as any).eq("user_id", user.id);
+    const { error } = await supabase.from("profiles").update({ pilot_name: form.pilot_name, glider_info: form.glider_info, avatar_url: form.avatar_url, bio: form.bio, emergency_contact_name: form.emergency_contact_name, emergency_contact_phone: form.emergency_contact_phone, blood_type: form.blood_type, allergies: form.allergies, medical_notes: form.medical_notes, shv_number: form.shv_number, exam_theory_date: form.exam_theory_date || null, exam_practical_date: form.exam_practical_date || null, flight_school: form.flight_school } as any).eq("user_id", user.id);
     if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     else toast({ title: t("profile.profileSaved") });
     setLoading(false);
