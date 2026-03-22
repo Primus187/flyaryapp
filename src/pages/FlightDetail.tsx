@@ -55,6 +55,7 @@ export default function FlightDetail() {
         landing_location_id: flight.landing_location_id || null, duration_minutes: flight.duration_minutes,
         altitude_gain: flight.altitude_gain, distance_km: flight.distance_km, thermals: flight.thermals,
         wind_speed: flight.wind_speed, wind_direction: flight.wind_direction, glider: flight.glider, comments: flight.comments,
+        group_id: (flight as any).group_id || null,
       }).select("id").single();
       if (error) throw error;
       // Duplicate training items
