@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap } from "lucide-react";
+import { PasswordInput } from "@/components/PasswordInput";
+import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
