@@ -163,7 +163,17 @@
     "chat": "Chat",
     "typeMessage": "Nachricht schreiben...",
     "sendMessage": "Senden",
-    "noMessages": "Noch keine Nachrichten"
+    "noMessages": "Noch keine Nachrichten",
+    "publishToFeed": "Im Feed teilen",
+    "unpublishFromFeed": "Aus Feed entfernen",
+    "publishedToFeed": "Im Feed geteilt",
+    "unpublishedFromFeed": "Aus Feed entfernt",
+    "feedPreview": "Feed-Vorschau",
+    "feedDescription": "Beschreibung",
+    "feedDescriptionPlaceholder": "Erzähl etwas über den Termin...",
+    "photos": "Fotos",
+    "addPhotos": "Fotos hinzufügen",
+    "selectPhotos": "Fotos auswählen"
   },
   "locations": {
     "title": "Orte",

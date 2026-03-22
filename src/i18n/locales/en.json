@@ -178,7 +178,17 @@
     "chat": "Chat",
     "typeMessage": "Write a message...",
     "sendMessage": "Send",
-    "noMessages": "No messages yet"
+    "noMessages": "No messages yet",
+    "publishToFeed": "Share to feed",
+    "unpublishFromFeed": "Remove from feed",
+    "publishedToFeed": "Shared to feed",
+    "unpublishedFromFeed": "Removed from feed",
+    "feedPreview": "Feed preview",
+    "feedDescription": "Description",
+    "feedDescriptionPlaceholder": "Tell something about this event...",
+    "photos": "Photos",
+    "addPhotos": "Add photos",
+    "selectPhotos": "Select photos"
   },
   "locations": {
     "title": "Sites",

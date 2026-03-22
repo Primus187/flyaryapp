@@ -1,48 +1,161 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle, ImagePlus, Trash2, Share2, X } from "lucide-react";
 import EventChat from "@/components/EventChat";
+import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
+import { compressImage } from "@/lib/image-compress";
+import { useToast } from "@/hooks/use-toast";
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [event, setEvent] = useState<any>(null);
   const [signups, setSignups] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [photos, setPhotos] = useState<{ id: string; url: string; storage_path: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [pilotName, setPilotName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   useEffect(() => {
     if (!id || !user) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data: ev } = await supabase.from("flight_events").select("*, groups(name)").eq("id", id).single();
-      if (!ev) { navigate("/events"); return; } setEvent(ev);
-      const { data: sups } = await supabase.from("event_signups").select("*").eq("event_id", id); setSignups(sups || []);
+      if (!ev) { navigate("/events"); return; }
+      setEvent(ev);
+      setGroupName(ev.groups?.name || "");
+      setIsCreator(ev.created_by === user.id);
+
+      const { data: sups } = await supabase.from("event_signups").select("*").eq("event_id", id);
+      setSignups(sups || []);
+
       const { data: members } = await supabase.from("group_members").select("user_id, role").eq("group_id", ev.group_id);
       if (members) {
-        const me = members.find((m: any) => m.user_id === user.id); setIsAdmin(me?.role === "admin");
+        const me = members.find((m: any) => m.user_id === user.id);
+        setIsAdmin(me?.role === "admin");
         const userIds = (sups || []).map((s: any) => s.user_id);
-        if (userIds.length > 0) { const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds); if (profs) { const map: Record<string, string> = {}; profs.forEach((p: any) => { map[p.user_id] = p.pilot_name || t("common.unknown"); }); setProfiles(map); } }
+        if (userIds.length > 0) {
+          const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
+          if (profs) {
+            const map: Record<string, string> = {};
+            profs.forEach((p: any) => { map[p.user_id] = p.pilot_name || t("common.unknown"); });
+            setProfiles(map);
+          }
+        }
       }
+
+      // Load own profile
+      const { data: myProf } = await supabase.from("profiles").select("pilot_name, avatar_url").eq("user_id", user.id).single();
+      if (myProf) {
+        setPilotName(myProf.pilot_name || "Pilot");
+        if (myProf.avatar_url) {
+          if (myProf.avatar_url.startsWith("http")) {
+            setAvatarUrl(myProf.avatar_url);
+          } else {
+            const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(myProf.avatar_url, 3600);
+            if (signed?.signedUrl) setAvatarUrl(signed.signedUrl);
+          }
+        }
+      }
+
+      // Load photos
+      await loadPhotos(id);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [id, user]);
+
+  const loadPhotos = async (eventId: string) => {
+    const { data: photoRows } = await supabase.from("event_photos").select("id, storage_path").eq("event_id", eventId);
+    if (photoRows && photoRows.length > 0) {
+      const paths = photoRows.map(p => p.storage_path);
+      const { data: signedUrls } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
+      const urlMap: Record<string, string> = {};
+      signedUrls?.forEach(s => { if (s.signedUrl) urlMap[s.path] = s.signedUrl; });
+      setPhotos(photoRows.map(p => ({ id: p.id, url: urlMap[p.storage_path] || "", storage_path: p.storage_path })));
+    } else {
+      setPhotos([]);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !user || !id) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(e.target.files)) {
+        const compressed = await compressImage(file);
+        const path = `events/${user.id}/${id}/${Date.now()}_${compressed.name}`;
+        const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, compressed);
+        if (uploadError) { toast({ title: t("flights.photoUploadFailed"), variant: "destructive" }); continue; }
+        await supabase.from("event_photos").insert({ event_id: id, storage_path: path });
+      }
+      await loadPhotos(id);
+      toast({ title: t("flights.photoAdded") });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string, storagePath: string) => {
+    await supabase.storage.from("flight-photos").remove([storagePath]);
+    await supabase.from("event_photos").delete().eq("id", photoId);
+    setPhotos(prev => prev.filter(p => p.id !== photoId));
+    toast({ title: t("flights.photoDeleted") });
+  };
+
+  const handlePublish = async (selectedPhotoIds: string[], feedDescription: string) => {
+    if (!id) return;
+    setPublishing(true);
+    await supabase.from("flight_events").update({
+      published_to_feed: true,
+      published_at: new Date().toISOString(),
+      feed_description: feedDescription || null,
+    } as any).eq("id", id);
+    setEvent((prev: any) => ({ ...prev, published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription }));
+    setPublishing(false);
+    setShowPreview(false);
+    toast({ title: t("events.publishedToFeed") });
+  };
+
+  const handleUnpublish = async () => {
+    if (!id) return;
+    await supabase.from("flight_events").update({
+      published_to_feed: false,
+      published_at: null,
+    } as any).eq("id", id);
+    setEvent((prev: any) => ({ ...prev, published_to_feed: false, published_at: null }));
+    toast({ title: t("events.unpublishedFromFeed") });
+  };
 
   const toggleSignup = async () => {
     if (!user || !id) return;
     const existing = signups.find(s => s.user_id === user.id);
-    if (existing) { const newVal = !existing.signed_up; await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id); setSignups(prev => prev.map(s => s.user_id === user.id ? { ...s, signed_up: newVal } : s)); }
-    else { await supabase.from("event_signups").insert({ event_id: id, user_id: user.id, signed_up: true }); setSignups(prev => [...prev, { event_id: id, user_id: user.id, signed_up: true }]); }
+    if (existing) {
+      const newVal = !existing.signed_up;
+      await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id);
+      setSignups(prev => prev.map(s => s.user_id === user.id ? { ...s, signed_up: newVal } : s));
+    } else {
+      await supabase.from("event_signups").insert({ event_id: id, user_id: user.id, signed_up: true });
+      setSignups(prev => [...prev, { event_id: id, user_id: user.id, signed_up: true }]);
+    }
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
@@ -58,18 +171,62 @@ export default function EventDetail() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
-        <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{event.groups?.name}</p></div>
+        <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{groupName}</p></div>
         <Badge className={statusColor}>{statusLabel}</Badge>
         {isAdmin && (
           <><Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}><Pencil className="h-4 w-4" /></Button></>
         )}
       </div>
+
       {!isPast && event.status !== "cancelled" && (
         <Button className={`w-full gap-2 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`} variant={isSignedUp ? "default" : "outline"} onClick={toggleSignup}>
           {isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}{isSignedUp ? t("events.signedUpAction") : t("events.signUp")}
         </Button>
       )}
+
       {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
+
+      {/* Photos section */}
+      {isCreator && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.photos")}</h2>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+              <ImagePlus className="h-3.5 w-3.5" />{t("events.addPhotos")}
+            </Button>
+            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+          </div>
+          {photos.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map(p => (
+                <div key={p.id} className="relative group aspect-square">
+                  <img src={p.url} alt="" className="w-full h-full object-cover rounded-lg" />
+                  <button onClick={() => handleDeletePhoto(p.id, p.storage_path)}
+                    className="absolute top-1 right-1 bg-destructive/80 text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Publish to feed */}
+      {isCreator && (
+        <div className="flex gap-2">
+          {!event.published_to_feed ? (
+            <Button variant="outline" className="flex-1 gap-2" onClick={() => setShowPreview(true)}>
+              <Share2 className="h-4 w-4" />{t("events.publishToFeed")}
+            </Button>
+          ) : (
+            <Button variant="outline" className="flex-1 gap-2 text-destructive" onClick={handleUnpublish}>
+              <X className="h-4 w-4" />{t("events.unpublishFromFeed")}
+            </Button>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <InfoCard icon={Calendar} label={t("events.date")} value={new Date(event.event_date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
         <InfoCard icon={Clock} label={t("events.time")} value={new Date(event.event_date).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} />
@@ -80,7 +237,9 @@ export default function EventDetail() {
         {event.signup_deadline && <InfoCard icon={Clock} label={t("events.signupDeadline")} value={new Date(event.signup_deadline).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })} />}
         <InfoCard icon={Users} label={t("events.participants")} value={`${totalSignedUp}${event.max_participants ? ` / ${event.max_participants}` : ""}`} />
       </div>
+
       {event.description && <Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-sm whitespace-pre-wrap">{event.description}</p></CardContent></Card>}
+
       <div>
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("events.participants")}</h2>
         {signups.filter(s => s.signed_up).length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
@@ -90,7 +249,21 @@ export default function EventDetail() {
           <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4">{t("events.unregistered")}</h2><div className="space-y-1">{signups.filter(s => !s.signed_up).map(s => (<Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2"><XCircle className="h-4 w-4 text-muted-foreground shrink-0" /><span className="text-sm text-muted-foreground">{profiles[s.user_id] || t("events.pilot")}</span></CardContent></Card>))}</div></>
         )}
       </div>
+
       <EventChat eventId={id!} groupId={event.group_id} />
+
+      {/* Publish preview dialog */}
+      <EventPublishPreviewDialog
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        onPublish={handlePublish}
+        event={event}
+        pilotName={pilotName}
+        avatarUrl={avatarUrl}
+        groupName={groupName}
+        photos={photos.map(p => ({ id: p.id, url: p.url }))}
+        loading={publishing}
+      />
     </div>
   );
 }
