@@ -31,7 +31,12 @@ export default function FlightDetail() {
 
   useEffect(() => {
     if (!id) return;
-    supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => setFlight(data));
+    supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
+      setFlight(data);
+      if (data && (data as any).group_id) {
+        supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+      }
+    });
     supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
