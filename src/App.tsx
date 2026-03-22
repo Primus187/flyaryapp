@@ -36,6 +36,7 @@ import TrainingItemDetail from "@/pages/TrainingItemDetail";
 import Legal from "@/pages/Legal";
 import Leaderboard from "@/pages/Leaderboard";
 import ChallengeDetail from "@/pages/ChallengeDetail";
+import PilotProfile from "@/pages/PilotProfile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
