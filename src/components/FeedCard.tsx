@@ -137,17 +137,38 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
 
       {hasPhotos && <PhotoCarousel urls={flight.photoUrls} />}
 
-      {/* Mini Map */}
+      {/* Mini Map — non-interactive, with stats overlay */}
       {(hasTrack || flight.takeoff || flight.landing) && (
-        <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
-          <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px]" style={{ height: 150, overflow: "hidden" }}>
-            <FlightDetailMap
-              takeoff={flight.takeoff}
-              landing={flight.landing}
-              trackPoints={flight.trackPoints}
-            />
+        <div
+          className="relative cursor-pointer"
+          onClick={() => navigate(`/flights/${flight.id}`)}
+        >
+          <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
+            <div
+              className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none"
+              style={{ height: 150, overflow: "hidden" }}
+            >
+              <FlightDetailMap
+                takeoff={flight.takeoff}
+                landing={flight.landing}
+                trackPoints={flight.trackPoints}
+              />
+            </div>
+          </Suspense>
+          {/* Stats overlay */}
+          <div className="absolute bottom-2 left-2 flex gap-1.5 z-10">
+            {flight.duration_minutes && (
+              <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                ⏱ {formatDuration(flight.duration_minutes)}
+              </span>
+            )}
+            {flight.distance_km && (
+              <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                ↔ {Number(flight.distance_km).toFixed(1)}km
+              </span>
+            )}
           </div>
-        </Suspense>
+        </div>
       )}
 
       {/* Actions */}
@@ -166,14 +187,15 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
           <p className="text-sm font-semibold">{flight.likes.length} {flight.likes.length === 1 ? "Like" : "Likes"}</p>
         )}
 
-        {/* Flight info */}
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {flight.glider && <span className="font-medium text-foreground">🪂 {flight.glider}</span>}
-          {flight.duration_minutes && <span>⏱ {formatDuration(flight.duration_minutes)}</span>}
-          {flight.altitude_gain && <span>↑ {flight.altitude_gain}m</span>}
-          {flight.distance_km && <span>↔ {Number(flight.distance_km).toFixed(1)}km</span>}
-          {flight.landing_name && <span>→ {flight.landing_name}</span>}
-        </div>
+        {/* Description / caption — Instagram style */}
+        {flight.glider && (
+          <p className="text-sm">
+            <span className="font-semibold mr-1">{flight.pilot_name}</span>
+            <span className="text-muted-foreground">🪂 {flight.glider}</span>
+            {flight.altitude_gain && <span className="text-muted-foreground"> · ↑{flight.altitude_gain}m</span>}
+            {flight.landing_name && <span className="text-muted-foreground"> · → {flight.landing_name}</span>}
+          </p>
+        )}
 
         {/* Comments */}
         {(showComments || flight.comments.length > 0) && (
