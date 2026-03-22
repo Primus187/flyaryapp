@@ -11,8 +11,8 @@ export default function BottomNav() {
   const tabs = [
     { path: "/", icon: LayoutDashboard, label: t("nav.dashboard") },
     { path: "/flights", icon: BookOpen, label: t("nav.logbook") },
-    { path: "/locations", icon: MapPin, label: t("nav.locations") },
     { path: "/events", icon: Calendar, label: t("nav.events") },
+    { path: "/locations", icon: MapPin, label: t("nav.locations") },
     { path: "/more", icon: LayoutGrid, label: t("nav.more") },
   ];
 
