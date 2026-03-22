@@ -516,7 +516,9 @@
     "daysAgo": "{{count}}d ago",
     "goalReached": "Goal reached!",
     "challengeCompleted": "Challenge completed!",
-    "signUp": "Sign up"
+    "signUp": "Sign up",
+    "you": "You",
+    "loadingMore": "Loading more..."
   },
   "leaderboard": {
     "title": "Leaderboard",
