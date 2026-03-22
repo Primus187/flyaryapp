@@ -302,10 +302,8 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
   if (photos && photos.length > 0) {
     const paths = [...new Set(photos.map(p => p.storage_path))];
     const signedMap: Record<string, string> = {};
-    for (const path of paths) {
-      const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(path, 3600);
-      if (signed?.signedUrl) signedMap[path] = signed.signedUrl;
-    }
+    const { data: signedPhotos } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
+    signedPhotos?.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl; });
     photos.forEach(p => {
       if (!photoMap[p.flight_id]) photoMap[p.flight_id] = [];
       if (signedMap[p.storage_path]) photoMap[p.flight_id].push(signedMap[p.storage_path]);
