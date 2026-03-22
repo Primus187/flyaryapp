@@ -89,9 +89,8 @@ export default function Locations() {
   const handleDelete = async (id: string) => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id); toast({ title: t("locations.locationDeleted") }); fetchLocations(); };
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=3`, { headers: { "Accept-Language": "en" } });
-      const data = await res.json();
-      const code = data?.address?.country_code?.toUpperCase();
+      const { data, error } = await supabase.functions.invoke('reverse-geocode', { body: { lat, lon: lng } });
+      const code = data?.country_code;
       if (code && code.length === 2) setForm((prev) => ({ ...prev, country_code: code }));
     } catch {}
   };
