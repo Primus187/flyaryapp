@@ -82,6 +82,7 @@ const App = () => {
                   <Route path="/training" element={<Training />} />
                   <Route path="/training/:itemId" element={<TrainingItemDetail />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/more" element={<More />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/stats" element={<Stats />} />
                   <Route path="/import" element={<ImportFlights />} />
