@@ -349,18 +349,24 @@ export default function Feed() {
             if (item.type === "flight") {
               return <FeedCard key={`f-${item.data.id}`} flight={item.data}
                 onLikeToggle={(id) => handleLikeToggle("flight", id)}
-                onComment={(id, msg) => handleComment("flight", id, msg)} />;
+                onComment={(id, msg) => handleComment("flight", id, msg)}
+                onBookmarkToggle={(id) => handleBookmarkToggle("flight", id)}
+                onCommentLike={handleCommentLikeToggle} />;
             }
             if (item.type === "event") {
               return <FeedEventCard key={`e-${item.data.id}`} event={item.data}
                 onSignup={handleEventSignup}
                 onLikeToggle={(id) => handleLikeToggle("event", id)}
-                onComment={(id, msg) => handleComment("event", id, msg)} />;
+                onComment={(id, msg) => handleComment("event", id, msg)}
+                onBookmarkToggle={(id) => handleBookmarkToggle("event", id)}
+                onCommentLike={handleCommentLikeToggle} />;
             }
             if (item.type === "achievement") {
               return <FeedAchievementCard key={`a-${item.data.id}`} achievement={item.data}
                 onLikeToggle={(id) => handleLikeToggle("achievement", id)}
-                onComment={(id, msg) => handleComment("achievement", id, msg)} />;
+                onComment={(id, msg) => handleComment("achievement", id, msg)}
+                onBookmarkToggle={(id) => handleBookmarkToggle("achievement", id)}
+                onCommentLike={handleCommentLikeToggle} />;
             }
             return null;
           })}
