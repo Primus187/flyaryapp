@@ -6,10 +6,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FeedCard, { type FeedFlight } from "@/components/FeedCard";
 import FeedEventCard, { type FeedEvent } from "@/components/FeedEventCard";
 import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchievementCard";
+import FeedStoryBar from "@/components/FeedStoryBar";
 import EmptyState from "@/components/EmptyState";
 import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+
+const PAGE_SIZE = 10;
 
 type FeedItem =
   | { type: "flight"; date: string; data: FeedFlight }
@@ -31,6 +34,15 @@ function FeedSkeleton() {
   );
 }
 
+function LoadMoreSkeleton() {
+  return (
+    <div className="space-y-2 py-4">
+      <div className="flex items-center gap-3"><Skeleton className="h-8 w-8 rounded-full" /><Skeleton className="h-4 w-24" /></div>
+      <Skeleton className="h-40 w-full rounded-xl" />
+    </div>
+  );
+}
+
 export default function Feed() {
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -40,36 +52,51 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [groupIds, setGroupIds] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const fetchFeed = useCallback(async () => {
+  const fetchFeed = useCallback(async (cursor?: string) => {
     if (!user) return;
 
-    const { data: memberships } = await supabase
-      .from("group_members")
-      .select("group_id")
-      .eq("user_id", user.id);
+    let gIds = groupIds;
+    let groupMap: Record<string, string> = {};
 
-    if (!memberships || memberships.length === 0) {
-      setLoading(false);
-      return;
+    if (!cursor || gIds.length === 0) {
+      const { data: memberships } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", user.id);
+
+      if (!memberships || memberships.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      gIds = memberships.map(m => m.group_id);
+      setGroupIds(gIds);
+
+      const { data: groups } = await supabase
+        .from("groups")
+        .select("id, name")
+        .in("id", gIds);
+      groups?.forEach(g => { groupMap[g.id] = g.name; });
+    } else {
+      const { data: groups } = await supabase
+        .from("groups")
+        .select("id, name")
+        .in("id", gIds);
+      groups?.forEach(g => { groupMap[g.id] = g.name; });
     }
 
-    const groupIds = memberships.map(m => m.group_id);
-
-    const { data: groups } = await supabase
-      .from("groups")
-      .select("id, name")
-      .in("id", groupIds);
-    const groupMap: Record<string, string> = {};
-    groups?.forEach(g => { groupMap[g.id] = g.name; });
-
     const [flightsRes, eventsRes, achievementsRes] = await Promise.all([
-      fetchFlights(user.id, groupIds, groupMap),
-      fetchEvents(user.id, groupIds, groupMap),
-      fetchAchievements(user.id, groupIds, groupMap),
+      fetchFlights(user.id, gIds, groupMap, cursor),
+      !cursor ? fetchEvents(user.id, gIds, groupMap) : Promise.resolve([]),
+      fetchAchievements(user.id, gIds, groupMap, cursor),
     ]);
 
     const allItems: FeedItem[] = [
@@ -79,14 +106,40 @@ export default function Feed() {
     ];
 
     allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    setItems(allItems);
+
+    if (cursor) {
+      setItems(prev => [...prev, ...allItems]);
+    } else {
+      setItems(allItems);
+    }
+
+    setHasMore(flightsRes.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
     setLoading(false);
-  }, [user]);
+    setLoadingMore(false);
+  }, [user, groupIds]);
 
   useEffect(() => { fetchFeed(); }, [fetchFeed]);
 
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore || loadingMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && items.length > 0) {
+          const lastDate = items[items.length - 1].date;
+          setLoadingMore(true);
+          fetchFeed(lastDate);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, items, fetchFeed]);
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
+    setHasMore(true);
     await fetchFeed();
     setRefreshing(false);
     setPullDistance(0);
@@ -214,6 +267,11 @@ export default function Feed() {
 
       <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
 
+      {/* Story bar — active pilots */}
+      {user && groupIds.length > 0 && (
+        <FeedStoryBar userId={user.id} groupIds={groupIds} />
+      )}
+
       {items.length === 0 ? (
         <EmptyState
           icon={Users}
@@ -243,6 +301,13 @@ export default function Feed() {
             }
             return null;
           })}
+
+          {/* Infinite scroll sentinel */}
+          {hasMore && (
+            <div ref={sentinelRef}>
+              {loadingMore && <LoadMoreSkeleton />}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -251,14 +316,20 @@ export default function Feed() {
 
 // ── helpers ──
 
-async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedFlight[]> {
-  const { data: groupFlights } = await supabase
+async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedFlight[]> {
+  let query = supabase
     .from("flights")
     .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, published_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
     .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(20);
+    .limit(PAGE_SIZE);
+
+  if (cursor) {
+    query = query.lt("published_at", cursor);
+  }
+
+  const { data: groupFlights } = await query;
 
   if (!groupFlights || groupFlights.length === 0) return [];
 
@@ -268,7 +339,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
   if (profiles) {
-    // Batch avatar signed URLs
     const avatarPaths = profiles.filter(p => p.avatar_url && !p.avatar_url.startsWith("http")).map(p => p.avatar_url!);
     const avatarSignedMap: Record<string, string> = {};
     if (avatarPaths.length > 0) {
@@ -375,7 +445,6 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
   const likes = likesRes.data;
   const comments = commentsRes.data;
 
-  // Resolve commenter names
   const allUserIds = [...new Set([...(comments || []).map(c => c.user_id)])];
   const profileMap: Record<string, string> = {};
   if (allUserIds.length > 0) {
@@ -404,16 +473,21 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
   }));
 }
 
-async function fetchAchievements(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedAchievement[]> {
-  const { data: achievements } = await supabase
+async function fetchAchievements(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedAchievement[]> {
+  let query = supabase
     .from("feed_achievements")
     .select("id, user_id, challenge_id, goal_id, achievement_type, created_at")
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(PAGE_SIZE);
+
+  if (cursor) {
+    query = query.lt("created_at", cursor);
+  }
+
+  const { data: achievements } = await query;
 
   if (!achievements || achievements.length === 0) return [];
 
-  // Filter to only achievements from user's groups
   const challengeIds = [...new Set(achievements.map(a => a.challenge_id))];
   const { data: challenges } = await supabase
     .from("challenges")
@@ -428,7 +502,6 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
 
   const validAchievements = achievements.filter(a => challengeMap[a.challenge_id]);
 
-  // Get goal labels
   const goalIds = validAchievements.filter(a => a.goal_id).map(a => a.goal_id!);
   const goalMap: Record<string, string> = {};
   if (goalIds.length > 0) {
@@ -436,17 +509,14 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     goals?.forEach(g => { goalMap[g.id] = g.label || ""; });
   }
 
-  // Get challenge progress counts
   const progressMap: Record<string, { total: number; completed: number }> = {};
   for (const cId of challengeIds) {
     if (!challengeMap[cId]) continue;
     const { data: goals } = await supabase.from("challenge_goals").select("id").eq("challenge_id", cId);
     const total = goals?.length || 0;
-    // Count completed goals per achievement's user
     progressMap[cId] = { total, completed: 0 };
   }
 
-  // Get pilot profiles
   const pilotIds = [...new Set(validAchievements.map(a => a.user_id))];
   const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
   if (pilotIds.length > 0) {
@@ -468,7 +538,6 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     }
   }
 
-  // Get user progress per challenge
   for (const a of validAchievements) {
     if (progressMap[a.challenge_id]) {
       const { data: prog } = await supabase.from("challenge_progress").select("id").eq("challenge_id", a.challenge_id).eq("user_id", a.user_id);
@@ -476,7 +545,6 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     }
   }
 
-  // Get likes and comments
   const achIds = validAchievements.map(a => a.id);
   const [likesRes, commentsRes] = await Promise.all([
     supabase.from("feed_likes").select("achievement_id, user_id").in("achievement_id", achIds),
@@ -486,7 +554,6 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
   const likes = likesRes.data;
   const comments = commentsRes.data;
 
-  // Resolve commenter names
   const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
   if (commenterIds.length > 0) {
     const { data: cp } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", commenterIds);
