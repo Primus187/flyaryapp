@@ -102,9 +102,16 @@ export default function Profile() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <h1 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="relative"><Avatar className="h-20 w-20"><AvatarImage src={avatarSignedUrl} /><AvatarFallback className="text-lg bg-primary/10">{initials}</AvatarFallback></Avatar><button onClick={() => fileInputRef.current?.click()} className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm" disabled={uploading}><Camera className="h-3.5 w-3.5" /></button><input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} /></div>
-          <div className="flex-1 space-y-1.5"><Label className="text-xs">{t("profile.pilotName")}</Label><Input value={form.pilot_name} onChange={e => setForm({ ...form, pilot_name: e.target.value })} /></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
+            <Avatar className="h-24 w-24 border-[3px] border-background">
+              <AvatarImage src={avatarSignedUrl} />
+              <AvatarFallback className="text-2xl bg-muted">{initials}</AvatarFallback>
+            </Avatar>
+            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md" disabled={uploading}><Camera className="h-4 w-4" /></button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+          </div>
+          <div className="w-full space-y-1.5"><Label className="text-xs">{t("profile.pilotName")}</Label><Input value={form.pilot_name} onChange={e => setForm({ ...form, pilot_name: e.target.value })} /></div>
         </div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.bio")}</Label><Textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} placeholder={t("profile.bioPlaceholder")} rows={2} /></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.email")}</Label><Input value={user?.email || ""} disabled /></div>

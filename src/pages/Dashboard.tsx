@@ -6,13 +6,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, Calendar, CheckCircle2, XCircle, Users } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import EmptyState from "@/components/EmptyState";
 
 interface Stats { totalFlights: number; totalMinutes: number; uniqueTakeoffs: number; uniqueLandings: number; }
-interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; }
+interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; photoUrl?: string; pilotName?: string; }
 interface UpcomingEvent { id: string; title: string; event_date: string; status: string; meeting_point: string | null; group_name: string; event_type: string | null; max_participants: number | null; }
 interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
 
@@ -20,15 +21,16 @@ function DashboardSkeleton() {
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <div><Skeleton className="h-8 w-32 mb-1" /><Skeleton className="h-4 w-24" /></div>
-        <div className="flex gap-2"><Skeleton className="h-9 w-20 rounded-md" /><Skeleton className="h-9 w-20 rounded-md" /></div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div><Skeleton className="h-5 w-24 mb-1" /><Skeleton className="h-3 w-16" /></div>
+        </div>
+        <Skeleton className="h-9 w-9 rounded-full" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        {[1, 2, 3, 4].map(i => (
-          <Card key={i} className="border-0 shadow-sm"><CardContent className="p-4"><Skeleton className="h-4 w-16 mb-2" /><Skeleton className="h-6 w-12" /></CardContent></Card>
-        ))}
+      <div className="grid grid-cols-4 gap-2">
+        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
       </div>
-      <div><Skeleton className="h-4 w-28 mb-3" />{[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-lg mb-2" />)}</div>
+      {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 w-full rounded-2xl" />)}
     </div>
   );
 }
@@ -42,12 +44,27 @@ export default function Dashboard() {
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
+  const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
 
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
+      // Profile
+      const { data: prof } = await supabase.from("profiles").select("pilot_name, avatar_url").eq("user_id", user.id).single();
+      if (prof) {
+        setProfile({ pilot_name: prof.pilot_name || "", avatar_url: prof.avatar_url || "" });
+        if (prof.avatar_url) {
+          if (prof.avatar_url.startsWith("http")) setAvatarSignedUrl(prof.avatar_url);
+          else {
+            const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(prof.avatar_url, 3600);
+            if (signed?.signedUrl) setAvatarSignedUrl(signed.signedUrl);
+          }
+        }
+      }
+
       const { data: flights } = await supabase
         .from("flights")
         .select("id, date, glider, duration_minutes, altitude_gain, distance_km, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name)")
@@ -58,7 +75,29 @@ export default function Dashboard() {
         const takeoffIds = new Set(flights.map(f => f.takeoff_location_id).filter(Boolean));
         const landingIds = new Set(flights.map(f => f.landing_location_id).filter(Boolean));
         setStats({ totalFlights: flights.length, totalMinutes: flights.reduce((s, f) => s + (f.duration_minutes || 0), 0), uniqueTakeoffs: takeoffIds.size, uniqueLandings: landingIds.size });
-        setRecent(flights.slice(0, 5).map((f: any) => ({ ...f, takeoff_location: f.locations, landing_location: f.land })));
+
+        const recentFlights = flights.slice(0, 5).map((f: any) => ({ ...f, takeoff_location: f.locations, landing_location: f.land }));
+        
+        // Fetch first photo for each recent flight
+        const flightIds = recentFlights.map(f => f.id);
+        if (flightIds.length > 0) {
+          const { data: photos } = await supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds);
+          if (photos && photos.length > 0) {
+            const firstPhotos: Record<string, string> = {};
+            photos.forEach(p => { if (!firstPhotos[p.flight_id]) firstPhotos[p.flight_id] = p.storage_path; });
+            const paths = Object.values(firstPhotos);
+            const signedUrls: Record<string, string> = {};
+            for (const path of paths) {
+              const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(path, 3600);
+              if (signed?.signedUrl) signedUrls[path] = signed.signedUrl;
+            }
+            recentFlights.forEach(f => {
+              const p = firstPhotos[f.id];
+              if (p && signedUrls[p]) f.photoUrl = signedUrls[p];
+            });
+          }
+        }
+        setRecent(recentFlights);
       }
 
       const { data: memberships } = await supabase.from("group_members").select("group_id, groups(name)").eq("user_id", user.id);
@@ -97,51 +136,60 @@ export default function Dashboard() {
   const statusLabel: Record<string, string> = { announced: t("events.statusAnnounced"), confirmed: t("events.statusConfirmed"), cancelled: t("events.statusCancelled") };
   const statusColor = (s: string) => s === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : s === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
 
+  const initials = profile.pilot_name ? profile.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : user?.email?.[0]?.toUpperCase() || "?";
+
   if (loading) return <DashboardSkeleton />;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
       <OnboardingDialog />
+
+      {/* Header with avatar */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{t("dashboard.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate("/profile")} className="relative p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
+            <Avatar className="h-10 w-10 border-2 border-background">
+              <AvatarImage src={avatarSignedUrl} />
+              <AvatarFallback className="text-sm bg-muted">{initials}</AvatarFallback>
+            </Avatar>
+          </button>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">{profile.pilot_name || t("dashboard.title")}</h1>
+            <p className="text-xs text-muted-foreground">{t("dashboard.subtitle")}</p>
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => navigate("/stats")} className="gap-1.5"><BarChart3 className="h-4 w-4" /> {t("dashboard.stats")}</Button>
-          <Button size="sm" onClick={() => navigate("/flights/new")} className="gap-1.5"><Plus className="h-4 w-4" /> {t("dashboard.newFlight")}</Button>
+          <Button size="icon" variant="ghost" onClick={() => navigate("/stats")} className="h-9 w-9 rounded-full"><BarChart3 className="h-5 w-5" /></Button>
+          <Button size="icon" onClick={() => navigate("/flights/new")} className="h-9 w-9 rounded-full"><Plus className="h-5 w-5" /></Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Compact stats row */}
+      <div className="grid grid-cols-4 gap-2">
         {[
-          { icon: Plane, label: t("dashboard.flights"), value: stats.totalFlights.toString() },
-          { icon: Clock, label: t("dashboard.flightTime"), value: formatDuration(stats.totalMinutes) },
-          { icon: MapPin, label: t("dashboard.takeoffs"), value: stats.uniqueTakeoffs.toString() },
-          { icon: MapPin, label: t("dashboard.landings"), value: stats.uniqueLandings.toString() },
-        ].map(({ icon: Icon, label, value }) => (
-          <Card key={label} className="border-0 shadow-sm bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center"><Icon className="h-3.5 w-3.5 text-primary" /></div>
-                <span className="text-xs text-muted-foreground">{label}</span>
-              </div>
-              <p className="text-lg font-semibold tabular-nums">{value}</p>
-            </CardContent>
-          </Card>
+          { icon: Plane, value: stats.totalFlights.toString(), label: t("dashboard.flights") },
+          { icon: Clock, value: formatDuration(stats.totalMinutes), label: t("dashboard.flightTime") },
+          { icon: MapPin, value: stats.uniqueTakeoffs.toString(), label: t("dashboard.takeoffs") },
+          { icon: MapPin, value: stats.uniqueLandings.toString(), label: t("dashboard.landings") },
+        ].map(({ icon: Icon, value, label }) => (
+          <div key={label} className="rounded-xl bg-card p-3 text-center">
+            <p className="text-base font-semibold tabular-nums">{value}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
+          </div>
         ))}
       </div>
 
+      {/* Events */}
       {events.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">{t("dashboard.upcomingEvents")}</h2>
+          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.upcomingEvents")}</h2>
           <div className="space-y-2">
             {events.map((e) => {
               const mySignup = signups.find(s => s.event_id === e.id && s.user_id === user?.id);
               const isSignedUp = mySignup?.signed_up ?? false;
               const totalSignedUp = signups.filter(s => s.event_id === e.id && s.signed_up).length;
               return (
-                <Card key={e.id} className="border-0 shadow-sm hover:bg-accent/50 cursor-pointer transition-colors">
+                <Card key={e.id} className="border-0 shadow-sm hover:bg-muted/50 cursor-pointer transition-colors">
                   <CardContent className="p-3">
                     <div className="flex items-start justify-between gap-2" onClick={() => navigate(`/events/${e.id}`)}>
                       <div className="flex-1 min-w-0">
@@ -171,8 +219,9 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Recent flights — Instagram-card style */}
       <div>
-        <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>
+        <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>
         {recent.length === 0 ? (
           <EmptyState
             icon={Plane}
@@ -182,13 +231,18 @@ export default function Dashboard() {
             onAction={() => navigate("/flights/new")}
           />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {recent.map((f) => (
-              <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
+              <Card key={f.id} className="border-0 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
+                {f.photoUrl && (
+                  <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
+                    <img src={f.photoUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                )}
                 <CardContent className="p-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium text-sm">{f.takeoff_location?.name || "–"}</p>
+                      <p className="font-semibold text-sm">{f.takeoff_location?.name || "–"}</p>
                       {f.landing_location?.name && <p className="text-xs text-muted-foreground">→ {f.landing_location.name}</p>}
                     </div>
                     <span className="text-xs text-muted-foreground">{new Date(f.date).toLocaleDateString(locale)}</span>
