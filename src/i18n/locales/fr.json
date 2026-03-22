@@ -113,7 +113,13 @@
     "flightDuplicated": "Vol dupliqué",
     "group": "Groupe",
     "selectGroup": "Choisir un groupe...",
-    "noGroup": "Sans groupe"
+    "noGroup": "Sans groupe",
+    "soloShv": "Vol solo FSVL",
+    "soloShvLabel": "Solo FSVL",
+    "addPhotos2": "Ajouter des photos",
+    "deletePhoto": "Supprimer cette photo ?",
+    "photoDeleted": "Photo supprimée",
+    "photoAdded": "Photo ajoutée"
   },
   "events": {
     "title": "Événements",

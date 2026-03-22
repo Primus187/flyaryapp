@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
@@ -23,11 +23,18 @@ export default function FlightDetail() {
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [groupName, setGroupName] = useState<string | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
+
+  const loadPhotos = () => {
+    if (!id) return;
+    supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -37,7 +44,7 @@ export default function FlightDetail() {
         supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
       }
     });
-    supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
+    loadPhotos();
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
     supabase.from("flight_training_items" as any).select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
@@ -55,10 +62,9 @@ export default function FlightDetail() {
         landing_location_id: flight.landing_location_id || null, duration_minutes: flight.duration_minutes,
         altitude_gain: flight.altitude_gain, distance_km: flight.distance_km, thermals: flight.thermals,
         wind_speed: flight.wind_speed, wind_direction: flight.wind_direction, glider: flight.glider, comments: flight.comments,
-        group_id: (flight as any).group_id || null,
-      }).select("id").single();
+        group_id: (flight as any).group_id || null, is_solo_shv: (flight as any).is_solo_shv || false,
+      } as any).select("id").single();
       if (error) throw error;
-      // Duplicate training items
       if (trainedManeuvers.length > 0) {
         const { data: items } = await supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id);
         if (items && items.length > 0) {
@@ -88,6 +94,31 @@ export default function FlightDetail() {
     finally { setUploading(false); if (igcInputRef.current) igcInputRef.current.value = ""; }
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files; if (!files || !user || !id) return;
+    setUploadingPhoto(true);
+    try {
+      for (const photo of Array.from(files)) {
+        const path = `${user.id}/${id}/${Date.now()}-${photo.name}`;
+        const { error: storageErr } = await supabase.storage.from("flight-photos").upload(path, photo);
+        if (storageErr) throw storageErr;
+        const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: id, storage_path: path });
+        if (insertErr) throw insertErr;
+      }
+      toast({ title: t("flights.photoAdded") });
+      loadPhotos();
+    } catch (err: any) { toast({ title: t("flights.photoUploadFailed"), description: err.message, variant: "destructive" }); }
+    finally { setUploadingPhoto(false); if (photoInputRef.current) photoInputRef.current.value = ""; }
+  };
+
+  const handleDeletePhoto = async (photoId: string, storagePath: string) => {
+    if (!confirm(t("flights.deletePhoto"))) return;
+    await supabase.storage.from("flight-photos").remove([storagePath]);
+    await supabase.from("flight_photos").delete().eq("id", photoId);
+    toast({ title: t("flights.photoDeleted") });
+    loadPhotos();
+  };
+
   if (!flight) return <div className="p-4 text-center text-muted-foreground">{t("common.loading")}</div>;
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m} min`; };
   const getYoutubeThumbnail = (url: string) => { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/); return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null; };
@@ -98,7 +129,10 @@ export default function FlightDetail() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/flights")}><ArrowLeft className="h-5 w-5" /></Button>
           <div>
-            <h1 className="text-lg font-bold">{flight.takeoff?.name || t("flights.flight")}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold">{flight.takeoff?.name || t("flights.flight")}</h1>
+              {(flight as any).is_solo_shv && <Badge variant="default" className="text-[10px] px-1.5 py-0">SHV Solo</Badge>}
+            </div>
             <p className="text-xs text-muted-foreground">{new Date(flight.date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
           </div>
         </div>
@@ -138,9 +172,37 @@ export default function FlightDetail() {
           </CardContent>
         </Card>
       )}
-      {photos.length > 0 && (
-        <Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.photos")}</CardTitle></CardHeader><CardContent className="pt-0"><div className="grid grid-cols-3 gap-2">{photos.map((p) => { const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path); return (<img key={p.id} src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(data.publicUrl)} />); })}</div></CardContent></Card>
-      )}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-sm">{t("flights.photos")}</CardTitle>
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}>
+            <Plus className="h-3.5 w-3.5" /> {t("flights.addPhotos2")}
+          </Button>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {photos.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((p) => {
+                const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path);
+                return (
+                  <div key={p.id} className="relative group">
+                    <img src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(data.publicUrl)} />
+                    <button
+                      onClick={() => handleDeletePhoto(p.id, p.storage_path)}
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">{t("common.none")}</p>
+          )}
+        </CardContent>
+      </Card>
+      <input ref={photoInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
       <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent shadow-none [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1">{lightboxUrl && <img src={lightboxUrl} alt="" className="w-full h-auto max-h-[90vh] object-contain rounded-lg" />}</DialogContent>
       </Dialog>

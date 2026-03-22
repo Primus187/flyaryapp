@@ -45,7 +45,7 @@ export default function FlightForm() {
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
     duration_minutes: "", altitude_gain: "", distance_km: "", thermals: "", wind_speed: "",
-    wind_direction: "", glider: "", comments: "", group_id: "",
+    wind_direction: "", glider: "", comments: "", group_id: "", is_solo_shv: false,
   });
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function FlightForm() {
     });
     if (isEdit) {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
-        if (data) setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "" });
+        if (data) setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv });
       });
       supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => { if (data) setYoutubeUrls(data.map((v) => v.youtube_url)); });
       supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
@@ -99,7 +99,7 @@ export default function FlightForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!user) return; setLoading(true);
     try {
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null } as any;
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv } as any;
       let flightId: string;
       if (isEdit) { const { error } = await supabase.from("flights").update(flightData).eq("id", id); if (error) throw error; flightId = id!; }
       else { const { data, error } = await supabase.from("flights").insert(flightData).select("id").single(); if (error) throw error; flightId = data.id; }
@@ -189,6 +189,14 @@ export default function FlightForm() {
                 }}
               />
             </div>
+             <div className="flex items-center gap-3 pt-1">
+                <Checkbox
+                  id="solo-shv"
+                  checked={form.is_solo_shv}
+                  onCheckedChange={(checked) => setForm({ ...form, is_solo_shv: !!checked })}
+                />
+                <Label htmlFor="solo-shv" className="text-xs cursor-pointer">{t("flights.soloShv")}</Label>
+              </div>
            </CardContent>
         </Card>
         {groups.length > 0 && (
