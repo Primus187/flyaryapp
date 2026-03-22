@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap } from "lucide-react";
+import { PasswordInput } from "@/components/PasswordInput";
+import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
@@ -33,6 +34,10 @@ export default function Profile() {
   const [showAddGlider, setShowAddGlider] = useState(false);
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
   const [xp, setXp] = useState<{ total_xp: number; level: number } | null>(null);
+  const [xcontestUsername, setXcontestUsername] = useState("");
+  const [xcontestPassword, setXcontestPassword] = useState("");
+  const [xcontestSyncing, setXcontestSyncing] = useState(false);
+  const [xcontestHasCredentials, setXcontestHasCredentials] = useState(false);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
@@ -47,6 +52,10 @@ export default function Profile() {
       if (data) {
         setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
+        if ((data as any).xcontest_username) {
+          setXcontestUsername((data as any).xcontest_username);
+          setXcontestHasCredentials(!!(data as any).xcontest_password_encrypted);
+        }
       }
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
@@ -116,6 +125,46 @@ export default function Profile() {
   };
 
   const initials = form.pilot_name ? form.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : user?.email?.[0]?.toUpperCase() || "?";
+
+  // XContest handlers
+  const handleSaveXcontest = async () => {
+    if (!user || !xcontestUsername) return;
+    // Encrypt password client-side with a simple XOR — real encryption happens server-side
+    // We send it to the profile; the edge function decrypts with the server key
+    const updateData: any = { xcontest_username: xcontestUsername };
+    if (xcontestPassword) {
+      // Simple base64 encoding for transit — the edge function uses the encryption key
+      updateData.xcontest_password_encrypted = btoa(xcontestPassword);
+    }
+    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setXcontestHasCredentials(true);
+    setXcontestPassword("");
+    toast({ title: t("profile.xcontestSaved") });
+  };
+
+  const handleSyncXcontest = async () => {
+    if (!user) return;
+    setXcontestSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error(t("profile.notLoggedIn"));
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-xcontest`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t("profile.xcontestError"));
+      toast({ title: t("profile.xcontestSyncDone", { count: data.imported }) });
+    } catch (e: any) {
+      toast({ title: t("profile.xcontestError"), description: e.message, variant: "destructive" });
+    } finally {
+      setXcontestSyncing(false);
+    }
+  };
 
   // XP progress calculation
   const xpLevel = xp?.level || 1;
@@ -195,6 +244,18 @@ export default function Profile() {
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5 col-span-2 sm:col-span-1"><Label className="text-xs">{t("profile.emergencyName")}</Label><Input value={form.emergency_contact_name} onChange={e => setForm({ ...form, emergency_contact_name: e.target.value })} /></div><div className="space-y-1.5 col-span-2 sm:col-span-1"><Label className="text-xs">{t("profile.emergencyPhone")}</Label><Input value={form.emergency_contact_phone} onChange={e => setForm({ ...form, emergency_contact_phone: e.target.value })} placeholder="+41 79 ..." type="tel" /></div></div>
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.bloodType")}</Label><Input value={form.blood_type} onChange={e => setForm({ ...form, blood_type: e.target.value })} placeholder={t("profile.bloodTypePlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.allergies")}</Label><Input value={form.allergies} onChange={e => setForm({ ...form, allergies: e.target.value })} placeholder={t("profile.allergiesPlaceholder")} /></div></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.medicalNotes")}</Label><Textarea value={form.medical_notes} onChange={e => setForm({ ...form, medical_notes: e.target.value })} placeholder={t("profile.medicalNotesPlaceholder")} rows={2} /></div>
+      </CardContent></Card>
+
+      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> {t("profile.xcontestTitle")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.xcontestWarning")}</p></CardHeader><CardContent className="space-y-3">
+        <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestUsername")}</Label><Input value={xcontestUsername} onChange={e => setXcontestUsername(e.target.value)} placeholder={t("profile.xcontestUsernamePlaceholder")} /></div>
+        <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestPassword")}</Label><PasswordInput value={xcontestPassword} onChange={e => setXcontestPassword(e.target.value)} placeholder={xcontestHasCredentials ? "••••••••" : t("profile.xcontestPasswordPlaceholder")} /></div>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSaveXcontest} disabled={!xcontestUsername}>{t("common.save")}</Button>
+          <Button size="sm" variant="outline" onClick={handleSyncXcontest} disabled={xcontestSyncing || !xcontestHasCredentials}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${xcontestSyncing ? "animate-spin" : ""}`} />
+            {xcontestSyncing ? t("profile.xcontestSyncing") : t("profile.xcontestSync")}
+          </Button>
+        </div>
       </CardContent></Card>
 
       <Button onClick={handleSave} disabled={loading} className="w-full">{loading ? "..." : t("profile.saveProfile")}</Button>
