@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, Send, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useEmblaCarousel from "embla-carousel-react";
 
 const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
 
@@ -48,6 +49,47 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   if (hours < 24) return t("feed.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
   return t("feed.daysAgo", { count: days });
+}
+
+function PhotoCarousel({ urls }: { urls: string[] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+  const [selected, setSelected] = useState(0);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const onSelect = () => setSelected(emblaApi.selectedScrollSnap());
+    emblaApi.on("select", onSelect);
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi]);
+
+  if (urls.length === 1) {
+    return (
+      <div className="aspect-square w-full overflow-hidden bg-muted">
+        <img src={urls[0]} alt="" className="w-full h-full object-cover" loading="lazy" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {urls.map((url, i) => (
+            <div key={i} className="flex-[0_0_100%] min-w-0 aspect-square bg-muted">
+              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {urls.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          {urls.map((_, i) => (
+            <div key={i} className={cn("w-1.5 h-1.5 rounded-full transition-colors", i === selected ? "bg-white" : "bg-white/40")} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardProps) {
@@ -93,12 +135,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
         </div>
       </div>
 
-      {/* Photo */}
-      {hasPhotos && (
-        <div className="aspect-square w-full overflow-hidden bg-muted">
-          <img src={flight.photoUrls[0]} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      )}
+      {hasPhotos && <PhotoCarousel urls={flight.photoUrls} />}
 
       {/* Mini Map */}
       {(hasTrack || flight.takeoff || flight.landing) && (
