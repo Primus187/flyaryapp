@@ -29,13 +29,19 @@ interface PublishPreviewDialogProps {
   avatarUrl: string;
   groupName: string;
   photos: { id: string; url: string }[];
+  videoUrls?: string[];
   trackPoints: [number, number][];
   loading?: boolean;
 }
 
+function getYoutubeEmbedUrl(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
 export default function PublishPreviewDialog({
   open, onOpenChange, onPublish, flight, pilotName, avatarUrl, groupName,
-  photos, trackPoints, loading,
+  photos, videoUrls, trackPoints, loading,
 }: PublishPreviewDialogProps) {
   const { t } = useTranslation();
   const [feedComment, setFeedComment] = useState(flight.comments || "");
