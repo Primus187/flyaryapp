@@ -238,12 +238,18 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           <p className="text-sm font-semibold">{flight.likes.length} {flight.likes.length === 1 ? "Like" : "Likes"}</p>
         )}
 
-        {flight.glider && (
+        {flight.feedDescription && (
           <p className="text-sm">
             <span className="font-semibold mr-1">{flight.pilot_name}</span>
-            <span className="text-muted-foreground">🪂 {flight.glider}</span>
-            {flight.altitude_gain && <span className="text-muted-foreground"> · ↑{flight.altitude_gain}m</span>}
-            {flight.landing_name && <span className="text-muted-foreground"> · → {flight.landing_name}</span>}
+            <span className="text-muted-foreground">{flight.feedDescription}</span>
+          </p>
+        )}
+
+        {flight.glider && (
+          <p className="text-sm text-muted-foreground">
+            🪂 {flight.glider}
+            {flight.altitude_gain ? ` · ↑${flight.altitude_gain}m` : ""}
+            {flight.landing_name ? ` · → ${flight.landing_name}` : ""}
           </p>
         )}
 
