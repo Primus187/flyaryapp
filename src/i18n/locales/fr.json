@@ -489,7 +489,9 @@
     "noFlights": "Pas encore de vols dans votre fil",
     "noFlightsDesc": "Quand les membres du groupe enregistrent des vols avec un groupe, ils apparaîtront ici.",
     "addComment": "Ajouter un commentaire...",
-    "viewAllComments": "Voir les {{count}} commentaires"
+    "viewAllComments": "Voir les {{count}} commentaires",
+    "participants": "participants",
+    "viewDetails": "Détails"
   },
   "leaderboard": {
     "title": "Classement",

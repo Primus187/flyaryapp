@@ -491,7 +491,9 @@
     "noFlights": "Noch keine Flüge im Feed",
     "noFlightsDesc": "Sobald Gruppenmitglieder Flüge mit Gruppenzuordnung erfassen, erscheinen sie hier.",
     "addComment": "Kommentar...",
-    "viewAllComments": "Alle {{count}} Kommentare anzeigen"
+    "viewAllComments": "Alle {{count}} Kommentare anzeigen",
+    "participants": "Teilnehmer",
+    "viewDetails": "Details"
   },
   "leaderboard": {
     "title": "Rangliste",

@@ -489,7 +489,9 @@
     "noFlights": "No flights in your feed yet",
     "noFlightsDesc": "When group members log flights with a group, they'll show up here.",
     "addComment": "Add a comment...",
-    "viewAllComments": "View all {{count}} comments"
+    "viewAllComments": "View all {{count}} comments",
+    "participants": "participants",
+    "viewDetails": "Details"
   },
   "leaderboard": {
     "title": "Leaderboard",
