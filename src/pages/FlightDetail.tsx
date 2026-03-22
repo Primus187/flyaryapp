@@ -23,6 +23,7 @@ export default function FlightDetail() {
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
