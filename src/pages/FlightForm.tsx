@@ -179,6 +179,17 @@ export default function FlightForm() {
           }
         } catch (verifyErr) { console.error("Challenge verification failed:", verifyErr); }
       }
+
+      // Check for newly awarded badges
+      try {
+        const { data: newBadges } = await supabase.from("pilot_badges" as any)
+          .select("badge_key, unlocked_at").eq("user_id", user.id)
+          .gte("unlocked_at", new Date(Date.now() - 10000).toISOString());
+        if (newBadges && (newBadges as any[]).length > 0) {
+          toast({ title: t("badges.newBadge"), description: (newBadges as any[]).map(b => t(`badges.${b.badge_key}`)).join(", ") });
+        }
+      } catch (e) { console.error("Badge check failed:", e); }
+
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
