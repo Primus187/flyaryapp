@@ -68,6 +68,19 @@ export default function FlightDetail() {
     supabase.from("flight_training_items" as any).select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
       if (data) setTrainedManeuvers((data as any[]).map((d: any) => d.training_items?.name).filter(Boolean));
     });
+    // Load pilot profile
+    if (user) {
+      supabase.from("profiles").select("pilot_name, avatar_url").eq("user_id", user.id).single().then(async ({ data: prof }) => {
+        if (prof) {
+          let avatarUrl = prof.avatar_url || "";
+          if (avatarUrl && !avatarUrl.startsWith("http")) {
+            const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(avatarUrl, 3600);
+            if (signed?.signedUrl) avatarUrl = signed.signedUrl;
+          }
+          setPilotProfile({ pilot_name: prof.pilot_name || "", avatar_url: avatarUrl });
+        }
+      });
+    }
   }, [id]);
 
   const handleDelete = async () => { if (!confirm(t("flights.deleteFlight"))) return; await supabase.from("flights").delete().eq("id", id); toast({ title: t("flights.flightDeleted") }); navigate("/flights"); };
