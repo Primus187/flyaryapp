@@ -51,6 +51,45 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
+function PhotoCarousel({ urls }: { urls: string[] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+  const [selected, setSelected] = useState(0);
+
+  useState(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", () => setSelected(emblaApi.selectedScrollSnap()));
+  });
+
+  if (urls.length === 1) {
+    return (
+      <div className="aspect-square w-full overflow-hidden bg-muted">
+        <img src={urls[0]} alt="" className="w-full h-full object-cover" loading="lazy" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {urls.map((url, i) => (
+            <div key={i} className="flex-[0_0_100%] min-w-0 aspect-square bg-muted">
+              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {urls.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          {urls.map((_, i) => (
+            <div key={i} className={cn("w-1.5 h-1.5 rounded-full transition-colors", i === selected ? "bg-white" : "bg-white/40")} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
