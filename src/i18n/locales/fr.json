@@ -362,7 +362,8 @@
     "language": "Langue",
     "german": "Deutsch",
     "french": "Français",
-    "english": "English"
+    "english": "English",
+    "exportImport": "Export & Import"
   },
   "splash": {
     "loading": "Chargement..."
