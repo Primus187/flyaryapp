@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Plus, Trash2, Star, Shield } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Glider { id?: string; manufacturer: string; model: string; size: string; is_default: boolean; }
@@ -24,7 +24,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [form, setForm] = useState({ pilot_name: "", glider_info: "", bio: "", avatar_url: "", emergency_contact_name: "", emergency_contact_phone: "", blood_type: "", allergies: "", medical_notes: "" });
+  const [form, setForm] = useState({ pilot_name: "", glider_info: "", bio: "", avatar_url: "", emergency_contact_name: "", emergency_contact_phone: "", blood_type: "", allergies: "", medical_notes: "", shv_number: "", exam_theory_date: "", exam_practical_date: "", flight_school: "" });
   const [gliders, setGliders] = useState<Glider[]>([]);
   const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
   const [showAddGlider, setShowAddGlider] = useState(false);
@@ -32,14 +32,14 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
-      if (data) setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "" });
+      if (data) setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "", shv_number: (data as any).shv_number || "", exam_theory_date: (data as any).exam_theory_date || "", exam_practical_date: (data as any).exam_practical_date || "", flight_school: (data as any).flight_school || "" });
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
   }, [user]);
 
   const handleSave = async () => {
     if (!user) return; setLoading(true);
-    const { error } = await supabase.from("profiles").update({ pilot_name: form.pilot_name, glider_info: form.glider_info, avatar_url: form.avatar_url, bio: form.bio, emergency_contact_name: form.emergency_contact_name, emergency_contact_phone: form.emergency_contact_phone, blood_type: form.blood_type, allergies: form.allergies, medical_notes: form.medical_notes } as any).eq("user_id", user.id);
+    const { error } = await supabase.from("profiles").update({ pilot_name: form.pilot_name, glider_info: form.glider_info, avatar_url: form.avatar_url, bio: form.bio, emergency_contact_name: form.emergency_contact_name, emergency_contact_phone: form.emergency_contact_phone, blood_type: form.blood_type, allergies: form.allergies, medical_notes: form.medical_notes, shv_number: form.shv_number, exam_theory_date: form.exam_theory_date || null, exam_practical_date: form.exam_practical_date || null, flight_school: form.flight_school } as any).eq("user_id", user.id);
     if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     else toast({ title: t("profile.profileSaved") });
     setLoading(false);
@@ -94,6 +94,11 @@ export default function Profile() {
         </div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.bio")}</Label><Textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} placeholder={t("profile.bioPlaceholder")} rows={2} /></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.email")}</Label><Input value={user?.email || ""} disabled /></div>
+      </CardContent></Card>
+
+      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-primary" /> {t("profile.shvInfo")}</CardTitle></CardHeader><CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.shvNumber")}</Label><Input value={form.shv_number} onChange={e => setForm({ ...form, shv_number: e.target.value })} placeholder={t("profile.shvNumberPlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.flightSchool")}</Label><Input value={form.flight_school} onChange={e => setForm({ ...form, flight_school: e.target.value })} placeholder={t("profile.flightSchoolPlaceholder")} /></div></div>
+        <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.examTheoryDate")}</Label><Input type="date" value={form.exam_theory_date} onChange={e => setForm({ ...form, exam_theory_date: e.target.value })} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.examPracticalDate")}</Label><Input type="date" value={form.exam_practical_date} onChange={e => setForm({ ...form, exam_practical_date: e.target.value })} /></div></div>
       </CardContent></Card>
 
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base">{t("profile.myGliders")}</CardTitle><Button variant="ghost" size="sm" onClick={() => setShowAddGlider(true)}><Plus className="h-4 w-4 mr-1" /> {t("common.add")}</Button></CardHeader><CardContent className="space-y-2">

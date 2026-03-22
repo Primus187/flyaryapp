@@ -291,7 +291,14 @@
     "notLoggedIn": "Nicht angemeldet",
     "exportFailed": "Export fehlgeschlagen",
     "changePassword": "Passwort ändern",
-    "newPasswordPlaceholder": "Neues Passwort eingeben (mind. 6 Zeichen)"
+    "newPasswordPlaceholder": "Neues Passwort eingeben (mind. 6 Zeichen)",
+    "shvInfo": "SHV-Informationen",
+    "shvNumber": "SHV-Nummer",
+    "shvNumberPlaceholder": "z.B. 12345",
+    "examTheoryDate": "Theorieprüfung bestanden",
+    "examPracticalDate": "Praktische Prüfung bestanden",
+    "flightSchool": "Flugschule / Verein",
+    "flightSchoolPlaceholder": "z.B. Flugschule Appenzell"
   },
   "auth": {
     "signIn": "Melde dich an",

@@ -291,7 +291,14 @@
     "notLoggedIn": "Not logged in",
     "exportFailed": "Export failed",
     "changePassword": "Change password",
-    "newPasswordPlaceholder": "Enter new password (min. 6 characters)"
+    "newPasswordPlaceholder": "Enter new password (min. 6 characters)",
+    "shvInfo": "SHV Information",
+    "shvNumber": "SHV Number",
+    "shvNumberPlaceholder": "e.g. 12345",
+    "examTheoryDate": "Theory exam passed",
+    "examPracticalDate": "Practical exam passed",
+    "flightSchool": "Flight school / Club",
+    "flightSchoolPlaceholder": "e.g. Paragliding School XY"
   },
   "auth": {
     "signIn": "Sign in",

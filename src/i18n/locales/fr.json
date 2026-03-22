@@ -291,7 +291,14 @@
     "notLoggedIn": "Non connecté",
     "exportFailed": "Échec de l'export",
     "changePassword": "Changer le mot de passe",
-    "newPasswordPlaceholder": "Nouveau mot de passe (min. 6 caractères)"
+    "newPasswordPlaceholder": "Nouveau mot de passe (min. 6 caractères)",
+    "shvInfo": "Informations FSVL",
+    "shvNumber": "Numéro FSVL",
+    "shvNumberPlaceholder": "p.ex. 12345",
+    "examTheoryDate": "Examen théorique réussi",
+    "examPracticalDate": "Examen pratique réussi",
+    "flightSchool": "École de vol / Club",
+    "flightSchoolPlaceholder": "p.ex. École de parapente XY"
   },
   "auth": {
     "signIn": "Connectez-vous",
