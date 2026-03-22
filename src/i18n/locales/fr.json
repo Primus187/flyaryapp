@@ -167,6 +167,7 @@
     "editLocation": "Modifier le site",
     "createLocation": "Nouveau site",
     "noLocations": "Aucun site enregistré",
+    "updatingCountries": "Mise à jour des codes pays… ({{current}}/{{total}})",
     "deleteLocation": "Supprimer ce site ?",
     "locationDeleted": "Site supprimé",
     "locationUpdated": "Site mis à jour",
