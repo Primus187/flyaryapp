@@ -193,10 +193,11 @@ export default function FlightDetail() {
           {photos.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">
               {photos.map((p) => {
-                const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path);
+                const url = photoUrls[p.id];
+                if (!url) return null;
                 return (
                   <div key={p.id} className="relative group">
-                    <img src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(data.publicUrl)} />
+                    <img src={url} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(url)} />
                     <button
                       onClick={() => handleDeletePhoto(p.id, p.storage_path)}
                       className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
