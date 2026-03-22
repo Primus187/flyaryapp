@@ -136,6 +136,8 @@ export default function ChallengeGoalForm({ locations, onSave, onCancel }: Props
             locations={locations}
             value={locationId}
             onChange={handleLocationSelect}
+            filterType="takeoff"
+            onLocationCreated={() => {}}
           />
         </TabsContent>
       </Tabs>
