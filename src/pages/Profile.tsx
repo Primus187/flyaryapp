@@ -42,6 +42,9 @@ export default function Profile() {
   const [xcontestHasCredentials, setXcontestHasCredentials] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [badges, setBadges] = useState<{ badge_key: string; unlocked_at: string }[]>([]);
+  const [badgeStats, setBadgeStats] = useState<any>(null);
+  const [showAllBadges, setShowAllBadges] = useState(false);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
