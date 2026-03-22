@@ -65,6 +65,7 @@ export default function Profile() {
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
     // Store the storage path, not a public URL (bucket is now private)
     setForm(f => ({ ...f, avatar_url: path }));
+    resolveAvatarUrl(path);
     await supabase.from("profiles").update({ avatar_url: path } as any).eq("user_id", user.id);
     toast({ title: t("profile.photoUploaded") }); setUploading(false);
   };
