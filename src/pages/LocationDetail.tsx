@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Pencil, Trash2, MapPin, Mountain, Navigation, FileText, Plane } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -43,6 +43,16 @@ export default function LocationDetail() {
 
   const handleDelete = async () => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id!); toast({ title: t("locations.locationDeleted") }); navigate("/locations"); };
 
+  const handleDuplicate = async () => {
+    if (!user || !location) return;
+    const { id: _, created_at, updated_at, ...rest } = location;
+    const { data } = await supabase.from("locations").insert({ ...rest, name: `${location.name} (Kopie)`, user_id: user.id }).select().single();
+    if (data) {
+      toast({ title: t("locations.duplicated") });
+      navigate(`/locations/${data.id}`);
+    }
+  };
+
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
   if (!location) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("locations.notFound")}</div>;
 
@@ -55,7 +65,11 @@ export default function LocationDetail() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-xl font-bold tracking-tight">{location.name}</h1></div>
-        <div className="flex gap-1"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/locations`)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/locations?edit=${id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDuplicate}><Copy className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+        </div>
       </div>
       {hasCoords && (<div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 220 }}><MapContainer center={[location.latitude, location.longitude]} zoom={13} className="h-full w-full" zoomControl={false}><TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} /><Marker position={[location.latitude, location.longitude]} icon={markerIcon} /></MapContainer></div>)}
       <div className="grid grid-cols-2 gap-2">

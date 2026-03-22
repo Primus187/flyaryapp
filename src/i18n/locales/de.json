@@ -192,7 +192,12 @@
     "typeLabel": "Typ",
     "altitudeLabel": "Höhe",
     "country": "Land",
-    "countryPlaceholder": "Land wählen"
+    "countryPlaceholder": "Land wählen",
+    "duplicate": "Duplizieren",
+    "duplicated": "Ort dupliziert",
+    "lastFlight": "letzter",
+    "flightCount": "{{count}} Flüge",
+    "flightCount_one": "1 Flug"
   },
   "groups": {
     "title": "Gruppen",

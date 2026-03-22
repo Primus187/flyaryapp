@@ -192,7 +192,12 @@
     "typeLabel": "Type",
     "altitudeLabel": "Altitude",
     "country": "Pays",
-    "countryPlaceholder": "Choisir le pays"
+    "countryPlaceholder": "Choisir le pays",
+    "duplicate": "Dupliquer",
+    "duplicated": "Site dupliqué",
+    "lastFlight": "dernier",
+    "flightCount": "{{count}} vols",
+    "flightCount_one": "1 vol"
   },
   "groups": {
     "title": "Groupes",
