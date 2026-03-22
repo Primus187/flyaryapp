@@ -82,6 +82,17 @@ export default function Feed() {
       gIds = memberships.map(m => m.group_id);
       setGroupIds(gIds);
 
+      // Load group members for @mentions
+      const { data: members } = await supabase
+        .from("group_members")
+        .select("user_id")
+        .in("group_id", gIds);
+      if (members) {
+        const memberIds = [...new Set(members.map(m => m.user_id))];
+        const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
+        setGroupMembers((profs || []).map(p => ({ user_id: p.user_id, pilot_name: p.pilot_name || "Pilot" })));
+      }
+
       const { data: groups } = await supabase
         .from("groups")
         .select("id, name")
