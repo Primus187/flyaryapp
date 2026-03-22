@@ -1,63 +1,67 @@
 
 
-# Kontrollblatt / Training-Tracker
+# UI-Verbesserung: Orte in Navigation, Profil aufräumen, Manöver bei Flügen
 
-## Übersicht
-Ein "Kontrollblatt" (wie in den Screenshots) zum Tracken von Ausbildungsfortschritt und Fähigkeiten. Kategorien mit Übungen, Sterne-Bewertung (1-3), und Detailansicht mit Ziel, Inhalt, Fehler, Gefahr.
+## 3 Probleme, 3 Lösungen
 
-## Datenmodell
+### 1. Orte zurück in die Navigation
 
-### Migration 1: Tabellen
+**Problem**: Orte sind nur noch über Profil erreichbar, aber wichtig für den täglichen Gebrauch.
 
-**`training_categories`** — Kategorien (z.B. Theorie, Übungshang, Höhenflüge)
-- `id uuid PK`, `name text`, `sort_order int`, `created_at`
+**Lösung**: BottomNav von 5 auf 5 Tabs belassen, aber "Mehr"-Sektion im Profil durch ein **"Mehr"-Tab** ersetzen, das Dashboard + Orte + Profil vereint. Alternativ besser: **Orte als Unterseite des Logbuchs** integrieren — aber das passt nicht wirklich.
 
-**`training_items`** — Einzelne Übungen/Manöver
-- `id uuid PK`, `category_id uuid FK`, `name text`, `sort_order int`
-- `goal text` (Ziel), `content text` (Inhalt), `mistakes text` (Fehler), `danger text` (Gefahr)
+**Besserer Ansatz**: BottomNav bekommt einen **"Mehr"-Tab** (Grid-Icon) statt "Profil". Dieser öffnet eine Übersichtsseite mit Kacheln: Profil, Orte/Karte, Gruppen, Import, Export, Einstellungen. So bleiben 5 Tabs, aber Orte sind nur 1 Tap entfernt.
 
-**`training_progress`** — Benutzerbewertung pro Item
-- `id uuid PK`, `user_id uuid`, `item_id uuid FK → training_items`
-- `rating int` (1-3 Sterne), `notes text`, `updated_at`
-- UNIQUE(user_id, item_id)
+```text
+BottomNav: Dashboard | Logbuch | Training | Termine | Mehr
+                                                      ↓
+                                              Profil, Orte, Gruppen,
+                                              Import, Export, Settings
+```
 
-Vordefinierte Daten: Alle Kategorien und Items aus den Screenshots werden als Seed-Daten eingefügt (Theorie: Fluglehre, Wetterkunde, etc. / Übungshang: Auslegen, Slalomlauf, etc. / Höhenflüge: alle ~25 Items).
+### 2. Profil aufräumen
 
-RLS: 
-- `training_categories` und `training_items`: SELECT für alle authenticated
-- `training_progress`: CRUD nur eigene Daten (user_id = auth.uid())
+**Problem**: Profil enthält zu viel: Persönliche Daten, Schirme, Notfall-Infos, Passwort-Änderung, plus 6 Navigations-Buttons (Gruppen, Export, Import, Import-Orte, Einstellungen, Abmelden).
 
-### 2. Neue Seiten
+**Lösung**: Die Navigations-Buttons (Gruppen, Export, Import, Import-Orte, Einstellungen) wandern in die neue "Mehr"-Seite. Profil wird schlank:
+- Persönliche Daten (Name, Foto, Bio, Email)
+- Schirme
+- Notfall-Infos
+- Speichern-Button
 
-**`src/pages/Training.tsx`** — Kontrollblatt-Übersicht
-- Collapsible Accordion pro Kategorie
-- Jedes Item zeigt 3 Sterne (orange gefüllt nach Rating, grau wenn leer)
-- Antippen eines Items → Detailseite
-- Sterne direkt antippbar zum schnellen Bewerten
+Passwort-Änderung und Abmelden wandern in die Einstellungen-Seite.
 
-**`src/pages/TrainingItemDetail.tsx`** — Detail eines Manövers
-- Header mit Name
-- Sektionen: Ziel, Inhalt, Fehler (Bullet-Liste), Gefahr
-- Sterne-Bewertung editierbar
-- Optionales Notizfeld
+### 3. Trainierte Manöver beim Flug erfassen
 
-### 3. Navigation
-- Neuer Tab in BottomNav: `GraduationCap` Icon, Label "Training"
-- Route `/training` und `/training/:itemId`
+**Problem**: Beim Flug erfassen fehlt die Möglichkeit, trainierte Manöver zu dokumentieren.
 
-### 4. i18n
-- Neue Keys: `training.title`, `training.goal`, `training.content`, `training.mistakes`, `training.danger`, `training.rating`, `training.noRating`
+**Lösung**: 
+- Neue DB-Tabelle `flight_training_items` (flight_id, item_id) — Many-to-Many Verknüpfung
+- Im FlightForm: Multi-Select Dropdown mit den wichtigsten Training-Items (aus `training_items` Tabelle geladen)
+- Nur Anzeige der Items, keine Bewertung — die geschieht weiterhin auf der Training-Seite
+- In der Flight-Detailansicht: trainierte Manöver als Badges anzeigen
 
 ## Dateien
-- **Migration**: 3 Tabellen + Seed-Daten + RLS
-- **Neu**: `src/pages/Training.tsx`
-- **Neu**: `src/pages/TrainingItemDetail.tsx`
-- **Edit**: `src/App.tsx` — Routen
-- **Edit**: `src/components/BottomNav.tsx` — Neuer Tab
-- **Edit**: `src/i18n/locales/{de,fr,en}.json` — Übersetzungen
+
+### Migration
+- **Neu**: `flight_training_items` Tabelle (flight_id uuid FK → flights, item_id uuid FK → training_items, PK auf beide)
+- RLS: Eigene Flüge (via `is_owner_of_flight`)
+
+### Neue Seite
+- **Neu**: `src/pages/More.tsx` — "Mehr"-Übersichtsseite mit Kacheln (Profil, Orte, Gruppen, Import, Export, Einstellungen, Abmelden)
+
+### Edits
+- **`src/components/BottomNav.tsx`** — "Profil" → "Mehr" (/more, Grid-Icon)
+- **`src/pages/Profile.tsx`** — Navigations-Buttons entfernen, Passwort-Änderung entfernen (→ Settings), Abmelden entfernen (→ Mehr-Seite)
+- **`src/pages/Settings.tsx`** — Passwort-Änderung hierhin verschieben
+- **`src/pages/FlightForm.tsx`** — Multi-Select für trainierte Manöver hinzufügen
+- **`src/pages/FlightDetail.tsx`** — Trainierte Manöver als Badges anzeigen
+- **`src/App.tsx`** — Route `/more` hinzufügen
+- **`src/i18n/locales/{de,fr,en}.json`** — Neue Übersetzungen
 
 ## Technische Details
-- Seed-Daten enthalten alle ~50 Items aus den Screenshots mit deutschem Text für goal/content/mistakes/danger
-- Sterne-Bewertung: Upsert auf `training_progress` (INSERT ON CONFLICT UPDATE)
-- Accordion verwendet bestehende shadcn Accordion-Komponente
+
+- `flight_training_items`: Composite PK `(flight_id, item_id)`, RLS via `is_owner_of_flight(flight_id)`
+- Multi-Select im FlightForm: Training-Items laden, Popover mit Checkboxen, ausgewählte als Chips anzeigen
+- "Mehr"-Seite: Einfaches Grid mit Icons und Labels, kein komplexes Layout
 
