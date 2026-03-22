@@ -28,6 +28,7 @@ export interface FeedFlight {
   avatar_url: string;
   group_name: string;
   photoUrls: string[];
+  videoUrls: string[];
   trackPoints: [number, number][];
   takeoff: { latitude: number; longitude: number; name?: string } | null;
   landing: { latitude: number; longitude: number; name?: string } | null;
@@ -54,6 +55,11 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   if (hours < 24) return t("feed.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
   return t("feed.daysAgo", { count: days });
+}
+
+function getYoutubeEmbedUrl(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 }
 
 function PhotoCarousel({ urls }: { urls: string[] }) {
@@ -108,6 +114,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
   const initials = flight.pilot_name ? flight.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
   const hasTrack = flight.trackPoints.length > 0;
   const hasPhotos = flight.photoUrls.length > 0;
+  const hasVideos = flight.videoUrls && flight.videoUrls.length > 0;
 
   const formatDuration = (min: number) => {
     const h = Math.floor(min / 60); const m = min % 60;
@@ -153,6 +160,28 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           </p>
         </div>
       </div>
+
+      {/* Videos */}
+      {hasVideos && (
+        <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
+          <div className="space-y-0">
+            {flight.videoUrls.map((url, i) => {
+              const embedUrl = getYoutubeEmbedUrl(url);
+              return embedUrl ? (
+                <div key={i} className="relative w-full aspect-video bg-muted">
+                  <iframe
+                    src={embedUrl}
+                    title="YouTube video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        </DoubleTapHeart>
+      )}
 
       {/* Photos with double-tap like */}
       {hasPhotos && (

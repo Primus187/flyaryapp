@@ -154,7 +154,7 @@ export default function FlightDetail() {
 
   if (!flight) return <div className="p-4 text-center text-muted-foreground">{t("common.loading")}</div>;
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m} min`; };
-  const getYoutubeThumbnail = (url: string) => { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/); return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null; };
+  const getYoutubeEmbedUrl = (url: string) => { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/); return match ? `https://www.youtube.com/embed/${match[1]}` : null; };
 
   return (
     <div className="px-4 pt-4 pb-4 max-w-lg mx-auto space-y-4">
@@ -241,7 +241,29 @@ export default function FlightDetail() {
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent shadow-none [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1">{lightboxUrl && <img src={lightboxUrl} alt="" className="w-full h-auto max-h-[90vh] object-contain rounded-lg" />}</DialogContent>
       </Dialog>
       {videos.length > 0 && (
-        <Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader><CardContent className="pt-0 space-y-2">{videos.map((v) => { const thumb = getYoutubeThumbnail(v.youtube_url); return (<a key={v.id} href={v.youtube_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">{thumb && <img src={thumb} alt="" className="w-20 rounded" />}<div className="flex items-center gap-1.5 text-sm text-primary group-hover:underline"><Youtube className="h-4 w-4" /> {t("flights.watchVideo")}</div></a>); })}</CardContent></Card>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader>
+          <CardContent className="pt-0 space-y-3">
+            {videos.map((v) => {
+              const embedUrl = getYoutubeEmbedUrl(v.youtube_url);
+              return embedUrl ? (
+                <div key={v.id} className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
+                  <iframe
+                    src={embedUrl}
+                    title="YouTube video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                  />
+                </div>
+              ) : (
+                <a key={v.id} href={v.youtube_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Youtube className="h-4 w-4" /> {t("flights.watchVideo")}
+                </a>
+              );
+            })}
+          </CardContent>
+        </Card>
       )}
       <input ref={igcInputRef} type="file" accept=".igc" className="hidden" onChange={handleIGCUpload} />
       <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
