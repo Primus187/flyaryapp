@@ -53,7 +53,7 @@ export default function Locations() {
     else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
     resetForm(); setOpen(false); fetchLocations();
   };
-  const handleEdit = (loc: any) => { setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "" }); setEditId(loc.id); setOpen(true); };
+  const handleEdit = (loc: any) => { setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "" }); setEditId(loc.id); setOpen(true); };
   const handleDelete = async (id: string) => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id); toast({ title: t("locations.locationDeleted") }); fetchLocations(); };
   const handleMapSelect = (lat: number, lng: number) => { setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() })); };
 
