@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,9 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Trophy, Target, Check, Trash2, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
+import ChallengeGoalForm from "@/components/ChallengeGoalForm";
+
+const ChallengeMap = lazy(() => import("@/components/ChallengeMap"));
 
 interface Goal {
   id: string;
@@ -20,6 +20,10 @@ interface Goal {
   points: number;
   sort_order: number;
   location_name?: string;
+  latitude: number | null;
+  longitude: number | null;
+  radius_meters: number;
+  goal_type: string;
 }
 
 interface Participant {
@@ -30,6 +34,8 @@ interface Participant {
   completed: number;
   total_points: number;
 }
+
+interface LocationOption { id: string; name: string; type: string; latitude?: number; longitude?: number; }
 
 export default function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -44,12 +50,14 @@ export default function ChallengeDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showAddGoal, setShowAddGoal] = useState(false);
-  const [newGoalLabel, setNewGoalLabel] = useState("");
-  const [newGoalPoints, setNewGoalPoints] = useState("10");
+  const [locations, setLocations] = useState<LocationOption[]>([]);
 
   useEffect(() => {
     if (!user || !id) return;
     loadData();
+    supabase.from("locations").select("id, name, type, latitude, longitude").eq("user_id", user.id).order("name").then(({ data }) => {
+      if (data) setLocations(data);
+    });
   }, [user, id]);
 
   const loadData = async () => {
@@ -58,15 +66,12 @@ export default function ChallengeDetail() {
     if (!c) { navigate(-1); return; }
     setChallenge(c);
 
-    // Check admin
     const { data: adminCheck } = await supabase.rpc("is_group_admin", { _user_id: user!.id, _group_id: (c as any).group_id });
     setIsAdmin(!!adminCheck);
 
-    // Load goals
     const { data: goalsData } = await supabase.from("challenge_goals" as any).select("*").eq("challenge_id", id).order("sort_order" as any);
     const goalsList = (goalsData as any[] || []) as Goal[];
 
-    // Resolve location names for goals
     const locationIds = goalsList.filter(g => g.location_id).map(g => g.location_id!);
     if (locationIds.length) {
       const { data: locs } = await supabase.from("locations").select("id, name").in("id", locationIds);
@@ -75,15 +80,11 @@ export default function ChallengeDetail() {
     }
     setGoals(goalsList);
 
-    // Load all progress
     const { data: progressData } = await supabase.from("challenge_progress" as any).select("user_id, goal_id").eq("challenge_id", id);
     const progressList = (progressData as any[] || []);
-
-    // My progress
     const myGoalIds = new Set(progressList.filter(p => p.user_id === user!.id).map(p => p.goal_id));
     setMyProgress(myGoalIds);
 
-    // All participants
     const { data: members } = await supabase.from("group_members").select("user_id").eq("group_id", (c as any).group_id);
     const memberIds = (members || []).map(m => m.user_id);
     const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", memberIds);
@@ -108,8 +109,6 @@ export default function ChallengeDetail() {
     });
 
     const sortedParticipants = [...participantMap.values()].sort((a, b) => b.total_points - a.total_points);
-
-    // Resolve avatars
     for (const p of sortedParticipants) {
       if (p.avatar_url && !p.avatar_url.startsWith("http")) {
         const { data } = await supabase.storage.from("flight-photos").createSignedUrl(p.avatar_url, 3600);
@@ -118,7 +117,6 @@ export default function ChallengeDetail() {
         p.avatar_signed = p.avatar_url;
       }
     }
-
     setParticipants(sortedParticipants);
     setLoading(false);
   };
@@ -132,20 +130,22 @@ export default function ChallengeDetail() {
       await supabase.from("challenge_progress" as any).insert({ challenge_id: id, user_id: user.id, goal_id: goalId } as any);
       setMyProgress(prev => new Set(prev).add(goalId));
     }
-    // Reload participants
     loadData();
   };
 
-  const handleAddGoal = async () => {
-    if (!newGoalLabel.trim() || !id) return;
+  const handleAddGoal = async (goal: { label: string; points: number; goal_type: string; latitude: number | null; longitude: number | null; radius_meters: number; location_id: string | null }) => {
+    if (!id) return;
     await supabase.from("challenge_goals" as any).insert({
       challenge_id: id,
-      label: newGoalLabel.trim(),
-      points: parseInt(newGoalPoints) || 10,
+      label: goal.label,
+      points: goal.points,
       sort_order: goals.length,
+      goal_type: goal.goal_type,
+      latitude: goal.latitude,
+      longitude: goal.longitude,
+      radius_meters: goal.radius_meters,
+      location_id: goal.location_id,
     } as any);
-    setNewGoalLabel("");
-    setNewGoalPoints("10");
     setShowAddGoal(false);
     loadData();
     toast({ title: t("challenges.goalAdded") });
@@ -171,6 +171,14 @@ export default function ChallengeDetail() {
   const myCompleted = myProgress.size;
   const progress = totalGoals > 0 ? (myCompleted / totalGoals) * 100 : 0;
   const isComplete = totalGoals > 0 && myCompleted >= totalGoals;
+  const hasMapGoals = goals.some(g => g.latitude && g.longitude);
+
+  const goalTypeLabels: Record<string, string> = {
+    start: t("challenges.start"),
+    turnpoint: t("challenges.turnpoint"),
+    waypoint: t("challenges.waypoint"),
+    goal: t("challenges.goal"),
+  };
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
@@ -186,6 +194,13 @@ export default function ChallengeDetail() {
 
       {challenge.description && (
         <p className="text-sm text-muted-foreground">{challenge.description}</p>
+      )}
+
+      {/* Map */}
+      {hasMapGoals && (
+        <Suspense fallback={<div className="h-[200px] rounded-xl bg-muted animate-pulse" />}>
+          <ChallengeMap goals={goals} completedGoalIds={myProgress} />
+        </Suspense>
       )}
 
       {/* Progress overview */}
@@ -236,6 +251,9 @@ export default function ChallengeDetail() {
                 <p className={`text-sm ${done ? "line-through text-muted-foreground" : "font-medium"}`}>
                   {goal.label || goal.location_name || t("challenges.unknownGoal")}
                 </p>
+                {goal.goal_type !== "waypoint" && (
+                  <p className="text-[10px] text-muted-foreground">{goalTypeLabels[goal.goal_type] || goal.goal_type}</p>
+                )}
               </div>
               <Badge variant="secondary" className="text-[10px] shrink-0 tabular-nums">
                 {goal.points} pts
@@ -253,22 +271,11 @@ export default function ChallengeDetail() {
         })}
 
         {showAddGoal && (
-          <div className="p-3 rounded-xl border border-border/50 space-y-2">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">{t("challenges.goalLabel")}</Label>
-                <Input value={newGoalLabel} onChange={e => setNewGoalLabel(e.target.value)} placeholder={t("challenges.goalLabelPlaceholder")} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{t("challenges.points")}</Label>
-                <Input type="number" value={newGoalPoints} onChange={e => setNewGoalPoints(e.target.value)} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleAddGoal} disabled={!newGoalLabel.trim()}>{t("common.save")}</Button>
-              <Button size="sm" variant="outline" onClick={() => setShowAddGoal(false)}>{t("common.cancel")}</Button>
-            </div>
-          </div>
+          <ChallengeGoalForm
+            locations={locations}
+            onSave={handleAddGoal}
+            onCancel={() => setShowAddGoal(false)}
+          />
         )}
 
         {goals.length === 0 && !showAddGoal && (

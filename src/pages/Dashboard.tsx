@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [recent, setRecent] = useState<RecentFlight[]>([]);
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
+  const [challenges, setChallenges] = useState<ActiveChallenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
