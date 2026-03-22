@@ -90,6 +90,7 @@ const App = () => {
                   <Route path="/stats" element={<Stats />} />
                   <Route path="/import" element={<ImportFlights />} />
                   <Route path="/import-locations" element={<ImportLocations />} />
+                  <Route path="/legal" element={<Legal />} />
                 </Route>
                 <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                 

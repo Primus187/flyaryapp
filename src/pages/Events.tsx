@@ -6,13 +6,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Plus, Users, MapPin, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EmptyState from "@/components/EmptyState";
 
 interface Group { id: string; name: string; }
 interface EventRow { id: string; group_id: string; title: string; status: string; event_date: string; event_type: string | null; meeting_point: string | null; max_participants: number | null; signup_deadline: string | null; groups: { name: string } | null; }
 interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
+
+function EventsSkeleton() {
+  return (
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+      <div className="flex items-center justify-between"><Skeleton className="h-8 w-24" /><Skeleton className="h-9 w-24 rounded-md" /></div>
+      <Skeleton className="h-10 w-full rounded-md" />
+      {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+    </div>
+  );
+}
 
 export default function Events() {
   const { user } = useAuth();
@@ -67,7 +79,7 @@ export default function Events() {
   const upcoming = events.filter(e => new Date(e.event_date) >= now);
   const past = events.filter(e => new Date(e.event_date) < now);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
+  if (loading) return <EventsSkeleton />;
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
@@ -76,14 +88,22 @@ export default function Events() {
         {anyCanCreate && <Button size="sm" className="gap-1.5" onClick={() => navigate("/events/new")}><Plus className="h-4 w-4" /> {t("events.newEvent")}</Button>}
       </div>
       {groups.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground"><Users className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("events.noGroups")}</p><Button variant="outline" size="sm" className="mt-3" onClick={() => navigate("/groups")}>{t("events.manageGroups")}</Button></div>
+        <EmptyState
+          icon={Users}
+          title={t("events.noGroups")}
+          description={t("emptyState.eventsDesc")}
+          actionLabel={t("events.manageGroups")}
+          onAction={() => navigate("/groups")}
+        />
       ) : (
         <>
           <Select value={selectedGroup} onValueChange={setSelectedGroup}>
             <SelectTrigger className="w-full"><SelectValue placeholder={t("events.allGroups")} /></SelectTrigger>
             <SelectContent><SelectItem value="all">{t("events.allGroups")}</SelectItem>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
           </Select>
-          {upcoming.length === 0 && past.length === 0 && (<div className="text-center py-12 text-muted-foreground"><Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("events.noEvents")}</p></div>)}
+          {upcoming.length === 0 && past.length === 0 && (
+            <EmptyState icon={Calendar} title={t("events.noEvents")} description={t("emptyState.noEventsDesc")} />
+          )}
           {upcoming.length > 0 && <div className="space-y-2">{upcoming.map(ev => <EventCard key={ev.id} event={ev} signups={signups} userId={user!.id} onToggle={toggleSignup} onNavigate={() => navigate(`/events/${ev.id}`)} t={t} locale={locale} />)}</div>}
           {past.length > 0 && (<div className="space-y-2"><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-4">{t("events.pastEvents")}</h2>{past.map(ev => <EventCard key={ev.id} event={ev} signups={signups} userId={user!.id} onToggle={toggleSignup} onNavigate={() => navigate(`/events/${ev.id}`)} t={t} locale={locale} past />)}</div>)}
         </>

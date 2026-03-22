@@ -5,13 +5,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Plane, Clock, MapPin, BarChart3, Calendar, CheckCircle2, XCircle, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import OnboardingDialog from "@/components/OnboardingDialog";
+import EmptyState from "@/components/EmptyState";
 
 interface Stats { totalFlights: number; totalMinutes: number; uniqueTakeoffs: number; uniqueLandings: number; }
 interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; }
 interface UpcomingEvent { id: string; title: string; event_date: string; status: string; meeting_point: string | null; group_name: string; event_type: string | null; max_participants: number | null; }
 interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
+
+function DashboardSkeleton() {
+  return (
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div><Skeleton className="h-8 w-32 mb-1" /><Skeleton className="h-4 w-24" /></div>
+        <div className="flex gap-2"><Skeleton className="h-9 w-20 rounded-md" /><Skeleton className="h-9 w-20 rounded-md" /></div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2, 3, 4].map(i => (
+          <Card key={i} className="border-0 shadow-sm"><CardContent className="p-4"><Skeleton className="h-4 w-16 mb-2" /><Skeleton className="h-6 w-12" /></CardContent></Card>
+        ))}
+      </div>
+      <div><Skeleton className="h-4 w-28 mb-3" />{[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-lg mb-2" />)}</div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -21,6 +41,7 @@ export default function Dashboard() {
   const [recent, setRecent] = useState<RecentFlight[]>([]);
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
@@ -53,6 +74,7 @@ export default function Dashboard() {
           setEvents(upcomingEvents.map(e => ({ ...e, group_name: groupNames[e.group_id] || "" })));
         }
       }
+      setLoading(false);
     };
     fetchData();
   }, [user]);
@@ -75,8 +97,11 @@ export default function Dashboard() {
   const statusLabel: Record<string, string> = { announced: t("events.statusAnnounced"), confirmed: t("events.statusConfirmed"), cancelled: t("events.statusCancelled") };
   const statusColor = (s: string) => s === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : s === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
 
+  if (loading) return <DashboardSkeleton />;
+
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+      <OnboardingDialog />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{t("dashboard.title")}</h1>
@@ -149,12 +174,13 @@ export default function Dashboard() {
       <div>
         <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>
         {recent.length === 0 ? (
-          <Card className="border-dashed border-2">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground text-sm mb-3">{t("dashboard.noFlights")}</p>
-              <Button variant="outline" size="sm" onClick={() => navigate("/flights/new")}>{t("dashboard.firstFlight")}</Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Plane}
+            title={t("dashboard.noFlights")}
+            description={t("dashboard.noFlightsDesc")}
+            actionLabel={t("dashboard.firstFlight")}
+            onAction={() => navigate("/flights/new")}
+          />
         ) : (
           <div className="space-y-2">
             {recent.map((f) => (
