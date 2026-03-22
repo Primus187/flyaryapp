@@ -45,7 +45,7 @@ export default function Locations() {
     both: locations.filter((l) => l.type === "both"),
   }), [locations]);
 
-  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "" }); setEditId(null); };
+  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "" }); setEditId(null); };
   const handleSave = async () => {
     if (!user) return;
     const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null };
