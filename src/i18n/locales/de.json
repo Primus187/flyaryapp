@@ -109,7 +109,8 @@
     "thermalModerate": "Mässig",
     "thermalStrong": "Stark",
     "thermalTurbulent": "Turbulent",
-    "flight": "Flug"
+    "flight": "Flug",
+    "flightDuplicated": "Flug dupliziert"
   },
   "events": {
     "title": "Termine",
