@@ -155,6 +155,12 @@ export default function Locations() {
           </Dialog>
         </div>
       </div>
+      {backfillProgress && (
+        <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          {t("locations.updatingCountries", { current: backfillProgress.current, total: backfillProgress.total })}
+        </div>
+      )}
       {locations.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground"><MapPin className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("locations.noLocations")}</p></div>
       ) : (
