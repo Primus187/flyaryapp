@@ -273,6 +273,8 @@ export default function Profile() {
       </CardContent></Card>
 
       <Button onClick={handleSave} disabled={loading} className="w-full">{loading ? "..." : t("profile.saveProfile")}</Button>
+
+      <AvatarCropDialog file={cropFile} open={cropOpen} onClose={() => setCropOpen(false)} onCrop={handleCroppedAvatar} />
     </div>
   );
 }
