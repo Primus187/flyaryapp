@@ -328,6 +328,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     id: f.id,
     date: f.date,
     created_at: f.created_at,
+    published_at: f.published_at,
     glider: f.glider,
     duration_minutes: f.duration_minutes,
     altitude_gain: f.altitude_gain,
