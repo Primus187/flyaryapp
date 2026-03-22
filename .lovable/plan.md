@@ -1,82 +1,96 @@
 
 
-# Challenge-Achievements im Feed & Instagram-Interaktionen für alle Posts
+# Globale Meilensteine & Hexagonale Badges im Profil
 
 ## Übersicht
-Zwei Änderungen: (1) Challenges erscheinen nur noch als Achievement-Posts im Feed wenn ein Ziel oder die ganze Challenge geschafft wurde — mit Badge und Gamification-Design. (2) Alle Feed-Post-Typen (Flüge, Events, Challenges) bekommen einheitliche Instagram-Interaktionen (Likes + Kommentare).
+Implementierung des Achievement-Systems mit automatisch vergebenen Badges basierend auf Flugstatistiken. Die Badges werden als **Hexagone** im Stil des Referenzbildes dargestellt — mit Farbkodierung, Icons und prominenten Zahlen.
 
 ---
 
-## 1. Neues Datenmodell: Achievement-basierte Challenge-Posts
+## 1. Datenbank-Migration
 
-### Migration
-Neue Tabelle `feed_achievements`:
-- `id uuid PK`, `user_id uuid`, `challenge_id uuid`, `goal_id uuid NULL` (NULL = ganze Challenge geschafft)
-- `achievement_type text` ("goal_reached" oder "challenge_completed")
-- `created_at timestamptz DEFAULT now()`
-- RLS: Gruppenmitglieder können lesen, User kann eigene erstellen
+### Neue Tabelle `pilot_badges`
+```sql
+CREATE TABLE public.pilot_badges (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  badge_key text NOT NULL,
+  unlocked_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, badge_key)
+);
+ALTER TABLE public.pilot_badges ENABLE ROW LEVEL SECURITY;
+```
 
-Erweitere `feed_likes` und `feed_comments`:
-- `ADD COLUMN achievement_id uuid NULL` (neben bestehendem `flight_id`)
-- `ADD COLUMN event_id uuid NULL`
-- Bestehende Constraints anpassen: `flight_id` wird nullable
-- Neue RLS-Policies für Likes/Comments auf Events und Achievements
+### Trigger-Funktion `check_and_award_badges`
+- Wird nach INSERT/UPDATE auf `flights` ausgelöst
+- Prüft kumulative Stats (Fluganzahl, Gesamtzeit, Höhenmeter, Distanz, Startplätze)
+- Insertet neue Badges bei Erreichen der Schwellenwerte
 
-### Automatische Achievement-Erstellung
-In `FlightForm.tsx` bei der IGC-Verifikation: wenn ein Challenge-Goal erreicht wird, zusätzlich `feed_achievements`-Eintrag erstellen. Wenn alle Goals geschafft → zusätzlich "challenge_completed" Achievement.
-
----
-
-## 2. Feed-Logik anpassen (`src/pages/Feed.tsx`)
-
-- **Challenges entfernen** aus dem direkten Feed-Fetch (keine aktiven Challenges mehr anzeigen)
-- **Achievements laden**: `feed_achievements` mit Challenge-Titel, Goal-Label, Pilot-Info
-- Neuer FeedItem-Type: `"achievement"`
-- Likes/Comments generisch machen: `handleLikeToggle` und `handleComment` erweitern für `achievement_id` und `event_id`
-
----
-
-## 3. Achievement-Card (`src/components/FeedAchievementCard.tsx`)
-
-Gamification-Design:
-- Goldener/Amber Gradient-Header mit Glitter-Effekt (CSS animation)
-- Grosses Trophy-Icon bei Challenge-Komplett, Target-Icon bei einzelnem Goal
-- Pilot-Avatar + Name im Instagram-Header-Stil
-- Badge: "🏆 Challenge geschafft!" oder "🎯 Ziel erreicht!"
-- Challenge-Name + Goal-Label
-- Fortschrittsbalken (X/Y Goals)
-- Instagram-Interaktionen: Like-Heart, Kommentar-Icon, Kommentar-Liste, Kommentar-Input
+### Badge-Kategorien & Schwellenwerte
+- **Flüge**: 1, 10, 50, 100, 250
+- **Flugzeit (h)**: 1, 10, 50, 100, 500
+- **Höhenmeter**: 1k, 10k, 50k, 100k
+- **Distanz (km)**: 50, 200, 500, 1000
+- **Startplätze**: 5, 15, 30
+- **Rekorde**: Einzelflug >2h, >50km, >2000hm
 
 ---
 
-## 4. Instagram-Interaktionen für Events (`src/components/FeedEventCard.tsx`)
+## 2. Badge-Definitionen (`src/lib/badges.ts`)
 
-- Like-Button (Heart) und Kommentar-Section hinzufügen (identisch zu FeedCard)
-- Props erweitern: `onLikeToggle`, `onComment`, `likes`, `comments`
-- Interface `FeedEvent` erweitern: `likes`, `comments` Arrays
-
----
-
-## 5. Generische Like/Comment-Infrastruktur
-
-Die bestehenden `feed_likes` und `feed_comments` Tabellen werden erweitert um polymorphe Referenzen (flight_id, event_id, achievement_id). Feed.tsx bekommt generische Handler die den richtigen ID-Typ setzen.
+Zentrale Konfiguration mit:
+- `key`, `category`, `threshold`, `icon`, `color` (amber/green/gold je Kategorie)
+- Tier-System: Bronze → Silber → Gold (bestimmt Hexagon-Rahmenfarbe)
+- Keine DB-Einträge für Definitionen — nur Code
 
 ---
 
-## 6. i18n-Keys
-- `feed.goalReached`, `feed.challengeCompleted`, `feed.achievementBy`
-- `feed.xOfYGoals`, `feed.congratulations`
+## 3. Hexagonale Badge-Komponente (`src/components/HexBadge.tsx`)
+
+Visuelles Design inspiriert vom Referenzbild:
+- **SVG-basiertes Hexagon** mit abgerundeten Ecken
+- **Farbige Fläche** im Hexagon (grün, amber, gold je nach Kategorie/Tier)
+- **Prominente Zahl** in der Mitte (z.B. "10", "800", "5")
+- **Kleines Icon** unterhalb der Zahl (Stern, Uhr, Blatt etc.)
+- **Weisser Sticker-Rand** um das Hexagon
+- **Banner-Element** oben für höhere Tiers (wie im Bild)
+- Gesperrte Badges: grau/transparent mit Lock-Overlay
+- Fortschrittsanzeige bei gesperrten Badges (z.B. "37/50")
+
+---
+
+## 4. Badge-Grid im Profil (`src/components/BadgeGrid.tsx`)
+
+- 3-Spalten-Grid mit allen Badges
+- Freigeschaltete farbig, gesperrte grau/dimmed
+- Klick öffnet Detail-Sheet mit Beschreibung, Freischalt-Datum, Fortschritt
+- Gruppiert nach Kategorie (Flüge, Zeit, Höhe, Distanz, etc.)
+
+---
+
+## 5. Profil-Integration (`src/pages/Profile.tsx`)
+
+- Neuer Abschnitt "Errungenschaften" nach XP-Card
+- Kompakte Badge-Vorschau (letzte 6 freigeschaltete) + "Alle anzeigen"-Button
+- Badges aus `pilot_badges` laden bei Page-Load
+
+---
+
+## 6. Badge-Benachrichtigung
+
+In `FlightForm.tsx` nach Speichern: neue Badges aus Response prüfen und Toast mit Badge-Icon anzeigen.
+
+---
+
+## 7. i18n
+Badge-Namen und -Beschreibungen in de/en/fr. Kategorienamen, "Errungenschaften", "freigeschaltet am", etc.
 
 ## Dateien
-- **Migration**: `feed_achievements` Tabelle + `feed_likes`/`feed_comments` erweitern
-- **Neu**: `src/components/FeedAchievementCard.tsx`
-- **Edit**: `src/pages/Feed.tsx` — Achievements statt Challenges, generische Interaktionen
-- **Edit**: `src/components/FeedEventCard.tsx` — Likes + Comments hinzufügen
-- **Edit**: `src/pages/FlightForm.tsx` — Achievement-Einträge bei IGC-Verifikation
+- **Migration**: `pilot_badges` + Trigger `check_and_award_badges`
+- **Neu**: `src/lib/badges.ts` — Badge-Definitionen
+- **Neu**: `src/components/HexBadge.tsx` — Hexagonale SVG-Badge-Komponente
+- **Neu**: `src/components/BadgeGrid.tsx` — Grid + Detail-Sheet
+- **Edit**: `src/pages/Profile.tsx` — Errungenschaften-Abschnitt
+- **Edit**: `src/pages/FlightForm.tsx` — Badge-Toast nach Speichern
 - **Edit**: `src/i18n/locales/{de,en,fr}.json`
-
-## Technische Details
-- `feed_likes.flight_id` wird nullable, dafür kommt ein CHECK constraint: genau einer von `flight_id`, `event_id`, `achievement_id` muss gesetzt sein
-- Bestehende Likes/Comments für Flüge bleiben kompatibel
-- Achievement-Card nutzt CSS `@keyframes` für subtile Gold-Shimmer-Animation auf dem Badge
 
