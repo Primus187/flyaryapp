@@ -36,6 +36,7 @@ import TrainingItemDetail from "@/pages/TrainingItemDetail";
 import Legal from "@/pages/Legal";
 import Leaderboard from "@/pages/Leaderboard";
 import ChallengeDetail from "@/pages/ChallengeDetail";
+import PilotProfile from "@/pages/PilotProfile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -97,6 +98,7 @@ const App = () => {
                   <Route path="/legal" element={<Legal />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/challenges/:id" element={<ChallengeDetail />} />
+                  <Route path="/pilot/:userId" element={<PilotProfile />} />
                 </Route>
                 <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                 

@@ -633,5 +633,16 @@
     "year_round_2025_desc": "At least 1 flight every month of 2025",
     "year_round_2026": "Year-Round Pilot 2026",
     "year_round_2026_desc": "At least 1 flight every month of 2026"
+  },
+  "pilotProfile": {
+    "flights": "Flights",
+    "hours": "Hours",
+    "altitude": "Altitude",
+    "sites": "Sites",
+    "topBadges": "Top Achievements",
+    "glider": "Glider",
+    "flightSchool": "Flight School",
+    "shvNumber": "SHV Number",
+    "viewPublicProfile": "View public profile"
   }
 }

@@ -633,5 +633,16 @@
     "year_round_2025_desc": "Au moins 1 vol chaque mois de 2025",
     "year_round_2026": "Pilote toute l'année 2026",
     "year_round_2026_desc": "Au moins 1 vol chaque mois de 2026"
+  },
+  "pilotProfile": {
+    "flights": "Vols",
+    "hours": "Heures",
+    "altitude": "Dénivelé",
+    "sites": "Sites",
+    "topBadges": "Top réalisations",
+    "glider": "Voile",
+    "flightSchool": "École de vol",
+    "shvNumber": "Numéro FSVL",
+    "viewPublicProfile": "Voir le profil public"
   }
 }

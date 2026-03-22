@@ -145,7 +145,8 @@ export default function Leaderboard() {
             return (
               <div
                 key={entry.user_id}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                onClick={() => navigate(`/pilot/${entry.user_id}`)}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer active:scale-[0.98] ${
                   isMe ? "bg-primary/10 border border-primary/20" : "bg-card border border-border/30"
                 } ${rank <= 3 ? "shadow-sm" : ""}`}
               >

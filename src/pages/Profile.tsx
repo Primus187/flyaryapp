@@ -245,6 +245,12 @@ export default function Profile() {
           >
             {t("leaderboard.viewLeaderboard")} →
           </button>
+          <button
+            onClick={() => navigate(`/pilot/${user?.id}`)}
+            className="w-full text-xs text-muted-foreground font-medium hover:underline text-center"
+          >
+            {t("pilotProfile.viewPublicProfile")} →
+          </button>
         </div>
       </Card>
 
