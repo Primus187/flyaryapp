@@ -12,6 +12,7 @@ export interface FeedChallenge {
   description: string | null;
   start_date: string;
   end_date: string | null;
+  created_at: string;
   group_id: string;
   group_name: string;
   total_goals: number;
