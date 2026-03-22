@@ -403,10 +403,11 @@ export default function Feed() {
 async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedFlight[]> {
   let query = supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, published_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
-    .order("published_at", { ascending: false, nullsFirst: false })
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
     .limit(PAGE_SIZE);
 
   if (cursor) {
@@ -477,8 +478,14 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
   const trackMap: Record<string, [number, number][]> = {};
   if (tracks) {
     for (const t of tracks) {
-      if (t.track_data && Array.isArray(t.track_data)) {
-        trackMap[t.flight_id] = (t.track_data as [number, number][]).slice(0, 500);
+      if (t.track_data) {
+        const raw = t.track_data as any;
+        const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
+        if (arr && Array.isArray(arr)) {
+          trackMap[t.flight_id] = arr.slice(0, 500).map((p: any) =>
+            (Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]) as [number, number]
+          );
+        }
       }
     }
   }
@@ -494,6 +501,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     date: f.date,
     created_at: f.created_at,
     published_at: f.published_at,
+    feedDescription: f.comments || null,
     glider: f.glider,
     duration_minutes: f.duration_minutes,
     altitude_gain: f.altitude_gain,

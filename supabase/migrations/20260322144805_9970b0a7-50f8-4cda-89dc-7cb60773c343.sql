@@ -1,0 +1,1 @@
+UPDATE public.flights SET published_at = created_at WHERE published_to_feed = true AND published_at IS NULL;

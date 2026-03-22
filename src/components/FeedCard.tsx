@@ -17,6 +17,8 @@ export interface FeedFlight {
   id: string;
   date: string;
   created_at: string;
+  published_at: string | null;
+  feedDescription: string | null;
   glider: string | null;
   duration_minutes: number | null;
   altitude_gain: number | null;
@@ -156,7 +158,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           <p className="text-[11px] text-muted-foreground">
             {flight.group_name && <span>{flight.group_name} · </span>}
             {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff_name} · </>}
-            {relativeTime(flight.created_at, t)}
+            {relativeTime(flight.published_at || flight.created_at, t)}
           </p>
         </div>
       </div>
@@ -236,12 +238,18 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           <p className="text-sm font-semibold">{flight.likes.length} {flight.likes.length === 1 ? "Like" : "Likes"}</p>
         )}
 
-        {flight.glider && (
+        {flight.feedDescription && (
           <p className="text-sm">
             <span className="font-semibold mr-1">{flight.pilot_name}</span>
-            <span className="text-muted-foreground">🪂 {flight.glider}</span>
-            {flight.altitude_gain && <span className="text-muted-foreground"> · ↑{flight.altitude_gain}m</span>}
-            {flight.landing_name && <span className="text-muted-foreground"> · → {flight.landing_name}</span>}
+            <span className="text-muted-foreground">{flight.feedDescription}</span>
+          </p>
+        )}
+
+        {flight.glider && (
+          <p className="text-sm text-muted-foreground">
+            🪂 {flight.glider}
+            {flight.altitude_gain ? ` · ↑${flight.altitude_gain}m` : ""}
+            {flight.landing_name ? ` · → ${flight.landing_name}` : ""}
           </p>
         )}
 
