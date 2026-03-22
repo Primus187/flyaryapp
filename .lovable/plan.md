@@ -1,96 +1,58 @@
 
 
-# Globale Meilensteine & Hexagonale Badges im Profil
+# Öffentliches Profil mit Badges & besserer Visualisierung
 
 ## Übersicht
-Implementierung des Achievement-Systems mit automatisch vergebenen Badges basierend auf Flugstatistiken. Die Badges werden als **Hexagone** im Stil des Referenzbildes dargestellt — mit Farbkodierung, Icons und prominenten Zahlen.
+Neue Seite `/pilot/:userId` als öffentliches Profil, sichtbar für Gruppenmitglieder. Zeigt Hero-Header mit Avatar, Pilotname, Bio, XP/Level, Top-Badges und Flugstatistiken. Der eigene User kann sein öffentliches Profil über die Profile-Seite vorab sehen.
 
----
+## 1. Neue Seite: `src/pages/PilotProfile.tsx`
 
-## 1. Datenbank-Migration
+Öffentliches Profil mit Instagram-artigem Layout:
+- **Hero-Header**: Grosser Avatar mit Gradient-Ring, Pilotname, Level-Badge, Bio
+- **Stats-Leiste**: Flüge | Stunden | XP als kompakte Zahlen-Row (wie Instagram Follower/Posts)
+- **Top-Badges-Sektion**: Die 6 besten (höchster Tier zuerst) freigeschalteten Badges als HexBadge-Grid
+- **Klick auf "Alle Badges"** öffnet BadgeGrid vollständig
+- **Glider-Info**: Aktiver Schirm
+- **Flugschule / SHV-Nummer** falls vorhanden
 
-### Neue Tabelle `pilot_badges`
-```sql
-CREATE TABLE public.pilot_badges (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  badge_key text NOT NULL,
-  unlocked_at timestamptz DEFAULT now(),
-  UNIQUE(user_id, badge_key)
-);
-ALTER TABLE public.pilot_badges ENABLE ROW LEVEL SECURITY;
-```
+Daten werden geladen aus: `profiles`, `pilot_xp`, `pilot_badges`, `flights` (aggregiert), `pilot_gliders`
 
-### Trigger-Funktion `check_and_award_badges`
-- Wird nach INSERT/UPDATE auf `flights` ausgelöst
-- Prüft kumulative Stats (Fluganzahl, Gesamtzeit, Höhenmeter, Distanz, Startplätze)
-- Insertet neue Badges bei Erreichen der Schwellenwerte
+## 2. Routing
 
-### Badge-Kategorien & Schwellenwerte
-- **Flüge**: 1, 10, 50, 100, 250
-- **Flugzeit (h)**: 1, 10, 50, 100, 500
-- **Höhenmeter**: 1k, 10k, 50k, 100k
-- **Distanz (km)**: 50, 200, 500, 1000
-- **Startplätze**: 5, 15, 30
-- **Rekorde**: Einzelflug >2h, >50km, >2000hm
+**Edit: `src/App.tsx`**
+- Neue Route: `/pilot/:userId` → `PilotProfile`
 
----
+## 3. Verlinkung
 
-## 2. Badge-Definitionen (`src/lib/badges.ts`)
+**Edit: `src/pages/Leaderboard.tsx`**
+- Klick auf Leaderboard-Eintrag navigiert zu `/pilot/${entry.user_id}`
 
-Zentrale Konfiguration mit:
-- `key`, `category`, `threshold`, `icon`, `color` (amber/green/gold je Kategorie)
-- Tier-System: Bronze → Silber → Gold (bestimmt Hexagon-Rahmenfarbe)
-- Keine DB-Einträge für Definitionen — nur Code
+**Edit: `src/components/FeedCard.tsx`**
+- Klick auf Pilotname/Avatar im Feed navigiert zu `/pilot/${userId}`
 
----
+## 4. Profil-Vorschau
 
-## 3. Hexagonale Badge-Komponente (`src/components/HexBadge.tsx`)
+**Edit: `src/pages/Profile.tsx`**
+- Button "Öffentliches Profil ansehen" der zu `/pilot/${user.id}` navigiert
 
-Visuelles Design inspiriert vom Referenzbild:
-- **SVG-basiertes Hexagon** mit abgerundeten Ecken
-- **Farbige Fläche** im Hexagon (grün, amber, gold je nach Kategorie/Tier)
-- **Prominente Zahl** in der Mitte (z.B. "10", "800", "5")
-- **Kleines Icon** unterhalb der Zahl (Stern, Uhr, Blatt etc.)
-- **Weisser Sticker-Rand** um das Hexagon
-- **Banner-Element** oben für höhere Tiers (wie im Bild)
-- Gesperrte Badges: grau/transparent mit Lock-Overlay
-- Fortschrittsanzeige bei gesperrten Badges (z.B. "37/50")
+## 5. RLS
 
----
+Bestehende Policies reichen: `profiles`, `pilot_badges`, `pilot_xp` haben bereits "Group members can view"-Policies. `pilot_gliders` braucht eine neue SELECT-Policy für Gruppenmitglieder.
 
-## 4. Badge-Grid im Profil (`src/components/BadgeGrid.tsx`)
+## 6. Migration
 
-- 3-Spalten-Grid mit allen Badges
-- Freigeschaltete farbig, gesperrte grau/dimmed
-- Klick öffnet Detail-Sheet mit Beschreibung, Freischalt-Datum, Fortschritt
-- Gruppiert nach Kategorie (Flüge, Zeit, Höhe, Distanz, etc.)
-
----
-
-## 5. Profil-Integration (`src/pages/Profile.tsx`)
-
-- Neuer Abschnitt "Errungenschaften" nach XP-Card
-- Kompakte Badge-Vorschau (letzte 6 freigeschaltete) + "Alle anzeigen"-Button
-- Badges aus `pilot_badges` laden bei Page-Load
-
----
-
-## 6. Badge-Benachrichtigung
-
-In `FlightForm.tsx` nach Speichern: neue Badges aus Response prüfen und Toast mit Badge-Icon anzeigen.
-
----
+- Neue RLS-Policy auf `pilot_gliders`: Gruppenmitglieder können Gliders sehen
 
 ## 7. i18n
-Badge-Namen und -Beschreibungen in de/en/fr. Kategorienamen, "Errungenschaften", "freigeschaltet am", etc.
+
+Neue Keys: `pilotProfile.title`, `pilotProfile.flights`, `pilotProfile.hours`, `pilotProfile.topBadges`, `pilotProfile.viewPublicProfile`
 
 ## Dateien
-- **Migration**: `pilot_badges` + Trigger `check_and_award_badges`
-- **Neu**: `src/lib/badges.ts` — Badge-Definitionen
-- **Neu**: `src/components/HexBadge.tsx` — Hexagonale SVG-Badge-Komponente
-- **Neu**: `src/components/BadgeGrid.tsx` — Grid + Detail-Sheet
-- **Edit**: `src/pages/Profile.tsx` — Errungenschaften-Abschnitt
-- **Edit**: `src/pages/FlightForm.tsx` — Badge-Toast nach Speichern
+- **Neu**: `src/pages/PilotProfile.tsx`
+- **Migration**: RLS für `pilot_gliders` (Gruppenmitglieder lesen)
+- **Edit**: `src/App.tsx` — Route
+- **Edit**: `src/pages/Leaderboard.tsx` — Navigation zu Profil
+- **Edit**: `src/components/FeedCard.tsx` — Navigation zu Profil
+- **Edit**: `src/pages/Profile.tsx` — "Profil ansehen"-Button
 - **Edit**: `src/i18n/locales/{de,en,fr}.json`
 
