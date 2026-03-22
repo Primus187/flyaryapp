@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin } from "lucide-react";
+import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin, Scale } from "lucide-react";
 
 const tiles = [
   { path: "/profile", icon: User, labelKey: "more.profile" },
@@ -11,6 +11,7 @@ const tiles = [
   { path: "/import", icon: Upload, labelKey: "more.importFlights" },
   { path: "/import-locations", icon: MapPin, labelKey: "more.importLocations" },
   { path: "/settings", icon: Settings, labelKey: "more.settings" },
+  { path: "/legal", icon: Scale, labelKey: "more.legal" },
 ];
 
 export default function More() {

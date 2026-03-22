@@ -46,6 +46,7 @@
     "upcomingEvents": "Upcoming events",
     "recentFlights": "Recent flights",
     "noFlights": "No flights recorded yet",
+    "noFlightsDesc": "Record your first flight and start building your logbook.",
     "firstFlight": "Record your first flight"
   },
   "flights": {
@@ -418,11 +419,51 @@
     "importFlights": "Import flights",
     "importLocations": "Import sites",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "legal": "Legal"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",
     "selectManeuvers": "Select maneuvers...",
     "noManeuvers": "No maneuvers"
+  },
+  "onboarding": {
+    "welcome": "Welcome to Flyary! 🪂",
+    "intro": "Your digital logbook for paragliding pilots. Get started in three easy steps.",
+    "step1Title": "Complete your profile",
+    "step1Desc": "Add your name and your gliders.",
+    "step2Title": "Create your first site",
+    "step2Desc": "Add your takeoff spot with coordinates.",
+    "step3Title": "Log your first flight",
+    "step3Desc": "Record your first flight in the logbook.",
+    "goToProfile": "Go to profile",
+    "goToLocations": "Go to sites",
+    "goToFlight": "Log flight",
+    "skip": "Later"
+  },
+  "emptyState": {
+    "flightsDesc": "Record your first flight and start building your logbook.",
+    "eventsDesc": "Join a group to see events and sign up.",
+    "noEventsDesc": "Your groups haven't created any events yet."
+  },
+  "offline": {
+    "banner": "You're offline — some features may be limited."
+  },
+  "legal": {
+    "title": "Legal",
+    "impressumTitle": "Legal Notice",
+    "impressumText": "Flyary is a digital logbook for paragliding pilots. Operator and contact details can be found in your account settings.",
+    "privacyTitle": "Privacy Policy",
+    "privacyIntro": "Protecting your personal data is important to us. Below we inform you about how your data is collected and used.",
+    "dataCollectionTitle": "What data is collected?",
+    "dataCollectionText": "We store the data you enter in the app: email address, profile information, flight data, locations, and group information.",
+    "dataUsageTitle": "How is the data used?",
+    "dataUsageText": "Your data is used solely to provide the app's features. No data is shared with third parties for advertising purposes.",
+    "dataStorageTitle": "Where is the data stored?",
+    "dataStorageText": "Data is stored on secure servers in the EU and transmitted encrypted.",
+    "rightsTitle": "Your rights",
+    "rightsText": "You have the right to access, correct, and delete your personal data at any time. Contact us through the app.",
+    "contactTitle": "Contact",
+    "contactText": "For privacy-related questions, please contact the app operator."
   }
 }
