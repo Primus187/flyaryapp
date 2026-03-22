@@ -46,6 +46,11 @@ export default function Profile() {
   const [badges, setBadges] = useState<{ badge_key: string; unlocked_at: string }[]>([]);
   const [badgeStats, setBadgeStats] = useState<any>(null);
   const [showAllBadges, setShowAllBadges] = useState(false);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
+  const [coverSignedUrl, setCoverSignedUrl] = useState("");
+  const [profilePhotos, setProfilePhotos] = useState<{ id: string; storage_path: string; signedUrl?: string }[]>([]);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
