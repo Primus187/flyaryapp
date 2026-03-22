@@ -131,8 +131,9 @@ export default function FlightDetail() {
     setUploadingPhoto(true);
     try {
       for (const photo of Array.from(files)) {
-        const path = `${user.id}/${id}/${Date.now()}-${photo.name}`;
-        const { error: storageErr } = await supabase.storage.from("flight-photos").upload(path, photo);
+        const compressed = await compressImage(photo, 1600, 1600, 0.8);
+        const path = `${user.id}/${id}/${Date.now()}-${compressed.name}`;
+        const { error: storageErr } = await supabase.storage.from("flight-photos").upload(path, compressed);
         if (storageErr) throw storageErr;
         const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: id, storage_path: path });
         if (insertErr) throw insertErr;
