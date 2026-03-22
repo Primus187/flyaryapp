@@ -420,7 +420,8 @@
     "importLocations": "Import sites",
     "settings": "Settings",
     "signOut": "Sign out",
-    "legal": "Legal"
+    "legal": "Legal",
+    "leaderboard": "Leaderboard"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",
@@ -472,5 +473,13 @@
     "noFlightsDesc": "When group members log flights with a group, they'll show up here.",
     "addComment": "Add a comment...",
     "viewAllComments": "View all {{count}} comments"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "allGroups": "All groups",
+    "noData": "No XP data yet",
+    "level": "Level",
+    "viewLeaderboard": "View leaderboard",
+    "xpExplainer": "XP are calculated automatically: Flight time × 2 + Altitude gain × 0.5 + Distance × 10. Log more flights to level up!"
   }
 }

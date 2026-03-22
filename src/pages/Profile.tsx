@@ -4,14 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Plus, Trash2, Star, Shield, Award } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
+const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
 
 interface Glider { id?: string; manufacturer: string; model: string; size: string; is_default: boolean; }
 
@@ -28,12 +31,11 @@ export default function Profile() {
   const [gliders, setGliders] = useState<Glider[]>([]);
   const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
   const [showAddGlider, setShowAddGlider] = useState(false);
-
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
+  const [xp, setXp] = useState<{ total_xp: number; level: number } | null>(null);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
-    // If it's already a full URL (legacy), use as-is; otherwise create signed URL
     if (url.startsWith("http")) { setAvatarSignedUrl(url); return; }
     const { data } = await supabase.storage.from("flight-photos").createSignedUrl(url, 3600);
     if (data?.signedUrl) setAvatarSignedUrl(data.signedUrl);
@@ -43,11 +45,12 @@ export default function Profile() {
     if (!user) return;
     supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
       if (data) {
-        setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "", shv_number: (data as any).shv_number || "", exam_theory_date: (data as any).exam_theory_date || "", exam_practical_date: (data as any).exam_practical_date || "", flight_school: (data as any).flight_school || "" });
+        setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
       }
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
+    supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
   }, [user]);
 
   const handleSave = async () => {
@@ -63,7 +66,6 @@ export default function Profile() {
     const ext = file.name.split(".").pop(); const path = `${user.id}/avatar.${ext}`;
     const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
-    // Store the storage path, not a public URL (bucket is now private)
     setForm(f => ({ ...f, avatar_url: path }));
     resolveAvatarUrl(path);
     await supabase.from("profiles").update({ avatar_url: path } as any).eq("user_id", user.id);
@@ -98,9 +100,53 @@ export default function Profile() {
 
   const initials = form.pilot_name ? form.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : user?.email?.[0]?.toUpperCase() || "?";
 
+  // XP progress calculation
+  const xpLevel = xp?.level || 1;
+  const xpTotal = xp?.total_xp || 0;
+  const xpForCurrentLevel = LEVEL_THRESHOLDS[xpLevel - 1] || 0;
+  const xpForNextLevel = LEVEL_THRESHOLDS[xpLevel] || xpTotal;
+  const xpProgress = xpForNextLevel > xpForCurrentLevel
+    ? ((xpTotal - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100
+    : 100;
+
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <h1 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
+
+      {/* XP Card */}
+      <Card className="border-0 shadow-sm overflow-hidden">
+        <div className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Zap className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t("leaderboard.level")} {xpLevel}</p>
+                <p className="text-sm font-semibold">{LEVEL_NAMES[xpLevel - 1]}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-bold tabular-nums">{xpTotal.toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground">XP</p>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Progress value={xpProgress} className="h-2" />
+            <div className="flex justify-between text-[10px] text-muted-foreground tabular-nums">
+              <span>{xpForCurrentLevel.toLocaleString()}</span>
+              <span>{xpLevel < 13 ? xpForNextLevel.toLocaleString() : "∞"}</span>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/leaderboard")}
+            className="w-full text-xs text-primary font-medium hover:underline text-center"
+          >
+            {t("leaderboard.viewLeaderboard")} →
+          </button>
+        </div>
+      </Card>
+
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-col items-center gap-4">
           <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">

@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin, Scale } from "lucide-react";
+import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin, Scale, Trophy } from "lucide-react";
 
 const tiles = [
   { path: "/profile", icon: User, labelKey: "more.profile" },
   { path: "/training", icon: GraduationCap, labelKey: "more.training" },
   { path: "/map", icon: Map, labelKey: "more.map" },
   { path: "/groups", icon: Users, labelKey: "more.groups" },
+  { path: "/leaderboard", icon: Trophy, labelKey: "more.leaderboard" },
   { path: "/import", icon: Upload, labelKey: "more.importFlights" },
   { path: "/import-locations", icon: MapPin, labelKey: "more.importLocations" },
   { path: "/settings", icon: Settings, labelKey: "more.settings" },

@@ -420,7 +420,8 @@
     "importLocations": "Importer des sites",
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
-    "legal": "Mentions légales"
+    "legal": "Mentions légales",
+    "leaderboard": "Classement"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
@@ -472,5 +473,13 @@
     "noFlightsDesc": "Quand les membres du groupe enregistrent des vols avec un groupe, ils apparaîtront ici.",
     "addComment": "Ajouter un commentaire...",
     "viewAllComments": "Voir les {{count}} commentaires"
+  },
+  "leaderboard": {
+    "title": "Classement",
+    "allGroups": "Tous les groupes",
+    "noData": "Pas encore de données XP",
+    "level": "Niveau",
+    "viewLeaderboard": "Voir le classement",
+    "xpExplainer": "Les XP sont calculés automatiquement : Temps de vol × 2 + Gain d'altitude × 0.5 + Distance × 10. Enregistrez plus de vols pour monter de niveau !"
   }
 }

@@ -34,6 +34,7 @@ import ImportLocations from "@/pages/ImportLocations";
 import Training from "@/pages/Training";
 import TrainingItemDetail from "@/pages/TrainingItemDetail";
 import Legal from "@/pages/Legal";
+import Leaderboard from "@/pages/Leaderboard";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ const App = () => {
                   <Route path="/import" element={<ImportFlights />} />
                   <Route path="/import-locations" element={<ImportLocations />} />
                   <Route path="/legal" element={<Legal />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
                 </Route>
                 <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                 

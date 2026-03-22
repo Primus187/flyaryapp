@@ -466,7 +466,8 @@
     "importLocations": "Orte importieren",
     "settings": "Einstellungen",
     "signOut": "Abmelden",
-    "legal": "Rechtliches"
+    "legal": "Rechtliches",
+    "leaderboard": "Rangliste"
   },
   "feed": {
     "title": "Feed",
@@ -474,5 +475,13 @@
     "noFlightsDesc": "Sobald Gruppenmitglieder Flüge mit Gruppenzuordnung erfassen, erscheinen sie hier.",
     "addComment": "Kommentar...",
     "viewAllComments": "Alle {{count}} Kommentare anzeigen"
+  },
+  "leaderboard": {
+    "title": "Rangliste",
+    "allGroups": "Alle Gruppen",
+    "noData": "Noch keine XP-Daten vorhanden",
+    "level": "Level",
+    "viewLeaderboard": "Rangliste anzeigen",
+    "xpExplainer": "XP werden automatisch berechnet: Flugzeit × 2 + Höhenmeter × 0.5 + Distanz × 10. Erfasse mehr Flüge um aufzusteigen!"
   }
 }
