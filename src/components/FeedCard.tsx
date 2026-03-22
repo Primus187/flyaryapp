@@ -158,7 +158,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           <p className="text-[11px] text-muted-foreground">
             {flight.group_name && <span>{flight.group_name} · </span>}
             {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff_name} · </>}
-            {relativeTime(flight.created_at, t)}
+            {relativeTime(flight.published_at || flight.created_at, t)}
           </p>
         </div>
       </div>
