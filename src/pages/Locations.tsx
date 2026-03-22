@@ -48,7 +48,7 @@ export default function Locations() {
   const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "" }); setEditId(null); };
   const handleSave = async () => {
     if (!user) return;
-    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null };
+    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null };
     if (editId) { await supabase.from("locations").update(data).eq("id", editId); toast({ title: t("locations.locationUpdated") }); }
     else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
     resetForm(); setOpen(false); fetchLocations();
