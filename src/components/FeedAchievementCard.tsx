@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, Heart, MessageCircle, Send, ChevronRight, Bookmark } from "lucide-react";
+import { Trophy, Target, Heart, MessageCircle, ChevronRight, Bookmark } from "lucide-react";
+import MentionCommentInput from "@/components/MentionCommentInput";
 import { cn } from "@/lib/utils";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
 
