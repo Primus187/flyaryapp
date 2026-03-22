@@ -93,6 +93,18 @@ export default function FlightDetail() {
         ))}
       </div>
       {flight.comments && (<Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
+      {trainedManeuvers.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-wrap gap-1.5">
+              {trainedManeuvers.map((name) => (
+                <Badge key={name} variant="secondary">{name}</Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {photos.length > 0 && (
         <Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.photos")}</CardTitle></CardHeader><CardContent className="pt-0"><div className="grid grid-cols-3 gap-2">{photos.map((p) => { const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path); return (<img key={p.id} src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(data.publicUrl)} />); })}</div></CardContent></Card>
       )}
