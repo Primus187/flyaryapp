@@ -20,6 +20,7 @@ export default function FlightDetail() {
   const { t, i18n } = useTranslation();
   const [flight, setFlight] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
@@ -31,9 +32,18 @@ export default function FlightDetail() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
-  const loadPhotos = () => {
+  const loadPhotos = async () => {
     if (!id) return;
-    supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
+    const { data } = await supabase.from("flight_photos").select("*").eq("flight_id", id);
+    const photoList = data || [];
+    setPhotos(photoList);
+    // Create signed URLs for all photos
+    const urls: Record<string, string> = {};
+    for (const p of photoList) {
+      const { data: signedData } = await supabase.storage.from("flight-photos").createSignedUrl(p.storage_path, 3600);
+      if (signedData?.signedUrl) urls[p.id] = signedData.signedUrl;
+    }
+    setPhotoUrls(urls);
   };
 
   useEffect(() => {
