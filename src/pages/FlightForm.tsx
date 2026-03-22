@@ -11,10 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
-import { ArrowLeft, Upload, Plus, X, Youtube } from "lucide-react";
+import { ArrowLeft, Upload, Plus, X, Youtube, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface LocationOption { id: string; name: string; type: string; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
+interface TrainingItem { id: string; name: string; category_name: string; }
 
 export default function FlightForm() {
   const { id } = useParams();
