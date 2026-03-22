@@ -197,7 +197,10 @@
     "duplicated": "Ort dupliziert",
     "lastFlight": "letzter",
     "flightCount": "{{count}} Flüge",
-    "flightCount_one": "1 Flug"
+    "flightCount_one": "1 Flug",
+    "searchLocation": "Ort suchen...",
+    "createNew": "+ Neuen Ort erstellen",
+    "noResults": "Kein Ort gefunden"
   },
   "groups": {
     "title": "Gruppen",

@@ -197,7 +197,10 @@
     "duplicated": "Site dupliqué",
     "lastFlight": "dernier",
     "flightCount": "{{count}} vols",
-    "flightCount_one": "1 vol"
+    "flightCount_one": "1 vol",
+    "searchLocation": "Rechercher un site...",
+    "createNew": "+ Créer un nouveau site",
+    "noResults": "Aucun site trouvé"
   },
   "groups": {
     "title": "Groupes",
