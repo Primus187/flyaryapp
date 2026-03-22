@@ -90,9 +90,20 @@ export default function Profile() {
     setLoading(false);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file || !user) return; setUploading(true);
-    const ext = file.name.split(".").pop(); const path = `${user.id}/avatar.${ext}`;
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCropFile(file);
+    setCropOpen(true);
+    e.target.value = "";
+  };
+
+  const handleCroppedAvatar = async (blob: Blob) => {
+    if (!user) return;
+    setCropOpen(false);
+    setUploading(true);
+    const path = `${user.id}/avatar.jpg`;
+    const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
     const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
     setForm(f => ({ ...f, avatar_url: path }));
