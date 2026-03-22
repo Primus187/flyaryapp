@@ -154,7 +154,7 @@ export default function Locations() {
                 <span>
                   {(loc.altitude || (loc.latitude === 0 && loc.longitude === 0)) && " · "}
                   <Plane className="inline h-3 w-3 -mt-0.5" /> {stats.count}
-                  {stats.lastDate && <span> · {t("locations.lastFlight")}: {new Date(stats.lastDate).toLocaleDateString(locale, { day: "2-digit", month: "short" })}</span>}
+                  {stats.lastDate && <span> · {t("locations.lastFlight")}: {new Date(stats.lastDate).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" })}</span>}
                 </span>
               )}
             </p>
