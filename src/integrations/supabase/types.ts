@@ -78,6 +78,67 @@ export type Database = {
           },
         ]
       }
+      feed_comments: {
+        Row: {
+          created_at: string
+          flight_id: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flight_id: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flight_id?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_likes: {
+        Row: {
+          created_at: string
+          flight_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flight_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flight_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_likes_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_events: {
         Row: {
           chat_link: string | null
