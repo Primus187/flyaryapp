@@ -118,8 +118,8 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 p-3 pb-2 cursor-pointer" onClick={() => navigate(`/flights/${flight.id}`)}>
-        <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
+      <div className="flex items-center gap-3 p-3 pb-2">
+        <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/pilot/${flight.user_id}`); }}>
           <Avatar className="h-8 w-8 border-2 border-background">
             <AvatarImage src={flight.avatar_url} />
             <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
