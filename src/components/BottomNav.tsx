@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, BookOpen, Calendar, MapPin, User } from "lucide-react";
+import { LayoutDashboard, BookOpen, Calendar, MapPin, User, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function BottomNav() {
