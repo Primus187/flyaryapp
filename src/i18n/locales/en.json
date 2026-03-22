@@ -520,6 +520,15 @@
     "you": "You",
     "loadingMore": "Loading more..."
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "liked": "liked",
+    "commented": "commented on",
+    "yourFlight": "your flight",
+    "yourEvent": "your event",
+    "yourAchievement": "your achievement"
+  },
   "leaderboard": {
     "title": "Leaderboard",
     "allGroups": "All groups",

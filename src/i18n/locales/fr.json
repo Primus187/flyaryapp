@@ -520,6 +520,15 @@
     "you": "Toi",
     "loadingMore": "Chargement..."
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "liked": "a aimé",
+    "commented": "a commenté",
+    "yourFlight": "ton vol",
+    "yourEvent": "ton événement",
+    "yourAchievement": "ton achievement"
+  },
   "leaderboard": {
     "title": "Classement",
     "allGroups": "Tous les groupes",
