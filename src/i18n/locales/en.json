@@ -643,6 +643,7 @@
     "glider": "Glider",
     "flightSchool": "Flight School",
     "shvNumber": "SHV Number",
-    "viewPublicProfile": "View public profile"
+    "viewPublicProfile": "View public profile",
+    "photos": "Photos"
   }
 }

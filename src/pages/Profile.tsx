@@ -367,6 +367,88 @@ export default function Profile() {
         </CardContent>
       </Card>
 
+      {/* Cover Photo */}
+      <Card className="border-0 shadow-sm overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ImagePlus className="h-4 w-4 text-primary" /> {t("profile.coverPhoto")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {coverSignedUrl ? (
+            <div className="relative rounded-xl overflow-hidden">
+              <img src={coverSignedUrl} alt="Cover" className="w-full h-32 object-cover" />
+              <button
+                onClick={handleRemoveCover}
+                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center active:scale-95"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="w-full h-24 rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
+              disabled={uploading}
+            >
+              <ImagePlus className="h-5 w-5" />
+              <span className="text-xs">{t("profile.addCoverPhoto")}</span>
+            </button>
+          )}
+          {coverSignedUrl && (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="text-xs text-primary font-medium"
+              disabled={uploading}
+            >
+              {t("profile.changeCoverPhoto")}
+            </button>
+          )}
+          <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverPhotoSelect} />
+        </CardContent>
+      </Card>
+
+      {/* Profile Photos Gallery */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">{t("profile.photoGallery")}</CardTitle>
+          <button
+            onClick={() => photoInputRef.current?.click()}
+            className="text-xs text-primary font-medium flex items-center gap-1"
+            disabled={uploading}
+          >
+            <Plus className="h-3 w-3" /> {t("common.add")}
+          </button>
+        </CardHeader>
+        <CardContent>
+          {profilePhotos.length === 0 ? (
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              className="w-full h-20 rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
+              disabled={uploading}
+            >
+              <ImagePlus className="h-5 w-5" />
+              <span className="text-xs">{t("profile.addPhotos")}</span>
+            </button>
+          ) : (
+            <div className="grid grid-cols-3 gap-1.5">
+              {profilePhotos.map(photo => (
+                <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden group">
+                  <img src={photo.signedUrl} alt="" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => handleDeleteProfilePhoto(photo.id, photo.storage_path)}
+                    className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input ref={photoInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAddProfilePhoto} />
+        </CardContent>
+      </Card>
+
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-col items-center gap-4">
           <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">

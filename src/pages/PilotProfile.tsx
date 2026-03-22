@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import BadgeGrid from "@/components/BadgeGrid";
 import HexBadge from "@/components/HexBadge";
-import { BADGES, type BadgeDefinition } from "@/lib/badges";
+import { BADGES } from "@/lib/badges";
 import { ChevronLeft, Trophy, Clock, Mountain, MapPin, Wind } from "lucide-react";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
@@ -18,6 +18,7 @@ interface PilotData {
   pilot_name: string;
   bio: string | null;
   avatar_url: string | null;
+  cover_photo_url: string | null;
   flight_school: string | null;
   shv_number: string | null;
 }
@@ -37,47 +38,56 @@ export default function PilotProfile() {
 
   const [profile, setProfile] = useState<PilotData | null>(null);
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [xp, setXp] = useState<{ total_xp: number; level: number }>({ total_xp: 0, level: 1 });
   const [badges, setBadges] = useState<{ badge_key: string; unlocked_at: string }[]>([]);
   const [gliders, setGliders] = useState<GliderData[]>([]);
   const [stats, setStats] = useState({ flights: 0, hours: 0, altitudeGain: 0, distance: 0, uniqueSites: 0 });
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const isOwnProfile = userId === user?.id;
+  const [profilePhotos, setProfilePhotos] = useState<{ signedUrl: string }[]>([]);
 
   useEffect(() => {
     if (!userId) return;
     loadProfile();
   }, [userId]);
 
+  const resolveUrl = async (path: string | null): Promise<string> => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    const { data } = await supabase.storage.from("flight-photos").createSignedUrl(path, 3600);
+    return data?.signedUrl || "";
+  };
+
   const loadProfile = async () => {
     setLoading(true);
     try {
-      // Load all data in parallel
-      const [profileRes, xpRes, badgesRes, glidersRes, flightsRes] = await Promise.all([
-        supabase.from("profiles").select("pilot_name, bio, avatar_url, flight_school, shv_number").eq("user_id", userId!).single(),
+      const [profileRes, xpRes, badgesRes, glidersRes, flightsRes, photosRes] = await Promise.all([
+        supabase.from("profiles").select("pilot_name, bio, avatar_url, cover_photo_url, flight_school, shv_number").eq("user_id", userId!).single(),
         supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", userId!).single(),
         supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", userId!),
         supabase.from("pilot_gliders").select("manufacturer, model, size, is_default").eq("user_id", userId!),
         supabase.from("flights").select("duration_minutes, altitude_gain, distance_km, takeoff_location_id").eq("user_id", userId!),
+        supabase.from("profile_photos" as any).select("storage_path").eq("user_id", userId!).order("sort_order"),
       ]);
 
       if (profileRes.data) {
-        setProfile(profileRes.data as PilotData);
-        // Resolve avatar
-        const url = profileRes.data.avatar_url;
-        if (url && !url.startsWith("http")) {
-          const { data } = await supabase.storage.from("flight-photos").createSignedUrl(url, 3600);
-          if (data?.signedUrl) setAvatarUrl(data.signedUrl);
-        } else if (url) {
-          setAvatarUrl(url);
-        }
+        const d = profileRes.data as any;
+        setProfile(d as PilotData);
+        setAvatarUrl(await resolveUrl(d.avatar_url));
+        setCoverUrl(await resolveUrl(d.cover_photo_url));
       }
 
       if (xpRes.data) setXp(xpRes.data as any);
       if (badgesRes.data) setBadges(badgesRes.data.map(b => ({ badge_key: b.badge_key, unlocked_at: b.unlocked_at || "" })));
       if (glidersRes.data) setGliders(glidersRes.data);
+
+      if (photosRes.data && (photosRes.data as any[]).length > 0) {
+        const photos = await Promise.all((photosRes.data as any[]).map(async (p: any) => ({
+          signedUrl: await resolveUrl(p.storage_path),
+        })));
+        setProfilePhotos(photos);
+      }
 
       if (flightsRes.data) {
         const flights = flightsRes.data;
@@ -97,10 +107,12 @@ export default function PilotProfile() {
 
   if (loading) {
     return (
-      <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-        <div className="h-48 rounded-2xl bg-muted animate-pulse" />
-        <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="h-32 rounded-xl bg-muted animate-pulse" />
+      <div className="max-w-lg mx-auto">
+        <div className="h-40 bg-muted animate-pulse" />
+        <div className="px-4 space-y-4 mt-4">
+          <div className="h-24 rounded-xl bg-muted animate-pulse" />
+          <div className="h-32 rounded-xl bg-muted animate-pulse" />
+        </div>
       </div>
     );
   }
@@ -120,9 +132,8 @@ export default function PilotProfile() {
   const xpForNext = LEVEL_THRESHOLDS[level] || totalXp;
   const xpProgress = xpForNext > xpForCurrent ? ((totalXp - xpForCurrent) / (xpForNext - xpForCurrent)) * 100 : 100;
 
-  // Top badges: sorted by tier (gold > silver > bronze), max 6
   const unlockedSet = new Set(badges.map(b => b.badge_key));
-  const tierOrder = { gold: 0, silver: 1, bronze: 2 };
+  const tierOrder: Record<string, number> = { gold: 0, silver: 1, bronze: 2 };
   const topBadges = BADGES
     .filter(b => unlockedSet.has(b.key))
     .sort((a, b) => (tierOrder[a.tier] || 2) - (tierOrder[b.tier] || 2))
@@ -132,41 +143,54 @@ export default function PilotProfile() {
 
   return (
     <div className="pb-4 max-w-lg mx-auto">
-      {/* Back button */}
-      <div className="px-4 pt-4">
-        <button onClick={() => navigate(-1)} className="p-1 active:scale-95 transition-transform">
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      </div>
+      {/* Cover Photo + Avatar Hero */}
+      <div className="relative">
+        {coverUrl ? (
+          <div className="h-40 w-full overflow-hidden">
+            <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          </div>
+        ) : (
+          <div className="h-32 w-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20" />
+        )}
 
-      {/* Hero Header */}
-      <div className="px-4 pt-2 pb-6 text-center space-y-3">
-        <div className="flex justify-center">
-          <div className="p-[3px] rounded-full bg-gradient-to-tr from-primary via-accent to-secondary">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-3 left-3 h-8 w-8 rounded-full bg-background/70 backdrop-blur flex items-center justify-center active:scale-95 transition-transform"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        {/* Avatar overlapping cover */}
+        <div className="flex justify-center -mt-14 relative z-10">
+          <div className="p-[3px] rounded-full bg-gradient-to-tr from-primary via-accent to-secondary shadow-lg">
             <Avatar className="h-24 w-24 border-[3px] border-background">
               <AvatarImage src={avatarUrl} className="object-cover" />
               <AvatarFallback className="text-2xl bg-muted">{initials}</AvatarFallback>
             </Avatar>
           </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">{profile.pilot_name || t("common.unknown")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Lv.{level} · {LEVEL_NAMES[level - 1]}
-          </p>
-        </div>
+      </div>
+
+      {/* Name, Level, Bio */}
+      <div className="px-4 pt-3 pb-5 text-center space-y-1.5">
+        <h1 className="text-xl font-bold tracking-tight">{profile.pilot_name || t("common.unknown")}</h1>
+        <p className="text-sm text-muted-foreground">
+          Lv.{level} · {LEVEL_NAMES[level - 1]}
+        </p>
         {profile.bio && (
-          <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">{profile.bio}</p>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mt-2">{profile.bio}</p>
         )}
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-1 px-4 mb-4">
         {[
-          { value: stats.flights, label: t("pilotProfile.flights"), icon: Wind },
-          { value: stats.hours, label: t("pilotProfile.hours"), icon: Clock },
-          { value: stats.altitudeGain.toLocaleString(), label: t("pilotProfile.altitude"), icon: Mountain },
-          { value: stats.uniqueSites, label: t("pilotProfile.sites"), icon: MapPin },
+          { value: stats.flights, label: t("pilotProfile.flights") },
+          { value: stats.hours, label: t("pilotProfile.hours") },
+          { value: stats.altitudeGain.toLocaleString(), label: t("pilotProfile.altitude") },
+          { value: stats.uniqueSites, label: t("pilotProfile.sites") },
         ].map((s, i) => (
           <div key={i} className="text-center p-2 rounded-xl bg-card border border-border/30">
             <p className="text-lg font-bold tabular-nums">{s.value}</p>
@@ -216,6 +240,26 @@ export default function PilotProfile() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Photo Gallery */}
+      {profilePhotos.length > 0 && (
+        <div className="px-4 mb-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">{t("pilotProfile.photos")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-1.5">
+                {profilePhotos.map((photo, i) => (
+                  <div key={i} className="aspect-square rounded-lg overflow-hidden">
+                    <img src={photo.signedUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Glider Info */}
       {defaultGlider && (
