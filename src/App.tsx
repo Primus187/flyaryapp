@@ -34,6 +34,7 @@ import ImportLocations from "@/pages/ImportLocations";
 import Training from "@/pages/Training";
 import TrainingItemDetail from "@/pages/TrainingItemDetail";
 import Legal from "@/pages/Legal";
+import Leaderboard from "@/pages/Leaderboard";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
