@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "logbook": "Carnet de vol",
+    "training": "Formation",
     "events": "Événements",
     "locations": "Sites",
     "profile": "Profil"
