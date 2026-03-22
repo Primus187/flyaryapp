@@ -114,6 +114,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
   const initials = flight.pilot_name ? flight.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
   const hasTrack = flight.trackPoints.length > 0;
   const hasPhotos = flight.photoUrls.length > 0;
+  const hasVideos = flight.videoUrls && flight.videoUrls.length > 0;
 
   const formatDuration = (min: number) => {
     const h = Math.floor(min / 60); const m = min % 60;
