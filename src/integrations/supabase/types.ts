@@ -742,6 +742,27 @@ export type Database = {
         }
         Relationships: []
       }
+      pilot_badges: {
+        Row: {
+          badge_key: string
+          id: string
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          id?: string
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          id?: string
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pilot_gliders: {
         Row: {
           created_at: string
