@@ -81,10 +81,8 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
     onLikeToggle(event.id);
   }, [isLiked, onLikeToggle, event.id]);
 
-  const handleSubmitComment = () => {
-    if (!comment.trim()) return;
-    onComment(event.id, comment.trim());
-    setComment("");
+  const handleSubmitComment = (msg: string) => {
+    onComment(event.id, msg);
   };
 
   return (
