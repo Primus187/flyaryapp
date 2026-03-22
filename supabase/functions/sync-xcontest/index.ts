@@ -228,7 +228,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const password = decryptPassword(profile.xcontest_password_encrypted, encryptionKey);
+    // Password is stored as simple base64 from the frontend
+    let password: string;
+    try {
+      password = decryptPassword(profile.xcontest_password_encrypted, encryptionKey);
+    } catch {
+      // Fallback: plain base64 encoding from frontend
+      password = atob(profile.xcontest_password_encrypted);
+    }
 
     // Login to XContest
     const cookies = await loginToXContest(profile.xcontest_username, password);
