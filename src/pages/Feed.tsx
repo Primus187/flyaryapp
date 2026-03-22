@@ -54,7 +54,6 @@ export default function Feed() {
 
     const groupIds = memberships.map(m => m.group_id);
 
-    // Fetch groups for names
     const { data: groups } = await supabase
       .from("groups")
       .select("id, name")
@@ -62,17 +61,16 @@ export default function Feed() {
     const groupMap: Record<string, string> = {};
     groups?.forEach(g => { groupMap[g.id] = g.name; });
 
-    // Parallel: flights, events, challenges
     const [flightsRes, eventsRes, challengesRes] = await Promise.all([
-      fetchFlights(user.id, groupIds),
+      fetchFlights(user.id, groupIds, groupMap),
       fetchEvents(user.id, groupIds, groupMap),
       fetchChallenges(user.id, groupIds, groupMap),
     ]);
 
     const allItems: FeedItem[] = [
-      ...flightsRes.map(f => ({ type: "flight" as const, date: f.date, data: f })),
+      ...flightsRes.map(f => ({ type: "flight" as const, date: f.created_at, data: f })),
       ...eventsRes.map(e => ({ type: "event" as const, date: e.event_date, data: e })),
-      ...challengesRes.map(c => ({ type: "challenge" as const, date: c.start_date, data: c })),
+      ...challengesRes.map(c => ({ type: "challenge" as const, date: c.created_at || c.start_date, data: c })),
     ];
 
     allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -170,18 +168,18 @@ export default function Feed() {
 
 // ── helpers ──
 
-async function fetchFlights(userId: string, groupIds: string[]): Promise<FeedFlight[]> {
+async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedFlight[]> {
   const { data: groupFlights } = await supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
-    .neq("user_id", userId)
-    .order("date", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(20);
 
   if (!groupFlights || groupFlights.length === 0) return [];
 
   const pilotIds = [...new Set(groupFlights.map(f => f.user_id))];
+  if (!pilotIds.includes(userId)) pilotIds.push(userId);
   const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", pilotIds);
 
   const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
@@ -200,10 +198,23 @@ async function fetchFlights(userId: string, groupIds: string[]): Promise<FeedFli
   }
 
   const flightIds = groupFlights.map(f => f.id);
-  const { data: photos } = await supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds);
 
+  // Load photos, likes, comments, igc tracks in parallel
+  const [photosRes, likesRes, commentsRes, tracksRes] = await Promise.all([
+    supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds),
+    supabase.from("feed_likes").select("flight_id, user_id").in("flight_id", flightIds),
+    supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true }),
+    supabase.from("igc_tracks").select("flight_id, track_data").in("flight_id", flightIds),
+  ]);
+
+  const photos = photosRes.data;
+  const likes = likesRes.data;
+  const comments = commentsRes.data;
+  const tracks = tracksRes.data;
+
+  // Build photo map
   const photoMap: Record<string, string[]> = {};
-  if (photos) {
+  if (photos && photos.length > 0) {
     const paths = [...new Set(photos.map(p => p.storage_path))];
     const signedMap: Record<string, string> = {};
     for (const path of paths) {
@@ -216,23 +227,27 @@ async function fetchFlights(userId: string, groupIds: string[]): Promise<FeedFli
     });
   }
 
-  const { data: likes } = await supabase.from("feed_likes").select("flight_id, user_id").in("flight_id", flightIds);
-  const { data: comments } = await supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true });
+  // Build track map
+  const trackMap: Record<string, [number, number][]> = {};
+  if (tracks) {
+    for (const t of tracks) {
+      if (t.track_data && Array.isArray(t.track_data)) {
+        trackMap[t.flight_id] = (t.track_data as [number, number][]).slice(0, 500);
+      }
+    }
+  }
 
+  // Resolve commenter profiles
   const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
   if (commenterIds.length > 0) {
     const { data: cp } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", commenterIds);
     cp?.forEach(p => { profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: "" }; });
   }
 
-  if (!profileMap[userId]) {
-    const { data: own } = await supabase.from("profiles").select("pilot_name").eq("user_id", userId).single();
-    profileMap[userId] = { pilot_name: own?.pilot_name || "Du", avatar_url: "" };
-  }
-
   return groupFlights.map((f: any) => ({
     id: f.id,
     date: f.date,
+    created_at: f.created_at,
     glider: f.glider,
     duration_minutes: f.duration_minutes,
     altitude_gain: f.altitude_gain,
@@ -242,7 +257,11 @@ async function fetchFlights(userId: string, groupIds: string[]): Promise<FeedFli
     user_id: f.user_id,
     pilot_name: profileMap[f.user_id]?.pilot_name || "Pilot",
     avatar_url: profileMap[f.user_id]?.avatar_url || "",
+    group_name: groupMap[f.group_id] || "",
     photoUrls: photoMap[f.id] || [],
+    trackPoints: trackMap[f.id] || [],
+    takeoff: f.locations?.latitude ? { latitude: f.locations.latitude, longitude: f.locations.longitude, name: f.locations.name } : null,
+    landing: f.land?.latitude ? { latitude: f.land.latitude, longitude: f.land.longitude, name: f.land.name } : null,
     likes: (likes || []).filter(l => l.flight_id === f.id),
     comments: (comments || []).filter(c => c.flight_id === f.id).map(c => ({
       ...c,
@@ -254,10 +273,10 @@ async function fetchFlights(userId: string, groupIds: string[]): Promise<FeedFli
 async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedEvent[]> {
   const { data: events } = await supabase
     .from("flight_events")
-    .select("id, title, description, event_date, event_type, meeting_point, max_participants, status, group_id")
+    .select("id, title, description, event_date, event_type, meeting_point, max_participants, status, group_id, created_at")
     .in("group_id", groupIds)
     .gte("event_date", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-    .order("event_date", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(10);
 
   if (!events || events.length === 0) return [];
@@ -289,10 +308,10 @@ async function fetchChallenges(userId: string, groupIds: string[], groupMap: Rec
 
   const { data: challenges } = await supabase
     .from("challenges")
-    .select("id, title, description, start_date, end_date, group_id")
+    .select("id, title, description, start_date, end_date, group_id, created_at")
     .in("group_id", groupIds)
     .or(`end_date.is.null,end_date.gte.${today}`)
-    .order("start_date", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(10);
 
   if (!challenges || challenges.length === 0) return [];
@@ -318,6 +337,7 @@ async function fetchChallenges(userId: string, groupIds: string[], groupMap: Rec
       description: c.description,
       start_date: c.start_date,
       end_date: c.end_date,
+      created_at: c.created_at,
       group_id: c.group_id,
       group_name: groupMap[c.group_id] || "",
       total_goals: cGoals.length,

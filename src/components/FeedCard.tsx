@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,9 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, Send, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
+
 export interface FeedFlight {
   id: string;
   date: string;
+  created_at: string;
   glider: string | null;
   duration_minutes: number | null;
   altitude_gain: number | null;
@@ -22,7 +24,11 @@ export interface FeedFlight {
   user_id: string;
   pilot_name: string;
   avatar_url: string;
+  group_name: string;
   photoUrls: string[];
+  trackPoints: [number, number][];
+  takeoff: { latitude: number; longitude: number; name?: string } | null;
+  landing: { latitude: number; longitude: number; name?: string } | null;
   likes: { user_id: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string }[];
 }
@@ -33,16 +39,28 @@ interface FeedCardProps {
   onComment: (flightId: string, message: string) => void;
 }
 
+function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return t("feed.justNow");
+  if (mins < 60) return t("feed.minutesAgo", { count: mins });
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return t("feed.hoursAgo", { count: hours });
+  const days = Math.floor(hours / 24);
+  return t("feed.daysAgo", { count: days });
+}
+
 export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardProps) {
   const { user } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
 
-  const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   const isLiked = flight.likes.some(l => l.user_id === user?.id);
   const initials = flight.pilot_name ? flight.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
+  const hasTrack = flight.trackPoints.length > 0;
+  const hasPhotos = flight.photoUrls.length > 0;
 
   const formatDuration = (min: number) => {
     const h = Math.floor(min / 60); const m = min % 60;
@@ -58,7 +76,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 p-3 pb-2">
+      <div className="flex items-center gap-3 p-3 pb-2 cursor-pointer" onClick={() => navigate(`/flights/${flight.id}`)}>
         <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
           <Avatar className="h-8 w-8 border-2 border-background">
             <AvatarImage src={flight.avatar_url} />
@@ -68,18 +86,31 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">{flight.pilot_name}</p>
           <p className="text-[11px] text-muted-foreground">
-            {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff_name}</>}
-            {" · "}
-            {new Date(flight.date).toLocaleDateString(locale, { day: "numeric", month: "short" })}
+            {flight.group_name && <span>{flight.group_name} · </span>}
+            {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff_name} · </>}
+            {relativeTime(flight.created_at, t)}
           </p>
         </div>
       </div>
 
       {/* Photo */}
-      {flight.photoUrls.length > 0 && (
+      {hasPhotos && (
         <div className="aspect-square w-full overflow-hidden bg-muted">
           <img src={flight.photoUrls[0]} alt="" className="w-full h-full object-cover" loading="lazy" />
         </div>
+      )}
+
+      {/* Mini Map */}
+      {(hasTrack || flight.takeoff || flight.landing) && (
+        <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
+          <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px]" style={{ height: 150, overflow: "hidden" }}>
+            <FlightDetailMap
+              takeoff={flight.takeoff}
+              landing={flight.landing}
+              trackPoints={flight.trackPoints}
+            />
+          </div>
+        </Suspense>
       )}
 
       {/* Actions */}
@@ -100,10 +131,10 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
 
         {/* Flight info */}
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {flight.glider && <span className="font-medium text-foreground">🪂 {flight.glider}</span>}
           {flight.duration_minutes && <span>⏱ {formatDuration(flight.duration_minutes)}</span>}
           {flight.altitude_gain && <span>↑ {flight.altitude_gain}m</span>}
           {flight.distance_km && <span>↔ {Number(flight.distance_km).toFixed(1)}km</span>}
-          {flight.glider && <span>🪂 {flight.glider}</span>}
           {flight.landing_name && <span>→ {flight.landing_name}</span>}
         </div>
 
