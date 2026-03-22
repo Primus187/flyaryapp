@@ -23,6 +23,8 @@ export default function Locations() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "" });
+  const [backfillProgress, setBackfillProgress] = useState<{ current: number; total: number } | null>(null);
+  const cancelledRef = useRef(false);
 
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
 
