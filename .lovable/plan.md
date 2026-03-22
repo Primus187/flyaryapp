@@ -1,25 +1,28 @@
 
 
-# Nominatim Reverse Geocoding schlägt fehl (CORS)
+# Orte: Liste vereinfachen, Detailseite erweitern
 
-## Problem
-Alle Nominatim API-Aufrufe scheitern mit "Failed to fetch" — die Preview-Domain wird von Nominatim per CORS blockiert. Deshalb bleiben die 31 Orte ohne `country_code` und das Backfill läuft bei jedem Seitenaufruf erneut, ohne jemals zu funktionieren.
+## Änderungen
 
-Die Landeplätze, die bereits einen `country_code` haben, wurden wahrscheinlich über die veröffentlichte Domain oder beim Erstellen gesetzt, als CORS noch nicht blockiert hat.
+### 1. `src/pages/Locations.tsx` — Liste vereinfachen
+- **Entfernen**: Bearbeiten- und Löschen-Buttons aus `renderLocationCard`
+- **Hinzufügen**: Flug-Statistiken pro Ort anzeigen
+  - Beim Laden der Locations auch Flüge laden (`flights` Tabelle), gruppiert nach `takeoff_location_id` und `landing_location_id`
+  - Pro Ort: Anzahl Flüge und Datum des letzten Fluges anzeigen
+  - Z.B. "3 Flüge · letzter: 12. Mär 2026"
+- `handleEdit` und `handleDelete` können entfernt werden (nur noch auf Detailseite)
 
-## Lösung
+### 2. `src/pages/LocationDetail.tsx` — Duplizieren + Bearbeiten verbessern
+- **Duplizieren-Button** hinzufügen (Copy-Icon) neben Bearbeiten und Löschen
+- Duplizieren: Neuen Ort mit gleichen Daten erstellen (Name + " (Kopie)"), dann zur neuen Location navigieren
+- **Bearbeiten-Button**: Statt nach `/locations` zu navigieren (aktuell falsch!), den Edit-Dialog aus Locations öffnen — besser: direkt zur Locations-Seite mit Edit-State navigieren, oder einen inline Edit-Dialog auf der Detailseite einbauen
+  - Einfachste Lösung: Navigate zu `/locations?edit={id}` und in Locations.tsx den Dialog automatisch öffnen
 
-### 1. Backend-Funktion für Reverse Geocoding
-- Neue Edge Function `reverse-geocode` erstellen
-- Nimmt `lat` und `lon` als Query-Parameter
-- Ruft Nominatim serverseitig auf (kein CORS-Problem)
-- Gibt `{ country_code: "CH" }` zurück
-
-### 2. Client-Code anpassen
-- `Locations.tsx`: Backfill und `reverseGeocode` rufen die Edge Function statt Nominatim direkt auf
-- Gleiche Rate-Limiting-Logik (1.1s Delay)
+### 3. i18n
+- Neue Keys: `locations.duplicate`, `locations.duplicated`, `locations.lastFlight`, `locations.flightCount`
 
 ## Dateien
-- **Neu**: `supabase/functions/reverse-geocode/index.ts`
-- **Edit**: `src/pages/Locations.tsx` — Nominatim-URLs durch Edge Function ersetzen
+- **Edit**: `src/pages/Locations.tsx` — Buttons entfernen, Flug-Stats laden und anzeigen
+- **Edit**: `src/pages/LocationDetail.tsx` — Duplizieren-Funktion, Bearbeiten-Navigation fixen
+- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Übersetzungen
 
