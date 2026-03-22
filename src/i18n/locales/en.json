@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "logbook": "Logbook",
+    "training": "Training",
     "events": "Events",
     "locations": "Sites",
     "profile": "Profile"
@@ -364,5 +365,14 @@
   },
   "splash": {
     "loading": "Loading..."
+  },
+  "training": {
+    "title": "Training Checklist",
+    "goal": "Goal",
+    "content": "Content",
+    "mistakes": "Common Mistakes",
+    "danger": "Danger",
+    "notes": "Personal Notes",
+    "notesPlaceholder": "Your notes on this exercise..."
   }
 }

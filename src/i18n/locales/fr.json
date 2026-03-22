@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "logbook": "Carnet de vol",
+    "training": "Formation",
     "events": "Événements",
     "locations": "Sites",
     "profile": "Profil"
@@ -364,5 +365,14 @@
   },
   "splash": {
     "loading": "Chargement..."
+  },
+  "training": {
+    "title": "Fiche de contrôle",
+    "goal": "Objectif",
+    "content": "Contenu",
+    "mistakes": "Erreurs fréquentes",
+    "danger": "Danger",
+    "notes": "Notes personnelles",
+    "notesPlaceholder": "Vos notes sur cet exercice..."
   }
 }

@@ -28,6 +28,8 @@ import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
+import Training from "@/pages/Training";
+import TrainingItemDetail from "@/pages/TrainingItemDetail";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +78,8 @@ const App = () => {
                   <Route path="/events/:id/edit" element={<EventForm />} />
                   <Route path="/groups" element={<Groups />} />
                   <Route path="/groups/:id" element={<GroupDetail />} />
+                  <Route path="/training" element={<Training />} />
+                  <Route path="/training/:itemId" element={<TrainingItemDetail />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/stats" element={<Stats />} />
