@@ -82,10 +82,8 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
     setTimeout(() => setLikeAnimating(false), 400);
   }, [isLiked, onLikeToggle, achievement.id]);
 
-  const handleSubmitComment = () => {
-    if (!comment.trim()) return;
-    onComment(achievement.id, comment.trim());
-    setComment("");
+  const handleSubmitComment = (msg: string) => {
+    onComment(achievement.id, msg);
   };
 
   return (
