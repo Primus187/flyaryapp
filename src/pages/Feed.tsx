@@ -244,6 +244,50 @@ export default function Feed() {
     }
   };
 
+  // ── Bookmark toggle ──
+  const handleBookmarkToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
+    if (!user) return;
+    const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
+
+    // Check if already bookmarked
+    const { data: existing } = await supabase
+      .from("bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq(colName, itemId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from("bookmarks").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("bookmarks").insert({ user_id: user.id, [colName]: itemId } as any);
+    }
+
+    // Update local state
+    setItems(prev => prev.map(i => {
+      if (i.data.id !== itemId) return i;
+      return { ...i, data: { ...i.data, isBookmarked: !existing } } as FeedItem;
+    }));
+  };
+
+  // ── Comment like toggle ──
+  const handleCommentLikeToggle = async (commentId: string) => {
+    if (!user) return;
+
+    const { data: existing } = await supabase
+      .from("comment_likes")
+      .select("id")
+      .eq("comment_id", commentId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from("comment_likes").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("comment_likes").insert({ comment_id: commentId, user_id: user.id });
+    }
+  };
+
   if (loading) return <FeedSkeleton />;
 
   return (
