@@ -52,11 +52,10 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedAchievementCard({ achievement, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: Props) {
+export default function FeedAchievementCard({ achievement, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: Props) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
