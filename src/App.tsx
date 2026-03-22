@@ -78,6 +78,8 @@ const App = () => {
                   <Route path="/events/:id/edit" element={<EventForm />} />
                   <Route path="/groups" element={<Groups />} />
                   <Route path="/groups/:id" element={<GroupDetail />} />
+                  <Route path="/training" element={<Training />} />
+                  <Route path="/training/:itemId" element={<TrainingItemDetail />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/stats" element={<Stats />} />
