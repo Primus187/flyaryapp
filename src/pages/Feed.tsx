@@ -130,7 +130,7 @@ export default function Feed() {
               pilot_name: prof?.pilot_name || "Pilot"
             }]
           }
-        };
+        } as FeedItem;
       }));
     }
   };
