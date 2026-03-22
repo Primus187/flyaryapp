@@ -40,9 +40,9 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const touchStartY = React.useRef(0);
-  const isPulling = React.useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
+  const isPulling = useRef(false);
 
   const fetchFeed = useCallback(async () => {
     if (!user) return;
