@@ -60,8 +60,28 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
 }
 
 function getYoutubeEmbedUrl(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  const raw = url.trim();
+  try {
+    const parsed = new URL(raw);
+    const host = parsed.hostname.replace(/^www\./, "");
+    let videoId: string | null = null;
+    if (host === "youtu.be") {
+      videoId = parsed.pathname.split("/").filter(Boolean)[0] ?? null;
+    } else if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+      if (parsed.pathname === "/watch") videoId = parsed.searchParams.get("v");
+      else if (parsed.pathname.startsWith("/shorts/")) videoId = parsed.pathname.split("/")[2] ?? null;
+      else if (parsed.pathname.startsWith("/embed/")) videoId = parsed.pathname.split("/")[2] ?? null;
+      else if (parsed.pathname.startsWith("/live/")) videoId = parsed.pathname.split("/")[2] ?? null;
+    }
+    if (!videoId) {
+      const m = raw.match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{6,})/);
+      videoId = m?.[1] ?? null;
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch {
+    const m = raw.match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{6,})/);
+    return m?.[1] ? `https://www.youtube.com/embed/${m[1]}` : null;
+  }
 }
 
 function PhotoCarousel({ urls }: { urls: string[] }) {
