@@ -419,11 +419,51 @@
     "importFlights": "Importer des vols",
     "importLocations": "Importer des sites",
     "settings": "Paramètres",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "legal": "Mentions légales"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
     "selectManeuvers": "Sélectionner des manœuvres...",
     "noManeuvers": "Aucune manœuvre"
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur Flyary ! 🪂",
+    "intro": "Votre carnet de vol numérique pour pilotes de parapente. Démarrez en trois étapes.",
+    "step1Title": "Compléter votre profil",
+    "step1Desc": "Ajoutez votre nom et vos voiles.",
+    "step2Title": "Créer votre premier site",
+    "step2Desc": "Ajoutez votre décollage avec les coordonnées.",
+    "step3Title": "Enregistrer votre premier vol",
+    "step3Desc": "Documentez votre premier vol dans le carnet.",
+    "goToProfile": "Vers le profil",
+    "goToLocations": "Vers les sites",
+    "goToFlight": "Enregistrer un vol",
+    "skip": "Plus tard"
+  },
+  "emptyState": {
+    "flightsDesc": "Enregistrez votre premier vol et commencez votre carnet.",
+    "eventsDesc": "Rejoignez un groupe pour voir les événements et vous inscrire.",
+    "noEventsDesc": "Vos groupes n'ont pas encore créé d'événements."
+  },
+  "offline": {
+    "banner": "Vous êtes hors ligne — certaines fonctions sont limitées."
+  },
+  "legal": {
+    "title": "Mentions légales",
+    "impressumTitle": "Mentions légales",
+    "impressumText": "Flyary est un carnet de vol numérique pour pilotes de parapente. Les coordonnées de l'exploitant se trouvent dans les paramètres de votre compte.",
+    "privacyTitle": "Politique de confidentialité",
+    "privacyIntro": "La protection de vos données personnelles est importante pour nous. Nous vous informons ci-dessous sur la collecte et l'utilisation de vos données.",
+    "dataCollectionTitle": "Quelles données sont collectées ?",
+    "dataCollectionText": "Nous stockons les données que vous saisissez dans l'application : adresse e-mail, informations de profil, données de vol, sites et informations de groupe.",
+    "dataUsageTitle": "Comment les données sont-elles utilisées ?",
+    "dataUsageText": "Vos données sont utilisées uniquement pour fournir les fonctionnalités de l'application. Aucune donnée n'est partagée avec des tiers à des fins publicitaires.",
+    "dataStorageTitle": "Où les données sont-elles stockées ?",
+    "dataStorageText": "Les données sont stockées sur des serveurs sécurisés dans l'UE et transmises de manière chiffrée.",
+    "rightsTitle": "Vos droits",
+    "rightsText": "Vous avez le droit d'accéder, de rectifier et de supprimer vos données personnelles à tout moment. Contactez-nous via l'application.",
+    "contactTitle": "Contact",
+    "contactText": "Pour toute question relative à la protection des données, veuillez contacter l'exploitant de l'application."
   }
 }
