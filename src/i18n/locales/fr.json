@@ -376,5 +376,21 @@
     "danger": "Danger",
     "notes": "Notes personnelles",
     "notesPlaceholder": "Vos notes sur cet exercice..."
+  },
+  "more": {
+    "title": "Plus",
+    "profile": "Profil",
+    "locations": "Sites",
+    "map": "Carte",
+    "groups": "Groupes",
+    "importFlights": "Importer des vols",
+    "importLocations": "Importer des sites",
+    "settings": "Paramètres",
+    "signOut": "Se déconnecter"
+  },
+  "flights_training": {
+    "trainedManeuvers": "Manœuvres entraînées",
+    "selectManeuvers": "Sélectionner des manœuvres...",
+    "noManeuvers": "Aucune manœuvre"
   }
 }
