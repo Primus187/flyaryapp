@@ -169,6 +169,36 @@ export type Database = {
           },
         ]
       }
+      flight_training_items: {
+        Row: {
+          flight_id: string
+          item_id: string
+        }
+        Insert: {
+          flight_id: string
+          item_id: string
+        }
+        Update: {
+          flight_id?: string
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_training_items_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_training_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "training_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_videos: {
         Row: {
           created_at: string
