@@ -235,7 +235,7 @@ export default function Profile() {
               <AvatarFallback className="text-2xl bg-muted">{initials}</AvatarFallback>
             </Avatar>
             <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md" disabled={uploading}><Camera className="h-4 w-4" /></button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} />
           </div>
           <div className="w-full space-y-1.5"><Label className="text-xs">{t("profile.pilotName")}</Label><Input value={form.pilot_name} onChange={e => setForm({ ...form, pilot_name: e.target.value })} /></div>
         </div>
