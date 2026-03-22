@@ -89,6 +89,7 @@ export default function EventDetail() {
           <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4">{t("events.unregistered")}</h2><div className="space-y-1">{signups.filter(s => !s.signed_up).map(s => (<Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2"><XCircle className="h-4 w-4 text-muted-foreground shrink-0" /><span className="text-sm text-muted-foreground">{profiles[s.user_id] || t("events.pilot")}</span></CardContent></Card>))}</div></>
         )}
       </div>
+      <EventChat eventId={id!} groupId={event.group_id} />
     </div>
   );
 }
