@@ -54,12 +54,10 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
       let country_code: string | null = null;
       if (newLoc.latitude !== 0 || newLoc.longitude !== 0) {
         try {
-          const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reverse-geocode?lat=${newLoc.latitude}&lon=${newLoc.longitude}`;
-          const geoRes = await fetch(url, {
-            headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          const { data: geoData, error: geoError } = await supabase.functions.invoke('reverse-geocode', {
+            body: { lat: newLoc.latitude, lon: newLoc.longitude },
           });
-          if (geoRes.ok) {
-            const geoData = await geoRes.json();
+          if (!geoError && geoData) {
             country_code = geoData.country_code || null;
           }
         } catch { /* ignore */ }
