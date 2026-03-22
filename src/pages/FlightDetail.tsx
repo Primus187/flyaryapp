@@ -292,12 +292,12 @@ export default function FlightDetail() {
           setPublishLoading(true);
           try {
             // Update flight comments if changed
+            const publishUpdate: any = { published_to_feed: true, published_at: new Date().toISOString() };
             if (feedComment !== flight.comments) {
-              await supabase.from("flights").update({ comments: feedComment, published_to_feed: true } as any).eq("id", id);
+              publishUpdate.comments = feedComment;
               setFlight({ ...flight, comments: feedComment });
-            } else {
-              await supabase.from("flights").update({ published_to_feed: true } as any).eq("id", id);
             }
+            await supabase.from("flights").update(publishUpdate).eq("id", id);
             setPublishedToFeed(true);
             setShowPublishPreview(false);
             toast({ title: t("flights.publishedToFeed") });

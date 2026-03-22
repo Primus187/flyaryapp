@@ -73,7 +73,7 @@ export default function Feed() {
     ]);
 
     const allItems: FeedItem[] = [
-      ...flightsRes.map(f => ({ type: "flight" as const, date: f.created_at, data: f })),
+      ...flightsRes.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: f })),
       ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: e })),
       ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: a })),
     ];
@@ -254,10 +254,10 @@ export default function Feed() {
 async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedFlight[]> {
   const { data: groupFlights } = await supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, published_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
-    .order("created_at", { ascending: false })
+    .order("published_at", { ascending: false, nullsFirst: false })
     .limit(20);
 
   if (!groupFlights || groupFlights.length === 0) return [];
@@ -328,6 +328,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     id: f.id,
     date: f.date,
     created_at: f.created_at,
+    published_at: f.published_at,
     glider: f.glider,
     duration_minutes: f.duration_minutes,
     altitude_gain: f.altitude_gain,
