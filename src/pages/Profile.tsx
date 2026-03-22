@@ -67,6 +67,23 @@ export default function Profile() {
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
     supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
+    supabase.from("pilot_badges" as any).select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    // Load stats for badge progress
+    supabase.from("flights").select("duration_minutes, altitude_gain, distance_km, takeoff_location_id").eq("user_id", user.id).then(({ data }) => {
+      if (data) {
+        const uniqueTakeoffs = new Set(data.map(f => f.takeoff_location_id).filter(Boolean)).size;
+        setBadgeStats({
+          flightCount: data.length,
+          totalMinutes: data.reduce((s, f) => s + (f.duration_minutes || 0), 0),
+          totalAltitude: data.reduce((s, f) => s + (f.altitude_gain || 0), 0),
+          totalDistance: data.reduce((s, f) => s + Number(f.distance_km || 0), 0),
+          uniqueTakeoffs,
+          maxDuration: Math.max(0, ...data.map(f => f.duration_minutes || 0)),
+          maxDistance: Math.max(0, ...data.map(f => Number(f.distance_km || 0))),
+          maxAltitude: Math.max(0, ...data.map(f => f.altitude_gain || 0)),
+        });
+      }
+    });
 
     // Realtime subscription for XP updates
     const channel = supabase
