@@ -1,4 +1,4 @@
-export type BadgeCategory = "flights" | "time" | "altitude" | "distance" | "sites" | "records";
+export type BadgeCategory = "flights" | "time" | "altitude" | "distance" | "sites" | "records" | "seasonal";
 export type BadgeTier = "bronze" | "silver" | "gold";
 
 export interface BadgeDefinition {
@@ -17,6 +17,7 @@ export const BADGE_CATEGORY_COLORS: Record<BadgeCategory, { bg: string; border: 
   distance: { bg: "hsl(25, 80%, 50%)", border: "hsl(25, 80%, 40%)", text: "hsl(25, 80%, 95%)" },
   sites: { bg: "hsl(340, 60%, 50%)", border: "hsl(340, 60%, 40%)", text: "hsl(340, 60%, 95%)" },
   records: { bg: "hsl(45, 90%, 48%)", border: "hsl(45, 90%, 38%)", text: "hsl(45, 90%, 15%)" },
+  seasonal: { bg: "hsl(140, 65%, 45%)", border: "hsl(140, 65%, 35%)", text: "hsl(140, 65%, 95%)" },
 };
 
 export const BADGE_TIER_BORDER: Record<BadgeTier, string> = {
@@ -56,6 +57,14 @@ export const BADGES: BadgeDefinition[] = [
   { key: "thermik_king", category: "records", tier: "gold", threshold: 120, thresholdUnit: "min", icon: "Flame" },
   { key: "xc_beast", category: "records", tier: "gold", threshold: 50, thresholdUnit: "km", icon: "Zap" },
   { key: "high_flyer", category: "records", tier: "gold", threshold: 2000, thresholdUnit: "hm", icon: "ArrowUp" },
+  // Seasonal
+  { key: "summer_pilot_2025", category: "seasonal", tier: "gold", threshold: 20, thresholdUnit: "☀️", icon: "Sun" },
+  { key: "summer_pilot_2026", category: "seasonal", tier: "gold", threshold: 20, thresholdUnit: "☀️", icon: "Sun" },
+  { key: "winter_eagle_2025", category: "seasonal", tier: "silver", threshold: 10, thresholdUnit: "❄️", icon: "Snowflake" },
+  { key: "winter_eagle_2026", category: "seasonal", tier: "silver", threshold: 10, thresholdUnit: "❄️", icon: "Snowflake" },
+  { key: "year_round_2024", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
+  { key: "year_round_2025", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
+  { key: "year_round_2026", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
 ];
 
 export function getBadgeDefinition(key: string): BadgeDefinition | undefined {

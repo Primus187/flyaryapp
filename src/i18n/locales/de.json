@@ -619,6 +619,21 @@
     "xc_beast": "XC Beast",
     "xc_beast_desc": "Einzelflug über 50 km",
     "high_flyer": "High Flyer",
-    "high_flyer_desc": "Einzelflug über 2'000 Höhenmeter"
+    "high_flyer_desc": "Einzelflug über 2'000 Höhenmeter",
+    "category_seasonal": "Saisonal",
+    "summer_pilot_2025": "Sommerpilot 2025",
+    "summer_pilot_2025_desc": "20 Flüge zwischen Juni und August 2025",
+    "summer_pilot_2026": "Sommerpilot 2026",
+    "summer_pilot_2026_desc": "20 Flüge zwischen Juni und August 2026",
+    "winter_eagle_2025": "Winteradler 2025",
+    "winter_eagle_2025_desc": "10 Flüge zwischen Dezember 2024 und Februar 2025",
+    "winter_eagle_2026": "Winteradler 2026",
+    "winter_eagle_2026_desc": "10 Flüge zwischen Dezember 2025 und Februar 2026",
+    "year_round_2024": "Ganzjahrespilot 2024",
+    "year_round_2024_desc": "Mindestens 1 Flug in jedem Monat 2024",
+    "year_round_2025": "Ganzjahrespilot 2025",
+    "year_round_2025_desc": "Mindestens 1 Flug in jedem Monat 2025",
+    "year_round_2026": "Ganzjahrespilot 2026",
+    "year_round_2026_desc": "Mindestens 1 Flug in jedem Monat 2026"
   }
 }
