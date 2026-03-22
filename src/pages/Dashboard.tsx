@@ -258,6 +258,18 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Active Challenges */}
+      {challenges.length > 0 && (
+        <div>
+          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.activeChallenges")}</h2>
+          <div className="space-y-2">
+            {challenges.map(c => (
+              <ChallengeCard key={c.id} challenge={c} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recent flights — Instagram-card style */}
       <div>
         <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>

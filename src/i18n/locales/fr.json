@@ -514,6 +514,16 @@
     "goalLabelPlaceholder": "p.ex. Site de décollage Niesen",
     "points": "Points",
     "noGoals": "Aucun objectif défini",
-    "unknownGoal": "Objectif inconnu"
+    "unknownGoal": "Objectif inconnu",
+    "start": "Départ",
+    "turnpoint": "Point de virage",
+    "waypoint": "Waypoint",
+    "goal": "Arrivée",
+    "goalType": "Type d'objectif",
+    "radius": "Rayon (m)",
+    "selectLocation": "Choisir un site",
+    "coordinates": "Coordonnées",
+    "autoVerified": "Objectifs atteints ! 🎯",
+    "goalsReached": "objectif(s) vérifié(s) automatiquement"
   }
 }
