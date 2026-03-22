@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+
 import { Calendar, MapPin, Users, Clock, ChevronRight, Heart, MessageCircle, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MentionCommentInput from "@/components/MentionCommentInput";
