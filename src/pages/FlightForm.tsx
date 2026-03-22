@@ -115,7 +115,13 @@ export default function FlightForm() {
         try { const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`; const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo); if (photoErr) throw photoErr; const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path }); if (insertErr) throw insertErr; }
         catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
-      if (!isEdit && youtubeUrls.length > 0) { await supabase.from("flight_videos").insert(youtubeUrls.map((url) => ({ flight_id: flightId, youtube_url: url }))); }
+      // Save YouTube videos (upsert for edit mode)
+      if (isEdit) {
+        await supabase.from("flight_videos").delete().eq("flight_id", flightId);
+      }
+      if (youtubeUrls.filter(u => u.trim()).length > 0) {
+        await supabase.from("flight_videos").insert(youtubeUrls.filter(u => u.trim()).map((url) => ({ flight_id: flightId, youtube_url: url })));
+      }
       // Save training items
       if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
       if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items" as any).insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
