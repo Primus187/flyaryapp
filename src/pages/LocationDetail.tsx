@@ -47,6 +47,7 @@ export default function LocationDetail() {
   if (!location) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("locations.notFound")}</div>;
 
   const hasCoords = location.latitude !== 0 || location.longitude !== 0;
+  const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
   const formatDuration = (min: number | null) => { if (!min) return "—"; const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}min` : `${m}min`; };
   const getCounterLocation = (flight: any) => { if (flight.takeoff_location_id === id) return flight.landing?.name ? `→ ${flight.landing.name}` : ""; return flight.takeoff?.name ? `${flight.takeoff.name} →` : ""; };
 
