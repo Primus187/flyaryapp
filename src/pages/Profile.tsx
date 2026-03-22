@@ -163,7 +163,67 @@ export default function Profile() {
     toast({ title: t("profile.photoUploaded") }); setUploading(false);
   };
 
-  const handleAddGlider = async () => {
+  const handleCoverPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    e.target.value = "";
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file, 1600, 600, 0.85);
+      const path = `${user.id}/cover.jpg`;
+      const { error } = await supabase.storage.from("flight-photos").upload(path, compressed, { upsert: true });
+      if (error) throw error;
+      setCoverPhotoUrl(path);
+      const url = await resolveSignedUrl(path);
+      if (url) setCoverSignedUrl(url);
+      await supabase.from("profiles").update({ cover_photo_url: path } as any).eq("user_id", user.id);
+      toast({ title: t("profile.coverPhotoUploaded") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    }
+    setUploading(false);
+  };
+
+  const handleRemoveCover = async () => {
+    if (!user) return;
+    await supabase.from("profiles").update({ cover_photo_url: null } as any).eq("user_id", user.id);
+    if (coverPhotoUrl) await supabase.storage.from("flight-photos").remove([coverPhotoUrl]);
+    setCoverPhotoUrl("");
+    setCoverSignedUrl("");
+    toast({ title: t("profile.coverPhotoRemoved") });
+  };
+
+  const handleAddProfilePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !user) return;
+    e.target.value = "";
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const compressed = await compressImage(files[i], 1200, 1200, 0.8);
+        const path = `${user.id}/profile_${Date.now()}_${i}.jpg`;
+        const { error } = await supabase.storage.from("flight-photos").upload(path, compressed);
+        if (error) throw error;
+        const { data } = await supabase.from("profile_photos" as any).insert({ user_id: user.id, storage_path: path, sort_order: profilePhotos.length + i } as any).select().single();
+        if (data) {
+          const url = await resolveSignedUrl(path);
+          setProfilePhotos(prev => [...prev, { ...(data as any), signedUrl: url || "" }]);
+        }
+      }
+      toast({ title: t("profile.photosAdded") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    }
+    setUploading(false);
+  };
+
+  const handleDeleteProfilePhoto = async (photoId: string, storagePath: string) => {
+    await supabase.from("profile_photos" as any).delete().eq("id", photoId);
+    await supabase.storage.from("flight-photos").remove([storagePath]);
+    setProfilePhotos(prev => prev.filter(p => p.id !== photoId));
+    toast({ title: t("profile.photoRemoved") });
+  };
+
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
     if (newGlider.is_default) await supabase.from("pilot_gliders" as any).update({ is_default: false } as any).eq("user_id", user.id);
     const { data, error } = await supabase.from("pilot_gliders" as any).insert({ user_id: user.id, ...newGlider } as any).select().single();
