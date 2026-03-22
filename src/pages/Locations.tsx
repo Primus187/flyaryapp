@@ -55,9 +55,8 @@ export default function Locations() {
         if (cancelledRef.current) break;
         const loc = toUpdate[i];
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${loc.latitude}&lon=${loc.longitude}&format=json&zoom=3`, { headers: { "Accept-Language": "en" } });
-          const json = await res.json();
-          const code = json?.address?.country_code?.toUpperCase();
+          const { data: geocodeData, error } = await supabase.functions.invoke('reverse-geocode', { body: { lat: loc.latitude, lon: loc.longitude } });
+          const code = geocodeData?.country_code;
           if (code && code.length === 2) {
             await supabase.from("locations").update({ country_code: code }).eq("id", loc.id);
           }
