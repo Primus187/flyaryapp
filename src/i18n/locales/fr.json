@@ -378,7 +378,11 @@
     "german": "Deutsch",
     "french": "Français",
     "english": "English",
-    "exportImport": "Export & Import"
+    "exportImport": "Export & Import",
+    "exportFilter": "Filtre d'export",
+    "selectGroups": "Sélectionner les groupes",
+    "noGroup": "Sans groupe",
+    "exportAll": "Tout exporter"
   },
   "splash": {
     "loading": "Chargement..."
