@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X, Share2, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
@@ -28,6 +28,7 @@ export default function FlightDetail() {
   const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [groupName, setGroupName] = useState<string | null>(null);
+  const [publishedToFeed, setPublishedToFeed] = useState(false);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
@@ -50,8 +51,11 @@ export default function FlightDetail() {
     if (!id) return;
     supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
       setFlight(data);
-      if (data && (data as any).group_id) {
-        supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+      if (data) {
+        setPublishedToFeed((data as any).published_to_feed || false);
+        if ((data as any).group_id) {
+          supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+        }
       }
     });
     loadPhotos();
@@ -224,6 +228,22 @@ export default function FlightDetail() {
       <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
         <Upload className="h-4 w-4" />{uploading ? t("flights.uploading") : track ? t("flights.igcReplace") : t("flights.igcAttach")}
       </Button>
+      {/* Publish to Feed */}
+      {flight.user_id === user?.id && (flight as any).group_id && (
+        <Button
+          variant={publishedToFeed ? "outline" : "default"}
+          className="w-full gap-2"
+          onClick={async () => {
+            const newVal = !publishedToFeed;
+            await supabase.from("flights").update({ published_to_feed: newVal } as any).eq("id", id);
+            setPublishedToFeed(newVal);
+            toast({ title: newVal ? t("flights.publishedToFeed") : t("flights.unpublishedFromFeed") });
+          }}
+        >
+          {publishedToFeed ? <CheckCircle className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+          {publishedToFeed ? t("flights.unpublishFromFeed") : t("flights.publishToFeed")}
+        </Button>
+      )}
     </div>
   );
 }

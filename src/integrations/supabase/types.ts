@@ -449,6 +449,7 @@ export type Database = {
           id: string
           is_solo_shv: boolean
           landing_location_id: string | null
+          published_to_feed: boolean
           takeoff_location_id: string | null
           thermals: string | null
           updated_at: string
@@ -468,6 +469,7 @@ export type Database = {
           id?: string
           is_solo_shv?: boolean
           landing_location_id?: string | null
+          published_to_feed?: boolean
           takeoff_location_id?: string | null
           thermals?: string | null
           updated_at?: string
@@ -487,6 +489,7 @@ export type Database = {
           id?: string
           is_solo_shv?: boolean
           landing_location_id?: string | null
+          published_to_feed?: boolean
           takeoff_location_id?: string | null
           thermals?: string | null
           updated_at?: string

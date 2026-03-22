@@ -173,6 +173,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     .from("flights")
     .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
+    .eq("published_to_feed", true)
     .order("created_at", { ascending: false })
     .limit(20);
 
