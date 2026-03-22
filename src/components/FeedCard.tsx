@@ -131,10 +131,8 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
     setTimeout(() => setLikeAnimating(false), 400);
   }, [isLiked, onLikeToggle, flight.id]);
 
-  const handleSubmitComment = () => {
-    if (!comment.trim()) return;
-    onComment(flight.id, comment.trim());
-    setComment("");
+  const handleSubmitComment = (msg: string) => {
+    onComment(flight.id, msg);
   };
 
   return (
