@@ -17,6 +17,7 @@ export const BADGE_CATEGORY_COLORS: Record<BadgeCategory, { bg: string; border: 
   distance: { bg: "hsl(25, 80%, 50%)", border: "hsl(25, 80%, 40%)", text: "hsl(25, 80%, 95%)" },
   sites: { bg: "hsl(340, 60%, 50%)", border: "hsl(340, 60%, 40%)", text: "hsl(340, 60%, 95%)" },
   records: { bg: "hsl(45, 90%, 48%)", border: "hsl(45, 90%, 38%)", text: "hsl(45, 90%, 15%)" },
+  seasonal: { bg: "hsl(140, 65%, 45%)", border: "hsl(140, 65%, 35%)", text: "hsl(140, 65%, 95%)" },
 };
 
 export const BADGE_TIER_BORDER: Record<BadgeTier, string> = {
