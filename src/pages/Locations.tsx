@@ -38,8 +38,39 @@ export default function Locations() {
   ];
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ takeoff: true, landing: true, both: true });
 
-  const fetchLocations = async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); };
-  useEffect(() => { fetchLocations(); }, [user]);
+  const fetchLocations = useCallback(async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); return data; }, [user]);
+  useEffect(() => { fetchLocations(); }, [fetchLocations]);
+
+  // Backfill country_code for locations missing it
+  useEffect(() => {
+    if (!user) return;
+    cancelledRef.current = false;
+    const backfill = async () => {
+      const { data } = await supabase.from("locations").select("id, latitude, longitude").eq("user_id", user.id).is("country_code", null);
+      if (!data) return;
+      const toUpdate = data.filter((l) => l.latitude !== 0 || l.longitude !== 0);
+      if (toUpdate.length === 0) return;
+      setBackfillProgress({ current: 0, total: toUpdate.length });
+      for (let i = 0; i < toUpdate.length; i++) {
+        if (cancelledRef.current) break;
+        const loc = toUpdate[i];
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${loc.latitude}&lon=${loc.longitude}&format=json&zoom=3`, { headers: { "Accept-Language": "en" } });
+          const json = await res.json();
+          const code = json?.address?.country_code?.toUpperCase();
+          if (code && code.length === 2) {
+            await supabase.from("locations").update({ country_code: code }).eq("id", loc.id);
+          }
+        } catch {}
+        setBackfillProgress({ current: i + 1, total: toUpdate.length });
+        if (i < toUpdate.length - 1) await new Promise((r) => setTimeout(r, 1100));
+      }
+      setBackfillProgress(null);
+      fetchLocations();
+    };
+    backfill();
+    return () => { cancelledRef.current = true; };
+  }, [user, fetchLocations]);
 
   const grouped = useMemo(() => ({
     takeoff: locations.filter((l) => l.type === "takeoff"),
