@@ -18,7 +18,7 @@ export default function Legal() {
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold">{t("legal.impressumTitle")}</h2>
-        <div className="text-sm text-muted-foreground space-y-1 leading-relaxed">
+        <div className="text-sm text-muted-foreground space-y-1 leading-relaxed whitespace-pre-line">
           <p>{t("legal.impressumText")}</p>
         </div>
       </section>
