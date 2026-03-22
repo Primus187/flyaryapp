@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import AvatarCropDialog from "@/components/AvatarCropDialog";
+import { compressImage } from "@/lib/image-compress";
 import BadgeGrid from "@/components/BadgeGrid";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
