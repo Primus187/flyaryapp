@@ -396,17 +396,7 @@
     "notes": "Eigene Notizen",
     "notesPlaceholder": "Deine Notizen zu dieser Übung..."
   },
-  "more": {
-    "title": "Mehr",
-    "profile": "Profil",
-    "training": "Training",
-    "map": "Karte",
-    "groups": "Gruppen",
-    "importFlights": "Flüge importieren",
-    "importLocations": "Orte importieren",
-    "settings": "Einstellungen",
-    "signOut": "Abmelden"
-  },
+  "_more_moved": "see bottom of file",
   "flights_training": {
     "trainedManeuvers": "Trainierte Manöver",
     "selectManeuvers": "Manöver auswählen...",
