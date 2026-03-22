@@ -103,7 +103,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
       {/* Mini Map */}
       {(hasTrack || flight.takeoff || flight.landing) && (
         <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
-          <div style={{ height: 150 }}>
+          <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px]" style={{ height: 150, overflow: "hidden" }}>
             <FlightDetailMap
               takeoff={flight.takeoff}
               landing={flight.landing}
