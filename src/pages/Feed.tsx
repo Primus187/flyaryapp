@@ -268,14 +268,17 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
   if (profiles) {
+    // Batch avatar signed URLs
+    const avatarPaths = profiles.filter(p => p.avatar_url && !p.avatar_url.startsWith("http")).map(p => p.avatar_url!);
+    const avatarSignedMap: Record<string, string> = {};
+    if (avatarPaths.length > 0) {
+      const { data: signedAvatars } = await supabase.storage.from("flight-photos").createSignedUrls(avatarPaths, 3600);
+      signedAvatars?.forEach(s => { if (s.signedUrl) avatarSignedMap[s.path] = s.signedUrl; });
+    }
     for (const p of profiles) {
       let avatarUrl = "";
       if (p.avatar_url) {
-        if (p.avatar_url.startsWith("http")) avatarUrl = p.avatar_url;
-        else {
-          const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(p.avatar_url, 3600);
-          if (signed?.signedUrl) avatarUrl = signed.signedUrl;
-        }
+        avatarUrl = p.avatar_url.startsWith("http") ? p.avatar_url : (avatarSignedMap[p.avatar_url] || "");
       }
       profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: avatarUrl };
     }
@@ -299,10 +302,8 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
   if (photos && photos.length > 0) {
     const paths = [...new Set(photos.map(p => p.storage_path))];
     const signedMap: Record<string, string> = {};
-    for (const path of paths) {
-      const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(path, 3600);
-      if (signed?.signedUrl) signedMap[path] = signed.signedUrl;
-    }
+    const { data: signedPhotos } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
+    signedPhotos?.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl; });
     photos.forEach(p => {
       if (!photoMap[p.flight_id]) photoMap[p.flight_id] = [];
       if (signedMap[p.storage_path]) photoMap[p.flight_id].push(signedMap[p.storage_path]);
@@ -451,14 +452,16 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
   if (pilotIds.length > 0) {
     const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", pilotIds);
     if (profiles) {
+      const avatarPaths = profiles.filter(p => p.avatar_url && !p.avatar_url.startsWith("http")).map(p => p.avatar_url!);
+      const avatarSignedMap: Record<string, string> = {};
+      if (avatarPaths.length > 0) {
+        const { data: signedAvatars } = await supabase.storage.from("flight-photos").createSignedUrls(avatarPaths, 3600);
+        signedAvatars?.forEach(s => { if (s.signedUrl) avatarSignedMap[s.path] = s.signedUrl; });
+      }
       for (const p of profiles) {
         let avatarUrl = "";
         if (p.avatar_url) {
-          if (p.avatar_url.startsWith("http")) avatarUrl = p.avatar_url;
-          else {
-            const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(p.avatar_url, 3600);
-            if (signed?.signedUrl) avatarUrl = signed.signedUrl;
-          }
+          avatarUrl = p.avatar_url.startsWith("http") ? p.avatar_url : (avatarSignedMap[p.avatar_url] || "");
         }
         profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: avatarUrl };
       }
