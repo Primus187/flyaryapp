@@ -247,20 +247,67 @@ export default function FlightDetail() {
       </Button>
       {/* Publish to Feed */}
       {flight.user_id === user?.id && (flight as any).group_id && (
-        <Button
-          variant={publishedToFeed ? "outline" : "default"}
-          className="w-full gap-2"
-          onClick={async () => {
-            const newVal = !publishedToFeed;
-            await supabase.from("flights").update({ published_to_feed: newVal } as any).eq("id", id);
-            setPublishedToFeed(newVal);
-            toast({ title: newVal ? t("flights.publishedToFeed") : t("flights.unpublishedFromFeed") });
-          }}
-        >
-          {publishedToFeed ? <CheckCircle className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-          {publishedToFeed ? t("flights.unpublishFromFeed") : t("flights.publishToFeed")}
-        </Button>
+        publishedToFeed ? (
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={async () => {
+              await supabase.from("flights").update({ published_to_feed: false } as any).eq("id", id);
+              setPublishedToFeed(false);
+              toast({ title: t("flights.unpublishedFromFeed") });
+            }}
+          >
+            <CheckCircle className="h-4 w-4" />
+            {t("flights.unpublishFromFeed")}
+          </Button>
+        ) : (
+          <Button className="w-full gap-2" onClick={() => setShowPublishPreview(true)}>
+            <Share2 className="h-4 w-4" />
+            {t("flights.publishToFeed")}
+          </Button>
+        )
       )}
+
+      {/* Publish Preview Dialog */}
+      <PublishPreviewDialog
+        open={showPublishPreview}
+        onOpenChange={setShowPublishPreview}
+        flight={{
+          date: flight.date,
+          glider: flight.glider,
+          duration_minutes: flight.duration_minutes,
+          altitude_gain: flight.altitude_gain,
+          distance_km: flight.distance_km,
+          comments: flight.comments,
+          takeoff: flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null,
+          landing: flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null,
+        }}
+        pilotName={pilotProfile.pilot_name}
+        avatarUrl={pilotProfile.avatar_url}
+        groupName={groupName || ""}
+        photos={photos.map(p => ({ id: p.id, url: photoUrls[p.id] || "" })).filter(p => p.url)}
+        trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
+        loading={publishLoading}
+        onPublish={async (selectedPhotoIds, feedComment) => {
+          setPublishLoading(true);
+          try {
+            // Update flight comments if changed
+            if (feedComment !== flight.comments) {
+              await supabase.from("flights").update({ comments: feedComment, published_to_feed: true } as any).eq("id", id);
+              setFlight({ ...flight, comments: feedComment });
+            } else {
+              await supabase.from("flights").update({ published_to_feed: true } as any).eq("id", id);
+            }
+            setPublishedToFeed(true);
+            setShowPublishPreview(false);
+            toast({ title: t("flights.publishedToFeed") });
+          } catch (err: any) {
+            toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+          } finally {
+            setPublishLoading(false);
+          }
+        }}
+      />
     </div>
   );
 }
