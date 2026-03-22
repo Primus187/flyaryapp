@@ -1,0 +1,1 @@
+ALTER TABLE public.flights ADD COLUMN is_solo_shv boolean NOT NULL DEFAULT false;

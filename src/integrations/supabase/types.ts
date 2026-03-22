@@ -239,6 +239,7 @@ export type Database = {
           glider: string | null
           group_id: string | null
           id: string
+          is_solo_shv: boolean
           landing_location_id: string | null
           takeoff_location_id: string | null
           thermals: string | null
@@ -257,6 +258,7 @@ export type Database = {
           glider?: string | null
           group_id?: string | null
           id?: string
+          is_solo_shv?: boolean
           landing_location_id?: string | null
           takeoff_location_id?: string | null
           thermals?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           glider?: string | null
           group_id?: string | null
           id?: string
+          is_solo_shv?: boolean
           landing_location_id?: string | null
           takeoff_location_id?: string | null
           thermals?: string | null
