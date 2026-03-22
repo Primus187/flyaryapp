@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, Send, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
+import DoubleTapHeart from "@/components/DoubleTapHeart";
 
 const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
 
@@ -98,6 +99,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [likeAnimating, setLikeAnimating] = useState(false);
 
   const isLiked = flight.likes.some(l => l.user_id === user?.id);
   const initials = flight.pilot_name ? flight.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
@@ -108,6 +110,22 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
     const h = Math.floor(min / 60); const m = min % 60;
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
+
+  const handleLike = useCallback(() => {
+    if (!isLiked) {
+      setLikeAnimating(true);
+      setTimeout(() => setLikeAnimating(false), 400);
+    }
+    onLikeToggle(flight.id);
+  }, [isLiked, onLikeToggle, flight.id]);
+
+  const handleDoubleTapLike = useCallback(() => {
+    if (!isLiked) {
+      onLikeToggle(flight.id);
+    }
+    setLikeAnimating(true);
+    setTimeout(() => setLikeAnimating(false), 400);
+  }, [isLiked, onLikeToggle, flight.id]);
 
   const handleSubmitComment = () => {
     if (!comment.trim()) return;
@@ -135,47 +153,58 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
         </div>
       </div>
 
-      {hasPhotos && <PhotoCarousel urls={flight.photoUrls} />}
+      {/* Photos with double-tap like */}
+      {hasPhotos && (
+        <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
+          <PhotoCarousel urls={flight.photoUrls} />
+        </DoubleTapHeart>
+      )}
 
       {/* Mini Map — non-interactive, with stats overlay */}
       {(hasTrack || flight.takeoff || flight.landing) && (
-        <div
-          className="relative cursor-pointer"
-          onClick={() => navigate(`/flights/${flight.id}`)}
-        >
-          <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
-            <div
-              className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none"
-              style={{ height: 150, overflow: "hidden" }}
-            >
-              <FlightDetailMap
-                takeoff={flight.takeoff}
-                landing={flight.landing}
-                trackPoints={flight.trackPoints}
-              />
+        <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
+          <div
+            className="relative cursor-pointer"
+            onClick={() => navigate(`/flights/${flight.id}`)}
+          >
+            <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
+              <div
+                className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none"
+                style={{ height: 150, overflow: "hidden" }}
+              >
+                <FlightDetailMap
+                  takeoff={flight.takeoff}
+                  landing={flight.landing}
+                  trackPoints={flight.trackPoints}
+                />
+              </div>
+            </Suspense>
+            {/* Stats overlay */}
+            <div className="absolute bottom-2 left-2 flex gap-1.5 z-10">
+              {flight.duration_minutes && (
+                <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                  ⏱ {formatDuration(flight.duration_minutes)}
+                </span>
+              )}
+              {flight.distance_km && (
+                <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                  ↔ {Number(flight.distance_km).toFixed(1)}km
+                </span>
+              )}
             </div>
-          </Suspense>
-          {/* Stats overlay */}
-          <div className="absolute bottom-2 left-2 flex gap-1.5 z-10">
-            {flight.duration_minutes && (
-              <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
-                ⏱ {formatDuration(flight.duration_minutes)}
-              </span>
-            )}
-            {flight.distance_km && (
-              <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
-                ↔ {Number(flight.distance_km).toFixed(1)}km
-              </span>
-            )}
           </div>
-        </div>
+        </DoubleTapHeart>
       )}
 
       {/* Actions */}
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center gap-3">
-          <button onClick={() => onLikeToggle(flight.id)} className="active:scale-90 transition-transform">
-            <Heart className={cn("h-6 w-6", isLiked ? "fill-red-500 text-red-500" : "text-foreground")} />
+          <button onClick={handleLike} className="active:scale-90 transition-transform">
+            <Heart className={cn(
+              "h-6 w-6 transition-transform",
+              isLiked ? "fill-red-500 text-red-500" : "text-foreground",
+              likeAnimating && "animate-like-bounce"
+            )} />
           </button>
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-6 w-6" />

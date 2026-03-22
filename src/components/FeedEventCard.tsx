@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,6 +50,7 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [likeAnimating, setLikeAnimating] = useState(false);
 
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   const eventDate = new Date(event.event_date);
@@ -68,6 +69,14 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
     : event.status === "confirmed"
     ? t("events.statusConfirmed")
     : t("events.statusAnnounced");
+
+  const handleLike = useCallback(() => {
+    if (!isLiked) {
+      setLikeAnimating(true);
+      setTimeout(() => setLikeAnimating(false), 400);
+    }
+    onLikeToggle(event.id);
+  }, [isLiked, onLikeToggle, event.id]);
 
   const handleSubmitComment = () => {
     if (!comment.trim()) return;
@@ -132,8 +141,12 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
 
         {/* Social interactions */}
         <div className="flex items-center gap-3 pt-1 border-t border-border/50">
-          <button onClick={() => onLikeToggle(event.id)} className="active:scale-90 transition-transform">
-            <Heart className={cn("h-5 w-5", isLiked ? "fill-red-500 text-red-500" : "text-foreground")} />
+          <button onClick={handleLike} className="active:scale-90 transition-transform">
+            <Heart className={cn(
+              "h-5 w-5 transition-transform",
+              isLiked ? "fill-red-500 text-red-500" : "text-foreground",
+              likeAnimating && "animate-like-bounce"
+            )} />
           </button>
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-5 w-5" />
