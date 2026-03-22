@@ -29,13 +29,19 @@ interface PublishPreviewDialogProps {
   avatarUrl: string;
   groupName: string;
   photos: { id: string; url: string }[];
+  videoUrls?: string[];
   trackPoints: [number, number][];
   loading?: boolean;
 }
 
+function getYoutubeEmbedUrl(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
 export default function PublishPreviewDialog({
   open, onOpenChange, onPublish, flight, pilotName, avatarUrl, groupName,
-  photos, trackPoints, loading,
+  photos, videoUrls, trackPoints, loading,
 }: PublishPreviewDialogProps) {
   const { t } = useTranslation();
   const [feedComment, setFeedComment] = useState(flight.comments || "");
@@ -83,6 +89,16 @@ export default function PublishPreviewDialog({
                 </p>
               </div>
             </div>
+
+            {/* Videos preview */}
+            {videoUrls && videoUrls.length > 0 && videoUrls.map((url, i) => {
+              const embedUrl = getYoutubeEmbedUrl(url);
+              return embedUrl ? (
+                <div key={`vid-${i}`} className="relative w-full aspect-video bg-muted">
+                  <iframe src={embedUrl} title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 w-full h-full" />
+                </div>
+              ) : null;
+            })}
 
             {/* Selected photos preview */}
             {selectedPhotos.length > 0 && (
