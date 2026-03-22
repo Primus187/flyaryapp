@@ -55,10 +55,12 @@ function PhotoCarousel({ urls }: { urls: string[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selected, setSelected] = useState(0);
 
-  useState(() => {
+  useEffect(() => {
     if (!emblaApi) return;
-    emblaApi.on("select", () => setSelected(emblaApi.selectedScrollSnap()));
-  });
+    const onSelect = () => setSelected(emblaApi.selectedScrollSnap());
+    emblaApi.on("select", onSelect);
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi]);
 
   if (urls.length === 1) {
     return (
