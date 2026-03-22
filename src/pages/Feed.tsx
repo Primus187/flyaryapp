@@ -483,7 +483,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
         const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
         if (arr && Array.isArray(arr)) {
           trackMap[t.flight_id] = arr.slice(0, 500).map((p: any) =>
-            Array.isArray(p) ? p : [p.lat, p.lng]
+            (Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]) as [number, number]
           );
         }
       }
