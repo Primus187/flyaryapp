@@ -7,6 +7,7 @@ import FeedCard, { type FeedFlight } from "@/components/FeedCard";
 import FeedEventCard, { type FeedEvent } from "@/components/FeedEventCard";
 import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchievementCard";
 import FeedStoryBar from "@/components/FeedStoryBar";
+import NotificationBell from "@/components/NotificationBell";
 import EmptyState from "@/components/EmptyState";
 import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
