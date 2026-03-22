@@ -59,6 +59,13 @@ export default function Profile() {
     if (data?.signedUrl) setAvatarSignedUrl(data.signedUrl);
   };
 
+  const resolveSignedUrl = async (path: string): Promise<string | null> => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = await supabase.storage.from("flight-photos").createSignedUrl(path, 3600);
+    return data?.signedUrl || null;
+  };
+
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
