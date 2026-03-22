@@ -201,6 +201,54 @@ export default function FlightForm() {
             <div className="space-y-1.5"><Label className="text-xs">{t("flights.comments")}</Label><Textarea value={form.comments} onChange={set("comments")} placeholder={t("flights.commentsPlaceholder")} rows={3} /></div>
           </CardContent>
         </Card>
+        {trainingItems.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {selectedTrainingIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedTrainingIds.map((id) => {
+                    const item = trainingItems.find((ti) => ti.id === id);
+                    return item ? (
+                      <Badge key={id} variant="secondary" className="gap-1 pr-1">
+                        {item.name}
+                        <button type="button" onClick={() => setSelectedTrainingIds((prev) => prev.filter((x) => x !== id))}><X className="h-3 w-3" /></button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" size="sm" className="w-full">
+                    <Plus className="h-4 w-4 mr-1" /> {t("flights_training.selectManeuvers")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 max-h-64 overflow-y-auto p-2" align="start">
+                  {(() => {
+                    const categories = [...new Set(trainingItems.map((ti) => ti.category_name))];
+                    return categories.map((cat) => (
+                      <div key={cat} className="mb-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1">{cat}</p>
+                        {trainingItems.filter((ti) => ti.category_name === cat).map((ti) => (
+                          <label key={ti.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer text-sm">
+                            <Checkbox
+                              checked={selectedTrainingIds.includes(ti.id)}
+                              onCheckedChange={(checked) => {
+                                setSelectedTrainingIds((prev) => checked ? [...prev, ti.id] : prev.filter((x) => x !== ti.id));
+                              }}
+                            />
+                            {ti.name}
+                          </label>
+                        ))}
+                      </div>
+                    ));
+                  })()}
+                </PopoverContent>
+              </Popover>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.photos")}</CardTitle></CardHeader>
           <CardContent>
