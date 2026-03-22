@@ -271,6 +271,35 @@ export type Database = {
           },
         ]
       }
+      event_photos: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_signups: {
         Row: {
           event_id: string
@@ -454,12 +483,15 @@ export type Database = {
           description: string | null
           event_date: string
           event_type: string | null
+          feed_description: string | null
           group_id: string
           id: string
           instructor: string | null
           launch_helper: string | null
           max_participants: number | null
           meeting_point: string | null
+          published_at: string | null
+          published_to_feed: boolean
           signup_deadline: string | null
           status: Database["public"]["Enums"]["event_status"]
           title: string
@@ -471,12 +503,15 @@ export type Database = {
           description?: string | null
           event_date: string
           event_type?: string | null
+          feed_description?: string | null
           group_id: string
           id?: string
           instructor?: string | null
           launch_helper?: string | null
           max_participants?: number | null
           meeting_point?: string | null
+          published_at?: string | null
+          published_to_feed?: boolean
           signup_deadline?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           title: string
@@ -488,12 +523,15 @@ export type Database = {
           description?: string | null
           event_date?: string
           event_type?: string | null
+          feed_description?: string | null
           group_id?: string
           id?: string
           instructor?: string | null
           launch_helper?: string | null
           max_participants?: number | null
           meeting_point?: string | null
+          published_at?: string | null
+          published_to_feed?: boolean
           signup_deadline?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           title?: string
