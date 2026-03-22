@@ -189,8 +189,22 @@ export default function FlightForm() {
                 }}
               />
             </div>
-          </CardContent>
+           </CardContent>
         </Card>
+        {groups.length > 0 && (
+          <Card>
+            <CardContent className="p-4 space-y-1.5">
+              <Label className="text-xs">{t("flights.group")}</Label>
+              <Select value={form.group_id} onValueChange={(v) => setForm({ ...form, group_id: v === "__none__" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder={t("flights.selectGroup")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t("flights.noGroup")}</SelectItem>
+                  {groups.map((g) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.extendedData")}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
