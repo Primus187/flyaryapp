@@ -189,7 +189,9 @@
     "flightsAtLocation": "Flüge an diesem Ort",
     "noFlightsHere": "Noch keine Flüge",
     "typeLabel": "Typ",
-    "altitudeLabel": "Höhe"
+    "altitudeLabel": "Höhe",
+    "country": "Land",
+    "countryPlaceholder": "Land wählen"
   },
   "groups": {
     "title": "Gruppen",
