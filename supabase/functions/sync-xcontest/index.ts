@@ -51,7 +51,7 @@ async function loginToXContest(
   const formData = new URLSearchParams();
   formData.set("login[username]", username);
   formData.set("login[password]", password);
-  formData.set("login[persist]", "1");
+  formData.set("login[persist_login]", "Y");
 
   const loginRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
     method: "POST",
