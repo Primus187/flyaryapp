@@ -1,85 +1,96 @@
 
 
-# Flyary Social & Gamification Update
+# Feed-Automatik, Dashboard-Challenges & Erweiterte Challenge-Waypoints mit IGC-Verifikation
 
-Das ist ein grosses Update mit mehreren neuen Systemen. Ich empfehle eine schrittweise Umsetzung in 4 Phasen.
+## Übersicht
+4 zusammenhängende Änderungen: Feed zeigt alle Gruppen automatisch, Challenges erscheinen auf dem Dashboard, Challenge-Goals werden zu echten Wegpunkten mit Koordinaten/Karte, und IGC-Uploads prüfen automatisch Challenge-Fortschritt.
 
-## Phase 1: Design-Refresh (Dark-First, Instagram-Stil)
+---
 
-### Visuelles Fundament
-- Dark Mode als Standard setzen (tiefes Schwarz statt Dunkelblau)
-- CSS-Variablen anpassen: `--background: 0 0% 4%`, Karten dunkler, Kontraste schärfer
-- Karten mit grossen Bild-Headern (Flugfotos) im Instagram-Card-Stil
-- Bottom-Nav Icons minimalistischer: nur Icon + Dot-Indicator statt Text (à la Instagram)
-- Profilbilder rund mit farbigem Ring (wie Instagram Stories)
+## 1. Feed zeigt automatisch alle Gruppen
 
-### Dateien
-- **Edit**: `src/index.css` — Dark-Theme-Variablen anpassen
-- **Edit**: `src/components/BottomNav.tsx` — Icon-only Navigation mit Active-Dot
-- **Edit**: `src/pages/Dashboard.tsx` — Flug-Karten mit Foto-Header
-- **Edit**: `src/pages/Profile.tsx` — Rundes Profilbild prominenter
+**Problem**: Der Feed funktioniert bereits korrekt — er lädt alle Gruppen des Users via `group_members`. Das ist schon implementiert.
+**Bestätigung**: Keine Code-Änderung nötig, da `Feed.tsx` bereits alle `group_members`-Einträge (admin + member) abfragt.
 
-## Phase 2: Social Feed
+---
 
-### Neue Tabelle & Datenmodell
-- `feed_likes` Tabelle: `id, flight_id, user_id, created_at`
-- `feed_comments` Tabelle: `id, flight_id, user_id, message, created_at`
-- Flüge innerhalb derselben Gruppe werden im Feed sichtbar (neue RLS-Policy auf `flights`: Gruppenmitglieder können Flüge sehen)
-- Neue SELECT-Policy auf `flight_photos` für Gruppenmitglieder
+## 2. Challenges auf dem Dashboard
 
-### Feed-Seite
-- Neue Seite `/feed` (ersetzt oder ergänzt Dashboard)
-- Zeigt Flüge von Gruppenmitgliedern chronologisch
-- Jeder Eintrag: Avatar + Pilotname, Foto(s) als Swipe-Galerie, Fluginformationen, Like-Button (Herz), Kommentare
-- Pull-to-Refresh für neue Einträge
+**Edit**: `src/pages/Dashboard.tsx`
+- Nach "Nächste Termine" einen neuen Abschnitt "Aktive Challenges" hinzufügen
+- Alle Challenges laden, bei denen der User Gruppenmitglied ist und die noch aktiv sind (`end_date IS NULL OR end_date >= today`)
+- Challenge-Fortschritt (eigene `challenge_progress`) mitladen
+- `ChallengeCard`-Komponente wiederverwenden
 
-### Dateien
-- **Migration**: `feed_likes`, `feed_comments` Tabellen + RLS
-- **Migration**: Neue RLS-Policy auf `flights` und `flight_photos` für Gruppenmitglieder
-- **Neu**: `src/pages/Feed.tsx` — Social Feed
-- **Neu**: `src/components/FeedCard.tsx` — Einzelner Feed-Eintrag
-- **Edit**: `src/App.tsx` — Route hinzufügen
-- **Edit**: `src/components/BottomNav.tsx` — Feed-Tab (Home-Icon)
+---
 
-## Phase 3: Leaderboard & XP-System
+## 3. Challenge-Goals mit Koordinaten & Kartenauswahl
 
-### Datenmodell
-- `pilot_xp` Tabelle: `id, user_id, total_xp, level, updated_at`
-- XP-Berechnung via DB-Trigger nach Flight-Insert: Airtime-Minuten × 2 + Höhenmeter × 0.5 + Distanz × 10
-- Level-Stufen (z.B. 0-500 = Lv.1, 500-1500 = Lv.2, etc.)
+### Migration
+- `challenge_goals` erweitern:
+  - `ADD COLUMN latitude double precision`
+  - `ADD COLUMN longitude double precision`
+  - `ADD COLUMN radius_meters integer DEFAULT 400` (Zylinderradius für Waypoint-Validierung)
+  - `ADD COLUMN goal_type text DEFAULT 'waypoint'` (start, turnpoint, waypoint, goal)
 
-### UI
-- XP-Anzeige im Profil mit Progress-Bar zum nächsten Level
-- Leaderboard-Seite unter "Mehr": Rangliste pro Gruppe und Saison
-- Badges: Level-Icons (Bronze → Silber → Gold → Diamant)
+### Edit: `src/pages/ChallengeDetail.tsx`
+- Goal-Erstellung erweitern: Dropdown für `goal_type` (Start, Turnpoint, Waypoint, Goal)
+- Koordinaten-Eingabe: entweder manuell (lat/lng) oder über Karte
+- `LocationMapPicker`-Komponente wiederverwenden für Kartenauswahl
+- Optional: bestehende Location aus der DB auswählen (via `LocationCombobox`)
+- Goals auf einer Mini-Karte in der Challenge-Detailansicht anzeigen
 
-### Dateien
-- **Migration**: `pilot_xp` Tabelle + Trigger-Funktion für XP-Berechnung
-- **Neu**: `src/pages/Leaderboard.tsx`
-- **Edit**: `src/pages/Profile.tsx` — XP-Bar + Level
-- **Edit**: `src/pages/More.tsx` — Leaderboard-Link
+### Neu: `src/components/ChallengeGoalForm.tsx`
+- Formular für Goal-Erstellung mit:
+  - Label, Punkte, Goal-Type Dropdown
+  - Tab-Umschalter: "Karte" / "Koordinaten" / "Ort auswählen"
+  - `LocationMapPicker` für Kartenauswahl
+  - `LocationCombobox` für bestehende Orte (übernimmt Koordinaten)
 
-## Phase 4: Challenges
+### Neu: `src/components/ChallengeMap.tsx`
+- Leaflet-Karte die alle Goals als Marker mit Radius-Kreisen anzeigt
+- Verschiedene Farben/Icons je nach `goal_type`
 
-### Datenmodell
-- `challenges` Tabelle: `id, group_id, title, description, type, start_date, end_date, created_by`
-- `challenge_goals` Tabelle: `id, challenge_id, location_id, points`
-- `challenge_progress` Tabelle: `id, challenge_id, user_id, goal_id, flight_id, completed_at`
+---
 
-### UI
-- Challenge-Übersicht pro Gruppe (im Gruppen-Detail)
-- Challenge-Detail: Karte mit Wegpunkten, Fortschrittsbalken, Teilnehmer-Ranking
-- Badges/Trophies als SVG-Icons für abgeschlossene Challenges
+## 4. Automatische IGC-Verifikation gegen Challenges
 
-### Dateien
-- **Migration**: 3 neue Tabellen + RLS
-- **Neu**: `src/pages/ChallengeDetail.tsx`
-- **Neu**: `src/components/ChallengeCard.tsx`
-- **Edit**: `src/pages/GroupDetail.tsx` — Challenges-Tab
+### Logik
+Wenn ein Flug mit IGC-Datei gespeichert wird, Track-Punkte gegen alle aktiven Challenge-Goals des Users prüfen:
+- Für jedes Goal: Hat der IGC-Track einen Punkt innerhalb des `radius_meters`-Zylinders um die Goal-Koordinaten?
+- Haversine-Distanzberechnung zwischen Track-Punkten und Goal-Koordinaten
+- Wenn ja: automatisch `challenge_progress`-Eintrag erstellen
 
-## Empfohlene Reihenfolge
+### Neu: `src/lib/challenge-verify.ts`
+- Funktion `verifyChallengeGoals(igcPoints: IGCPoint[], goals: GoalWithCoords[]): string[]`
+- Gibt Array der erfüllten Goal-IDs zurück
+- Haversine-Formel für Distanzberechnung
 
-Da jede Phase für sich funktioniert, schlage ich vor, mit **Phase 1 (Design-Refresh)** zu starten — das gibt der App sofort ein frischeres Gefühl. Danach **Phase 2 (Social Feed)**, da es den grössten Mehrwert für die Community bringt.
+### Edit: `src/pages/FlightForm.tsx`
+- Nach erfolgreichem Speichern eines Flugs mit IGC:
+  1. Aktive Challenges des Users laden (via Gruppenmitgliedschaft)
+  2. Goals mit Koordinaten laden
+  3. Bereits abgeschlossene Goals ausfiltern
+  4. `verifyChallengeGoals()` aufrufen
+  5. Neue `challenge_progress`-Einträge erstellen
+  6. Toast-Benachrichtigung: "X Challenge-Ziele erreicht!"
 
-Soll ich mit Phase 1 beginnen, oder möchtest du eine andere Reihenfolge?
+---
+
+## i18n
+Neue Keys in de/en/fr:
+- `challenges.start`, `challenges.turnpoint`, `challenges.waypoint`, `challenges.goalType`
+- `challenges.radius`, `challenges.selectLocation`, `challenges.coordinates`
+- `challenges.autoVerified`, `challenges.goalsReached`
+- `dashboard.activeChallenges`
+
+## Dateien
+- **Migration**: `challenge_goals` erweitern (latitude, longitude, radius_meters, goal_type)
+- **Edit**: `src/pages/Dashboard.tsx` — Challenge-Sektion
+- **Edit**: `src/pages/ChallengeDetail.tsx` — erweiterte Goal-Erstellung + Karte
+- **Neu**: `src/components/ChallengeGoalForm.tsx` — Goal-Formular mit Karte
+- **Neu**: `src/components/ChallengeMap.tsx` — Waypoint-Karte
+- **Neu**: `src/lib/challenge-verify.ts` — IGC-Verifikationslogik
+- **Edit**: `src/pages/FlightForm.tsx` — Auto-Verifikation nach IGC-Upload
+- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Übersetzungen
 
