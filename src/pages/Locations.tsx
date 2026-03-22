@@ -106,6 +106,7 @@ export default function Locations() {
                   <div className="space-y-1.5"><Label className="text-xs">{t("locations.longitude")}</Label><Input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} placeholder="7.6" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("locations.altitude")}</Label><Input type="number" value={form.altitude} onChange={(e) => setForm({ ...form, altitude: e.target.value })} /></div></div>
+                <div className="space-y-1.5"><Label className="text-xs">{t("locations.country")}</Label><Select value={form.country_code} onValueChange={(v) => setForm({ ...form, country_code: v })}><SelectTrigger><SelectValue placeholder={t("locations.countryPlaceholder")} /></SelectTrigger><SelectContent>{countries.map((c) => (<SelectItem key={c.code} value={c.code}>{getFlagEmoji(c.code)} {c.name}</SelectItem>))}</SelectContent></Select></div>
                 <div className="space-y-1.5"><Label className="text-xs">{t("locations.descriptionLabel")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t("common.optional")} /></div>
                 <Button className="w-full" onClick={handleSave}>{editId ? t("common.update") : t("common.save")}</Button>
               </div>
