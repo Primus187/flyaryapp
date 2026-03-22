@@ -152,7 +152,11 @@
     "fillRequired": "Veuillez remplir les champs obligatoires",
     "eventTypeLabel": "Type",
     "allGroups": "Tous les groupes",
-    "pilot": "Pilote"
+    "pilot": "Pilote",
+    "chat": "Chat",
+    "typeMessage": "Écrire un message...",
+    "sendMessage": "Envoyer",
+    "noMessages": "Pas encore de messages"
   },
   "locations": {
     "title": "Sites",
