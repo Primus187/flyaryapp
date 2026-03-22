@@ -21,7 +21,7 @@ interface BadgeGridProps {
   compact?: boolean; // show only unlocked, max 6
 }
 
-const CATEGORY_ORDER: BadgeCategory[] = ["flights", "time", "altitude", "distance", "sites", "records"];
+const CATEGORY_ORDER: BadgeCategory[] = ["flights", "time", "altitude", "distance", "sites", "records", "seasonal"];
 
 function getProgressForBadge(badge: BadgeDefinition, stats?: BadgeGridProps["stats"]): string | undefined {
   if (!stats) return undefined;
