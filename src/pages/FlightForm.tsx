@@ -147,6 +147,30 @@ export default function FlightForm() {
                       return { challenge_id: goal.challenge_id, user_id: user.id, goal_id: goalId, flight_id: flightId };
                     });
                     await supabase.from("challenge_progress" as any).insert(inserts as any);
+
+                    // Create feed achievements for each reached goal
+                    for (const goalId of reachedIds) {
+                      const goal = uncompleted.find(g => g.id === goalId)!;
+                      await supabase.from("feed_achievements" as any).insert({
+                        user_id: user.id, challenge_id: goal.challenge_id,
+                        goal_id: goalId, achievement_type: "goal_reached",
+                      } as any);
+                    }
+
+                    // Check if any challenge is now fully completed
+                    const affectedChallengeIds = [...new Set(reachedIds.map(gId => uncompleted.find(g => g.id === gId)!.challenge_id))];
+                    for (const cId of affectedChallengeIds) {
+                      const totalGoals = goalsWithCoords.filter(g => g.challenge_id === cId).length;
+                      const { data: allProgress } = await supabase.from("challenge_progress" as any)
+                        .select("goal_id").eq("challenge_id", cId).eq("user_id", user.id);
+                      if ((allProgress as any[] || []).length >= totalGoals) {
+                        await supabase.from("feed_achievements" as any).insert({
+                          user_id: user.id, challenge_id: cId,
+                          goal_id: null, achievement_type: "challenge_completed",
+                        } as any);
+                      }
+                    }
+
                     toast({ title: t("challenges.autoVerified"), description: `${reachedIds.length} ${t("challenges.goalsReached")}` });
                   }
                 }

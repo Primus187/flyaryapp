@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import FeedCard, { type FeedFlight } from "@/components/FeedCard";
 import FeedEventCard, { type FeedEvent } from "@/components/FeedEventCard";
-import FeedChallengeCard, { type FeedChallenge } from "@/components/FeedChallengeCard";
+import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchievementCard";
 import EmptyState from "@/components/EmptyState";
 import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 type FeedItem =
   | { type: "flight"; date: string; data: FeedFlight }
   | { type: "event"; date: string; data: FeedEvent }
-  | { type: "challenge"; date: string; data: FeedChallenge };
+  | { type: "achievement"; date: string; data: FeedAchievement };
 
 function FeedSkeleton() {
   return (
@@ -61,16 +61,16 @@ export default function Feed() {
     const groupMap: Record<string, string> = {};
     groups?.forEach(g => { groupMap[g.id] = g.name; });
 
-    const [flightsRes, eventsRes, challengesRes] = await Promise.all([
+    const [flightsRes, eventsRes, achievementsRes] = await Promise.all([
       fetchFlights(user.id, groupIds, groupMap),
       fetchEvents(user.id, groupIds, groupMap),
-      fetchChallenges(user.id, groupIds, groupMap),
+      fetchAchievements(user.id, groupIds, groupMap),
     ]);
 
     const allItems: FeedItem[] = [
       ...flightsRes.map(f => ({ type: "flight" as const, date: f.created_at, data: f })),
       ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: e })),
-      ...challengesRes.map(c => ({ type: "challenge" as const, date: c.created_at || c.start_date, data: c })),
+      ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: a })),
     ];
 
     allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -80,37 +80,58 @@ export default function Feed() {
 
   useEffect(() => { fetchFeed(); }, [fetchFeed]);
 
-  const handleLikeToggle = async (flightId: string) => {
+  // ── Generic like toggle ──
+  const handleLikeToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
     if (!user) return;
-    const item = items.find(i => i.type === "flight" && i.data.id === flightId);
-    if (!item || item.type !== "flight") return;
-    const flight = item.data;
 
-    const isLiked = flight.likes.some(l => l.user_id === user.id);
+    const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
+
+    const item = items.find(i => i.data.id === itemId);
+    if (!item) return;
+
+    const likes = (item.data as any).likes || [];
+    const isLiked = likes.some((l: any) => l.user_id === user.id);
+
     if (isLiked) {
-      await supabase.from("feed_likes").delete().eq("flight_id", flightId).eq("user_id", user.id);
-      setItems(prev => prev.map(i => i.type === "flight" && i.data.id === flightId
-        ? { ...i, data: { ...i.data, likes: i.data.likes.filter(l => l.user_id !== user.id) } }
-        : i));
+      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id);
     } else {
-      await supabase.from("feed_likes").insert({ flight_id: flightId, user_id: user.id });
-      setItems(prev => prev.map(i => i.type === "flight" && i.data.id === flightId
-        ? { ...i, data: { ...i.data, likes: [...i.data.likes, { user_id: user.id }] } }
-        : i));
+      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id } as any);
     }
+
+    setItems(prev => prev.map(i => {
+      if (i.data.id !== itemId) return i;
+      const currentLikes = (i.data as any).likes || [];
+      const newLikes = isLiked
+        ? currentLikes.filter((l: any) => l.user_id !== user.id)
+        : [...currentLikes, { user_id: user.id }];
+      return { ...i, data: { ...i.data, likes: newLikes } } as FeedItem;
+    }));
   };
 
-  const handleComment = async (flightId: string, message: string) => {
+  // ── Generic comment ──
+  const handleComment = async (itemType: "flight" | "event" | "achievement", itemId: string, message: string) => {
     if (!user) return;
-    const { data } = await supabase.from("feed_comments").insert({ flight_id: flightId, user_id: user.id, message }).select("id, created_at").single();
+
+    const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
+
+    const { data } = await supabase.from("feed_comments")
+      .insert({ [colName]: itemId, user_id: user.id, message } as any)
+      .select("id, created_at").single();
+
     if (data) {
       const { data: prof } = await supabase.from("profiles").select("pilot_name").eq("user_id", user.id).single();
-      setItems(prev => prev.map(i => i.type === "flight" && i.data.id === flightId ? {
-        ...i, data: {
-          ...i.data,
-          comments: [...i.data.comments, { id: data.id, user_id: user.id, message, created_at: data.created_at, pilot_name: prof?.pilot_name || "Du" }]
-        }
-      } : i));
+      setItems(prev => prev.map(i => {
+        if (i.data.id !== itemId) return i;
+        const currentComments = (i.data as any).comments || [];
+        return {
+          ...i, data: {
+            ...i.data, comments: [...currentComments, {
+              id: data.id, user_id: user.id, message, created_at: data.created_at,
+              pilot_name: prof?.pilot_name || "Pilot"
+            }]
+          }
+        } as FeedItem;
+      }));
     }
   };
 
@@ -150,13 +171,20 @@ export default function Feed() {
         <div className="space-y-4">
           {items.map(item => {
             if (item.type === "flight") {
-              return <FeedCard key={`f-${item.data.id}`} flight={item.data} onLikeToggle={handleLikeToggle} onComment={handleComment} />;
+              return <FeedCard key={`f-${item.data.id}`} flight={item.data}
+                onLikeToggle={(id) => handleLikeToggle("flight", id)}
+                onComment={(id, msg) => handleComment("flight", id, msg)} />;
             }
             if (item.type === "event") {
-              return <FeedEventCard key={`e-${item.data.id}`} event={item.data} onSignup={handleEventSignup} />;
+              return <FeedEventCard key={`e-${item.data.id}`} event={item.data}
+                onSignup={handleEventSignup}
+                onLikeToggle={(id) => handleLikeToggle("event", id)}
+                onComment={(id, msg) => handleComment("event", id, msg)} />;
             }
-            if (item.type === "challenge") {
-              return <FeedChallengeCard key={`c-${item.data.id}`} challenge={item.data} />;
+            if (item.type === "achievement") {
+              return <FeedAchievementCard key={`a-${item.data.id}`} achievement={item.data}
+                onLikeToggle={(id) => handleLikeToggle("achievement", id)}
+                onComment={(id, msg) => handleComment("achievement", id, msg)} />;
             }
             return null;
           })}
@@ -200,7 +228,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const flightIds = groupFlights.map(f => f.id);
 
-  // Load photos, likes, comments, igc tracks in parallel
   const [photosRes, likesRes, commentsRes, tracksRes] = await Promise.all([
     supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds),
     supabase.from("feed_likes").select("flight_id, user_id").in("flight_id", flightIds),
@@ -213,7 +240,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
   const comments = commentsRes.data;
   const tracks = tracksRes.data;
 
-  // Build photo map
   const photoMap: Record<string, string[]> = {};
   if (photos && photos.length > 0) {
     const paths = [...new Set(photos.map(p => p.storage_path))];
@@ -228,7 +254,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     });
   }
 
-  // Build track map
   const trackMap: Record<string, [number, number][]> = {};
   if (tracks) {
     for (const t of tracks) {
@@ -238,7 +263,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     }
   }
 
-  // Resolve commenter profiles
   const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
   if (commenterIds.length > 0) {
     const { data: cp } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", commenterIds);
@@ -283,11 +307,24 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
   if (!events || events.length === 0) return [];
 
   const eventIds = events.map(e => e.id);
-  const { data: signups } = await supabase
-    .from("event_signups")
-    .select("event_id, user_id, signed_up")
-    .in("event_id", eventIds)
-    .eq("signed_up", true);
+
+  const [signupsRes, likesRes, commentsRes] = await Promise.all([
+    supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds).eq("signed_up", true),
+    supabase.from("feed_likes").select("event_id, user_id").in("event_id", eventIds),
+    supabase.from("feed_comments").select("id, event_id, user_id, message, created_at").in("event_id", eventIds).order("created_at", { ascending: true }),
+  ]);
+
+  const signups = signupsRes.data;
+  const likes = likesRes.data;
+  const comments = commentsRes.data;
+
+  // Resolve commenter names
+  const allUserIds = [...new Set([...(comments || []).map(c => c.user_id)])];
+  const profileMap: Record<string, string> = {};
+  if (allUserIds.length > 0) {
+    const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allUserIds);
+    profs?.forEach(p => { profileMap[p.user_id] = p.pilot_name || "Pilot"; });
+  }
 
   return events.map(e => ({
     id: e.id,
@@ -302,49 +339,119 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
     created_at: (e as any).created_at || e.event_date,
     signup_count: (signups || []).filter(s => s.event_id === e.id).length,
     user_signed_up: (signups || []).some(s => s.event_id === e.id && s.user_id === userId),
+    likes: (likes || []).filter(l => l.event_id === e.id).map(l => ({ user_id: l.user_id })),
+    comments: (comments || []).filter(c => c.event_id === e.id).map(c => ({
+      id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
+      pilot_name: profileMap[c.user_id] || "Pilot",
+    })),
   }));
 }
 
-async function fetchChallenges(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedChallenge[]> {
-  const today = new Date().toISOString().split("T")[0];
+async function fetchAchievements(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedAchievement[]> {
+  const { data: achievements } = await supabase
+    .from("feed_achievements")
+    .select("id, user_id, challenge_id, goal_id, achievement_type, created_at")
+    .order("created_at", { ascending: false })
+    .limit(20);
 
+  if (!achievements || achievements.length === 0) return [];
+
+  // Filter to only achievements from user's groups
+  const challengeIds = [...new Set(achievements.map(a => a.challenge_id))];
   const { data: challenges } = await supabase
     .from("challenges")
-    .select("id, title, description, start_date, end_date, group_id, created_at")
-    .in("group_id", groupIds)
-    .or(`end_date.is.null,end_date.gte.${today}`)
-    .order("created_at", { ascending: false })
-    .limit(10);
+    .select("id, title, group_id")
+    .in("id", challengeIds)
+    .in("group_id", groupIds);
 
   if (!challenges || challenges.length === 0) return [];
 
-  const challengeIds = challenges.map(c => c.id);
+  const challengeMap: Record<string, { title: string; group_id: string }> = {};
+  challenges.forEach(c => { challengeMap[c.id] = { title: c.title, group_id: c.group_id }; });
 
-  const [goalsRes, progressRes] = await Promise.all([
-    supabase.from("challenge_goals").select("id, challenge_id").in("challenge_id", challengeIds),
-    supabase.from("challenge_progress").select("challenge_id, goal_id, user_id").in("challenge_id", challengeIds),
+  const validAchievements = achievements.filter(a => challengeMap[a.challenge_id]);
+
+  // Get goal labels
+  const goalIds = validAchievements.filter(a => a.goal_id).map(a => a.goal_id!);
+  const goalMap: Record<string, string> = {};
+  if (goalIds.length > 0) {
+    const { data: goals } = await supabase.from("challenge_goals").select("id, label").in("id", goalIds);
+    goals?.forEach(g => { goalMap[g.id] = g.label || ""; });
+  }
+
+  // Get challenge progress counts
+  const progressMap: Record<string, { total: number; completed: number }> = {};
+  for (const cId of challengeIds) {
+    if (!challengeMap[cId]) continue;
+    const { data: goals } = await supabase.from("challenge_goals").select("id").eq("challenge_id", cId);
+    const total = goals?.length || 0;
+    // Count completed goals per achievement's user
+    progressMap[cId] = { total, completed: 0 };
+  }
+
+  // Get pilot profiles
+  const pilotIds = [...new Set(validAchievements.map(a => a.user_id))];
+  const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
+  if (pilotIds.length > 0) {
+    const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", pilotIds);
+    if (profiles) {
+      for (const p of profiles) {
+        let avatarUrl = "";
+        if (p.avatar_url) {
+          if (p.avatar_url.startsWith("http")) avatarUrl = p.avatar_url;
+          else {
+            const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(p.avatar_url, 3600);
+            if (signed?.signedUrl) avatarUrl = signed.signedUrl;
+          }
+        }
+        profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: avatarUrl };
+      }
+    }
+  }
+
+  // Get user progress per challenge
+  for (const a of validAchievements) {
+    if (progressMap[a.challenge_id]) {
+      const { data: prog } = await supabase.from("challenge_progress").select("id").eq("challenge_id", a.challenge_id).eq("user_id", a.user_id);
+      progressMap[a.challenge_id].completed = prog?.length || 0;
+    }
+  }
+
+  // Get likes and comments
+  const achIds = validAchievements.map(a => a.id);
+  const [likesRes, commentsRes] = await Promise.all([
+    supabase.from("feed_likes").select("achievement_id, user_id").in("achievement_id", achIds),
+    supabase.from("feed_comments").select("id, achievement_id, user_id, message, created_at").in("achievement_id", achIds).order("created_at", { ascending: true }),
   ]);
 
-  const goals = goalsRes.data || [];
-  const progress = progressRes.data || [];
+  const likes = likesRes.data;
+  const comments = commentsRes.data;
 
-  return challenges.map(c => {
-    const cGoals = goals.filter(g => g.challenge_id === c.id);
-    const myCompleted = progress.filter(p => p.challenge_id === c.id && p.user_id === userId);
-    const participants = [...new Set(progress.filter(p => p.challenge_id === c.id).map(p => p.user_id))];
+  // Resolve commenter names
+  const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
+  if (commenterIds.length > 0) {
+    const { data: cp } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", commenterIds);
+    cp?.forEach(p => { profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: "" }; });
+  }
 
-    return {
-      id: c.id,
-      title: c.title,
-      description: c.description,
-      start_date: c.start_date,
-      end_date: c.end_date,
-      created_at: c.created_at,
-      group_id: c.group_id,
-      group_name: groupMap[c.group_id] || "",
-      total_goals: cGoals.length,
-      completed_goals: myCompleted.length,
-      participant_count: participants.length,
-    };
-  });
+  return validAchievements.map(a => ({
+    id: a.id,
+    user_id: a.user_id,
+    challenge_id: a.challenge_id,
+    goal_id: a.goal_id,
+    achievement_type: a.achievement_type,
+    created_at: a.created_at,
+    pilot_name: profileMap[a.user_id]?.pilot_name || "Pilot",
+    avatar_url: profileMap[a.user_id]?.avatar_url || "",
+    challenge_title: challengeMap[a.challenge_id]?.title || "",
+    goal_label: a.goal_id ? (goalMap[a.goal_id] || null) : null,
+    group_name: groupMap[challengeMap[a.challenge_id]?.group_id] || "",
+    total_goals: progressMap[a.challenge_id]?.total || 0,
+    completed_goals: progressMap[a.challenge_id]?.completed || 0,
+    likes: (likes || []).filter(l => l.achievement_id === a.id).map(l => ({ user_id: l.user_id })),
+    comments: (comments || []).filter(c => c.achievement_id === a.id).map(c => ({
+      id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
+      pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
+    })),
+  }));
 }

@@ -500,7 +500,10 @@
     "justNow": "just now",
     "minutesAgo": "{{count}}m ago",
     "hoursAgo": "{{count}}h ago",
-    "daysAgo": "{{count}}d ago"
+    "daysAgo": "{{count}}d ago",
+    "goalReached": "Goal reached!",
+    "challengeCompleted": "Challenge completed!",
+    "signUp": "Sign up"
   },
   "leaderboard": {
     "title": "Leaderboard",
