@@ -1,58 +1,114 @@
 
 
-# Öffentliches Profil mit Badges & besserer Visualisierung
+# Social Network UX Verbesserungen
 
-## Übersicht
-Neue Seite `/pilot/:userId` als öffentliches Profil, sichtbar für Gruppenmitglieder. Zeigt Hero-Header mit Avatar, Pilotname, Bio, XP/Level, Top-Badges und Flugstatistiken. Der eigene User kann sein öffentliches Profil über die Profile-Seite vorab sehen.
+## Analyse des Ist-Zustands
+Der Feed hat bereits: Likes, Kommentare, Foto-Galerie, Pull-to-Refresh, relative Zeitanzeigen, Avatar-Navigation zu Profilen. Es fehlen jedoch mehrere Kern-Features, die User von Instagram/Strava gewohnt sind.
 
-## 1. Neue Seite: `src/pages/PilotProfile.tsx`
+---
 
-Öffentliches Profil mit Instagram-artigem Layout:
-- **Hero-Header**: Grosser Avatar mit Gradient-Ring, Pilotname, Level-Badge, Bio
-- **Stats-Leiste**: Flüge | Stunden | XP als kompakte Zahlen-Row (wie Instagram Follower/Posts)
-- **Top-Badges-Sektion**: Die 6 besten (höchster Tier zuerst) freigeschalteten Badges als HexBadge-Grid
-- **Klick auf "Alle Badges"** öffnet BadgeGrid vollständig
-- **Glider-Info**: Aktiver Schirm
-- **Flugschule / SHV-Nummer** falls vorhanden
+## Vorgeschlagene Verbesserungen (priorisiert)
 
-Daten werden geladen aus: `profiles`, `pilot_xp`, `pilot_badges`, `flights` (aggregiert), `pilot_gliders`
+### 1. Doppeltipp-Like auf Fotos/Karten
+Instagram-Signature-Feature: Doppeltipp auf ein Bild löst Like aus mit kurzer Heart-Animation.
+- `FeedCard`: `onDoubleClick` auf Foto-Bereich und Karte
+- Kurze ❤️-Animation (scale-in/fade-out) als Overlay
+- Haptisches Feedback (wenn verfügbar via `navigator.vibrate`)
 
-## 2. Routing
+### 2. Like-Animation
+- Heart-Icon: Bouncy Scale-Animation beim Liken (spring-Effekt)
+- Kurzes rotes Partikel-Burst oder Pulse-Ring
 
-**Edit: `src/App.tsx`**
-- Neue Route: `/pilot/:userId` → `PilotProfile`
+### 3. Kommentar-Likes
+- Jeder Kommentar bekommt ein kleines Heart-Icon zum Liken
+- Neue Tabelle `comment_likes` oder Spalte in `feed_comments`
+- Meistgelikte Kommentare werden oben angezeigt
 
-## 3. Verlinkung
+### 4. Push-Benachrichtigungen (In-App)
+- Notification-Bell im Header mit Badge-Counter
+- Neue Tabelle `notifications` (type: like, comment, achievement, event_reminder)
+- Trigger: Bei Like/Kommentar auf eigenen Post → Notification erstellen
+- Notification-Dropdown mit "X hat deinen Flug geliked", "Y hat kommentiert"
 
-**Edit: `src/pages/Leaderboard.tsx`**
-- Klick auf Leaderboard-Eintrag navigiert zu `/pilot/${entry.user_id}`
+### 5. Share/Bookmark-Buttons
+- Share-Button (native `navigator.share()` API) um Posts extern zu teilen
+- Bookmark-Button zum Speichern interessanter Posts
+- Neue Tabelle `bookmarks` mit Bookmark-Icon in der Action-Bar
 
-**Edit: `src/components/FeedCard.tsx`**
-- Klick auf Pilotname/Avatar im Feed navigiert zu `/pilot/${userId}`
+### 6. Story-ähnliche Highlights (Gruppen-Stories)
+- Horizontale Avatar-Reihe oben im Feed (wie Instagram Stories)
+- Zeigt Piloten die heute/gestern geflogen sind
+- Klick öffnet deren neuesten Post direkt
 
-## 4. Profil-Vorschau
+### 7. Erweiterte Kommentar-UX
+- @Mentions mit Auto-Complete (Gruppenmitglieder)
+- Antworten auf Kommentare (Thread-Struktur)
+- Emoji-Schnellreaktionen (👏🔥🪂🏔️)
 
-**Edit: `src/pages/Profile.tsx`**
-- Button "Öffentliches Profil ansehen" der zu `/pilot/${user.id}` navigiert
+### 8. Infinite Scroll mit Lazy Loading
+- Aktuell: Festes Limit von 20 Posts
+- Neu: Cursor-basiertes Paging, lädt weitere Posts beim Scrollen
+- Skeleton-Loader am Ende des Feeds
 
-## 5. RLS
+---
 
-Bestehende Policies reichen: `profiles`, `pilot_badges`, `pilot_xp` haben bereits "Group members can view"-Policies. `pilot_gliders` braucht eine neue SELECT-Policy für Gruppenmitglieder.
+## Empfohlene Umsetzungsreihenfolge
 
-## 6. Migration
+**Phase 1 — Quick Wins (höchster Impact):**
+- Doppeltipp-Like mit Heart-Animation
+- Like-Animation (Bounce)
+- Infinite Scroll
+- "Heute aktive Piloten" als Story-Leiste
 
-- Neue RLS-Policy auf `pilot_gliders`: Gruppenmitglieder können Gliders sehen
+**Phase 2 — Engagement:**
+- In-App Notifications
+- Kommentar-Likes
+- Share & Bookmark
 
-## 7. i18n
+**Phase 3 — Advanced:**
+- @Mentions & Antworten
+- Emoji-Reaktionen
 
-Neue Keys: `pilotProfile.title`, `pilotProfile.flights`, `pilotProfile.hours`, `pilotProfile.topBadges`, `pilotProfile.viewPublicProfile`
+---
 
-## Dateien
-- **Neu**: `src/pages/PilotProfile.tsx`
-- **Migration**: RLS für `pilot_gliders` (Gruppenmitglieder lesen)
-- **Edit**: `src/App.tsx` — Route
-- **Edit**: `src/pages/Leaderboard.tsx` — Navigation zu Profil
-- **Edit**: `src/components/FeedCard.tsx` — Navigation zu Profil
-- **Edit**: `src/pages/Profile.tsx` — "Profil ansehen"-Button
-- **Edit**: `src/i18n/locales/{de,en,fr}.json`
+## Technische Details
+
+### Doppeltipp-Like
+```typescript
+// Einfacher Double-Tap Handler
+let lastTap = 0;
+const handleTap = () => {
+  const now = Date.now();
+  if (now - lastTap < 300) { onLikeToggle(id); showHeartAnimation(); }
+  lastTap = now;
+};
+```
+
+### Notifications-Tabelle
+```sql
+CREATE TABLE notifications (
+  id uuid PK, user_id uuid, type text,
+  actor_id uuid, -- wer hat die Aktion ausgelöst
+  reference_id uuid, reference_type text,
+  read boolean DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+```
+
+### Infinite Scroll
+- `published_at` Cursor statt OFFSET
+- IntersectionObserver am letzten Element
+- 10 Posts pro Batch
+
+### Story-Leiste
+- Query: Piloten mit Flügen der letzten 48h aus eigenen Gruppen
+- Horizontaler ScrollArea-Container mit gradient Ring um Avatar
+
+## Dateien (Phase 1)
+- **Edit**: `src/components/FeedCard.tsx` — Double-tap, Like-Animation
+- **Edit**: `src/components/FeedEventCard.tsx` — Like-Animation
+- **Edit**: `src/components/FeedAchievementCard.tsx` — Like-Animation
+- **Edit**: `src/pages/Feed.tsx` — Infinite Scroll, Story-Leiste
+- **Neu**: `src/components/FeedStoryBar.tsx` — Heute-aktive-Piloten
+- **Migration**: Keine für Phase 1
 
