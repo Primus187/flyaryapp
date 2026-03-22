@@ -22,7 +22,18 @@ export default function Locations() {
   const [locations, setLocations] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "" });
+  const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "" });
+
+  const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
+
+  const countries = [
+    { code: "CH", name: "Schweiz" }, { code: "DE", name: "Deutschland" }, { code: "AT", name: "Österreich" },
+    { code: "FR", name: "Frankreich" }, { code: "IT", name: "Italien" }, { code: "ES", name: "Spanien" },
+    { code: "PT", name: "Portugal" }, { code: "SI", name: "Slowenien" }, { code: "HR", name: "Kroatien" },
+    { code: "TR", name: "Türkei" }, { code: "GR", name: "Griechenland" }, { code: "NP", name: "Nepal" },
+    { code: "CO", name: "Kolumbien" }, { code: "BR", name: "Brasilien" }, { code: "ZA", name: "Südafrika" },
+    { code: "US", name: "USA" }, { code: "GB", name: "UK" },
+  ];
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ takeoff: true, landing: true, both: true });
 
   const fetchLocations = async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); };
