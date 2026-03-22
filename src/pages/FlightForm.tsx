@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface LocationOption { id: string; name: string; type: string; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
+interface GroupOption { id: string; name: string; }
 
 export default function FlightForm() {
   const { id } = useParams();
@@ -39,11 +40,12 @@ export default function FlightForm() {
   const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
+  const [groups, setGroups] = useState<GroupOption[]>([]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
     duration_minutes: "", altitude_gain: "", distance_km: "", thermals: "", wind_speed: "",
-    wind_direction: "", glider: "", comments: "",
+    wind_direction: "", glider: "", comments: "", group_id: "",
   });
 
   useEffect(() => {
@@ -51,6 +53,9 @@ export default function FlightForm() {
     supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
+    });
+    supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
+      if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
     });
     supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
       if (data) {
@@ -63,7 +68,7 @@ export default function FlightForm() {
     });
     if (isEdit) {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
-        if (data) setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "" });
+        if (data) setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "" });
       });
       supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => { if (data) setYoutubeUrls(data.map((v) => v.youtube_url)); });
       supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
@@ -94,7 +99,7 @@ export default function FlightForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!user) return; setLoading(true);
     try {
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null };
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null } as any;
       let flightId: string;
       if (isEdit) { const { error } = await supabase.from("flights").update(flightData).eq("id", id); if (error) throw error; flightId = id!; }
       else { const { data, error } = await supabase.from("flights").insert(flightData).select("id").single(); if (error) throw error; flightId = data.id; }
@@ -184,8 +189,22 @@ export default function FlightForm() {
                 }}
               />
             </div>
-          </CardContent>
+           </CardContent>
         </Card>
+        {groups.length > 0 && (
+          <Card>
+            <CardContent className="p-4 space-y-1.5">
+              <Label className="text-xs">{t("flights.group")}</Label>
+              <Select value={form.group_id} onValueChange={(v) => setForm({ ...form, group_id: v === "__none__" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder={t("flights.selectGroup")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t("flights.noGroup")}</SelectItem>
+                  {groups.map((g) => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.extendedData")}</CardTitle></CardHeader>
           <CardContent className="space-y-3">

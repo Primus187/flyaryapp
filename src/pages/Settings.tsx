@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -7,9 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+interface GroupOption { id: string; name: string; }
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
@@ -20,6 +24,21 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [includeNoGroup, setIncludeNoGroup] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
+      if (data) {
+        const g = data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name }));
+        setGroups(g);
+        setSelectedGroupIds(g.map((x: GroupOption) => x.id));
+      }
+    });
+  }, [user]);
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -31,17 +50,28 @@ export default function Settings() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error(t("profile.notLoggedIn"));
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-flightbook-pdf`, {
+      const params = new URLSearchParams();
+      if (groups.length > 0) {
+        if (selectedGroupIds.length > 0) params.set("group_ids", selectedGroupIds.join(","));
+        params.set("include_no_group", includeNoGroup.toString());
+      }
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-flightbook-pdf${params.toString() ? `?${params}` : ""}`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY }
       });
       if (!res.ok) throw new Error(t("profile.exportFailed"));
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = `flugbuch.pdf`; a.click(); URL.revokeObjectURL(url);
+      a.href = blobUrl; a.download = `flugbuch.pdf`; a.click(); URL.revokeObjectURL(blobUrl);
       toast({ title: t("profile.pdfExported") });
+      setExportDialogOpen(false);
     } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     finally { setExporting(false); }
+  };
+
+  const toggleGroup = (id: string) => {
+    setSelectedGroupIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   };
 
   const themes = [
@@ -113,11 +143,37 @@ export default function Settings() {
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          <Button variant="outline" className="w-full gap-2" onClick={handleExportPdf} disabled={exporting}>
+          <Button variant="outline" className="w-full gap-2" onClick={() => groups.length > 0 ? setExportDialogOpen(true) : handleExportPdf()} disabled={exporting}>
             <FileDown className="h-4 w-4" /> {exporting ? t("profile.exporting") : t("profile.exportPdf")}
           </Button>
         </CardContent>
       </Card>
+
+      <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("settings.exportFilter")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{t("settings.selectGroups")}</p>
+            {groups.map((g) => (
+              <label key={g.id} className="flex items-center gap-3 cursor-pointer">
+                <Checkbox checked={selectedGroupIds.includes(g.id)} onCheckedChange={() => toggleGroup(g.id)} />
+                <span className="text-sm">{g.name}</span>
+              </label>
+            ))}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <Checkbox checked={includeNoGroup} onCheckedChange={(c) => setIncludeNoGroup(!!c)} />
+              <span className="text-sm">{t("settings.noGroup")}</span>
+            </label>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleExportPdf} disabled={exporting} className="w-full gap-2">
+              <FileDown className="h-4 w-4" /> {exporting ? t("profile.exporting") : t("profile.exportPdf")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

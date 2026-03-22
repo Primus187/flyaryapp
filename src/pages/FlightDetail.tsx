@@ -25,12 +25,18 @@ export default function FlightDetail() {
   const [uploading, setUploading] = useState(false);
   const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [groupName, setGroupName] = useState<string | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   useEffect(() => {
     if (!id) return;
-    supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => setFlight(data));
+    supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
+      setFlight(data);
+      if (data && (data as any).group_id) {
+        supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+      }
+    });
     supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
@@ -49,6 +55,7 @@ export default function FlightDetail() {
         landing_location_id: flight.landing_location_id || null, duration_minutes: flight.duration_minutes,
         altitude_gain: flight.altitude_gain, distance_km: flight.distance_km, thermals: flight.thermals,
         wind_speed: flight.wind_speed, wind_direction: flight.wind_direction, glider: flight.glider, comments: flight.comments,
+        group_id: (flight as any).group_id || null,
       }).select("id").single();
       if (error) throw error;
       // Duplicate training items
@@ -118,6 +125,7 @@ export default function FlightDetail() {
         ))}
       </div>
       {flight.comments && (<Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
+      {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
       {trainedManeuvers.length > 0 && (
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>

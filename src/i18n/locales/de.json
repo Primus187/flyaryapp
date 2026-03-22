@@ -110,7 +110,10 @@
     "thermalStrong": "Stark",
     "thermalTurbulent": "Turbulent",
     "flight": "Flug",
-    "flightDuplicated": "Flug dupliziert"
+    "flightDuplicated": "Flug dupliziert",
+    "group": "Gruppe",
+    "selectGroup": "Gruppe wählen...",
+    "noGroup": "Ohne Gruppe"
   },
   "events": {
     "title": "Termine",
@@ -375,7 +378,11 @@
     "german": "Deutsch",
     "french": "Français",
     "english": "English",
-    "exportImport": "Export & Import"
+    "exportImport": "Export & Import",
+    "exportFilter": "Export-Filter",
+    "selectGroups": "Gruppen auswählen",
+    "noGroup": "Ohne Gruppe",
+    "exportAll": "Alle exportieren"
   },
   "splash": {
     "loading": "Laden..."

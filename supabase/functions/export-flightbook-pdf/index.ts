@@ -22,6 +22,7 @@ interface Flight {
   altitude_gain: number | null;
   distance_km: number | null;
   comments: string | null;
+  group_id: string | null;
   takeoff_location: { name: string; altitude: number | null } | null;
   landing_location: { name: string; altitude: number | null } | null;
 }
@@ -59,36 +60,52 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
 
+    // Parse filter params
+    const url = new URL(req.url);
+    const groupIdsParam = url.searchParams.get("group_ids");
+    const includeNoGroupParam = url.searchParams.get("include_no_group");
+    const hasFilter = groupIdsParam !== null || includeNoGroupParam !== null;
+    const groupIds = groupIdsParam ? groupIdsParam.split(",").filter(Boolean) : [];
+    const includeNoGroup = includeNoGroupParam !== "false";
+
     const { data: profile } = await supabase.from("profiles").select("pilot_name, glider_info").eq("user_id", user.id).single();
     const pilotName = profile?.pilot_name || "Pilot";
     const email = user.email || "";
 
     const { data: locations } = await supabase.from("locations").select("id, name, altitude, type, description").eq("user_id", user.id).order("name");
 
-    const { data: flightsRaw } = await supabase
+    let flightsQuery = supabase
       .from("flights")
-      .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, takeoff:locations!flights_takeoff_location_id_fkey(name, altitude), landing:locations!flights_landing_location_id_fkey(name, altitude)")
+      .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, group_id, takeoff:locations!flights_takeoff_location_id_fkey(name, altitude), landing:locations!flights_landing_location_id_fkey(name, altitude)")
       .eq("user_id", user.id)
       .order("date", { ascending: true });
 
-    const flights: Flight[] = (flightsRaw || []).map((f: any) => ({
+    const { data: flightsRaw } = await flightsQuery;
+
+    let allFlights: Flight[] = (flightsRaw || []).map((f: any) => ({
       ...f,
       takeoff_location: f.takeoff,
       landing_location: f.landing,
     }));
 
+    // Apply group filter client-side
+    if (hasFilter) {
+      allFlights = allFlights.filter((f) => {
+        if (f.group_id === null) return includeNoGroup;
+        return groupIds.includes(f.group_id);
+      });
+    }
+
+    const flights = allFlights;
     const takeoffs = (locations || []).filter((l: Location) => l.type === "takeoff" || l.type === "both");
     const landings = (locations || []).filter((l: Location) => l.type === "landing" || l.type === "both");
     const totalMinutes = flights.reduce((s, f) => s + (f.duration_minutes || 0), 0);
     const today = formatDate(new Date().toISOString());
 
-    // ===== Start in PORTRAIT =====
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const marginL = 12;
     const marginR = 12;
     const marginT = 15;
-
-    // Portrait dimensions
     const pW = 210;
     const pH = 297;
 
@@ -118,7 +135,7 @@ Deno.serve(async (req) => {
       return false;
     };
 
-    // ===== PAGE 1: Cover (Portrait) =====
+    // Cover page
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
     doc.text("Flugbuch", marginL, y + 5);
@@ -140,7 +157,6 @@ Deno.serve(async (req) => {
     }
     y += 8;
 
-    // Takeoff table
     const drawLocTable = (title: string, locs: Location[]) => {
       ensurePortraitSpace(20);
       doc.setFontSize(14);
@@ -179,9 +195,9 @@ Deno.serve(async (req) => {
 
     addPortraitFooter();
 
-    // ===== FLIGHT PAGES (Landscape) =====
-    const lW = 297; // landscape width
-    const lH = 210; // landscape height
+    // Flight pages (Landscape)
+    const lW = 297;
+    const lH = 210;
 
     doc.addPage("a4", "l");
     y = marginT;

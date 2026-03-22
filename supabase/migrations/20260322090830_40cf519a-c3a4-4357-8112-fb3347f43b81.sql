@@ -1,0 +1,1 @@
+ALTER TABLE public.flights ADD COLUMN group_id uuid REFERENCES public.groups(id) ON DELETE SET NULL;

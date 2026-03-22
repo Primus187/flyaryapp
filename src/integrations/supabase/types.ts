@@ -237,6 +237,7 @@ export type Database = {
           distance_km: number | null
           duration_minutes: number | null
           glider: string | null
+          group_id: string | null
           id: string
           landing_location_id: string | null
           takeoff_location_id: string | null
@@ -254,6 +255,7 @@ export type Database = {
           distance_km?: number | null
           duration_minutes?: number | null
           glider?: string | null
+          group_id?: string | null
           id?: string
           landing_location_id?: string | null
           takeoff_location_id?: string | null
@@ -271,6 +273,7 @@ export type Database = {
           distance_km?: number | null
           duration_minutes?: number | null
           glider?: string | null
+          group_id?: string | null
           id?: string
           landing_location_id?: string | null
           takeoff_location_id?: string | null
@@ -281,6 +284,13 @@ export type Database = {
           wind_speed?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "flights_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "flights_landing_location_id_fkey"
             columns: ["landing_location_id"]

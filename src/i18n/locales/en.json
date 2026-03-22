@@ -110,7 +110,10 @@
     "thermalStrong": "Strong",
     "thermalTurbulent": "Turbulent",
     "flight": "Flight",
-    "flightDuplicated": "Flight duplicated"
+    "flightDuplicated": "Flight duplicated",
+    "group": "Group",
+    "selectGroup": "Select group...",
+    "noGroup": "No group"
   },
   "events": {
     "title": "Events",
@@ -375,7 +378,11 @@
     "german": "Deutsch",
     "french": "Français",
     "english": "English",
-    "exportImport": "Export & Import"
+    "exportImport": "Export & Import",
+    "exportFilter": "Export filter",
+    "selectGroups": "Select groups",
+    "noGroup": "No group",
+    "exportAll": "Export all"
   },
   "splash": {
     "loading": "Loading..."
