@@ -50,9 +50,9 @@ export default function Profile() {
     const ext = file.name.split(".").pop(); const path = `${user.id}/avatar.${ext}`;
     const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
-    const { data: { publicUrl } } = supabase.storage.from("flight-photos").getPublicUrl(path);
-    setForm(f => ({ ...f, avatar_url: publicUrl }));
-    await supabase.from("profiles").update({ avatar_url: publicUrl } as any).eq("user_id", user.id);
+    // Store the storage path, not a public URL (bucket is now private)
+    setForm(f => ({ ...f, avatar_url: path }));
+    await supabase.from("profiles").update({ avatar_url: path } as any).eq("user_id", user.id);
     toast({ title: t("profile.photoUploaded") }); setUploading(false);
   };
 
