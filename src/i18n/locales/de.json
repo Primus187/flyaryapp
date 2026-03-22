@@ -424,5 +424,71 @@
     "trainedManeuvers": "Trainierte Manöver",
     "selectManeuvers": "Manöver auswählen...",
     "noManeuvers": "Keine Manöver"
+  },
+  "onboarding": {
+    "welcome": "Willkommen bei Flyary! 🪂",
+    "intro": "Dein digitales Flugbuch für Gleitschirmpiloten. In drei Schritten bist du startklar.",
+    "step1Title": "Profil ausfüllen",
+    "step1Desc": "Hinterlege deinen Namen und deine Schirme.",
+    "step2Title": "Ersten Ort anlegen",
+    "step2Desc": "Erfasse deinen Startplatz mit Koordinaten.",
+    "step3Title": "Ersten Flug erfassen",
+    "step3Desc": "Dokumentiere deinen ersten Flug im Logbuch.",
+    "goToProfile": "Zum Profil",
+    "goToLocations": "Zu den Orten",
+    "goToFlight": "Flug erfassen",
+    "skip": "Später"
+  },
+  "emptyState": {
+    "flightsDesc": "Erfasse deinen ersten Flug und baue dein Logbuch auf.",
+    "eventsDesc": "Tritt einer Gruppe bei, um Termine zu sehen und dich anzumelden.",
+    "noEventsDesc": "Deine Gruppen haben noch keine Termine erstellt."
+  },
+  "offline": {
+    "banner": "Du bist offline — einige Funktionen sind eingeschränkt."
+  },
+  "legal": {
+    "title": "Rechtliches",
+    "impressumTitle": "Impressum",
+    "impressumText": "Flyary ist ein digitales Flugbuch für Gleitschirmpiloten. Betreiber und Kontaktangaben findest du unter den Einstellungen deines Kontos.",
+    "privacyTitle": "Datenschutzerklärung",
+    "privacyIntro": "Der Schutz deiner persönlichen Daten ist uns wichtig. Nachfolgend informieren wir dich über die Erhebung und Verwendung deiner Daten.",
+    "dataCollectionTitle": "Welche Daten werden erhoben?",
+    "dataCollectionText": "Wir speichern die Daten, die du in der App eingibst: E-Mail-Adresse, Profilinformationen, Flugdaten, Orte und Gruppeninformationen.",
+    "dataUsageTitle": "Wofür werden die Daten verwendet?",
+    "dataUsageText": "Deine Daten werden ausschliesslich zur Bereitstellung der App-Funktionen verwendet. Es erfolgt keine Weitergabe an Dritte zu Werbezwecken.",
+    "dataStorageTitle": "Wo werden die Daten gespeichert?",
+    "dataStorageText": "Die Daten werden auf sicheren Servern in der EU gespeichert und verschlüsselt übertragen.",
+    "rightsTitle": "Deine Rechte",
+    "rightsText": "Du hast jederzeit das Recht auf Auskunft, Berichtigung und Löschung deiner personenbezogenen Daten. Kontaktiere uns über die App.",
+    "contactTitle": "Kontakt",
+    "contactText": "Bei Fragen zum Datenschutz wende dich bitte an den Betreiber der App."
+  },
+  "dashboard": {
+    "title": "Flyary",
+    "subtitle": "Deine Übersicht",
+    "stats": "Stats",
+    "newFlight": "Flug",
+    "flights": "Flüge",
+    "flightTime": "Flugzeit",
+    "takeoffs": "Startplätze",
+    "landings": "Landeplätze",
+    "upcomingEvents": "Nächste Termine",
+    "recentFlights": "Letzte Flüge",
+    "noFlights": "Noch keine Flüge erfasst",
+    "noFlightsDesc": "Erfasse deinen ersten Flug und baue dein Flugbuch auf.",
+    "firstFlight": "Ersten Flug erfassen"
+  },
+  "more": {
+    "title": "Mehr",
+    "profile": "Profil",
+    "training": "Training",
+    "map": "Karte",
+    "groups": "Gruppen",
+    "importFlights": "Flüge importieren",
+    "importLocations": "Orte importieren",
+    "settings": "Einstellungen",
+    "signOut": "Abmelden",
+    "legal": "Rechtliches"
   }
 }
