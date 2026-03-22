@@ -17,6 +17,7 @@ interface Stats { totalFlights: number; totalMinutes: number; uniqueTakeoffs: nu
 interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; photoUrl?: string; pilotName?: string; }
 interface UpcomingEvent { id: string; title: string; event_date: string; status: string; meeting_point: string | null; group_name: string; event_type: string | null; max_participants: number | null; }
 interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
+interface ActiveChallenge { id: string; title: string; description: string | null; challenge_type: string; start_date: string; end_date: string | null; totalGoals: number; myCompleted: number; participantCount: number; }
 
 function DashboardSkeleton() {
   return (
