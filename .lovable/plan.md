@@ -1,72 +1,82 @@
 
 
-# Feed-Redesign: Chronologisch nach Publikationsdatum, Kartenansicht & Publikationsinfos
+# Challenge-Achievements im Feed & Instagram-Interaktionen für alle Posts
 
 ## Übersicht
-Der Feed wird zu einem echten Social-Feed umgebaut: chronologisch nach Erstellungsdatum sortiert, eigene Flüge inklusive, mit Mini-Karte für Flugtracks und vollständigen Publikationsinformationen.
+Zwei Änderungen: (1) Challenges erscheinen nur noch als Achievement-Posts im Feed wenn ein Ziel oder die ganze Challenge geschafft wurde — mit Badge und Gamification-Design. (2) Alle Feed-Post-Typen (Flüge, Events, Challenges) bekommen einheitliche Instagram-Interaktionen (Likes + Kommentare).
 
-## 1. Chronologische Sortierung nach `created_at`
+---
 
-Aktuell wird nach `date` (Flugdatum) bzw. `event_date` sortiert. Neu wird `created_at` als einheitliches Sortierdatum verwendet.
+## 1. Neues Datenmodell: Achievement-basierte Challenge-Posts
 
-**Edit: `src/pages/Feed.tsx`**
-- `fetchFlights`: zusätzlich `created_at` selektieren, als `date` im FeedItem verwenden
-- `fetchEvents`: `created_at` statt `event_date` für Sortierung
-- `fetchChallenges`: `created_at` statt `start_date` für Sortierung
-- Eigene Flüge **nicht mehr ausschliessen** (`.neq("user_id", userId)` entfernen) — eigene Posts sollen auch im Feed erscheinen
+### Migration
+Neue Tabelle `feed_achievements`:
+- `id uuid PK`, `user_id uuid`, `challenge_id uuid`, `goal_id uuid NULL` (NULL = ganze Challenge geschafft)
+- `achievement_type text` ("goal_reached" oder "challenge_completed")
+- `created_at timestamptz DEFAULT now()`
+- RLS: Gruppenmitglieder können lesen, User kann eigene erstellen
 
-## 2. IGC-Track & Mini-Karte im FeedCard
+Erweitere `feed_likes` und `feed_comments`:
+- `ADD COLUMN achievement_id uuid NULL` (neben bestehendem `flight_id`)
+- `ADD COLUMN event_id uuid NULL`
+- Bestehende Constraints anpassen: `flight_id` wird nullable
+- Neue RLS-Policies für Likes/Comments auf Events und Achievements
 
-**Edit: `src/components/FeedCard.tsx`**
-- Neues Feld `trackPoints` in `FeedFlight`-Interface
-- Zwischen Foto und Actions eine kompakte Karte (150px Höhe) mit `FlightDetailMap` rendern, wenn Track-Daten vorhanden
-- Falls kein Foto aber Track vorhanden: Karte als visuelles Hauptelement anzeigen
+### Automatische Achievement-Erstellung
+In `FlightForm.tsx` bei der IGC-Verifikation: wenn ein Challenge-Goal erreicht wird, zusätzlich `feed_achievements`-Eintrag erstellen. Wenn alle Goals geschafft → zusätzlich "challenge_completed" Achievement.
 
-**Edit: `src/pages/Feed.tsx` (fetchFlights)**
-- Zusätzlich `igc_tracks` laden: `track_data` (enthält die Punkte als JSON)
-- Takeoff/Landing Location-Koordinaten mitlesen für Karten-Marker
-- Track-Punkte in `FeedFlight.trackPoints` speichern
-- Takeoff/Landing-Koordinaten in `FeedFlight.takeoff`/`FeedFlight.landing` speichern
+---
 
-## 3. Erweiterte Publikationsinfos in FeedCard
+## 2. Feed-Logik anpassen (`src/pages/Feed.tsx`)
 
-**Edit: `src/components/FeedCard.tsx`**
-- Gruppenname unter Pilotname anzeigen (benötigt neues Feld `group_name`)
-- `created_at` als "vor X Stunden/Tagen" relative Zeitanzeige
-- Klick auf Pilotname/Avatar navigiert zum Flug-Detail
-- Glider-Info prominenter darstellen
+- **Challenges entfernen** aus dem direkten Feed-Fetch (keine aktiven Challenges mehr anzeigen)
+- **Achievements laden**: `feed_achievements` mit Challenge-Titel, Goal-Label, Pilot-Info
+- Neuer FeedItem-Type: `"achievement"`
+- Likes/Comments generisch machen: `handleLikeToggle` und `handleComment` erweitern für `achievement_id` und `event_id`
 
-**Edit: `src/pages/Feed.tsx` (fetchFlights)**
-- `group_id` und Gruppenname mitlesen, in FeedFlight-Daten aufnehmen
-- `created_at` im FeedFlight-Interface ergänzen
+---
 
-## 4. FeedFlight Interface erweitern
+## 3. Achievement-Card (`src/components/FeedAchievementCard.tsx`)
 
-```typescript
-export interface FeedFlight {
-  // bestehende Felder...
-  created_at: string;          // NEU: für relative Zeitanzeige
-  group_name: string;          // NEU: Gruppenname
-  trackPoints: [number, number][]; // NEU: IGC-Track für Karte
-  takeoff: { latitude: number; longitude: number; name?: string } | null; // NEU
-  landing: { latitude: number; longitude: number; name?: string } | null; // NEU
-}
-```
+Gamification-Design:
+- Goldener/Amber Gradient-Header mit Glitter-Effekt (CSS animation)
+- Grosses Trophy-Icon bei Challenge-Komplett, Target-Icon bei einzelnem Goal
+- Pilot-Avatar + Name im Instagram-Header-Stil
+- Badge: "🏆 Challenge geschafft!" oder "🎯 Ziel erreicht!"
+- Challenge-Name + Goal-Label
+- Fortschrittsbalken (X/Y Goals)
+- Instagram-Interaktionen: Like-Heart, Kommentar-Icon, Kommentar-Liste, Kommentar-Input
 
-## 5. i18n
+---
 
-Neue Keys in de/en/fr:
-- `feed.justNow`, `feed.minutesAgo`, `feed.hoursAgo`, `feed.daysAgo`
-- `feed.inGroup` (z.B. "in Vertical")
+## 4. Instagram-Interaktionen für Events (`src/components/FeedEventCard.tsx`)
+
+- Like-Button (Heart) und Kommentar-Section hinzufügen (identisch zu FeedCard)
+- Props erweitern: `onLikeToggle`, `onComment`, `likes`, `comments`
+- Interface `FeedEvent` erweitern: `likes`, `comments` Arrays
+
+---
+
+## 5. Generische Like/Comment-Infrastruktur
+
+Die bestehenden `feed_likes` und `feed_comments` Tabellen werden erweitert um polymorphe Referenzen (flight_id, event_id, achievement_id). Feed.tsx bekommt generische Handler die den richtigen ID-Typ setzen.
+
+---
+
+## 6. i18n-Keys
+- `feed.goalReached`, `feed.challengeCompleted`, `feed.achievementBy`
+- `feed.xOfYGoals`, `feed.congratulations`
 
 ## Dateien
-- **Edit**: `src/pages/Feed.tsx` — `created_at` sortieren, eigene Flüge zeigen, Track-Daten laden
-- **Edit**: `src/components/FeedCard.tsx` — Mini-Karte, Gruppenname, relative Zeit
-- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Neue Keys
+- **Migration**: `feed_achievements` Tabelle + `feed_likes`/`feed_comments` erweitern
+- **Neu**: `src/components/FeedAchievementCard.tsx`
+- **Edit**: `src/pages/Feed.tsx` — Achievements statt Challenges, generische Interaktionen
+- **Edit**: `src/components/FeedEventCard.tsx` — Likes + Comments hinzufügen
+- **Edit**: `src/pages/FlightForm.tsx` — Achievement-Einträge bei IGC-Verifikation
+- **Edit**: `src/i18n/locales/{de,en,fr}.json`
 
 ## Technische Details
-- IGC `track_data` ist JSONB mit einem Array von `[lat, lng]`-Punkten — wird direkt an `FlightDetailMap` übergeben
-- Für die Mini-Karte wird die bestehende `FlightDetailMap`-Komponente mit reduzierter Höhe (150px) wiederverwendet
-- Track-Punkte werden nur für die ersten 20 Flüge geladen (Performance)
-- Takeoff/Landing-Koordinaten kommen aus der `locations`-Tabelle (bereits via FK verknüpft)
+- `feed_likes.flight_id` wird nullable, dafür kommt ein CHECK constraint: genau einer von `flight_id`, `event_id`, `achievement_id` muss gesetzt sein
+- Bestehende Likes/Comments für Flüge bleiben kompatibel
+- Achievement-Card nutzt CSS `@keyframes` für subtile Gold-Shimmer-Animation auf dem Badge
 
