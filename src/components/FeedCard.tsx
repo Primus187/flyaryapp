@@ -126,7 +126,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
           </Avatar>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">{flight.pilot_name}</p>
+          <p className="text-sm font-semibold truncate cursor-pointer" onClick={() => navigate(`/pilot/${flight.user_id}`)}>{flight.pilot_name}</p>
           <p className="text-[11px] text-muted-foreground">
             {flight.group_name && <span>{flight.group_name} · </span>}
             {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff_name} · </>}

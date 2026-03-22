@@ -98,6 +98,7 @@ const App = () => {
                   <Route path="/legal" element={<Legal />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/challenges/:id" element={<ChallengeDetail />} />
+                  <Route path="/pilot/:userId" element={<PilotProfile />} />
                 </Route>
                 <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                 
