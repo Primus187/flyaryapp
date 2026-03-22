@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, MapPin, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, MapPin, Pencil, Trash2, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
 
 export default function Locations() {
@@ -22,9 +23,16 @@ export default function Locations() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "" });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ takeoff: true, landing: true, both: true });
 
   const fetchLocations = async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); };
   useEffect(() => { fetchLocations(); }, [user]);
+
+  const grouped = useMemo(() => ({
+    takeoff: locations.filter((l) => l.type === "takeoff"),
+    landing: locations.filter((l) => l.type === "landing"),
+    both: locations.filter((l) => l.type === "both"),
+  }), [locations]);
 
   const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "" }); setEditId(null); };
   const handleSave = async () => {
@@ -38,8 +46,34 @@ export default function Locations() {
   const handleDelete = async (id: string) => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id); toast({ title: t("locations.locationDeleted") }); fetchLocations(); };
   const handleMapSelect = (lat: number, lng: number) => { setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() })); };
 
-  const typeLabel = (ty: string) => ty === "takeoff" ? t("locations.takeoff") : ty === "landing" ? t("locations.landingPlace") : t("locations.both");
-  const typeColor = (ty: string) => ty === "takeoff" ? "text-secondary" : ty === "landing" ? "text-destructive" : "text-primary";
+  const toggleSection = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const sectionConfig = [
+    { key: "takeoff", icon: ArrowUpCircle, label: t("locations.takeoff"), color: "text-secondary" },
+    { key: "landing", icon: ArrowDownCircle, label: t("locations.landingPlace"), color: "text-destructive" },
+    { key: "both", icon: Combine, label: t("locations.both"), color: "text-primary" },
+  ] as const;
+
+  const renderLocationCard = (loc: any) => (
+    <Card key={loc.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
+      <CardContent className="p-3 flex items-center justify-between">
+        <div>
+          <p className="font-medium text-sm flex items-center gap-1.5">
+            {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+            {loc.name}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {loc.altitude && <span>{loc.altitude}m</span>}
+            {loc.latitude === 0 && loc.longitude === 0 && <span className="text-amber-500"> · {t("common.noPosition")}</span>}
+          </p>
+        </div>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleEdit(loc); }}><Pencil className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(loc.id); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
@@ -70,21 +104,28 @@ export default function Locations() {
       {locations.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground"><MapPin className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("locations.noLocations")}</p></div>
       ) : (
-        <div className="space-y-2">
-          {locations.map((loc) => (
-            <Card key={loc.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
-              <CardContent className="p-3 flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-sm flex items-center gap-1.5">{loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}{loc.name}</p>
-                  <p className="text-xs text-muted-foreground"><span className={typeColor(loc.type)}>{typeLabel(loc.type)}</span>{loc.altitude && <span> · {loc.altitude}m</span>}{loc.latitude === 0 && loc.longitude === 0 && <span className="text-amber-500"> · {t("common.noPosition")}</span>}</p>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleEdit(loc); }}><Pencil className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(loc.id); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-3">
+          {sectionConfig.map(({ key, icon: Icon, label, color }) => {
+            const items = grouped[key as keyof typeof grouped];
+            if (items.length === 0) return null;
+            return (
+              <Collapsible key={key} open={openSections[key]} onOpenChange={() => toggleSection(key)}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full px-1 py-2 group">
+                  <div className="flex items-center gap-2">
+                    <Icon className={`h-4.5 w-4.5 ${color}`} />
+                    <span className="font-semibold text-sm">{label}</span>
+                    <span className="text-xs text-muted-foreground tabular-nums">({items.length})</span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${openSections[key] ? "rotate-180" : ""}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="space-y-1.5 pt-1">
+                    {items.map(renderLocationCard)}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
         </div>
       )}
     </div>
