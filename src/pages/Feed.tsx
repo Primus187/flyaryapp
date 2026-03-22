@@ -452,6 +452,15 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
   const likes = likesRes.data;
   const comments = commentsRes.data;
   const tracks = tracksRes.data;
+  const videoData = videosRes.data;
+
+  const videoMap: Record<string, string[]> = {};
+  if (videoData) {
+    for (const v of videoData) {
+      if (!videoMap[v.flight_id]) videoMap[v.flight_id] = [];
+      videoMap[v.flight_id].push(v.youtube_url);
+    }
+  }
 
   const photoMap: Record<string, string[]> = {};
   if (photos && photos.length > 0) {
