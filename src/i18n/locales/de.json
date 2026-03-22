@@ -167,6 +167,7 @@
     "editLocation": "Ort bearbeiten",
     "createLocation": "Neuer Ort",
     "noLocations": "Noch keine Orte erfasst",
+    "updatingCountries": "Ländercodes werden aktualisiert… ({{current}}/{{total}})",
     "deleteLocation": "Ort löschen?",
     "locationDeleted": "Ort gelöscht",
     "locationUpdated": "Ort aktualisiert",

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,8 @@ export default function Locations() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "" });
+  const [backfillProgress, setBackfillProgress] = useState<{ current: number; total: number } | null>(null);
+  const cancelledRef = useRef(false);
 
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
 
@@ -36,8 +38,39 @@ export default function Locations() {
   ];
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ takeoff: true, landing: true, both: true });
 
-  const fetchLocations = async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); };
-  useEffect(() => { fetchLocations(); }, [user]);
+  const fetchLocations = useCallback(async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); return data; }, [user]);
+  useEffect(() => { fetchLocations(); }, [fetchLocations]);
+
+  // Backfill country_code for locations missing it
+  useEffect(() => {
+    if (!user) return;
+    cancelledRef.current = false;
+    const backfill = async () => {
+      const { data } = await supabase.from("locations").select("id, latitude, longitude").eq("user_id", user.id).is("country_code", null);
+      if (!data) return;
+      const toUpdate = data.filter((l) => l.latitude !== 0 || l.longitude !== 0);
+      if (toUpdate.length === 0) return;
+      setBackfillProgress({ current: 0, total: toUpdate.length });
+      for (let i = 0; i < toUpdate.length; i++) {
+        if (cancelledRef.current) break;
+        const loc = toUpdate[i];
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${loc.latitude}&lon=${loc.longitude}&format=json&zoom=3`, { headers: { "Accept-Language": "en" } });
+          const json = await res.json();
+          const code = json?.address?.country_code?.toUpperCase();
+          if (code && code.length === 2) {
+            await supabase.from("locations").update({ country_code: code }).eq("id", loc.id);
+          }
+        } catch {}
+        setBackfillProgress({ current: i + 1, total: toUpdate.length });
+        if (i < toUpdate.length - 1) await new Promise((r) => setTimeout(r, 1100));
+      }
+      setBackfillProgress(null);
+      fetchLocations();
+    };
+    backfill();
+    return () => { cancelledRef.current = true; };
+  }, [user, fetchLocations]);
 
   const grouped = useMemo(() => ({
     takeoff: locations.filter((l) => l.type === "takeoff"),
@@ -122,6 +155,12 @@ export default function Locations() {
           </Dialog>
         </div>
       </div>
+      {backfillProgress && (
+        <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          {t("locations.updatingCountries", { current: backfillProgress.current, total: backfillProgress.total })}
+        </div>
+      )}
       {locations.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground"><MapPin className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("locations.noLocations")}</p></div>
       ) : (
