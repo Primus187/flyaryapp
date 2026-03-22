@@ -94,6 +94,7 @@ const App = () => {
                   <Route path="/import" element={<ImportFlights />} />
                   <Route path="/import-locations" element={<ImportLocations />} />
                   <Route path="/legal" element={<Legal />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
                 </Route>
                 <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                 

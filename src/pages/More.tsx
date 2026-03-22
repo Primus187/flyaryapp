@@ -8,6 +8,7 @@ const tiles = [
   { path: "/training", icon: GraduationCap, labelKey: "more.training" },
   { path: "/map", icon: Map, labelKey: "more.map" },
   { path: "/groups", icon: Users, labelKey: "more.groups" },
+  { path: "/leaderboard", icon: Trophy, labelKey: "more.leaderboard" },
   { path: "/import", icon: Upload, labelKey: "more.importFlights" },
   { path: "/import-locations", icon: MapPin, labelKey: "more.importLocations" },
   { path: "/settings", icon: Settings, labelKey: "more.settings" },
