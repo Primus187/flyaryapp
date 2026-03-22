@@ -1,0 +1,1 @@
+ALTER TABLE public.flights ADD COLUMN published_at timestamp with time zone DEFAULT NULL;
