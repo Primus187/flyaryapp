@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +38,11 @@ export default function Feed() {
   const { toast } = useToast();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
+  const isPulling = useRef(false);
 
   const fetchFeed = useCallback(async () => {
     if (!user) return;
@@ -80,7 +85,39 @@ export default function Feed() {
 
   useEffect(() => { fetchFeed(); }, [fetchFeed]);
 
-  // ── Generic like toggle ──
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchFeed();
+    setRefreshing(false);
+    setPullDistance(0);
+  }, [fetchFeed]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const scrollTop = scrollRef.current?.scrollTop ?? window.scrollY;
+    if (scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling.current) return;
+    const diff = e.touches[0].clientY - touchStartY.current;
+    if (diff > 0) {
+      setPullDistance(Math.min(diff * 0.5, 80));
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (pullDistance > 50 && !refreshing) {
+      handleRefresh();
+    } else {
+      setPullDistance(0);
+    }
+    isPulling.current = false;
+  }, [pullDistance, refreshing, handleRefresh]);
+
+  
   const handleLikeToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
     if (!user) return;
 
@@ -156,7 +193,25 @@ export default function Feed() {
   if (loading) return <FeedSkeleton />;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div
+      ref={scrollRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4"
+    >
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="flex items-center justify-center overflow-hidden transition-all duration-200"
+        style={{ height: pullDistance > 0 || refreshing ? Math.max(pullDistance, refreshing ? 40 : 0) : 0 }}
+      >
+        <div className={`text-muted-foreground ${refreshing ? 'animate-spin' : ''}`}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+        </div>
+      </div>
+
       <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
 
       {items.length === 0 ? (
