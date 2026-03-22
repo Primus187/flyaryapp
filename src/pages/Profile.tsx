@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import AvatarCropDialog from "@/components/AvatarCropDialog";
+import BadgeGrid from "@/components/BadgeGrid";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +42,9 @@ export default function Profile() {
   const [xcontestHasCredentials, setXcontestHasCredentials] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [badges, setBadges] = useState<{ badge_key: string; unlocked_at: string }[]>([]);
+  const [badgeStats, setBadgeStats] = useState<any>(null);
+  const [showAllBadges, setShowAllBadges] = useState(false);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
@@ -63,6 +67,23 @@ export default function Profile() {
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
     supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
+    supabase.from("pilot_badges" as any).select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    // Load stats for badge progress
+    supabase.from("flights").select("duration_minutes, altitude_gain, distance_km, takeoff_location_id").eq("user_id", user.id).then(({ data }) => {
+      if (data) {
+        const uniqueTakeoffs = new Set(data.map(f => f.takeoff_location_id).filter(Boolean)).size;
+        setBadgeStats({
+          flightCount: data.length,
+          totalMinutes: data.reduce((s, f) => s + (f.duration_minutes || 0), 0),
+          totalAltitude: data.reduce((s, f) => s + (f.altitude_gain || 0), 0),
+          totalDistance: data.reduce((s, f) => s + Number(f.distance_km || 0), 0),
+          uniqueTakeoffs,
+          maxDuration: Math.max(0, ...data.map(f => f.duration_minutes || 0)),
+          maxDistance: Math.max(0, ...data.map(f => Number(f.distance_km || 0))),
+          maxAltitude: Math.max(0, ...data.map(f => f.altitude_gain || 0)),
+        });
+      }
+    });
 
     // Realtime subscription for XP updates
     const channel = supabase
@@ -225,6 +246,28 @@ export default function Profile() {
             {t("leaderboard.viewLeaderboard")} →
           </button>
         </div>
+      </Card>
+
+      {/* Badges / Achievements */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-amber-500" /> {t("badges.title")}
+          </CardTitle>
+          <button onClick={() => setShowAllBadges(!showAllBadges)} className="text-xs text-primary font-medium">
+            {showAllBadges ? t("common.close") : t("badges.showAll")}
+          </button>
+        </CardHeader>
+        <CardContent>
+          {showAllBadges ? (
+            <BadgeGrid unlockedBadges={badges} stats={badgeStats} />
+          ) : (
+            <BadgeGrid unlockedBadges={badges} stats={badgeStats} compact />
+          )}
+          {badges.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center mt-2">{t("badges.noBadges")}</p>
+          )}
+        </CardContent>
       </Card>
 
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
