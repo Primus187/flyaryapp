@@ -113,7 +113,13 @@
     "flightDuplicated": "Flug dupliziert",
     "group": "Gruppe",
     "selectGroup": "Gruppe wählen...",
-    "noGroup": "Ohne Gruppe"
+    "noGroup": "Ohne Gruppe",
+    "soloShv": "SHV Soloflug",
+    "soloShvLabel": "SHV Solo",
+    "addPhotos2": "Fotos hinzufügen",
+    "deletePhoto": "Foto löschen?",
+    "photoDeleted": "Foto gelöscht",
+    "photoAdded": "Foto hinzugefügt"
   },
   "events": {
     "title": "Termine",

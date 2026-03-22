@@ -189,6 +189,14 @@ export default function FlightForm() {
                 }}
               />
             </div>
+             <div className="flex items-center gap-3 pt-1">
+                <Checkbox
+                  id="solo-shv"
+                  checked={form.is_solo_shv}
+                  onCheckedChange={(checked) => setForm({ ...form, is_solo_shv: !!checked })}
+                />
+                <Label htmlFor="solo-shv" className="text-xs cursor-pointer">{t("flights.soloShv")}</Label>
+              </div>
            </CardContent>
         </Card>
         {groups.length > 0 && (
