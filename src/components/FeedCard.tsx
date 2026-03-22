@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, Send, MapPin, Bookmark } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Heart, MessageCircle, MapPin, Bookmark } from "lucide-react";
+import MentionCommentInput from "@/components/MentionCommentInput";
 import useEmblaCarousel from "embla-carousel-react";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
 
