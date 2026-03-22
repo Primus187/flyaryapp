@@ -106,21 +106,7 @@ export default function MentionCommentInput({ onSubmit, members = [], placeholde
   }, [showMentions]);
 
   return (
-    <div className="space-y-1.5 pt-1">
-      {/* Emoji quick-reactions */}
-      <div className="flex items-center gap-1">
-        {QUICK_EMOJIS.map(emoji => (
-          <button
-            key={emoji}
-            onClick={() => handleEmojiTap(emoji)}
-            className="h-7 w-7 flex items-center justify-center rounded-full hover:bg-muted active:scale-90 transition-transform text-sm"
-          >
-            {emoji}
-          </button>
-        ))}
-      </div>
-
-      {/* Input with mention dropdown */}
+    <div className="pt-1">
       <div className="relative flex items-center gap-2">
         {showMentions && filteredMembers.length > 0 && (
           <div
