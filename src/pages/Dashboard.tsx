@@ -115,6 +115,42 @@ export default function Dashboard() {
           if (sups) setSignups(sups);
           setEvents(upcomingEvents.map(e => ({ ...e, group_name: groupNames[e.group_id] || "" })));
         }
+
+        // Load active challenges
+        const today = new Date().toISOString().split("T")[0];
+        const { data: challengesData } = await supabase.from("challenges" as any).select("*").in("group_id", groupIds);
+        if (challengesData && challengesData.length > 0) {
+          const activeChallenges = (challengesData as any[]).filter(c => !c.end_date || c.end_date >= today);
+          const challengeIds = activeChallenges.map(c => c.id);
+          
+          const { data: allGoals } = await supabase.from("challenge_goals" as any).select("id, challenge_id").in("challenge_id", challengeIds);
+          const { data: myProgressData } = await supabase.from("challenge_progress" as any).select("challenge_id, goal_id").eq("user_id", user.id).in("challenge_id", challengeIds);
+          const { data: allProgressData } = await supabase.from("challenge_progress" as any).select("challenge_id, user_id").in("challenge_id", challengeIds);
+
+          const goalsByChallenge: Record<string, number> = {};
+          (allGoals as any[] || []).forEach(g => { goalsByChallenge[g.challenge_id] = (goalsByChallenge[g.challenge_id] || 0) + 1; });
+
+          const myCompletedByChallenge: Record<string, number> = {};
+          (myProgressData as any[] || []).forEach(p => { myCompletedByChallenge[p.challenge_id] = (myCompletedByChallenge[p.challenge_id] || 0) + 1; });
+
+          const participantsByChallenge: Record<string, Set<string>> = {};
+          (allProgressData as any[] || []).forEach(p => {
+            if (!participantsByChallenge[p.challenge_id]) participantsByChallenge[p.challenge_id] = new Set();
+            participantsByChallenge[p.challenge_id].add(p.user_id);
+          });
+
+          setChallenges(activeChallenges.map(c => ({
+            id: c.id,
+            title: c.title,
+            description: c.description,
+            challenge_type: c.challenge_type,
+            start_date: c.start_date,
+            end_date: c.end_date,
+            totalGoals: goalsByChallenge[c.id] || 0,
+            myCompleted: myCompletedByChallenge[c.id] || 0,
+            participantCount: participantsByChallenge[c.id]?.size || 0,
+          })));
+        }
       }
       setLoading(false);
     };
