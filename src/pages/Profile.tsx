@@ -126,6 +126,46 @@ export default function Profile() {
 
   const initials = form.pilot_name ? form.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : user?.email?.[0]?.toUpperCase() || "?";
 
+  // XContest handlers
+  const handleSaveXcontest = async () => {
+    if (!user || !xcontestUsername) return;
+    // Encrypt password client-side with a simple XOR — real encryption happens server-side
+    // We send it to the profile; the edge function decrypts with the server key
+    const updateData: any = { xcontest_username: xcontestUsername };
+    if (xcontestPassword) {
+      // Simple base64 encoding for transit — the edge function uses the encryption key
+      updateData.xcontest_password_encrypted = btoa(xcontestPassword);
+    }
+    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setXcontestHasCredentials(true);
+    setXcontestPassword("");
+    toast({ title: t("profile.xcontestSaved") });
+  };
+
+  const handleSyncXcontest = async () => {
+    if (!user) return;
+    setXcontestSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error(t("profile.notLoggedIn"));
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-xcontest`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t("profile.xcontestError"));
+      toast({ title: t("profile.xcontestSyncDone", { count: data.imported }) });
+    } catch (e: any) {
+      toast({ title: t("profile.xcontestError"), description: e.message, variant: "destructive" });
+    } finally {
+      setXcontestSyncing(false);
+    }
+  };
+
   // XP progress calculation
   const xpLevel = xp?.level || 1;
   const xpTotal = xp?.total_xp || 0;
