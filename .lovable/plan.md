@@ -1,29 +1,25 @@
 
 
-# Bestehende Orte mit Ländercode aktualisieren & Listen-Refresh fixen
+# Nominatim Reverse Geocoding schlägt fehl (CORS)
 
 ## Problem
-1. Alle ~50 bestehenden Orte haben `country_code: null`, obwohl Koordinaten vorhanden sind
-2. Die Orte-Liste aktualisiert sich möglicherweise nicht korrekt nach Änderungen
+Alle Nominatim API-Aufrufe scheitern mit "Failed to fetch" — die Preview-Domain wird von Nominatim per CORS blockiert. Deshalb bleiben die 31 Orte ohne `country_code` und das Backfill läuft bei jedem Seitenaufruf erneut, ohne jemals zu funktionieren.
+
+Die Landeplätze, die bereits einen `country_code` haben, wurden wahrscheinlich über die veröffentlichte Domain oder beim Erstellen gesetzt, als CORS noch nicht blockiert hat.
 
 ## Lösung
 
-### 1. Automatisches Backfill beim Laden der Orte-Seite
-- Beim Laden der Orte prüfen, welche `country_code: null` haben aber gültige Koordinaten (lat/lng != 0)
-- Für diese Orte sequentiell Reverse Geocoding via Nominatim durchführen (1 Request/Sekunde Rate Limit)
-- Jeden Ort einzeln updaten und danach die Liste neu laden
-- Fortschrittsanzeige: kleiner Banner "Ländercodes werden aktualisiert... (12/48)"
-- Läuft nur einmal, da beim nächsten Laden alle country_codes gesetzt sind
+### 1. Backend-Funktion für Reverse Geocoding
+- Neue Edge Function `reverse-geocode` erstellen
+- Nimmt `lat` und `lon` als Query-Parameter
+- Ruft Nominatim serverseitig auf (kein CORS-Problem)
+- Gibt `{ country_code: "CH" }` zurück
 
-### 2. Listen-Refresh absichern
-- `fetchLocations` wird nach dem Backfill erneut aufgerufen
-- `useEffect` Dependency korrekt setzen
+### 2. Client-Code anpassen
+- `Locations.tsx`: Backfill und `reverseGeocode` rufen die Edge Function statt Nominatim direkt auf
+- Gleiche Rate-Limiting-Logik (1.1s Delay)
 
 ## Dateien
-- **Edit**: `src/pages/Locations.tsx` — Backfill-Logik + Fortschrittsanzeige beim Mount
-
-## Technische Details
-- Nominatim Rate Limit: 1 req/sec, daher `await new Promise(r => setTimeout(r, 1100))` zwischen Requests
-- Bei ~50 Orten dauert das ca. 1 Minute beim ersten Mal
-- Abbruch wenn Seite verlassen wird (cleanup in useEffect)
+- **Neu**: `supabase/functions/reverse-geocode/index.ts`
+- **Edit**: `src/pages/Locations.tsx` — Nominatim-URLs durch Edge Function ersetzen
 
