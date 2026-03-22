@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import AvatarCropDialog from "@/components/AvatarCropDialog";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +39,8 @@ export default function Profile() {
   const [xcontestPassword, setXcontestPassword] = useState("");
   const [xcontestSyncing, setXcontestSyncing] = useState(false);
   const [xcontestHasCredentials, setXcontestHasCredentials] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
@@ -87,9 +90,20 @@ export default function Profile() {
     setLoading(false);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file || !user) return; setUploading(true);
-    const ext = file.name.split(".").pop(); const path = `${user.id}/avatar.${ext}`;
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCropFile(file);
+    setCropOpen(true);
+    e.target.value = "";
+  };
+
+  const handleCroppedAvatar = async (blob: Blob) => {
+    if (!user) return;
+    setCropOpen(false);
+    setUploading(true);
+    const path = `${user.id}/avatar.jpg`;
+    const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
     const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
     setForm(f => ({ ...f, avatar_url: path }));
@@ -221,7 +235,7 @@ export default function Profile() {
               <AvatarFallback className="text-2xl bg-muted">{initials}</AvatarFallback>
             </Avatar>
             <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md" disabled={uploading}><Camera className="h-4 w-4" /></button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} />
           </div>
           <div className="w-full space-y-1.5"><Label className="text-xs">{t("profile.pilotName")}</Label><Input value={form.pilot_name} onChange={e => setForm({ ...form, pilot_name: e.target.value })} /></div>
         </div>
@@ -259,6 +273,8 @@ export default function Profile() {
       </CardContent></Card>
 
       <Button onClick={handleSave} disabled={loading} className="w-full">{loading ? "..." : t("profile.saveProfile")}</Button>
+
+      <AvatarCropDialog file={cropFile} open={cropOpen} onClose={() => setCropOpen(false)} onCrop={handleCroppedAvatar} />
     </div>
   );
 }
