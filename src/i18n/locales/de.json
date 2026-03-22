@@ -365,5 +365,14 @@
   },
   "splash": {
     "loading": "Laden..."
+  },
+  "training": {
+    "title": "Kontrollblatt",
+    "goal": "Ziel",
+    "content": "Inhalt",
+    "mistakes": "Häufige Fehler",
+    "danger": "Gefahr",
+    "notes": "Eigene Notizen",
+    "notesPlaceholder": "Deine Notizen zu dieser Übung..."
   }
 }
