@@ -28,6 +28,7 @@ export default function FlightDetail() {
   const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [groupName, setGroupName] = useState<string | null>(null);
+  const [publishedToFeed, setPublishedToFeed] = useState(false);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
