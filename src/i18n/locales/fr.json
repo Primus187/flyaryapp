@@ -46,6 +46,7 @@
     "upcomingEvents": "Prochains événements",
     "recentFlights": "Derniers vols",
     "noFlights": "Aucun vol enregistré",
+    "noFlightsDesc": "Enregistrez votre premier vol et commencez votre carnet.",
     "firstFlight": "Enregistrer un premier vol"
   },
   "flights": {
