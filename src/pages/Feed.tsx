@@ -403,7 +403,7 @@ export default function Feed() {
 async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedFlight[]> {
   let query = supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
     .not("published_at", "is", null)
@@ -441,8 +441,14 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const flightIds = groupFlights.map(f => f.id);
 
+  // Build a map of flight_id → allowed photo IDs from feed_photo_ids
+  const feedPhotoIdsMap: Record<string, string[] | null> = {};
+  for (const f of groupFlights as any[]) {
+    feedPhotoIdsMap[f.id] = Array.isArray(f.feed_photo_ids) ? f.feed_photo_ids : null;
+  }
+
   const [photosRes, likesRes, commentsRes, tracksRes, videosRes] = await Promise.all([
-    supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds),
+    supabase.from("flight_photos").select("id, flight_id, storage_path").in("flight_id", flightIds),
     supabase.from("feed_likes").select("flight_id, user_id").in("flight_id", flightIds),
     supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true }),
     supabase.from("igc_tracks").select("flight_id, track_data").in("flight_id", flightIds),
@@ -465,11 +471,18 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const photoMap: Record<string, string[]> = {};
   if (photos && photos.length > 0) {
-    const paths = [...new Set(photos.map(p => p.storage_path))];
+    // Filter photos by feed_photo_ids if set
+    const filteredPhotos = photos.filter(p => {
+      const allowed = feedPhotoIdsMap[p.flight_id];
+      return !allowed || allowed.includes(p.id);
+    });
+    const paths = [...new Set(filteredPhotos.map(p => p.storage_path))];
     const signedMap: Record<string, string> = {};
-    const { data: signedPhotos } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
-    signedPhotos?.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl; });
-    photos.forEach(p => {
+    if (paths.length > 0) {
+      const { data: signedPhotos } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
+      signedPhotos?.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl; });
+    }
+    filteredPhotos.forEach(p => {
       if (!photoMap[p.flight_id]) photoMap[p.flight_id] = [];
       if (signedMap[p.storage_path]) photoMap[p.flight_id].push(signedMap[p.storage_path]);
     });

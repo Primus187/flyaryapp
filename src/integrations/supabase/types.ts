@@ -642,6 +642,7 @@ export type Database = {
           date: string
           distance_km: number | null
           duration_minutes: number | null
+          feed_photo_ids: Json | null
           glider: string | null
           group_id: string | null
           id: string
@@ -663,6 +664,7 @@ export type Database = {
           date?: string
           distance_km?: number | null
           duration_minutes?: number | null
+          feed_photo_ids?: Json | null
           glider?: string | null
           group_id?: string | null
           id?: string
@@ -684,6 +686,7 @@ export type Database = {
           date?: string
           distance_km?: number | null
           duration_minutes?: number | null
+          feed_photo_ids?: Json | null
           glider?: string | null
           group_id?: string | null
           id?: string
