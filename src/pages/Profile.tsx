@@ -51,6 +51,23 @@ export default function Profile() {
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
     supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
+
+    // Realtime subscription for XP updates
+    const channel = supabase
+      .channel('profile-xp')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'pilot_xp',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload: any) => {
+        if (payload.new) {
+          setXp({ total_xp: payload.new.total_xp, level: payload.new.level });
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const handleSave = async () => {
