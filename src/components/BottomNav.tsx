@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, MapPin, Calendar, LayoutGrid } from "lucide-react";
+import { Home, Compass, BookOpen, MapPin, Calendar, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function BottomNav() {
@@ -8,9 +8,9 @@ export default function BottomNav() {
 
   const tabs = [
     { path: "/", icon: Home },
+    { path: "/feed", icon: Compass },
     { path: "/flights", icon: BookOpen },
     { path: "/locations", icon: MapPin },
-    { path: "/events", icon: Calendar },
     { path: "/more", icon: LayoutGrid },
   ];
 

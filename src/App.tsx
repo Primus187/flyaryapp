@@ -12,6 +12,7 @@ import AppLayout from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
+import Feed from "@/pages/Feed";
 import Stats from "@/pages/Stats";
 import Flights from "@/pages/Flights";
 import FlightForm from "@/pages/FlightForm";
@@ -70,6 +71,7 @@ const App = () => {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/feed" element={<Feed />} />
                   <Route path="/flights" element={<Flights />} />
                   <Route path="/flights/new" element={<FlightForm />} />
                   <Route path="/flights/:id" element={<FlightDetail />} />

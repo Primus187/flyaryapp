@@ -465,5 +465,12 @@
     "rightsText": "You have the right to access, correct, and delete your personal data at any time. Contact us through the app.",
     "contactTitle": "Contact",
     "contactText": "For privacy-related questions, please contact the app operator."
+  },
+  "feed": {
+    "title": "Feed",
+    "noFlights": "No flights in your feed yet",
+    "noFlightsDesc": "When group members log flights with a group, they'll show up here.",
+    "addComment": "Add a comment...",
+    "viewAllComments": "View all {{count}} comments"
   }
 }
