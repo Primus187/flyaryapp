@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import EmptyState from "@/components/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
+import { useXcontestAutoSync } from "@/hooks/use-xcontest-auto-sync";
 
 interface Stats { totalFlights: number; totalMinutes: number; uniqueTakeoffs: number; uniqueLandings: number; }
 interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; photoUrl?: string; pilotName?: string; }
@@ -39,6 +40,7 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  useXcontestAutoSync();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [stats, setStats] = useState<Stats>({ totalFlights: 0, totalMinutes: 0, uniqueTakeoffs: 0, uniqueLandings: 0 });
