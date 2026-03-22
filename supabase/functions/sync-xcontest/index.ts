@@ -39,7 +39,7 @@ async function loginToXContest(
   username: string,
   password: string
 ): Promise<string | null> {
-  // First GET the login page to get any CSRF tokens/cookies
+  // First GET the login page to get initial cookies
   const initRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
     redirect: "manual",
   });
@@ -71,8 +71,12 @@ async function loginToXContest(
     .map((c: string) => c.split(";")[0])
     .join("; ");
 
-  // Verify login by checking if we have a session cookie
-  if (!allCookies.includes("xcontest")) {
+  // Successful login returns a 302 redirect and sets session cookies
+  const hasSessionCookie = allCookies.toLowerCase().includes("xcontest") || 
+    loginCookies.length > 0 && loginRes.status >= 300 && loginRes.status < 400;
+  
+  if (!hasSessionCookie) {
+    console.log("Login failed. Status:", loginRes.status, "Cookies received:", loginCookies.length);
     return null;
   }
   return allCookies;
