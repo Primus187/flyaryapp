@@ -85,7 +85,39 @@ export default function Feed() {
 
   useEffect(() => { fetchFeed(); }, [fetchFeed]);
 
-  // ── Generic like toggle ──
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchFeed();
+    setRefreshing(false);
+    setPullDistance(0);
+  }, [fetchFeed]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const scrollTop = scrollRef.current?.scrollTop ?? window.scrollY;
+    if (scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling.current) return;
+    const diff = e.touches[0].clientY - touchStartY.current;
+    if (diff > 0) {
+      setPullDistance(Math.min(diff * 0.5, 80));
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (pullDistance > 50 && !refreshing) {
+      handleRefresh();
+    } else {
+      setPullDistance(0);
+    }
+    isPulling.current = false;
+  }, [pullDistance, refreshing, handleRefresh]);
+
+  
   const handleLikeToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
     if (!user) return;
 
