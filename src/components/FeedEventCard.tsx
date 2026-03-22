@@ -48,11 +48,10 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: FeedEventCardProps) {
+export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedEventCardProps) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
