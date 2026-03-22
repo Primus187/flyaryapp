@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_messages: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_signups: {
         Row: {
           event_id: string

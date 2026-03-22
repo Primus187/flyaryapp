@@ -152,7 +152,11 @@
     "fillRequired": "Bitte Pflichtfelder ausfüllen",
     "eventTypeLabel": "Art",
     "allGroups": "Alle Gruppen",
-    "pilot": "Pilot"
+    "pilot": "Pilot",
+    "chat": "Chat",
+    "typeMessage": "Nachricht schreiben...",
+    "sendMessage": "Senden",
+    "noMessages": "Noch keine Nachrichten"
   },
   "locations": {
     "title": "Orte",
