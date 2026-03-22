@@ -51,8 +51,11 @@ export default function FlightDetail() {
     if (!id) return;
     supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
       setFlight(data);
-      if (data && (data as any).group_id) {
-        supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+      if (data) {
+        setPublishedToFeed((data as any).published_to_feed || false);
+        if ((data as any).group_id) {
+          supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+        }
       }
     });
     loadPhotos();
