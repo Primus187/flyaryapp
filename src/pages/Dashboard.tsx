@@ -6,16 +6,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import EmptyState from "@/components/EmptyState";
+import ChallengeCard from "@/components/ChallengeCard";
 
 interface Stats { totalFlights: number; totalMinutes: number; uniqueTakeoffs: number; uniqueLandings: number; }
 interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; photoUrl?: string; pilotName?: string; }
 interface UpcomingEvent { id: string; title: string; event_date: string; status: string; meeting_point: string | null; group_name: string; event_type: string | null; max_participants: number | null; }
 interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
+interface ActiveChallenge { id: string; title: string; description: string | null; challenge_type: string; start_date: string; end_date: string | null; totalGoals: number; myCompleted: number; participantCount: number; }
 
 function DashboardSkeleton() {
   return (
@@ -43,6 +45,7 @@ export default function Dashboard() {
   const [recent, setRecent] = useState<RecentFlight[]>([]);
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
+  const [challenges, setChallenges] = useState<ActiveChallenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
@@ -111,6 +114,42 @@ export default function Dashboard() {
           const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds);
           if (sups) setSignups(sups);
           setEvents(upcomingEvents.map(e => ({ ...e, group_name: groupNames[e.group_id] || "" })));
+        }
+
+        // Load active challenges
+        const today = new Date().toISOString().split("T")[0];
+        const { data: challengesData } = await supabase.from("challenges" as any).select("*").in("group_id", groupIds);
+        if (challengesData && challengesData.length > 0) {
+          const activeChallenges = (challengesData as any[]).filter(c => !c.end_date || c.end_date >= today);
+          const challengeIds = activeChallenges.map(c => c.id);
+          
+          const { data: allGoals } = await supabase.from("challenge_goals" as any).select("id, challenge_id").in("challenge_id", challengeIds);
+          const { data: myProgressData } = await supabase.from("challenge_progress" as any).select("challenge_id, goal_id").eq("user_id", user.id).in("challenge_id", challengeIds);
+          const { data: allProgressData } = await supabase.from("challenge_progress" as any).select("challenge_id, user_id").in("challenge_id", challengeIds);
+
+          const goalsByChallenge: Record<string, number> = {};
+          (allGoals as any[] || []).forEach(g => { goalsByChallenge[g.challenge_id] = (goalsByChallenge[g.challenge_id] || 0) + 1; });
+
+          const myCompletedByChallenge: Record<string, number> = {};
+          (myProgressData as any[] || []).forEach(p => { myCompletedByChallenge[p.challenge_id] = (myCompletedByChallenge[p.challenge_id] || 0) + 1; });
+
+          const participantsByChallenge: Record<string, Set<string>> = {};
+          (allProgressData as any[] || []).forEach(p => {
+            if (!participantsByChallenge[p.challenge_id]) participantsByChallenge[p.challenge_id] = new Set();
+            participantsByChallenge[p.challenge_id].add(p.user_id);
+          });
+
+          setChallenges(activeChallenges.map(c => ({
+            id: c.id,
+            title: c.title,
+            description: c.description,
+            challenge_type: c.challenge_type,
+            start_date: c.start_date,
+            end_date: c.end_date,
+            totalGoals: goalsByChallenge[c.id] || 0,
+            myCompleted: myCompletedByChallenge[c.id] || 0,
+            participantCount: participantsByChallenge[c.id]?.size || 0,
+          })));
         }
       }
       setLoading(false);
@@ -215,6 +254,18 @@ export default function Dashboard() {
                 </Card>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Active Challenges */}
+      {challenges.length > 0 && (
+        <div>
+          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.activeChallenges")}</h2>
+          <div className="space-y-2">
+            {challenges.map(c => (
+              <ChallengeCard key={c.id} challenge={c} />
+            ))}
           </div>
         </div>
       )}

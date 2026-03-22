@@ -456,6 +456,7 @@
     "landings": "Landeplätze",
     "upcomingEvents": "Nächste Termine",
     "recentFlights": "Letzte Flüge",
+    "activeChallenges": "Aktive Challenges",
     "noFlights": "Noch keine Flüge erfasst",
     "noFlightsDesc": "Erfasse deinen ersten Flug und baue dein Flugbuch auf.",
     "firstFlight": "Ersten Flug erfassen"
@@ -515,6 +516,16 @@
     "goalLabelPlaceholder": "z.B. Niesen Startplatz",
     "points": "Punkte",
     "noGoals": "Noch keine Ziele definiert",
-    "unknownGoal": "Unbekanntes Ziel"
+    "unknownGoal": "Unbekanntes Ziel",
+    "start": "Start",
+    "turnpoint": "Wendepunkt",
+    "waypoint": "Wegpunkt",
+    "goal": "Ziel",
+    "goalType": "Zieltyp",
+    "radius": "Radius (m)",
+    "selectLocation": "Ort wählen",
+    "coordinates": "Koordinaten",
+    "autoVerified": "Challenge-Ziele erreicht! 🎯",
+    "goalsReached": "Ziel(e) automatisch bestätigt"
   }
 }

@@ -45,6 +45,7 @@
     "landings": "Landings",
     "upcomingEvents": "Upcoming events",
     "recentFlights": "Recent flights",
+    "activeChallenges": "Active Challenges",
     "noFlights": "No flights recorded yet",
     "noFlightsDesc": "Record your first flight and start building your logbook.",
     "firstFlight": "Record your first flight"
@@ -513,6 +514,16 @@
     "goalLabelPlaceholder": "e.g. Niesen launch site",
     "points": "Points",
     "noGoals": "No goals defined yet",
-    "unknownGoal": "Unknown goal"
+    "unknownGoal": "Unknown goal",
+    "start": "Start",
+    "turnpoint": "Turnpoint",
+    "waypoint": "Waypoint",
+    "goal": "Goal",
+    "goalType": "Goal type",
+    "radius": "Radius (m)",
+    "selectLocation": "Select location",
+    "coordinates": "Coordinates",
+    "autoVerified": "Challenge goals reached! 🎯",
+    "goalsReached": "goal(s) auto-verified"
   }
 }

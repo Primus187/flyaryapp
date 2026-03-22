@@ -119,6 +119,42 @@ export default function FlightForm() {
       // Save training items
       if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
       if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items" as any).insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
+      // Auto-verify challenge goals if IGC data exists
+      if (igcData && igcData.points.length > 0) {
+        try {
+          const { verifyChallengeGoals } = await import("@/lib/challenge-verify");
+          // Get user's groups
+          const { data: memberships } = await supabase.from("group_members").select("group_id").eq("user_id", user.id);
+          if (memberships && memberships.length > 0) {
+            const groupIds = memberships.map(m => m.group_id);
+            const today = new Date().toISOString().split("T")[0];
+            const { data: activeChallenges } = await supabase.from("challenges" as any).select("id").in("group_id", groupIds);
+            const filteredChallenges = (activeChallenges as any[] || []);
+            if (filteredChallenges.length > 0) {
+              const challengeIds = filteredChallenges.map(c => c.id);
+              const { data: goalsData } = await supabase.from("challenge_goals" as any).select("id, challenge_id, latitude, longitude, radius_meters, goal_type").in("challenge_id", challengeIds);
+              const goalsWithCoords = (goalsData as any[] || []).filter(g => g.latitude && g.longitude);
+              if (goalsWithCoords.length > 0) {
+                // Check already completed
+                const { data: existingProgress } = await supabase.from("challenge_progress" as any).select("goal_id").eq("user_id", user.id);
+                const completedIds = new Set((existingProgress as any[] || []).map(p => p.goal_id));
+                const uncompleted = goalsWithCoords.filter(g => !completedIds.has(g.id));
+                if (uncompleted.length > 0) {
+                  const reachedIds = verifyChallengeGoals(igcData.points, uncompleted);
+                  if (reachedIds.length > 0) {
+                    const inserts = reachedIds.map(goalId => {
+                      const goal = uncompleted.find(g => g.id === goalId)!;
+                      return { challenge_id: goal.challenge_id, user_id: user.id, goal_id: goalId, flight_id: flightId };
+                    });
+                    await supabase.from("challenge_progress" as any).insert(inserts as any);
+                    toast({ title: t("challenges.autoVerified"), description: `${reachedIds.length} ${t("challenges.goalsReached")}` });
+                  }
+                }
+              }
+            }
+          }
+        } catch (verifyErr) { console.error("Challenge verification failed:", verifyErr); }
+      }
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
