@@ -71,7 +71,7 @@ export default function Locations() {
         <div>
           <p className="font-medium text-sm flex items-center gap-1.5">
              {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
-+            {loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
+{loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
              {loc.name}
           </p>
           <p className="text-xs text-muted-foreground">
