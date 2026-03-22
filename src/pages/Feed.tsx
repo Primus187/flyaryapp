@@ -89,7 +89,7 @@ export default function Feed() {
     const item = items.find(i => i.data.id === itemId);
     if (!item) return;
 
-    const likes = "likes" in item.data ? item.data.likes : [];
+    const likes = (item.data as any).likes || [];
     const isLiked = likes.some((l: any) => l.user_id === user.id);
 
     if (isLiked) {
@@ -104,7 +104,7 @@ export default function Feed() {
       const newLikes = isLiked
         ? currentLikes.filter((l: any) => l.user_id !== user.id)
         : [...currentLikes, { user_id: user.id }];
-      return { ...i, data: { ...i.data, likes: newLikes } };
+      return { ...i, data: { ...i.data, likes: newLikes } } as FeedItem;
     }));
   };
 
