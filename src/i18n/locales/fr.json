@@ -269,6 +269,15 @@
     "photoUploaded": "Photo téléchargée",
     "cropAvatar": "Recadrer la photo de profil",
     "profileSaved": "Profil enregistré",
+    "coverPhoto": "Photo de couverture",
+    "addCoverPhoto": "Ajouter une photo de couverture",
+    "changeCoverPhoto": "Changer la photo de couverture",
+    "coverPhotoUploaded": "Photo de couverture téléchargée",
+    "coverPhotoRemoved": "Photo de couverture supprimée",
+    "photoGallery": "Galerie photos",
+    "addPhotos": "Ajouter des photos",
+    "photosAdded": "Photos ajoutées",
+    "photoRemoved": "Photo supprimée",
     "myGliders": "Mes voiles",
     "noGliders": "Aucune voile enregistrée.",
     "manufacturer": "Fabricant",
@@ -643,6 +652,7 @@
     "glider": "Voile",
     "flightSchool": "École de vol",
     "shvNumber": "Numéro FSVL",
-    "viewPublicProfile": "Voir le profil public"
+    "viewPublicProfile": "Voir le profil public",
+    "photos": "Photos"
   }
 }

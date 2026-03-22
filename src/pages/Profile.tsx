@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import AvatarCropDialog from "@/components/AvatarCropDialog";
+import { compressImage } from "@/lib/image-compress";
 import BadgeGrid from "@/components/BadgeGrid";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PasswordInput } from "@/components/PasswordInput";
-import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
@@ -45,6 +46,11 @@ export default function Profile() {
   const [badges, setBadges] = useState<{ badge_key: string; unlocked_at: string }[]>([]);
   const [badgeStats, setBadgeStats] = useState<any>(null);
   const [showAllBadges, setShowAllBadges] = useState(false);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
+  const [coverSignedUrl, setCoverSignedUrl] = useState("");
+  const [profilePhotos, setProfilePhotos] = useState<{ id: string; storage_path: string; signedUrl?: string }[]>([]);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
@@ -53,16 +59,40 @@ export default function Profile() {
     if (data?.signedUrl) setAvatarSignedUrl(data.signedUrl);
   };
 
+  const resolveSignedUrl = async (path: string): Promise<string | null> => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = await supabase.storage.from("flight-photos").createSignedUrl(path, 3600);
+    return data?.signedUrl || null;
+  };
+
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
       if (data) {
         setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
+        if ((data as any).cover_photo_url) {
+          setCoverPhotoUrl((data as any).cover_photo_url);
+          resolveSignedUrl((data as any).cover_photo_url).then(u => u && setCoverSignedUrl(u));
+        }
         if ((data as any).xcontest_username) {
           setXcontestUsername((data as any).xcontest_username);
           setXcontestHasCredentials(!!(data as any).xcontest_password_encrypted);
         }
+      }
+    });
+    supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
+    supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
+    supabase.from("pilot_badges" as any).select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    // Load profile photos
+    supabase.from("profile_photos" as any).select("id, storage_path").eq("user_id", user.id).order("sort_order").then(async ({ data }) => {
+      if (data && data.length > 0) {
+        const photos = await Promise.all((data as any[]).map(async (p) => {
+          const url = await resolveSignedUrl(p.storage_path);
+          return { ...p, signedUrl: url || "" };
+        }));
+        setProfilePhotos(photos);
       }
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
@@ -131,6 +161,67 @@ export default function Profile() {
     resolveAvatarUrl(path);
     await supabase.from("profiles").update({ avatar_url: path } as any).eq("user_id", user.id);
     toast({ title: t("profile.photoUploaded") }); setUploading(false);
+  };
+
+  const handleCoverPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    e.target.value = "";
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file, 1600, 600, 0.85);
+      const path = `${user.id}/cover.jpg`;
+      const { error } = await supabase.storage.from("flight-photos").upload(path, compressed, { upsert: true });
+      if (error) throw error;
+      setCoverPhotoUrl(path);
+      const url = await resolveSignedUrl(path);
+      if (url) setCoverSignedUrl(url);
+      await supabase.from("profiles").update({ cover_photo_url: path } as any).eq("user_id", user.id);
+      toast({ title: t("profile.coverPhotoUploaded") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    }
+    setUploading(false);
+  };
+
+  const handleRemoveCover = async () => {
+    if (!user) return;
+    await supabase.from("profiles").update({ cover_photo_url: null } as any).eq("user_id", user.id);
+    if (coverPhotoUrl) await supabase.storage.from("flight-photos").remove([coverPhotoUrl]);
+    setCoverPhotoUrl("");
+    setCoverSignedUrl("");
+    toast({ title: t("profile.coverPhotoRemoved") });
+  };
+
+  const handleAddProfilePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !user) return;
+    e.target.value = "";
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const compressed = await compressImage(files[i], 1200, 1200, 0.8);
+        const path = `${user.id}/profile_${Date.now()}_${i}.jpg`;
+        const { error } = await supabase.storage.from("flight-photos").upload(path, compressed);
+        if (error) throw error;
+        const { data } = await supabase.from("profile_photos" as any).insert({ user_id: user.id, storage_path: path, sort_order: profilePhotos.length + i } as any).select().single();
+        if (data) {
+          const url = await resolveSignedUrl(path);
+          setProfilePhotos(prev => [...prev, { ...(data as any), signedUrl: url || "" }]);
+        }
+      }
+      toast({ title: t("profile.photosAdded") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    }
+    setUploading(false);
+  };
+
+  const handleDeleteProfilePhoto = async (photoId: string, storagePath: string) => {
+    await supabase.from("profile_photos" as any).delete().eq("id", photoId);
+    await supabase.storage.from("flight-photos").remove([storagePath]);
+    setProfilePhotos(prev => prev.filter(p => p.id !== photoId));
+    toast({ title: t("profile.photoRemoved") });
   };
 
   const handleAddGlider = async () => {
@@ -273,6 +364,88 @@ export default function Profile() {
           {badges.length === 0 && (
             <p className="text-xs text-muted-foreground text-center mt-2">{t("badges.noBadges")}</p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Cover Photo */}
+      <Card className="border-0 shadow-sm overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ImagePlus className="h-4 w-4 text-primary" /> {t("profile.coverPhoto")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {coverSignedUrl ? (
+            <div className="relative rounded-xl overflow-hidden">
+              <img src={coverSignedUrl} alt="Cover" className="w-full h-32 object-cover" />
+              <button
+                onClick={handleRemoveCover}
+                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center active:scale-95"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="w-full h-24 rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
+              disabled={uploading}
+            >
+              <ImagePlus className="h-5 w-5" />
+              <span className="text-xs">{t("profile.addCoverPhoto")}</span>
+            </button>
+          )}
+          {coverSignedUrl && (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="text-xs text-primary font-medium"
+              disabled={uploading}
+            >
+              {t("profile.changeCoverPhoto")}
+            </button>
+          )}
+          <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverPhotoSelect} />
+        </CardContent>
+      </Card>
+
+      {/* Profile Photos Gallery */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">{t("profile.photoGallery")}</CardTitle>
+          <button
+            onClick={() => photoInputRef.current?.click()}
+            className="text-xs text-primary font-medium flex items-center gap-1"
+            disabled={uploading}
+          >
+            <Plus className="h-3 w-3" /> {t("common.add")}
+          </button>
+        </CardHeader>
+        <CardContent>
+          {profilePhotos.length === 0 ? (
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              className="w-full h-20 rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
+              disabled={uploading}
+            >
+              <ImagePlus className="h-5 w-5" />
+              <span className="text-xs">{t("profile.addPhotos")}</span>
+            </button>
+          ) : (
+            <div className="grid grid-cols-3 gap-1.5">
+              {profilePhotos.map(photo => (
+                <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden group">
+                  <img src={photo.signedUrl} alt="" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => handleDeleteProfilePhoto(photo.id, photo.storage_path)}
+                    className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input ref={photoInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAddProfilePhoto} />
         </CardContent>
       </Card>
 

@@ -817,12 +817,37 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_photos: {
+        Row: {
+          created_at: string
+          id: string
+          sort_order: number
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           allergies: string | null
           avatar_url: string | null
           bio: string | null
           blood_type: string | null
+          cover_photo_url: string | null
           created_at: string
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -844,6 +869,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           blood_type?: string | null
+          cover_photo_url?: string | null
           created_at?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -865,6 +891,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           blood_type?: string | null
+          cover_photo_url?: string | null
           created_at?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
