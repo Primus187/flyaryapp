@@ -13,6 +13,11 @@ import { parseLocationsCsv, type ParsedLocation } from "@/lib/csv-location-impor
 
 type ImportState = "idle" | "preview" | "importing" | "done";
 
+interface LocationToProcess extends ParsedLocation {
+  existingId?: string;
+  isUpdate: boolean;
+}
+
 export default function ImportLocations() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -21,10 +26,11 @@ export default function ImportLocations() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<ImportState>("idle");
   const [locations, setLocations] = useState<ParsedLocation[]>([]);
-  const [newLocations, setNewLocations] = useState<ParsedLocation[]>([]);
-  const [skippedCount, setSkippedCount] = useState(0);
+  const [toProcess, setToProcess] = useState<LocationToProcess[]>([]);
+  const [newCount, setNewCount] = useState(0);
+  const [updateCount, setUpdateCount] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(0);
+  const [result, setResult] = useState({ inserted: 0, updated: 0 });
 
   const typeLabel = (ty: string) => ty === "takeoff" ? t("locations.takeoff") : ty === "landing" ? t("locations.landingPlace") : t("locations.both");
 
