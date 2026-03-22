@@ -34,6 +34,10 @@ export default function Profile() {
   const [showAddGlider, setShowAddGlider] = useState(false);
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
   const [xp, setXp] = useState<{ total_xp: number; level: number } | null>(null);
+  const [xcontestUsername, setXcontestUsername] = useState("");
+  const [xcontestPassword, setXcontestPassword] = useState("");
+  const [xcontestSyncing, setXcontestSyncing] = useState(false);
+  const [xcontestHasCredentials, setXcontestHasCredentials] = useState(false);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
