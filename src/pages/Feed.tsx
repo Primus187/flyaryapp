@@ -56,6 +56,7 @@ export default function Feed() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [groupIds, setGroupIds] = useState<string[]>([]);
+  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
