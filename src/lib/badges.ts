@@ -57,6 +57,14 @@ export const BADGES: BadgeDefinition[] = [
   { key: "thermik_king", category: "records", tier: "gold", threshold: 120, thresholdUnit: "min", icon: "Flame" },
   { key: "xc_beast", category: "records", tier: "gold", threshold: 50, thresholdUnit: "km", icon: "Zap" },
   { key: "high_flyer", category: "records", tier: "gold", threshold: 2000, thresholdUnit: "hm", icon: "ArrowUp" },
+  // Seasonal
+  { key: "summer_pilot_2025", category: "seasonal", tier: "gold", threshold: 20, thresholdUnit: "☀️", icon: "Sun" },
+  { key: "summer_pilot_2026", category: "seasonal", tier: "gold", threshold: 20, thresholdUnit: "☀️", icon: "Sun" },
+  { key: "winter_eagle_2025", category: "seasonal", tier: "silver", threshold: 10, thresholdUnit: "❄️", icon: "Snowflake" },
+  { key: "winter_eagle_2026", category: "seasonal", tier: "silver", threshold: 10, thresholdUnit: "❄️", icon: "Snowflake" },
+  { key: "year_round_2024", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
+  { key: "year_round_2025", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
+  { key: "year_round_2026", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
 ];
 
 export function getBadgeDefinition(key: string): BadgeDefinition | undefined {
