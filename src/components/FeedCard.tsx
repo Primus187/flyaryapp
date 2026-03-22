@@ -17,6 +17,8 @@ export interface FeedFlight {
   id: string;
   date: string;
   created_at: string;
+  published_at: string | null;
+  feedDescription: string | null;
   glider: string | null;
   duration_minutes: number | null;
   altitude_gain: number | null;
