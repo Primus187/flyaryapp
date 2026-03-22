@@ -1,0 +1,1 @@
+ALTER TABLE public.flights ADD COLUMN feed_photo_ids jsonb DEFAULT NULL;
