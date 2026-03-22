@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,20 +11,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, MapPin, Pencil, Trash2, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine } from "lucide-react";
+import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine, Plane } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
 
 export default function Locations() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { t, i18n } = useTranslation();
   const [locations, setLocations] = useState<any[]>([]);
+  const [flightStats, setFlightStats] = useState<Record<string, { count: number; lastDate: string | null }>>({});
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "" });
   const [backfillProgress, setBackfillProgress] = useState<{ current: number; total: number } | null>(null);
   const cancelledRef = useRef(false);
+  const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
 
@@ -39,7 +42,38 @@ export default function Locations() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ takeoff: true, landing: true, both: true });
 
   const fetchLocations = useCallback(async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); return data; }, [user]);
-  useEffect(() => { fetchLocations(); }, [fetchLocations]);
+
+  const fetchFlightStats = useCallback(async () => {
+    if (!user) return;
+    const { data: flights } = await supabase.from("flights").select("takeoff_location_id, landing_location_id, date").eq("user_id", user.id);
+    if (!flights) return;
+    const stats: Record<string, { count: number; lastDate: string | null }> = {};
+    for (const f of flights) {
+      for (const locId of [f.takeoff_location_id, f.landing_location_id]) {
+        if (!locId) continue;
+        if (!stats[locId]) stats[locId] = { count: 0, lastDate: null };
+        stats[locId].count++;
+        if (!stats[locId].lastDate || f.date > stats[locId].lastDate!) stats[locId].lastDate = f.date;
+      }
+    }
+    setFlightStats(stats);
+  }, [user]);
+
+  useEffect(() => { fetchLocations(); fetchFlightStats(); }, [fetchLocations, fetchFlightStats]);
+
+  // Handle ?edit=id from LocationDetail
+  useEffect(() => {
+    const editParam = searchParams.get("edit");
+    if (editParam && locations.length > 0) {
+      const loc = locations.find((l) => l.id === editParam);
+      if (loc) {
+        setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "" });
+        setEditId(loc.id);
+        setOpen(true);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [searchParams, locations, setSearchParams]);
 
   // Backfill country_code for locations missing it
   useEffect(() => {
@@ -85,8 +119,6 @@ export default function Locations() {
     else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
     resetForm(); setOpen(false); fetchLocations();
   };
-  const handleEdit = (loc: any) => { setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "" }); setEditId(loc.id); setOpen(true); };
-  const handleDelete = async (id: string) => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id); toast({ title: t("locations.locationDeleted") }); fetchLocations(); };
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
       const { data, error } = await supabase.functions.invoke('reverse-geocode', { body: { lat, lon: lng } });
@@ -104,27 +136,34 @@ export default function Locations() {
     { key: "both", icon: Combine, label: t("locations.both"), color: "text-primary" },
   ] as const;
 
-  const renderLocationCard = (loc: any) => (
-    <Card key={loc.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
-      <CardContent className="p-3 flex items-center justify-between">
-        <div>
-          <p className="font-medium text-sm flex items-center gap-1.5">
-             {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
-{loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
-             {loc.name}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {loc.altitude && <span>{loc.altitude}m</span>}
-            {loc.latitude === 0 && loc.longitude === 0 && <span className="text-amber-500"> · {t("common.noPosition")}</span>}
-          </p>
-        </div>
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleEdit(loc); }}><Pencil className="h-3.5 w-3.5" /></Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(loc.id); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  const renderLocationCard = (loc: any) => {
+    const stats = flightStats[loc.id];
+    return (
+      <Card key={loc.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
+        <CardContent className="p-3 flex items-center justify-between">
+          <div>
+            <p className="font-medium text-sm flex items-center gap-1.5">
+              {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+              {loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
+              {loc.name}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {loc.altitude && <span>{loc.altitude}m</span>}
+              {loc.latitude === 0 && loc.longitude === 0 && <span className="text-amber-500"> · {t("common.noPosition")}</span>}
+              {stats && stats.count > 0 && (
+                <span>
+                  {(loc.altitude || (loc.latitude === 0 && loc.longitude === 0)) && " · "}
+                  <Plane className="inline h-3 w-3 -mt-0.5" /> {stats.count}
+                  {stats.lastDate && <span> · {t("locations.lastFlight")}: {new Date(stats.lastDate).toLocaleDateString(locale, { day: "2-digit", month: "short" })}</span>}
+                </span>
+              )}
+            </p>
+          </div>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground -rotate-90" />
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
