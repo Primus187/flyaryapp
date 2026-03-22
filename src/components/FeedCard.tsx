@@ -97,11 +97,11 @@ function PhotoCarousel({ urls }: { urls: string[] }) {
   );
 }
 
-export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: FeedCardProps) {
+export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [comment, setComment] = useState("");
+  const [showComments, setShowComments] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
