@@ -41,6 +41,30 @@ export default function FlightDetail() {
 
   const handleDelete = async () => { if (!confirm(t("flights.deleteFlight"))) return; await supabase.from("flights").delete().eq("id", id); toast({ title: t("flights.flightDeleted") }); navigate("/flights"); };
 
+  const handleDuplicate = async () => {
+    if (!user || !flight) return;
+    try {
+      const { data, error } = await supabase.from("flights").insert({
+        user_id: user.id, date: flight.date, takeoff_location_id: flight.takeoff_location_id || null,
+        landing_location_id: flight.landing_location_id || null, duration_minutes: flight.duration_minutes,
+        altitude_gain: flight.altitude_gain, distance_km: flight.distance_km, thermals: flight.thermals,
+        wind_speed: flight.wind_speed, wind_direction: flight.wind_direction, glider: flight.glider, comments: flight.comments,
+      }).select("id").single();
+      if (error) throw error;
+      // Duplicate training items
+      if (trainedManeuvers.length > 0) {
+        const { data: items } = await supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id);
+        if (items && items.length > 0) {
+          await supabase.from("flight_training_items" as any).insert((items as any[]).map((i: any) => ({ flight_id: data.id, item_id: i.item_id })) as any);
+        }
+      }
+      toast({ title: t("flights.flightDuplicated") });
+      navigate(`/flights/${data.id}`);
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    }
+  };
+
   const handleIGCUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file || !user || !id) return; setUploading(true);
     try {
