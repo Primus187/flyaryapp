@@ -1,28 +1,37 @@
 
 
-# Orte: Liste vereinfachen, Detailseite erweitern
+# Dashboard-Karten an Flugbuch & Termine angleichen
+
+## Unterschiede
+
+**Letzte Flüge (Dashboard):** Einfaches 2-Spalten-Layout (Name+Datum links, Dauer+Höhe rechts). Zeigt keine Landing-Location, keine Distanz, kein Glider-Emoji-Row.
+
+**Flugbuch (Flights.tsx):** Name oben links, Landing darunter ("→ Landeplatz"), Datum oben rechts, dann eine Zeile mit ⏱/↑/↔/🪂 Details.
+
+**Termine (Dashboard):** Calendar-Icon links, Titel+Datum+Treffpunkt, Status-Badge rechts. Kein Signup-Button, keine Teilnehmerzahl.
+
+**Termine (Events.tsx):** Titel+Badge in einer Zeile, Datum+Typ+Gruppe darunter, Treffpunkt mit MapPin, Teilnehmerzahl mit Users-Icon, Signup-Button rechts.
 
 ## Änderungen
 
-### 1. `src/pages/Locations.tsx` — Liste vereinfachen
-- **Entfernen**: Bearbeiten- und Löschen-Buttons aus `renderLocationCard`
-- **Hinzufügen**: Flug-Statistiken pro Ort anzeigen
-  - Beim Laden der Locations auch Flüge laden (`flights` Tabelle), gruppiert nach `takeoff_location_id` und `landing_location_id`
-  - Pro Ort: Anzahl Flüge und Datum des letzten Fluges anzeigen
-  - Z.B. "3 Flüge · letzter: 12. Mär 2026"
-- `handleEdit` und `handleDelete` können entfernt werden (nur noch auf Detailseite)
+### `src/pages/Dashboard.tsx`
 
-### 2. `src/pages/LocationDetail.tsx` — Duplizieren + Bearbeiten verbessern
-- **Duplizieren-Button** hinzufügen (Copy-Icon) neben Bearbeiten und Löschen
-- Duplizieren: Neuen Ort mit gleichen Daten erstellen (Name + " (Kopie)"), dann zur neuen Location navigieren
-- **Bearbeiten-Button**: Statt nach `/locations` zu navigieren (aktuell falsch!), den Edit-Dialog aus Locations öffnen — besser: direkt zur Locations-Seite mit Edit-State navigieren, oder einen inline Edit-Dialog auf der Detailseite einbauen
-  - Einfachste Lösung: Navigate zu `/locations?edit={id}` und in Locations.tsx den Dialog automatisch öffnen
+**Letzte Flüge** — Format wie Flights.tsx:
+- Oben: Takeoff-Name links, Datum rechts
+- Landing-Location als "→ name" darunter (wenn vorhanden)
+- Detail-Zeile mit ⏱ Dauer, ↑ Höhe, 🪂 Glider (braucht `distance_km` nicht, da nicht geladen — optional nachladen)
 
-### 3. i18n
-- Neue Keys: `locations.duplicate`, `locations.duplicated`, `locations.lastFlight`, `locations.flightCount`
+**Nächste Termine** — Format wie Events.tsx EventCard:
+- Titel + Status-Badge in einer Zeile
+- Datum + Gruppenname darunter
+- Treffpunkt mit MapPin-Icon
+- Teilnehmerzahl (braucht zusätzliche Daten — Signup-Count laden)
+- Signup-Button rechts (wenn nicht cancelled)
 
-## Dateien
-- **Edit**: `src/pages/Locations.tsx` — Buttons entfernen, Flug-Stats laden und anzeigen
-- **Edit**: `src/pages/LocationDetail.tsx` — Duplizieren-Funktion, Bearbeiten-Navigation fixen
-- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Übersetzungen
+Dafür müssen auch die geladenen Daten erweitert werden:
+- Flüge: `distance_km` und `landing_location` mit laden
+- Events: Signup-Counts laden, Toggle-Funktion hinzufügen
+
+### Dateien
+- **Edit**: `src/pages/Dashboard.tsx` — Karten-Layout + Daten anpassen
 
