@@ -28,6 +28,7 @@ export interface FeedFlight {
   avatar_url: string;
   group_name: string;
   photoUrls: string[];
+  videoUrls: string[];
   trackPoints: [number, number][];
   takeoff: { latitude: number; longitude: number; name?: string } | null;
   landing: { latitude: number; longitude: number; name?: string } | null;
