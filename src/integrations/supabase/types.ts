@@ -478,6 +478,106 @@ export type Database = {
         }
         Relationships: []
       }
+      training_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      training_items: {
+        Row: {
+          category_id: string
+          content: string | null
+          created_at: string
+          danger: string | null
+          goal: string | null
+          id: string
+          mistakes: string | null
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          category_id: string
+          content?: string | null
+          created_at?: string
+          danger?: string | null
+          goal?: string | null
+          id?: string
+          mistakes?: string | null
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          category_id?: string
+          content?: string | null
+          created_at?: string
+          danger?: string | null
+          goal?: string | null
+          id?: string
+          mistakes?: string | null
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "training_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_progress: {
+        Row: {
+          id: string
+          item_id: string
+          notes: string | null
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          notes?: string | null
+          rating?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          notes?: string | null
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_progress_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "training_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
