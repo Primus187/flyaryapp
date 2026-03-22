@@ -39,6 +39,8 @@ export default function Profile() {
   const [xcontestPassword, setXcontestPassword] = useState("");
   const [xcontestSyncing, setXcontestSyncing] = useState(false);
   const [xcontestHasCredentials, setXcontestHasCredentials] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   const resolveAvatarUrl = async (url: string) => {
     if (!url) return;
