@@ -17,26 +17,38 @@ export type Database = {
       challenge_goals: {
         Row: {
           challenge_id: string
+          goal_type: string
           id: string
           label: string | null
+          latitude: number | null
           location_id: string | null
+          longitude: number | null
           points: number
+          radius_meters: number
           sort_order: number
         }
         Insert: {
           challenge_id: string
+          goal_type?: string
           id?: string
           label?: string | null
+          latitude?: number | null
           location_id?: string | null
+          longitude?: number | null
           points?: number
+          radius_meters?: number
           sort_order?: number
         }
         Update: {
           challenge_id?: string
+          goal_type?: string
           id?: string
           label?: string | null
+          latitude?: number | null
           location_id?: string | null
+          longitude?: number | null
           points?: number
+          radius_meters?: number
           sort_order?: number
         }
         Relationships: [
