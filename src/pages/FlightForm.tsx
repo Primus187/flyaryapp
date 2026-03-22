@@ -54,6 +54,9 @@ export default function FlightForm() {
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
+    supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
+      if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
+    });
     supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
       if (data) {
         setGliders(data);
