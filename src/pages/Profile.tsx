@@ -224,6 +224,7 @@ export default function Profile() {
     toast({ title: t("profile.photoRemoved") });
   };
 
+  const handleAddGlider = async () => {
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
     if (newGlider.is_default) await supabase.from("pilot_gliders" as any).update({ is_default: false } as any).eq("user_id", user.id);
     const { data, error } = await supabase.from("pilot_gliders" as any).insert({ user_id: user.id, ...newGlider } as any).select().single();
