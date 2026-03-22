@@ -225,29 +225,91 @@ export type Database = {
           },
         ]
       }
+      feed_achievements: {
+        Row: {
+          achievement_type: string
+          challenge_id: string
+          created_at: string
+          goal_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_type?: string
+          challenge_id: string
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_type?: string
+          challenge_id?: string
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_achievements_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_achievements_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feed_comments: {
         Row: {
+          achievement_id: string | null
           created_at: string
-          flight_id: string
+          event_id: string | null
+          flight_id: string | null
           id: string
           message: string
           user_id: string
         }
         Insert: {
+          achievement_id?: string | null
           created_at?: string
-          flight_id: string
+          event_id?: string | null
+          flight_id?: string | null
           id?: string
           message: string
           user_id: string
         }
         Update: {
+          achievement_id?: string | null
           created_at?: string
-          flight_id?: string
+          event_id?: string | null
+          flight_id?: string | null
           id?: string
           message?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "feed_comments_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "feed_achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_comments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "feed_comments_flight_id_fkey"
             columns: ["flight_id"]
@@ -259,24 +321,44 @@ export type Database = {
       }
       feed_likes: {
         Row: {
+          achievement_id: string | null
           created_at: string
-          flight_id: string
+          event_id: string | null
+          flight_id: string | null
           id: string
           user_id: string
         }
         Insert: {
+          achievement_id?: string | null
           created_at?: string
-          flight_id: string
+          event_id?: string | null
+          flight_id?: string | null
           id?: string
           user_id: string
         }
         Update: {
+          achievement_id?: string | null
           created_at?: string
-          flight_id?: string
+          event_id?: string | null
+          flight_id?: string | null
           id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "feed_likes_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "feed_achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_likes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "feed_likes_flight_id_fkey"
             columns: ["flight_id"]
