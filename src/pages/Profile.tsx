@@ -4,13 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/PasswordInput";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, MapPin, Upload, FileDown, Users, Camera, Plus, Trash2, Star, Shield, Settings, Key } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Glider { id?: string; manufacturer: string; model: string; size: string; is_default: boolean; }
@@ -28,8 +28,6 @@ export default function Profile() {
   const [gliders, setGliders] = useState<Glider[]>([]);
   const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
   const [showAddGlider, setShowAddGlider] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -110,20 +108,7 @@ export default function Profile() {
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.medicalNotes")}</Label><Textarea value={form.medical_notes} onChange={e => setForm({ ...form, medical_notes: e.target.value })} placeholder={t("profile.medicalNotesPlaceholder")} rows={2} /></div>
       </CardContent></Card>
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Key className="h-4 w-4" /> {t("profile.changePassword")}</CardTitle></CardHeader><CardContent>
-        <div className="space-y-3">
-          <div className="space-y-1.5"><Label className="text-xs">{t("auth.newPasswordLabel")}</Label><PasswordInput value={newPassword} onChange={e => setNewPassword(e.target.value)} minLength={6} placeholder={t("profile.newPasswordPlaceholder")} /></div>
-          <Button size="sm" disabled={changingPassword || newPassword.length < 6} onClick={async () => { setChangingPassword(true); const { error } = await supabase.auth.updateUser({ password: newPassword }); if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" }); else { toast({ title: t("auth.passwordChanged"), description: t("auth.passwordChangedDesc") }); setNewPassword(""); } setChangingPassword(false); }}>{changingPassword ? "..." : t("auth.changePassword")}</Button>
-        </div>
-      </CardContent></Card>
-
       <Button onClick={handleSave} disabled={loading} className="w-full">{loading ? "..." : t("profile.saveProfile")}</Button>
-      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/groups")}><Users className="h-4 w-4" /> {t("profile.manageGroups")}</Button>
-      <Button variant="outline" className="w-full gap-2" onClick={handleExportPdf} disabled={exporting}><FileDown className="h-4 w-4" /> {exporting ? t("profile.exporting") : t("profile.exportPdf")}</Button>
-      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/import")}><Upload className="h-4 w-4" /> {t("profile.importFlights")}</Button>
-      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/import-locations")}><MapPin className="h-4 w-4" /> {t("profile.importLocations")}</Button>
-      <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/settings")}><Settings className="h-4 w-4" /> {t("profile.settings")}</Button>
-      <Button variant="ghost" className="w-full gap-2 text-destructive" onClick={signOut}><LogOut className="h-4 w-4" /> {t("profile.signOut")}</Button>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
 import FlightDetailMap from "@/components/FlightDetailMap";
@@ -22,6 +23,7 @@ export default function FlightDetail() {
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
@@ -32,6 +34,9 @@ export default function FlightDetail() {
     supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
+    supabase.from("flight_training_items" as any).select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
+      if (data) setTrainedManeuvers((data as any[]).map((d: any) => d.training_items?.name).filter(Boolean));
+    });
   }, [id]);
 
   const handleDelete = async () => { if (!confirm(t("flights.deleteFlight"))) return; await supabase.from("flights").delete().eq("id", id); toast({ title: t("flights.flightDeleted") }); navigate("/flights"); };
@@ -88,6 +93,18 @@ export default function FlightDetail() {
         ))}
       </div>
       {flight.comments && (<Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
+      {trainedManeuvers.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-wrap gap-1.5">
+              {trainedManeuvers.map((name) => (
+                <Badge key={name} variant="secondary">{name}</Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {photos.length > 0 && (
         <Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.photos")}</CardTitle></CardHeader><CardContent className="pt-0"><div className="grid grid-cols-3 gap-2">{photos.map((p) => { const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path); return (<img key={p.id} src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(data.publicUrl)} />); })}</div></CardContent></Card>
       )}

@@ -25,6 +25,7 @@ import EventForm from "@/pages/EventForm";
 import Groups from "@/pages/Groups";
 import GroupDetail from "@/pages/GroupDetail";
 import Profile from "@/pages/Profile";
+import More from "@/pages/More";
 import Settings from "@/pages/Settings";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
@@ -81,6 +82,7 @@ const App = () => {
                   <Route path="/training" element={<Training />} />
                   <Route path="/training/:itemId" element={<TrainingItemDetail />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/more" element={<More />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/stats" element={<Stats />} />
                   <Route path="/import" element={<ImportFlights />} />

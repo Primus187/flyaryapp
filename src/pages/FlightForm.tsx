@@ -11,10 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
-import { ArrowLeft, Upload, Plus, X, Youtube } from "lucide-react";
+import { ArrowLeft, Upload, Plus, X, Youtube, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface LocationOption { id: string; name: string; type: string; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
+interface TrainingItem { id: string; name: string; category_name: string; }
 
 export default function FlightForm() {
   const { id } = useParams();
@@ -32,6 +36,8 @@ export default function FlightForm() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [youtubeUrls, setYoutubeUrls] = useState<string[]>([]);
   const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
+  const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
+  const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
@@ -42,6 +48,9 @@ export default function FlightForm() {
   useEffect(() => {
     if (!user) return;
     supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+    supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
+      if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
+    });
     supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
       if (data) {
         setGliders(data);
@@ -56,6 +65,7 @@ export default function FlightForm() {
         if (data) setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "" });
       });
       supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => { if (data) setYoutubeUrls(data.map((v) => v.youtube_url)); });
+      supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
     }
     if (locationState?.igcFile && locationState?.igcContent) {
       try {
@@ -100,6 +110,9 @@ export default function FlightForm() {
         catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
       if (!isEdit && youtubeUrls.length > 0) { await supabase.from("flight_videos").insert(youtubeUrls.map((url) => ({ flight_id: flightId, youtube_url: url }))); }
+      // Save training items
+      if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
+      if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items" as any).insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
@@ -188,6 +201,54 @@ export default function FlightForm() {
             <div className="space-y-1.5"><Label className="text-xs">{t("flights.comments")}</Label><Textarea value={form.comments} onChange={set("comments")} placeholder={t("flights.commentsPlaceholder")} rows={3} /></div>
           </CardContent>
         </Card>
+        {trainingItems.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {selectedTrainingIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedTrainingIds.map((id) => {
+                    const item = trainingItems.find((ti) => ti.id === id);
+                    return item ? (
+                      <Badge key={id} variant="secondary" className="gap-1 pr-1">
+                        {item.name}
+                        <button type="button" onClick={() => setSelectedTrainingIds((prev) => prev.filter((x) => x !== id))}><X className="h-3 w-3" /></button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" size="sm" className="w-full">
+                    <Plus className="h-4 w-4 mr-1" /> {t("flights_training.selectManeuvers")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 max-h-64 overflow-y-auto p-2" align="start">
+                  {(() => {
+                    const categories = [...new Set(trainingItems.map((ti) => ti.category_name))];
+                    return categories.map((cat) => (
+                      <div key={cat} className="mb-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1">{cat}</p>
+                        {trainingItems.filter((ti) => ti.category_name === cat).map((ti) => (
+                          <label key={ti.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer text-sm">
+                            <Checkbox
+                              checked={selectedTrainingIds.includes(ti.id)}
+                              onCheckedChange={(checked) => {
+                                setSelectedTrainingIds((prev) => checked ? [...prev, ti.id] : prev.filter((x) => x !== ti.id));
+                              }}
+                            />
+                            {ti.name}
+                          </label>
+                        ))}
+                      </div>
+                    ));
+                  })()}
+                </PopoverContent>
+              </Popover>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.photos")}</CardTitle></CardHeader>
           <CardContent>

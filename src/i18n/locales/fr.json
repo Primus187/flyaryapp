@@ -5,7 +5,8 @@
     "training": "Formation",
     "events": "Événements",
     "locations": "Sites",
-    "profile": "Profil"
+    "profile": "Profil",
+    "more": "Plus"
   },
   "common": {
     "save": "Enregistrer",
@@ -361,7 +362,8 @@
     "language": "Langue",
     "german": "Deutsch",
     "french": "Français",
-    "english": "English"
+    "english": "English",
+    "exportImport": "Export & Import"
   },
   "splash": {
     "loading": "Chargement..."
@@ -374,5 +376,21 @@
     "danger": "Danger",
     "notes": "Notes personnelles",
     "notesPlaceholder": "Vos notes sur cet exercice..."
+  },
+  "more": {
+    "title": "Plus",
+    "profile": "Profil",
+    "locations": "Sites",
+    "map": "Carte",
+    "groups": "Groupes",
+    "importFlights": "Importer des vols",
+    "importLocations": "Importer des sites",
+    "settings": "Paramètres",
+    "signOut": "Se déconnecter"
+  },
+  "flights_training": {
+    "trainedManeuvers": "Manœuvres entraînées",
+    "selectManeuvers": "Sélectionner des manœuvres...",
+    "noManeuvers": "Aucune manœuvre"
   }
 }
