@@ -509,37 +509,74 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedEvent[]> {
   const { data: events } = await supabase
     .from("flight_events")
-    .select("id, title, description, event_date, event_type, meeting_point, max_participants, status, group_id, created_at")
+    .select("id, title, description, event_date, event_type, meeting_point, max_participants, status, group_id, created_at, created_by, published_to_feed, published_at, feed_description")
     .in("group_id", groupIds)
-    .gte("event_date", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-    .order("created_at", { ascending: false })
+    .eq("published_to_feed", true)
+    .order("published_at", { ascending: false, nullsFirst: false })
     .limit(10);
 
   if (!events || events.length === 0) return [];
 
   const eventIds = events.map(e => e.id);
+  const creatorIds = [...new Set(events.map(e => e.created_by))];
 
-  const [signupsRes, likesRes, commentsRes] = await Promise.all([
+  const [signupsRes, likesRes, commentsRes, photosRes, profilesRes] = await Promise.all([
     supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds).eq("signed_up", true),
     supabase.from("feed_likes").select("event_id, user_id").in("event_id", eventIds),
     supabase.from("feed_comments").select("id, event_id, user_id, message, created_at").in("event_id", eventIds).order("created_at", { ascending: true }),
+    supabase.from("event_photos").select("id, event_id, storage_path").in("event_id", eventIds),
+    supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", creatorIds),
   ]);
 
   const signups = signupsRes.data;
   const likes = likesRes.data;
   const comments = commentsRes.data;
+  const eventPhotos = photosRes.data;
+  const profiles = profilesRes.data;
 
-  const allUserIds = [...new Set([...(comments || []).map(c => c.user_id)])];
-  const profileMap: Record<string, string> = {};
-  if (allUserIds.length > 0) {
-    const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allUserIds);
-    profs?.forEach(p => { profileMap[p.user_id] = p.pilot_name || "Pilot"; });
+  // Sign photo URLs
+  const photoMap: Record<string, { id: string; url: string }[]> = {};
+  if (eventPhotos && eventPhotos.length > 0) {
+    const paths = [...new Set(eventPhotos.map(p => p.storage_path))];
+    const { data: signedPhotos } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
+    const signedMap: Record<string, string> = {};
+    signedPhotos?.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl; });
+    eventPhotos.forEach(p => {
+      if (!photoMap[p.event_id]) photoMap[p.event_id] = [];
+      if (signedMap[p.storage_path]) photoMap[p.event_id].push({ id: p.id, url: signedMap[p.storage_path] });
+    });
+  }
+
+  // Build profile map with signed avatars
+  const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
+  if (profiles) {
+    const avatarPaths = profiles.filter(p => p.avatar_url && !p.avatar_url.startsWith("http")).map(p => p.avatar_url!);
+    const avatarSignedMap: Record<string, string> = {};
+    if (avatarPaths.length > 0) {
+      const { data: signedAvatars } = await supabase.storage.from("flight-photos").createSignedUrls(avatarPaths, 3600);
+      signedAvatars?.forEach(s => { if (s.signedUrl) avatarSignedMap[s.path] = s.signedUrl; });
+    }
+    for (const p of profiles) {
+      let avatarUrl = "";
+      if (p.avatar_url) {
+        avatarUrl = p.avatar_url.startsWith("http") ? p.avatar_url : (avatarSignedMap[p.avatar_url] || "");
+      }
+      profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: avatarUrl };
+    }
+  }
+
+  // Commenter profiles
+  const allCommentUserIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
+  if (allCommentUserIds.length > 0) {
+    const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allCommentUserIds);
+    profs?.forEach(p => { profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: "" }; });
   }
 
   return events.map(e => ({
     id: e.id,
     title: e.title,
     description: e.description,
+    feed_description: (e as any).feed_description || null,
     event_date: e.event_date,
     event_type: e.event_type,
     meeting_point: e.meeting_point,
@@ -547,12 +584,17 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
     status: e.status,
     group_name: groupMap[e.group_id] || "",
     created_at: (e as any).created_at || e.event_date,
+    published_at: (e as any).published_at || null,
+    created_by: e.created_by,
+    pilot_name: profileMap[e.created_by]?.pilot_name || "Pilot",
+    avatar_url: profileMap[e.created_by]?.avatar_url || "",
+    photos: photoMap[e.id] || [],
     signup_count: (signups || []).filter(s => s.event_id === e.id).length,
     user_signed_up: (signups || []).some(s => s.event_id === e.id && s.user_id === userId),
     likes: (likes || []).filter(l => l.event_id === e.id).map(l => ({ user_id: l.user_id })),
     comments: (comments || []).filter(c => c.event_id === e.id).map(c => ({
       id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
-      pilot_name: profileMap[c.user_id] || "Pilot",
+      pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
     })),
   }));
 }
