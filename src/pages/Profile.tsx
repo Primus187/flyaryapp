@@ -52,6 +52,10 @@ export default function Profile() {
       if (data) {
         setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
+        if ((data as any).xcontest_username) {
+          setXcontestUsername((data as any).xcontest_username);
+          setXcontestHasCredentials(!!(data as any).xcontest_password_encrypted);
+        }
       }
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
