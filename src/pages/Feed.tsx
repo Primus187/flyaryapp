@@ -69,7 +69,7 @@ export default function Feed() {
 
     const allItems: FeedItem[] = [
       ...flightsRes.map(f => ({ type: "flight" as const, date: f.created_at, data: f })),
-      ...eventsRes.map(e => ({ type: "event" as const, date: e.event_date, data: e })),
+      ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: e })),
       ...challengesRes.map(c => ({ type: "challenge" as const, date: c.created_at || c.start_date, data: c })),
     ];
 
