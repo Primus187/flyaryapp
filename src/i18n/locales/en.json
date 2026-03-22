@@ -491,7 +491,11 @@
     "addComment": "Add a comment...",
     "viewAllComments": "View all {{count}} comments",
     "participants": "participants",
-    "viewDetails": "Details"
+    "viewDetails": "Details",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
   },
   "leaderboard": {
     "title": "Leaderboard",

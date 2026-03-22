@@ -493,7 +493,11 @@
     "addComment": "Kommentar...",
     "viewAllComments": "Alle {{count}} Kommentare anzeigen",
     "participants": "Teilnehmer",
-    "viewDetails": "Details"
+    "viewDetails": "Details",
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {{count}} Min.",
+    "hoursAgo": "vor {{count}} Std.",
+    "daysAgo": "vor {{count}} Tagen"
   },
   "leaderboard": {
     "title": "Rangliste",
