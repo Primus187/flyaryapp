@@ -25,6 +25,7 @@ import EventForm from "@/pages/EventForm";
 import Groups from "@/pages/Groups";
 import GroupDetail from "@/pages/GroupDetail";
 import Profile from "@/pages/Profile";
+import More from "@/pages/More";
 import Settings from "@/pages/Settings";
 import ImportFlights from "@/pages/ImportFlights";
 import ImportLocations from "@/pages/ImportLocations";
