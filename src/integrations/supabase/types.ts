@@ -14,6 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
+      challenge_goals: {
+        Row: {
+          challenge_id: string
+          id: string
+          label: string | null
+          location_id: string | null
+          points: number
+          sort_order: number
+        }
+        Insert: {
+          challenge_id: string
+          id?: string
+          label?: string | null
+          location_id?: string | null
+          points?: number
+          sort_order?: number
+        }
+        Update: {
+          challenge_id?: string
+          id?: string
+          label?: string | null
+          location_id?: string | null
+          points?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_goals_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_goals_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed_at: string
+          flight_id: string | null
+          goal_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string
+          flight_id?: string | null
+          goal_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string
+          flight_id?: string | null
+          goal_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_progress_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_progress_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          group_id: string
+          id: string
+          start_date: string
+          title: string
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          group_id: string
+          id?: string
+          start_date?: string
+          title: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          group_id?: string
+          id?: string
+          start_date?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_messages: {
         Row: {
           created_at: string
