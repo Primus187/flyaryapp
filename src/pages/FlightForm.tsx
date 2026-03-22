@@ -40,11 +40,12 @@ export default function FlightForm() {
   const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
+  const [groups, setGroups] = useState<GroupOption[]>([]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
     duration_minutes: "", altitude_gain: "", distance_km: "", thermals: "", wind_speed: "",
-    wind_direction: "", glider: "", comments: "",
+    wind_direction: "", glider: "", comments: "", group_id: "",
   });
 
   useEffect(() => {
