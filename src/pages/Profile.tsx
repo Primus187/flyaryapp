@@ -29,10 +29,23 @@ export default function Profile() {
   const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
   const [showAddGlider, setShowAddGlider] = useState(false);
 
+  const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
+
+  const resolveAvatarUrl = async (url: string) => {
+    if (!url) return;
+    // If it's already a full URL (legacy), use as-is; otherwise create signed URL
+    if (url.startsWith("http")) { setAvatarSignedUrl(url); return; }
+    const { data } = await supabase.storage.from("flight-photos").createSignedUrl(url, 3600);
+    if (data?.signedUrl) setAvatarSignedUrl(data.signedUrl);
+  };
+
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
-      if (data) setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "", shv_number: (data as any).shv_number || "", exam_theory_date: (data as any).exam_theory_date || "", exam_practical_date: (data as any).exam_practical_date || "", flight_school: (data as any).flight_school || "" });
+      if (data) {
+        setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: (data as any).bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: (data as any).emergency_contact_name || "", emergency_contact_phone: (data as any).emergency_contact_phone || "", blood_type: (data as any).blood_type || "", allergies: (data as any).allergies || "", medical_notes: (data as any).medical_notes || "", shv_number: (data as any).shv_number || "", exam_theory_date: (data as any).exam_theory_date || "", exam_practical_date: (data as any).exam_practical_date || "", flight_school: (data as any).flight_school || "" });
+        if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
+      }
     });
     supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
   }, [user]);
@@ -50,9 +63,10 @@ export default function Profile() {
     const ext = file.name.split(".").pop(); const path = `${user.id}/avatar.${ext}`;
     const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
-    const { data: { publicUrl } } = supabase.storage.from("flight-photos").getPublicUrl(path);
-    setForm(f => ({ ...f, avatar_url: publicUrl }));
-    await supabase.from("profiles").update({ avatar_url: publicUrl } as any).eq("user_id", user.id);
+    // Store the storage path, not a public URL (bucket is now private)
+    setForm(f => ({ ...f, avatar_url: path }));
+    resolveAvatarUrl(path);
+    await supabase.from("profiles").update({ avatar_url: path } as any).eq("user_id", user.id);
     toast({ title: t("profile.photoUploaded") }); setUploading(false);
   };
 
@@ -89,7 +103,7 @@ export default function Profile() {
       <h1 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="relative"><Avatar className="h-20 w-20"><AvatarImage src={form.avatar_url} /><AvatarFallback className="text-lg bg-primary/10">{initials}</AvatarFallback></Avatar><button onClick={() => fileInputRef.current?.click()} className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm" disabled={uploading}><Camera className="h-3.5 w-3.5" /></button><input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} /></div>
+          <div className="relative"><Avatar className="h-20 w-20"><AvatarImage src={avatarSignedUrl} /><AvatarFallback className="text-lg bg-primary/10">{initials}</AvatarFallback></Avatar><button onClick={() => fileInputRef.current?.click()} className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm" disabled={uploading}><Camera className="h-3.5 w-3.5" /></button><input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} /></div>
           <div className="flex-1 space-y-1.5"><Label className="text-xs">{t("profile.pilotName")}</Label><Input value={form.pilot_name} onChange={e => setForm({ ...form, pilot_name: e.target.value })} /></div>
         </div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.bio")}</Label><Textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} placeholder={t("profile.bioPlaceholder")} rows={2} /></div>

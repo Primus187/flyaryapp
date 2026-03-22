@@ -20,6 +20,7 @@ export default function FlightDetail() {
   const { t, i18n } = useTranslation();
   const [flight, setFlight] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [videos, setVideos] = useState<any[]>([]);
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
@@ -31,9 +32,18 @@ export default function FlightDetail() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
-  const loadPhotos = () => {
+  const loadPhotos = async () => {
     if (!id) return;
-    supabase.from("flight_photos").select("*").eq("flight_id", id).then(({ data }) => setPhotos(data || []));
+    const { data } = await supabase.from("flight_photos").select("*").eq("flight_id", id);
+    const photoList = data || [];
+    setPhotos(photoList);
+    // Create signed URLs for all photos
+    const urls: Record<string, string> = {};
+    for (const p of photoList) {
+      const { data: signedData } = await supabase.storage.from("flight-photos").createSignedUrl(p.storage_path, 3600);
+      if (signedData?.signedUrl) urls[p.id] = signedData.signedUrl;
+    }
+    setPhotoUrls(urls);
   };
 
   useEffect(() => {
@@ -183,10 +193,11 @@ export default function FlightDetail() {
           {photos.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">
               {photos.map((p) => {
-                const { data } = supabase.storage.from("flight-photos").getPublicUrl(p.storage_path);
+                const url = photoUrls[p.id];
+                if (!url) return null;
                 return (
                   <div key={p.id} className="relative group">
-                    <img src={data.publicUrl} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(data.publicUrl)} />
+                    <img src={url} alt="" className="rounded-lg aspect-square object-cover cursor-pointer active:scale-[0.97] transition-transform" onClick={() => setLightboxUrl(url)} />
                     <button
                       onClick={() => handleDeletePhoto(p.id, p.storage_path)}
                       className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
