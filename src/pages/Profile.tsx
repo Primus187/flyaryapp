@@ -246,6 +246,18 @@ export default function Profile() {
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.medicalNotes")}</Label><Textarea value={form.medical_notes} onChange={e => setForm({ ...form, medical_notes: e.target.value })} placeholder={t("profile.medicalNotesPlaceholder")} rows={2} /></div>
       </CardContent></Card>
 
+      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> {t("profile.xcontestTitle")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.xcontestWarning")}</p></CardHeader><CardContent className="space-y-3">
+        <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestUsername")}</Label><Input value={xcontestUsername} onChange={e => setXcontestUsername(e.target.value)} placeholder={t("profile.xcontestUsernamePlaceholder")} /></div>
+        <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestPassword")}</Label><PasswordInput value={xcontestPassword} onChange={e => setXcontestPassword(e.target.value)} placeholder={xcontestHasCredentials ? "••••••••" : t("profile.xcontestPasswordPlaceholder")} /></div>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSaveXcontest} disabled={!xcontestUsername}>{t("common.save")}</Button>
+          <Button size="sm" variant="outline" onClick={handleSyncXcontest} disabled={xcontestSyncing || !xcontestHasCredentials}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${xcontestSyncing ? "animate-spin" : ""}`} />
+            {xcontestSyncing ? t("profile.xcontestSyncing") : t("profile.xcontestSync")}
+          </Button>
+        </div>
+      </CardContent></Card>
+
       <Button onClick={handleSave} disabled={loading} className="w-full">{loading ? "..." : t("profile.saveProfile")}</Button>
     </div>
   );
