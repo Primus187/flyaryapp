@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import AvatarCropDialog from "@/components/AvatarCropDialog";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
