@@ -100,10 +100,25 @@ export default function Feed() {
       fetchAchievements(user.id, gIds, groupMap, cursor),
     ]);
 
+    // Load bookmarks for current user
+    const allFlightIds = flightsRes.map(f => f.id);
+    const allEventIds = eventsRes.map(e => e.id);
+    const allAchIds = achievementsRes.map(a => a.id);
+
+    const bookmarkQueries = await Promise.all([
+      allFlightIds.length > 0 ? supabase.from("bookmarks").select("flight_id").eq("user_id", user.id).in("flight_id", allFlightIds) : { data: [] },
+      allEventIds.length > 0 ? supabase.from("bookmarks").select("event_id").eq("user_id", user.id).in("event_id", allEventIds) : { data: [] },
+      allAchIds.length > 0 ? supabase.from("bookmarks").select("achievement_id").eq("user_id", user.id).in("achievement_id", allAchIds) : { data: [] },
+    ]);
+
+    const bookmarkedFlights = new Set((bookmarkQueries[0].data || []).map((b: any) => b.flight_id));
+    const bookmarkedEvents = new Set((bookmarkQueries[1].data || []).map((b: any) => b.event_id));
+    const bookmarkedAchs = new Set((bookmarkQueries[2].data || []).map((b: any) => b.achievement_id));
+
     const allItems: FeedItem[] = [
-      ...flightsRes.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: f })),
-      ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: e })),
-      ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: a })),
+      ...flightsRes.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: { ...f, isBookmarked: bookmarkedFlights.has(f.id) } })),
+      ...eventsRes.map(e => ({ type: "event" as const, date: e.created_at || e.event_date, data: { ...e, isBookmarked: bookmarkedEvents.has(e.id) } })),
+      ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: { ...a, isBookmarked: bookmarkedAchs.has(a.id) } })),
     ];
 
     allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
