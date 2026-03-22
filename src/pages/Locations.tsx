@@ -22,7 +22,18 @@ export default function Locations() {
   const [locations, setLocations] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "" });
+  const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "" });
+
+  const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
+
+  const countries = [
+    { code: "CH", name: "Schweiz" }, { code: "DE", name: "Deutschland" }, { code: "AT", name: "Österreich" },
+    { code: "FR", name: "Frankreich" }, { code: "IT", name: "Italien" }, { code: "ES", name: "Spanien" },
+    { code: "PT", name: "Portugal" }, { code: "SI", name: "Slowenien" }, { code: "HR", name: "Kroatien" },
+    { code: "TR", name: "Türkei" }, { code: "GR", name: "Griechenland" }, { code: "NP", name: "Nepal" },
+    { code: "CO", name: "Kolumbien" }, { code: "BR", name: "Brasilien" }, { code: "ZA", name: "Südafrika" },
+    { code: "US", name: "USA" }, { code: "GB", name: "UK" },
+  ];
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ takeoff: true, landing: true, both: true });
 
   const fetchLocations = async () => { if (!user) return; const { data } = await supabase.from("locations").select("*").eq("user_id", user.id).order("name"); if (data) setLocations(data); };
@@ -34,15 +45,15 @@ export default function Locations() {
     both: locations.filter((l) => l.type === "both"),
   }), [locations]);
 
-  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "" }); setEditId(null); };
+  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "" }); setEditId(null); };
   const handleSave = async () => {
     if (!user) return;
-    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null };
+    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null };
     if (editId) { await supabase.from("locations").update(data).eq("id", editId); toast({ title: t("locations.locationUpdated") }); }
     else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
     resetForm(); setOpen(false); fetchLocations();
   };
-  const handleEdit = (loc: any) => { setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "" }); setEditId(loc.id); setOpen(true); };
+  const handleEdit = (loc: any) => { setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "" }); setEditId(loc.id); setOpen(true); };
   const handleDelete = async (id: string) => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id); toast({ title: t("locations.locationDeleted") }); fetchLocations(); };
   const handleMapSelect = (lat: number, lng: number) => { setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() })); };
 
@@ -59,8 +70,9 @@ export default function Locations() {
       <CardContent className="p-3 flex items-center justify-between">
         <div>
           <p className="font-medium text-sm flex items-center gap-1.5">
-            {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
-            {loc.name}
+             {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+{loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
+             {loc.name}
           </p>
           <p className="text-xs text-muted-foreground">
             {loc.altitude && <span>{loc.altitude}m</span>}
@@ -94,6 +106,7 @@ export default function Locations() {
                   <div className="space-y-1.5"><Label className="text-xs">{t("locations.longitude")}</Label><Input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} placeholder="7.6" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("locations.altitude")}</Label><Input type="number" value={form.altitude} onChange={(e) => setForm({ ...form, altitude: e.target.value })} /></div></div>
+                <div className="space-y-1.5"><Label className="text-xs">{t("locations.country")}</Label><Select value={form.country_code} onValueChange={(v) => setForm({ ...form, country_code: v })}><SelectTrigger><SelectValue placeholder={t("locations.countryPlaceholder")} /></SelectTrigger><SelectContent>{countries.map((c) => (<SelectItem key={c.code} value={c.code}>{getFlagEmoji(c.code)} {c.name}</SelectItem>))}</SelectContent></Select></div>
                 <div className="space-y-1.5"><Label className="text-xs">{t("locations.descriptionLabel")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t("common.optional")} /></div>
                 <Button className="w-full" onClick={handleSave}>{editId ? t("common.update") : t("common.save")}</Button>
               </div>

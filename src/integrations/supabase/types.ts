@@ -394,6 +394,7 @@ export type Database = {
       locations: {
         Row: {
           altitude: number | null
+          country_code: string | null
           created_at: string
           description: string | null
           id: string
@@ -406,6 +407,7 @@ export type Database = {
         }
         Insert: {
           altitude?: number | null
+          country_code?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -418,6 +420,7 @@ export type Database = {
         }
         Update: {
           altitude?: number | null
+          country_code?: string | null
           created_at?: string
           description?: string | null
           id?: string

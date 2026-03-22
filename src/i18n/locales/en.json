@@ -189,7 +189,9 @@
     "flightsAtLocation": "Flights at this site",
     "noFlightsHere": "No flights yet",
     "typeLabel": "Type",
-    "altitudeLabel": "Altitude"
+    "altitudeLabel": "Altitude",
+    "country": "Country",
+    "countryPlaceholder": "Select country"
   },
   "groups": {
     "title": "Groups",
