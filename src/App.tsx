@@ -62,6 +62,7 @@ const App = () => {
           <Sonner />
           {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
           <BrowserRouter>
+            <ScrollToTop />
             <AuthProvider>
               <Routes>
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
