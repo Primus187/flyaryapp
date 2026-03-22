@@ -300,7 +300,19 @@
     "examTheoryDate": "Theory exam passed",
     "examPracticalDate": "Practical exam passed",
     "flightSchool": "Flight school / Club",
-    "flightSchoolPlaceholder": "e.g. Paragliding School XY"
+    "flightSchoolPlaceholder": "e.g. Paragliding School XY",
+    "xcontestTitle": "XContest Sync",
+    "xcontestUsername": "XContest Username",
+    "xcontestUsernamePlaceholder": "Your XContest login (email)",
+    "xcontestPassword": "XContest Password",
+    "xcontestPasswordPlaceholder": "Your XContest password",
+    "xcontestSync": "Sync now",
+    "xcontestSyncing": "Syncing...",
+    "xcontestSyncDone": "{{count}} new flights imported",
+    "xcontestSyncDone_zero": "No new flights found",
+    "xcontestWarning": "Your credentials are stored encrypted and only used for flight import.",
+    "xcontestSaved": "XContest credentials saved",
+    "xcontestError": "Sync failed"
   },
   "auth": {
     "signIn": "Sign in",

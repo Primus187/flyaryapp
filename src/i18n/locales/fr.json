@@ -300,7 +300,19 @@
     "examTheoryDate": "Examen théorique réussi",
     "examPracticalDate": "Examen pratique réussi",
     "flightSchool": "École de vol / Club",
-    "flightSchoolPlaceholder": "p.ex. École de parapente XY"
+    "flightSchoolPlaceholder": "p.ex. École de parapente XY",
+    "xcontestTitle": "Synchronisation XContest",
+    "xcontestUsername": "Nom d'utilisateur XContest",
+    "xcontestUsernamePlaceholder": "Votre login XContest (e-mail)",
+    "xcontestPassword": "Mot de passe XContest",
+    "xcontestPasswordPlaceholder": "Votre mot de passe XContest",
+    "xcontestSync": "Synchroniser maintenant",
+    "xcontestSyncing": "Synchronisation...",
+    "xcontestSyncDone": "{{count}} nouveaux vols importés",
+    "xcontestSyncDone_zero": "Aucun nouveau vol trouvé",
+    "xcontestWarning": "Vos identifiants sont stockés de manière chiffrée et utilisés uniquement pour l'import des vols.",
+    "xcontestSaved": "Identifiants XContest enregistrés",
+    "xcontestError": "Échec de la synchronisation"
   },
   "auth": {
     "signIn": "Connectez-vous",
