@@ -1,14 +1,29 @@
 
 
-# Scroll-to-Top bei Seitenwechsel
+# Flugformular: Ort-Suche mit Filter und Inline-Erstellung
 
 ## Problem
-Beim Navigieren zu einer neuen Seite bleibt die Scroll-Position der vorherigen Seite erhalten.
+Die Ort-Auswahl (Start/Landeplatz) im FlightForm ist ein einfaches Select-Dropdown ohne Suchfunktion. Bei vielen Orten ist das unübersichtlich. Neue Orte können nur über die Orte-Seite erstellt werden.
 
 ## Lösung
-Eine `ScrollToTop`-Komponente erstellen, die bei jedem Routenwechsel `window.scrollTo(0, 0)` aufruft. Diese wird innerhalb des `BrowserRouter` in `App.tsx` platziert.
+
+### 1. Combobox statt Select für Start- und Landeplatz
+- Popover mit `Command` (cmdk) Komponente: Suchfeld filtert Orte live beim Tippen
+- Zeigt passende Orte aus der jeweiligen Kategorie (takeoff/both bzw. landing/both)
+- Bei Auswahl schliesst das Popover und der Ort wird gesetzt
+
+### 2. "Neuer Ort erstellen" Option
+- Am Ende der gefilterten Liste ein Button "+ Neuen Ort erstellen"
+- Öffnet einen Dialog mit den wichtigsten Feldern: Name, Typ (takeoff/landing/both), Koordinaten (Map-Picker), Höhe
+- Nach dem Speichern wird der neue Ort automatisch ausgewählt und die Ortliste aktualisiert
+
+### 3. Wiederverwendbare Komponente
+- Neue Komponente `src/components/LocationCombobox.tsx`
+- Props: `locations`, `value`, `onChange`, `filterType` ("takeoff"|"landing"), `placeholder`, `onLocationCreated`
+- Wird zweimal im FlightForm verwendet (Startplatz + Landeplatz)
 
 ## Dateien
-- **Neu**: `src/components/ScrollToTop.tsx` — `useEffect` mit `useLocation().pathname` als Dependency, ruft `window.scrollTo(0, 0)` auf
-- **Edit**: `src/App.tsx` — `<ScrollToTop />` direkt nach `<BrowserRouter>` einfügen
+- **Neu**: `src/components/LocationCombobox.tsx` — Combobox mit Suchfilter + Inline-Ort-Erstellung (Dialog mit Name, Typ, Map-Picker, Höhe)
+- **Edit**: `src/pages/FlightForm.tsx` — Select durch LocationCombobox ersetzen, Locations-Liste nach Erstellung neu laden
+- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Keys: `locations.searchLocation`, `locations.createNew`, `locations.noResults`
 
