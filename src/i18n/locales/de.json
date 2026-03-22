@@ -34,20 +34,7 @@
     "saved": "Gespeichert",
     "noPosition": "Keine Position"
   },
-  "dashboard": {
-    "title": "Flyary",
-    "subtitle": "Deine Übersicht",
-    "stats": "Stats",
-    "newFlight": "Flug",
-    "flights": "Flüge",
-    "flightTime": "Flugzeit",
-    "takeoffs": "Startplätze",
-    "landings": "Landeplätze",
-    "upcomingEvents": "Nächste Termine",
-    "recentFlights": "Letzte Flüge",
-    "noFlights": "Noch keine Flüge erfasst",
-    "firstFlight": "Ersten Flug erfassen"
-  },
+  "_dashboard_moved": "see bottom of file",
   "flights": {
     "title": "Flugbuch",
     "searchPlaceholder": "Suche nach Ort, Schirm, Datum...",
