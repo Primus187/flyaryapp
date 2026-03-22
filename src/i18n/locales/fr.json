@@ -465,5 +465,12 @@
     "rightsText": "Vous avez le droit d'accéder, de rectifier et de supprimer vos données personnelles à tout moment. Contactez-nous via l'application.",
     "contactTitle": "Contact",
     "contactText": "Pour toute question relative à la protection des données, veuillez contacter l'exploitant de l'application."
+  },
+  "feed": {
+    "title": "Fil",
+    "noFlights": "Pas encore de vols dans votre fil",
+    "noFlightsDesc": "Quand les membres du groupe enregistrent des vols avec un groupe, ils apparaîtront ici.",
+    "addComment": "Ajouter un commentaire...",
+    "viewAllComments": "Voir les {{count}} commentaires"
   }
 }
