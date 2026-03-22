@@ -182,16 +182,7 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <Input value={comment} onChange={e => setComment(e.target.value)}
-            placeholder={t("feed.addComment")} className="h-8 text-sm bg-muted/50 border-0"
-            onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
-          {comment.trim() && (
-            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>
-              <Send className="h-4 w-4 text-primary" />
-            </Button>
-          )}
-        </div>
+        <MentionCommentInput onSubmit={handleSubmitComment} members={groupMembers} />
       </CardContent>
     </Card>
   );
