@@ -1,55 +1,72 @@
 
 
-# Feed erweitern: Events & Challenges im Instagram-Style
+# Feed-Redesign: Chronologisch nach Publikationsdatum, Kartenansicht & Publikationsinfos
 
 ## Übersicht
-Der Feed zeigt aktuell nur Flüge. Er soll zusätzlich Events/Termine und aktive Challenges aus den Gruppen des Users anzeigen — alles chronologisch gemischt und im Instagram-Card-Style.
+Der Feed wird zu einem echten Social-Feed umgebaut: chronologisch nach Erstellungsdatum sortiert, eigene Flüge inklusive, mit Mini-Karte für Flugtracks und vollständigen Publikationsinformationen.
 
-## 1. Unified Feed-Item Typ
+## 1. Chronologische Sortierung nach `created_at`
 
-Neues Konzept: `FeedItem` als Union-Type mit `type: "flight" | "event" | "challenge"`. Alle Items haben ein gemeinsames `date`-Feld für chronologische Sortierung.
+Aktuell wird nach `date` (Flugdatum) bzw. `event_date` sortiert. Neu wird `created_at` als einheitliches Sortierdatum verwendet.
 
-## 2. Feed-Daten laden (Edit: `src/pages/Feed.tsx`)
+**Edit: `src/pages/Feed.tsx`**
+- `fetchFlights`: zusätzlich `created_at` selektieren, als `date` im FeedItem verwenden
+- `fetchEvents`: `created_at` statt `event_date` für Sortierung
+- `fetchChallenges`: `created_at` statt `start_date` für Sortierung
+- Eigene Flüge **nicht mehr ausschliessen** (`.neq("user_id", userId)` entfernen) — eigene Posts sollen auch im Feed erscheinen
 
-Zusätzlich zu Flügen:
-- **Events**: `flight_events` laden wo `group_id IN groupIds`, sortiert nach `event_date`
-- **Challenges**: `challenges` laden wo `group_id IN groupIds` und aktiv (`end_date IS NULL OR end_date >= today`)
-- Challenge-Progress und Goals mitzählen für Fortschrittsanzeige
-- Alle Items in ein Array mergen, nach Datum sortieren
+## 2. IGC-Track & Mini-Karte im FeedCard
 
-## 3. Neue Feed-Karten-Komponenten
+**Edit: `src/components/FeedCard.tsx`**
+- Neues Feld `trackPoints` in `FeedFlight`-Interface
+- Zwischen Foto und Actions eine kompakte Karte (150px Höhe) mit `FlightDetailMap` rendern, wenn Track-Daten vorhanden
+- Falls kein Foto aber Track vorhanden: Karte als visuelles Hauptelement anzeigen
 
-### `FeedEventCard` (Neu: `src/components/FeedEventCard.tsx`)
-Instagram-Style Event-Karte:
-- Gradient-Header mit Event-Typ-Icon (Kalender, Schulung, etc.)
-- Avatar + Gruppenname im Header (wie Instagram-Post)
-- Event-Titel gross, Datum/Uhrzeit, Ort, Beschreibung
-- Anmeldestand (X/Y Teilnehmer) als visuelles Element
-- "Anmelden"-Button direkt in der Karte
-- Like + Comment Actions wie bei Flügen (optional, oder nur Info)
+**Edit: `src/pages/Feed.tsx` (fetchFlights)**
+- Zusätzlich `igc_tracks` laden: `track_data` (enthält die Punkte als JSON)
+- Takeoff/Landing Location-Koordinaten mitlesen für Karten-Marker
+- Track-Punkte in `FeedFlight.trackPoints` speichern
+- Takeoff/Landing-Koordinaten in `FeedFlight.takeoff`/`FeedFlight.landing` speichern
 
-### `FeedChallengeCard` (Neu: `src/components/FeedChallengeCard.tsx`)
-Instagram-Style Challenge-Karte:
-- Gradient-Background (Gold/Amber für Trophies)
-- Trophy/Target-Icon prominent
-- Titel, Beschreibung, Fortschrittsbalken
-- Teilnehmer-Avatare als kleine Kreise
-- "Details ansehen"-Button
-- Badge "Aktiv" / "Neu"
+## 3. Erweiterte Publikationsinfos in FeedCard
 
-## 4. Feed-Rendering (Edit: `src/pages/Feed.tsx`)
-- `FeedItem[]` statt `FeedFlight[]` als State
-- Switch/Map über `item.type` um die richtige Karte zu rendern
-- Bestehende `FeedCard` für Flüge beibehalten
+**Edit: `src/components/FeedCard.tsx`**
+- Gruppenname unter Pilotname anzeigen (benötigt neues Feld `group_name`)
+- `created_at` als "vor X Stunden/Tagen" relative Zeitanzeige
+- Klick auf Pilotname/Avatar navigiert zum Flug-Detail
+- Glider-Info prominenter darstellen
 
-## 5. i18n (Edit: `de/en/fr.json`)
-Neue Keys:
-- `feed.newEvent`, `feed.newChallenge`, `feed.participants`, `feed.signUp`, `feed.viewDetails`
-- `feed.eventIn` (Gruppenname), `feed.challengeProgress`
+**Edit: `src/pages/Feed.tsx` (fetchFlights)**
+- `group_id` und Gruppenname mitlesen, in FeedFlight-Daten aufnehmen
+- `created_at` im FeedFlight-Interface ergänzen
+
+## 4. FeedFlight Interface erweitern
+
+```typescript
+export interface FeedFlight {
+  // bestehende Felder...
+  created_at: string;          // NEU: für relative Zeitanzeige
+  group_name: string;          // NEU: Gruppenname
+  trackPoints: [number, number][]; // NEU: IGC-Track für Karte
+  takeoff: { latitude: number; longitude: number; name?: string } | null; // NEU
+  landing: { latitude: number; longitude: number; name?: string } | null; // NEU
+}
+```
+
+## 5. i18n
+
+Neue Keys in de/en/fr:
+- `feed.justNow`, `feed.minutesAgo`, `feed.hoursAgo`, `feed.daysAgo`
+- `feed.inGroup` (z.B. "in Vertical")
 
 ## Dateien
-- **Neu**: `src/components/FeedEventCard.tsx`
-- **Neu**: `src/components/FeedChallengeCard.tsx`
-- **Edit**: `src/pages/Feed.tsx` — Events + Challenges laden, unified sorting
-- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Neue Feed-Keys
+- **Edit**: `src/pages/Feed.tsx` — `created_at` sortieren, eigene Flüge zeigen, Track-Daten laden
+- **Edit**: `src/components/FeedCard.tsx` — Mini-Karte, Gruppenname, relative Zeit
+- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Neue Keys
+
+## Technische Details
+- IGC `track_data` ist JSONB mit einem Array von `[lat, lng]`-Punkten — wird direkt an `FlightDetailMap` übergeben
+- Für die Mini-Karte wird die bestehende `FlightDetailMap`-Komponente mit reduzierter Höhe (150px) wiederverwendet
+- Track-Punkte werden nur für die ersten 20 Flüge geladen (Performance)
+- Takeoff/Landing-Koordinaten kommen aus der `locations`-Tabelle (bereits via FK verknüpft)
 
