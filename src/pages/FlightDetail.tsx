@@ -228,6 +228,22 @@ export default function FlightDetail() {
       <Button variant="outline" className="w-full gap-2" onClick={() => igcInputRef.current?.click()} disabled={uploading}>
         <Upload className="h-4 w-4" />{uploading ? t("flights.uploading") : track ? t("flights.igcReplace") : t("flights.igcAttach")}
       </Button>
+      {/* Publish to Feed */}
+      {flight.user_id === user?.id && (flight as any).group_id && (
+        <Button
+          variant={publishedToFeed ? "outline" : "default"}
+          className="w-full gap-2"
+          onClick={async () => {
+            const newVal = !publishedToFeed;
+            await supabase.from("flights").update({ published_to_feed: newVal } as any).eq("id", id);
+            setPublishedToFeed(newVal);
+            toast({ title: newVal ? t("flights.publishedToFeed") : t("flights.unpublishedFromFeed") });
+          }}
+        >
+          {publishedToFeed ? <CheckCircle className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+          {publishedToFeed ? t("flights.unpublishFromFeed") : t("flights.publishToFeed")}
+        </Button>
+      )}
     </div>
   );
 }
