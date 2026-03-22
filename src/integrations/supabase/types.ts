@@ -727,6 +727,8 @@ export type Database = {
           shv_number: string | null
           updated_at: string
           user_id: string
+          xcontest_password_encrypted: string | null
+          xcontest_username: string | null
         }
         Insert: {
           allergies?: string | null
@@ -746,6 +748,8 @@ export type Database = {
           shv_number?: string | null
           updated_at?: string
           user_id: string
+          xcontest_password_encrypted?: string | null
+          xcontest_username?: string | null
         }
         Update: {
           allergies?: string | null
@@ -765,6 +769,8 @@ export type Database = {
           shv_number?: string | null
           updated_at?: string
           user_id?: string
+          xcontest_password_encrypted?: string | null
+          xcontest_username?: string | null
         }
         Relationships: []
       }
@@ -885,6 +891,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      xcontest_imports: {
+        Row: {
+          flight_id: string | null
+          id: string
+          imported_at: string
+          user_id: string
+          xcontest_flight_url: string
+        }
+        Insert: {
+          flight_id?: string | null
+          id?: string
+          imported_at?: string
+          user_id: string
+          xcontest_flight_url: string
+        }
+        Update: {
+          flight_id?: string | null
+          id?: string
+          imported_at?: string
+          user_id?: string
+          xcontest_flight_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xcontest_imports_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
