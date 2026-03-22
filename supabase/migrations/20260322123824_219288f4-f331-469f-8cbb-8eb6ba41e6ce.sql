@@ -1,0 +1,1 @@
+ALTER TABLE public.flights ADD COLUMN published_to_feed boolean NOT NULL DEFAULT false;
