@@ -6,11 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import EmptyState from "@/components/EmptyState";
+import ChallengeCard from "@/components/ChallengeCard";
 
 interface Stats { totalFlights: number; totalMinutes: number; uniqueTakeoffs: number; uniqueLandings: number; }
 interface RecentFlight { id: string; date: string; glider: string | null; duration_minutes: number | null; altitude_gain: number | null; distance_km: number | null; takeoff_location: { name: string } | null; landing_location: { name: string } | null; photoUrl?: string; pilotName?: string; }
