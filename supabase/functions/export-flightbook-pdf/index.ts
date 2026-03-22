@@ -23,6 +23,7 @@ interface Flight {
   distance_km: number | null;
   comments: string | null;
   group_id: string | null;
+  is_solo_shv: boolean;
   takeoff_location: { name: string; altitude: number | null } | null;
   landing_location: { name: string; altitude: number | null } | null;
 }
@@ -74,13 +75,11 @@ Deno.serve(async (req) => {
 
     const { data: locations } = await supabase.from("locations").select("id, name, altitude, type, description").eq("user_id", user.id).order("name");
 
-    let flightsQuery = supabase
+    const { data: flightsRaw } = await supabase
       .from("flights")
-      .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, group_id, takeoff:locations!flights_takeoff_location_id_fkey(name, altitude), landing:locations!flights_landing_location_id_fkey(name, altitude)")
+      .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, group_id, is_solo_shv, takeoff:locations!flights_takeoff_location_id_fkey(name, altitude), landing:locations!flights_landing_location_id_fkey(name, altitude)")
       .eq("user_id", user.id)
       .order("date", { ascending: true });
-
-    const { data: flightsRaw } = await flightsQuery;
 
     let allFlights: Flight[] = (flightsRaw || []).map((f: any) => ({
       ...f,
@@ -88,7 +87,7 @@ Deno.serve(async (req) => {
       landing_location: f.landing,
     }));
 
-    // Apply group filter client-side
+    // Apply group filter
     if (hasFilter) {
       allFlights = allFlights.filter((f) => {
         if (f.group_id === null) return includeNoGroup;
@@ -97,6 +96,7 @@ Deno.serve(async (req) => {
     }
 
     const flights = allFlights;
+    const soloFlights = flights.filter((f) => f.is_solo_shv);
     const takeoffs = (locations || []).filter((l: Location) => l.type === "takeoff" || l.type === "both");
     const landings = (locations || []).filter((l: Location) => l.type === "landing" || l.type === "both");
     const totalMinutes = flights.reduce((s, f) => s + (f.duration_minutes || 0), 0);
@@ -251,7 +251,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(7.5);
     for (let i = 0; i < flights.length; i++) {
       const f = flights[i];
-      const desc = f.comments || "";
+      const desc = (f.comments || "") + (f.is_solo_shv ? " ★ SHV SOLO" : "");
       const descLines = doc.splitTextToSize(desc, descW);
       const rowH = Math.max(4.5, descLines.length * 3.5);
 
@@ -268,6 +268,11 @@ Deno.serve(async (req) => {
         doc.setFontSize(7.5);
       }
 
+      // Highlight solo flights
+      if (f.is_solo_shv) {
+        doc.setFont("helvetica", "bold");
+      }
+
       doc.text(String(i + 1), colsF[0].x, y);
       doc.text(formatDate(f.date), colsF[1].x, y);
       doc.text(f.glider || "", colsF[2].x, y);
@@ -278,10 +283,83 @@ Deno.serve(async (req) => {
       doc.text(f.altitude_gain ? String(f.altitude_gain) : "", colsF[7].x, y);
       if (descLines.length > 0) doc.text(descLines, colsF[8].x, y);
 
+      if (f.is_solo_shv) {
+        doc.setFont("helvetica", "normal");
+      }
+
       y += rowH + 1;
     }
 
     addLandscapeFooter();
+
+    // Solo flights confirmation page (Portrait)
+    if (soloFlights.length > 0) {
+      doc.addPage("a4", "p");
+      y = marginT;
+
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(`Pilot: ${pilotName}`, marginL, y);
+      y += 8;
+      doc.setTextColor(0);
+
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("SHV Soloflug-Bestätigung", marginL, y);
+      y += 10;
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Die folgenden Soloflüge wurden unter Aufsicht der Flugschule durchgeführt:", marginL, y);
+      y += 8;
+
+      // Solo flights table
+      const soloCols = [
+        { label: "Nr", x: marginL },
+        { label: "Datum", x: marginL + 10 },
+        { label: "Gleitschirm", x: marginL + 35 },
+        { label: "Start", x: marginL + 70 },
+        { label: "Landung", x: marginL + 110 },
+        { label: "Flugdauer", x: marginL + 150 },
+      ];
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      for (const c of soloCols) doc.text(c.label, c.x, y);
+      y += 1;
+      doc.setLineWidth(0.3);
+      doc.line(marginL, y, pW - marginR, y);
+      y += 4;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      for (let i = 0; i < soloFlights.length; i++) {
+        const f = soloFlights[i];
+        ensurePortraitSpace(5);
+        doc.text(String(i + 1), soloCols[0].x, y);
+        doc.text(formatDate(f.date), soloCols[1].x, y);
+        doc.text(f.glider || "", soloCols[2].x, y);
+        doc.text(f.takeoff_location?.name || "", soloCols[3].x, y);
+        doc.text(f.landing_location?.name || "", soloCols[4].x, y);
+        doc.text(f.duration_minutes ? formatDuration(f.duration_minutes) : "", soloCols[5].x, y);
+        y += 5;
+      }
+
+      y += 15;
+      doc.setFontSize(9);
+      doc.text("Hiermit bestätige ich, dass die oben aufgeführten Soloflüge unter", marginL, y);
+      y += 5;
+      doc.text("Aufsicht der Flugschule durchgeführt wurden.", marginL, y);
+      y += 20;
+
+      doc.text("Ort, Datum: ___________________________________", marginL, y);
+      y += 15;
+      doc.text("Fluglehrer: ___________________________________", marginL, y);
+      y += 15;
+      doc.text("Unterschrift / Stempel: ___________________________________", marginL, y);
+
+      addPortraitFooter();
+    }
 
     const pdfBytes = doc.output("arraybuffer");
 
