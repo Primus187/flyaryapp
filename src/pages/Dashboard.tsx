@@ -40,6 +40,7 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  useXcontestAutoSync();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [stats, setStats] = useState<Stats>({ totalFlights: 0, totalMinutes: 0, uniqueTakeoffs: 0, uniqueLandings: 0 });
