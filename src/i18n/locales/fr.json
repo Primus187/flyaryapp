@@ -420,7 +420,8 @@
     "importLocations": "Importer des sites",
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
-    "legal": "Mentions légales"
+    "legal": "Mentions légales",
+    "leaderboard": "Classement"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
