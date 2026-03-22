@@ -316,7 +316,11 @@ export default function FlightDetail() {
         onPublish={async (selectedPhotoIds, feedComment) => {
           setPublishLoading(true);
           try {
-            const publishUpdate: any = { published_to_feed: true, published_at: new Date().toISOString() };
+            const publishUpdate: any = {
+              published_to_feed: true,
+              published_at: new Date().toISOString(),
+              feed_photo_ids: selectedPhotoIds,
+            };
             if (feedComment !== flight.comments) {
               publishUpdate.comments = feedComment;
               setFlight({ ...flight, comments: feedComment });
