@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, Send, MapPin } from "lucide-react";
+import { Heart, MessageCircle, Send, MapPin, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
@@ -32,13 +32,16 @@ export interface FeedFlight {
   takeoff: { latitude: number; longitude: number; name?: string } | null;
   landing: { latitude: number; longitude: number; name?: string } | null;
   likes: { user_id: string }[];
-  comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string }[];
+  comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string; like_count?: number }[];
+  isBookmarked?: boolean;
 }
 
 interface FeedCardProps {
   flight: FeedFlight;
   onLikeToggle: (flightId: string) => void;
   onComment: (flightId: string, message: string) => void;
+  onBookmarkToggle?: (flightId: string) => void;
+  onCommentLike?: (commentId: string) => void;
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
@@ -93,7 +96,7 @@ function PhotoCarousel({ urls }: { urls: string[] }) {
   );
 }
 
-export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardProps) {
+export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: FeedCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -160,26 +163,15 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
         </DoubleTapHeart>
       )}
 
-      {/* Mini Map — non-interactive, with stats overlay */}
+      {/* Mini Map */}
       {(hasTrack || flight.takeoff || flight.landing) && (
         <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
-          <div
-            className="relative cursor-pointer"
-            onClick={() => navigate(`/flights/${flight.id}`)}
-          >
+          <div className="relative cursor-pointer" onClick={() => navigate(`/flights/${flight.id}`)}>
             <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
-              <div
-                className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none"
-                style={{ height: 150, overflow: "hidden" }}
-              >
-                <FlightDetailMap
-                  takeoff={flight.takeoff}
-                  landing={flight.landing}
-                  trackPoints={flight.trackPoints}
-                />
+              <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none" style={{ height: 150, overflow: "hidden" }}>
+                <FlightDetailMap takeoff={flight.takeoff} landing={flight.landing} trackPoints={flight.trackPoints} />
               </div>
             </Suspense>
-            {/* Stats overlay */}
             <div className="absolute bottom-2 left-2 flex gap-1.5 z-10">
               {flight.duration_minutes && (
                 <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
@@ -200,23 +192,23 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center gap-3">
           <button onClick={handleLike} className="active:scale-90 transition-transform">
-            <Heart className={cn(
-              "h-6 w-6 transition-transform",
-              isLiked ? "fill-red-500 text-red-500" : "text-foreground",
-              likeAnimating && "animate-like-bounce"
-            )} />
+            <Heart className={cn("h-6 w-6 transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
           </button>
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-6 w-6" />
           </button>
+          <div className="flex-1" />
+          {onBookmarkToggle && (
+            <button onClick={() => onBookmarkToggle(flight.id)} className="active:scale-90 transition-transform">
+              <Bookmark className={cn("h-6 w-6", flight.isBookmarked ? "fill-foreground text-foreground" : "text-foreground")} />
+            </button>
+          )}
         </div>
 
-        {/* Like count */}
         {flight.likes.length > 0 && (
           <p className="text-sm font-semibold">{flight.likes.length} {flight.likes.length === 1 ? "Like" : "Likes"}</p>
         )}
 
-        {/* Description / caption — Instagram style */}
         {flight.glider && (
           <p className="text-sm">
             <span className="font-semibold mr-1">{flight.pilot_name}</span>
@@ -235,23 +227,27 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
               </button>
             )}
             {(showComments ? flight.comments : flight.comments.slice(-2)).map(c => (
-              <p key={c.id} className="text-sm">
-                <span className="font-semibold mr-1">{c.pilot_name}</span>
-                {c.message}
-              </p>
+              <div key={c.id} className="flex items-start gap-1 group">
+                <p className="text-sm flex-1">
+                  <span className="font-semibold mr-1">{c.pilot_name}</span>
+                  {c.message}
+                </p>
+                {onCommentLike && (
+                  <button
+                    onClick={() => onCommentLike(c.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90"
+                  >
+                    <Heart className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
 
-        {/* Add comment */}
         <div className="flex items-center gap-2 pt-1">
-          <Input
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            placeholder={t("feed.addComment")}
-            className="h-8 text-sm bg-muted/50 border-0"
-            onKeyDown={e => e.key === "Enter" && handleSubmitComment()}
-          />
+          <Input value={comment} onChange={e => setComment(e.target.value)} placeholder={t("feed.addComment")}
+            className="h-8 text-sm bg-muted/50 border-0" onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
           {comment.trim() && (
             <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>
               <Send className="h-4 w-4 text-primary" />

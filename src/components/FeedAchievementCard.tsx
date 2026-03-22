@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, Heart, MessageCircle, Send, ChevronRight } from "lucide-react";
+import { Trophy, Target, Heart, MessageCircle, Send, ChevronRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
 
@@ -28,12 +28,15 @@ export interface FeedAchievement {
   completed_goals: number;
   likes: { user_id: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string }[];
+  isBookmarked?: boolean;
 }
 
 interface Props {
   achievement: FeedAchievement;
   onLikeToggle: (id: string) => void;
   onComment: (id: string, message: string) => void;
+  onBookmarkToggle?: (id: string) => void;
+  onCommentLike?: (commentId: string) => void;
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
@@ -47,7 +50,7 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedAchievementCard({ achievement, onLikeToggle, onComment }: Props) {
+export default function FeedAchievementCard({ achievement, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: Props) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -86,7 +89,6 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
 
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      {/* Header with pilot info */}
       <div className="flex items-center gap-3 p-3 pb-2">
         <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-orange-400 cursor-pointer" onClick={() => navigate(`/pilot/${achievement.user_id}`)}>
           <Avatar className="h-8 w-8 border-2 border-background">
@@ -102,7 +104,6 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
         </div>
       </div>
 
-      {/* Achievement banner with double-tap */}
       <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
         <div className={cn(
           "relative px-5 py-6 text-center overflow-hidden",
@@ -113,32 +114,17 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
           {isComplete && (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]" />
           )}
-
           <div className="relative z-10 space-y-2">
-            <div className={cn(
-              "mx-auto h-14 w-14 rounded-2xl flex items-center justify-center",
-              isComplete ? "bg-amber-500/30" : "bg-primary/20"
-            )}>
-              {isComplete
-                ? <Trophy className="h-7 w-7 text-amber-500" />
-                : <Target className="h-7 w-7 text-primary" />
-              }
+            <div className={cn("mx-auto h-14 w-14 rounded-2xl flex items-center justify-center", isComplete ? "bg-amber-500/30" : "bg-primary/20")}>
+              {isComplete ? <Trophy className="h-7 w-7 text-amber-500" /> : <Target className="h-7 w-7 text-primary" />}
             </div>
-
-            <Badge className={cn(
-              "border-0 text-xs font-bold px-3 py-1",
-              isComplete
-                ? "bg-amber-500/25 text-amber-600 dark:text-amber-400"
-                : "bg-primary/20 text-primary"
-            )}>
+            <Badge className={cn("border-0 text-xs font-bold px-3 py-1", isComplete ? "bg-amber-500/25 text-amber-600 dark:text-amber-400" : "bg-primary/20 text-primary")}>
               {isComplete ? `🏆 ${t("feed.challengeCompleted")}` : `🎯 ${t("feed.goalReached")}`}
             </Badge>
-
             <h3 className="text-base font-bold">{achievement.challenge_title}</h3>
             {achievement.goal_label && !isComplete && (
               <p className="text-sm text-muted-foreground">{achievement.goal_label}</p>
             )}
-
             {achievement.total_goals > 0 && (
               <div className="max-w-[200px] mx-auto space-y-1 pt-1">
                 <Progress value={progress} className="h-2" />
@@ -151,20 +137,20 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
         </div>
       </DoubleTapHeart>
 
-      {/* Actions */}
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center gap-3">
           <button onClick={handleLike} className="active:scale-90 transition-transform">
-            <Heart className={cn(
-              "h-6 w-6 transition-transform",
-              isLiked ? "fill-red-500 text-red-500" : "text-foreground",
-              likeAnimating && "animate-like-bounce"
-            )} />
+            <Heart className={cn("h-6 w-6 transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
           </button>
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-6 w-6" />
           </button>
           <div className="flex-1" />
+          {onBookmarkToggle && (
+            <button onClick={() => onBookmarkToggle(achievement.id)} className="active:scale-90 transition-transform">
+              <Bookmark className={cn("h-6 w-6", achievement.isBookmarked ? "fill-foreground text-foreground" : "text-foreground")} />
+            </button>
+          )}
           <Button size="sm" variant="ghost" className="h-7 text-xs px-2 gap-1"
             onClick={() => navigate(`/challenges/${achievement.challenge_id}`)}>
             {t("feed.viewDetails")} <ChevronRight className="h-3.5 w-3.5" />
@@ -183,17 +169,23 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
               </button>
             )}
             {(showComments ? achievement.comments : achievement.comments.slice(-2)).map(c => (
-              <p key={c.id} className="text-sm">
-                <span className="font-semibold mr-1">{c.pilot_name}</span>{c.message}
-              </p>
+              <div key={c.id} className="flex items-start gap-1 group">
+                <p className="text-sm flex-1">
+                  <span className="font-semibold mr-1">{c.pilot_name}</span>{c.message}
+                </p>
+                {onCommentLike && (
+                  <button onClick={() => onCommentLike(c.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90">
+                    <Heart className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
 
         <div className="flex items-center gap-2 pt-1">
           <Input value={comment} onChange={e => setComment(e.target.value)}
-            placeholder={t("feed.addComment")}
-            className="h-8 text-sm bg-muted/50 border-0"
+            placeholder={t("feed.addComment")} className="h-8 text-sm bg-muted/50 border-0"
             onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
           {comment.trim() && (
             <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>
