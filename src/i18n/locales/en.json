@@ -110,7 +110,10 @@
     "thermalStrong": "Strong",
     "thermalTurbulent": "Turbulent",
     "flight": "Flight",
-    "flightDuplicated": "Flight duplicated"
+    "flightDuplicated": "Flight duplicated",
+    "group": "Group",
+    "selectGroup": "Select group...",
+    "noGroup": "No group"
   },
   "events": {
     "title": "Events",
