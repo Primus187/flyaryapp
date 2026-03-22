@@ -1,46 +1,40 @@
 
 
-# Gruppen-Zuordnung bei Flügen + Export-Filter
+# Optimierungen für den Launch von Flyary
 
-## Übersicht
-1. Neue Spalte `group_id` (optional) auf `flights`
-2. Gruppen-Dropdown im FlightForm
-3. Export-Dialog in Settings mit Gruppen-Auswahl
+## 1. Onboarding-Flow für neue User (hoch)
+Neue User landen auf einem leeren Dashboard ohne Orientierung. Ein kurzer Onboarding-Flow würde helfen:
+- **Welcome-Screen** nach dem ersten Login: kurze Erklärung was Flyary ist, 3 Schritte (Profil ausfüllen, ersten Ort anlegen, ersten Flug erfassen)
+- **Empty States** auf allen Listen (Flugbuch, Orte, Termine): statt leerer Seite ein hilfreicher Hinweis mit CTA-Button ("Erfasse deinen ersten Flug")
+- Prüfung ob Profil ausgefüllt ist, wenn nicht: dezenter Hinweis auf Dashboard
 
-## Migration
-- `ALTER TABLE flights ADD COLUMN group_id uuid REFERENCES groups(id) ON DELETE SET NULL`
-- Nullable, da bestehende Flüge keiner Gruppe zugeordnet sind
+## 2. Loading States & Skeleton Screens (hoch)
+Aktuell zeigen die meisten Seiten nichts, bis die Daten geladen sind. Das wirkt langsam.
+- Skeleton-Loader auf Dashboard, Flugbuch, Orte, Termine
+- Konsistente Loading-Experience über die ganze App
 
-## Änderungen
+## 3. Pull-to-Refresh (mittel)
+Als mobile-first PWA erwarten User, dass sie durch Herunterziehen die Daten aktualisieren können. Aktuell muss man die Seite neu laden.
 
-### `src/pages/FlightForm.tsx`
-- Gruppen des Users laden (via `group_members` → `groups`)
-- Optionales Dropdown "Gruppe" im Formular
-- `group_id` beim Speichern/Updaten mitgeben
-- Beim Editieren bestehende `group_id` laden
+## 4. Error Handling & Offline-Feedback (mittel)
+- Wenn Netzwerk fehlt: Banner "Du bist offline" statt stille Fehler
+- Retry-Buttons bei fehlgeschlagenen Ladevorgängen
+- Bessere Fehlermeldungen bei API-Fehlern (nicht nur den technischen Error-Text)
 
-### `src/pages/Settings.tsx`
-- Export-Button öffnet jetzt einen Dialog statt direkt zu exportieren
-- Dialog zeigt Checkboxen: eine pro Gruppe des Users + "Ohne Gruppe"
-- Standardmässig alle angehakt
-- Ausgewählte Group-IDs als Query-Parameter an die Edge Function senden
+## 5. Datenschutz & Impressum (hoch für Launch)
+Für eine öffentlich zugängliche App (besonders in CH/DE/AT) brauchst du:
+- Impressum-Seite
+- Datenschutzerklärung
+- Link zu beiden im Footer oder in den Einstellungen
 
-### `supabase/functions/export-flightbook-pdf/index.ts`
-- Neue Query-Parameter `group_ids` (kommaseparierte UUIDs) und `include_no_group` (boolean)
-- Flüge filtern: nur solche mit `group_id IN (...)` oder `group_id IS NULL` (wenn "Ohne Gruppe" gewählt)
-- Ohne Parameter: alle Flüge (Rückwärtskompatibilität)
+## Empfohlene Reihenfolge
+Für den Launch würde ich mit **Empty States + Onboarding** und **Impressum/Datenschutz** beginnen, da diese den grössten Unterschied für neue User machen.
 
-### `src/pages/FlightDetail.tsx`
-- Gruppennamen anzeigen, falls `group_id` gesetzt
-
-### i18n
-- Neue Keys: `flights.group`, `settings.exportFilter`, `settings.noGroup`, `settings.selectGroups`
-
-## Dateien
-- **Migration**: `group_id` Spalte auf `flights`
-- **Edit**: `src/pages/FlightForm.tsx` — Gruppen-Dropdown
-- **Edit**: `src/pages/FlightDetail.tsx` — Gruppenname anzeigen
-- **Edit**: `src/pages/Settings.tsx` — Export-Dialog mit Gruppenfilter
-- **Edit**: `supabase/functions/export-flightbook-pdf/index.ts` — Filter-Logik
+## Dateien (bei Umsetzung)
+- **Neu**: `src/components/EmptyState.tsx` — Wiederverwendbare Komponente
+- **Neu**: `src/components/OnboardingDialog.tsx` — Welcome-Flow
+- **Neu**: `src/pages/Legal.tsx` — Impressum/Datenschutz
+- **Edit**: `src/pages/Dashboard.tsx`, `src/pages/Flights.tsx`, `src/pages/Locations.tsx`, `src/pages/Events.tsx` — Empty States + Skeletons
+- **Edit**: `src/components/AppLayout.tsx` — Offline-Banner
 - **Edit**: `src/i18n/locales/{de,en,fr}.json` — Übersetzungen
 
