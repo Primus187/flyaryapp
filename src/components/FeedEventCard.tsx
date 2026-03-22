@@ -15,6 +15,7 @@ export interface FeedEvent {
   max_participants: number | null;
   status: string;
   group_name: string;
+  created_at: string;
   signup_count: number;
   user_signed_up: boolean;
 }

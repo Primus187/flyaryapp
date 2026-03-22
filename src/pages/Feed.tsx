@@ -298,6 +298,7 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
     max_participants: e.max_participants,
     status: e.status,
     group_name: groupMap[e.group_id] || "",
+    created_at: (e as any).created_at || e.event_date,
     signup_count: (signups || []).filter(s => s.event_id === e.id).length,
     user_signed_up: (signups || []).some(s => s.event_id === e.id && s.user_id === userId),
   }));

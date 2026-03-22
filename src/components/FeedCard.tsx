@@ -94,12 +94,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment }: FeedCardPr
         </div>
       </div>
 
-      {/* Photo */}
-      {hasPhotos && (
-        <div className="aspect-square w-full overflow-hidden bg-muted">
-          <img src={flight.photoUrls[0]} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      )}
+      {hasPhotos && <PhotoCarousel urls={flight.photoUrls} />}
 
       {/* Mini Map */}
       {(hasTrack || flight.takeoff || flight.landing) && (
