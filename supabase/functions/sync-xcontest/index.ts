@@ -39,7 +39,7 @@ async function loginToXContest(
   username: string,
   password: string
 ): Promise<string | null> {
-  // First GET the login page to get any CSRF tokens/cookies
+  // First GET the login page to get initial cookies
   const initRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
     redirect: "manual",
   });
@@ -51,7 +51,7 @@ async function loginToXContest(
   const formData = new URLSearchParams();
   formData.set("login[username]", username);
   formData.set("login[password]", password);
-  formData.set("login[persist]", "1");
+  formData.set("login[persist_login]", "Y");
 
   const loginRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
     method: "POST",
@@ -71,8 +71,12 @@ async function loginToXContest(
     .map((c: string) => c.split(";")[0])
     .join("; ");
 
-  // Verify login by checking if we have a session cookie
-  if (!allCookies.includes("xcontest")) {
+  // Successful login returns a 302 redirect and sets session cookies
+  const hasSessionCookie = allCookies.toLowerCase().includes("xcontest") || 
+    loginCookies.length > 0 && loginRes.status >= 300 && loginRes.status < 400;
+  
+  if (!hasSessionCookie) {
+    console.log("Login failed. Status:", loginRes.status, "Cookies received:", loginCookies.length);
     return null;
   }
   return allCookies;
@@ -228,7 +232,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const password = decryptPassword(profile.xcontest_password_encrypted, encryptionKey);
+    // Password is stored as base64 from the frontend
+    const password = atob(profile.xcontest_password_encrypted);
 
     // Login to XContest
     const cookies = await loginToXContest(profile.xcontest_username, password);
