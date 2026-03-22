@@ -61,11 +61,6 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
       let country_code: string | null = null;
       if (newLoc.latitude !== 0 || newLoc.longitude !== 0) {
         try {
-          const res = await supabase.functions.invoke("reverse-geocode", {
-            body: null,
-            headers: {},
-          });
-          // Use fetch directly for query params
           const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reverse-geocode?lat=${newLoc.latitude}&lon=${newLoc.longitude}`;
           const geoRes = await fetch(url, {
             headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
