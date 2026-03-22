@@ -1,4 +1,4 @@
-export type BadgeCategory = "flights" | "time" | "altitude" | "distance" | "sites" | "records";
+export type BadgeCategory = "flights" | "time" | "altitude" | "distance" | "sites" | "records" | "seasonal";
 export type BadgeTier = "bronze" | "silver" | "gold";
 
 export interface BadgeDefinition {
