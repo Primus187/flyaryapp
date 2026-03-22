@@ -254,10 +254,10 @@ export default function Feed() {
 async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>): Promise<FeedFlight[]> {
   const { data: groupFlights } = await supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, user_id, group_id, created_at, published_at, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
-    .order("created_at", { ascending: false })
+    .order("published_at", { ascending: false, nullsFirst: false })
     .limit(20);
 
   if (!groupFlights || groupFlights.length === 0) return [];
