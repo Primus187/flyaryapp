@@ -505,6 +505,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     avatar_url: profileMap[f.user_id]?.avatar_url || "",
     group_name: groupMap[f.group_id] || "",
     photoUrls: photoMap[f.id] || [],
+    videoUrls: videoMap[f.id] || [],
     trackPoints: trackMap[f.id] || [],
     takeoff: f.locations?.latitude ? { latitude: f.locations.latitude, longitude: f.locations.longitude, name: f.locations.name } : null,
     landing: f.land?.latitude ? { latitude: f.land.latitude, longitude: f.land.longitude, name: f.land.name } : null,

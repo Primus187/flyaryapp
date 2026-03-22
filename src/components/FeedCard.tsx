@@ -161,6 +161,28 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
         </div>
       </div>
 
+      {/* Videos */}
+      {hasVideos && (
+        <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
+          <div className="space-y-0">
+            {flight.videoUrls.map((url, i) => {
+              const embedUrl = getYoutubeEmbedUrl(url);
+              return embedUrl ? (
+                <div key={i} className="relative w-full aspect-video bg-muted">
+                  <iframe
+                    src={embedUrl}
+                    title="YouTube video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        </DoubleTapHeart>
+      )}
+
       {/* Photos with double-tap like */}
       {hasPhotos && (
         <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
