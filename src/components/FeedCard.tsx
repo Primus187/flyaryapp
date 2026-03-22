@@ -103,7 +103,6 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
-  const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
   const isLiked = flight.likes.some(l => l.user_id === user?.id);
