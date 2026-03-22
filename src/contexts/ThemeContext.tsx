@@ -10,7 +10,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType>({ theme: "system", setTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem("flyary-theme") as Theme) || "system");
+  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem("flyary-theme") as Theme) || "dark");
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
