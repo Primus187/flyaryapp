@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
 import FlightDetailMap from "@/components/FlightDetailMap";
+import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 
 export default function FlightDetail() {
   const { id } = useParams();
