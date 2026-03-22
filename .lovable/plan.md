@@ -1,72 +1,63 @@
 
 
-# Event-Chat auf der Termin-Detailseite
+# Kontrollblatt / Training-Tracker
 
 ## Übersicht
-Echtzeit-Chat direkt auf der Event-Detailseite, sichtbar für alle Gruppenmitglieder. Nachrichten werden in einer neuen Tabelle gespeichert und via Realtime-Subscription live aktualisiert.
+Ein "Kontrollblatt" (wie in den Screenshots) zum Tracken von Ausbildungsfortschritt und Fähigkeiten. Kategorien mit Übungen, Sterne-Bewertung (1-3), und Detailansicht mit Ziel, Inhalt, Fehler, Gefahr.
 
-## Änderungen
+## Datenmodell
 
-### 1. Migration: Neue Tabelle `event_messages`
-```sql
-CREATE TABLE public.event_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id uuid NOT NULL REFERENCES flight_events(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  message text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+### Migration 1: Tabellen
 
-ALTER TABLE public.event_messages ENABLE ROW LEVEL SECURITY;
+**`training_categories`** — Kategorien (z.B. Theorie, Übungshang, Höhenflüge)
+- `id uuid PK`, `name text`, `sort_order int`, `created_at`
 
--- Gruppenmitglieder können Nachrichten lesen
-CREATE POLICY "Members can view event messages" ON public.event_messages
-  FOR SELECT TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM flight_events fe
-    WHERE fe.id = event_messages.event_id
-    AND is_group_member(auth.uid(), fe.group_id)
-  ));
+**`training_items`** — Einzelne Übungen/Manöver
+- `id uuid PK`, `category_id uuid FK`, `name text`, `sort_order int`
+- `goal text` (Ziel), `content text` (Inhalt), `mistakes text` (Fehler), `danger text` (Gefahr)
 
--- Gruppenmitglieder können Nachrichten schreiben
-CREATE POLICY "Members can insert event messages" ON public.event_messages
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    auth.uid() = user_id
-    AND EXISTS (
-      SELECT 1 FROM flight_events fe
-      WHERE fe.id = event_messages.event_id
-      AND is_group_member(auth.uid(), fe.group_id)
-    )
-  );
+**`training_progress`** — Benutzerbewertung pro Item
+- `id uuid PK`, `user_id uuid`, `item_id uuid FK → training_items`
+- `rating int` (1-3 Sterne), `notes text`, `updated_at`
+- UNIQUE(user_id, item_id)
 
--- Eigene Nachrichten löschen
-CREATE POLICY "Users can delete own messages" ON public.event_messages
-  FOR DELETE TO authenticated
-  USING (auth.uid() = user_id);
+Vordefinierte Daten: Alle Kategorien und Items aus den Screenshots werden als Seed-Daten eingefügt (Theorie: Fluglehre, Wetterkunde, etc. / Übungshang: Auslegen, Slalomlauf, etc. / Höhenflüge: alle ~25 Items).
 
--- Realtime aktivieren
-ALTER PUBLICATION supabase_realtime ADD TABLE public.event_messages;
-```
+RLS: 
+- `training_categories` und `training_items`: SELECT für alle authenticated
+- `training_progress`: CRUD nur eigene Daten (user_id = auth.uid())
 
-### 2. Neue Komponente: `src/components/EventChat.tsx`
-- Nachrichten laden beim Mount, Realtime-Subscription für neue Nachrichten
-- ScrollArea mit Nachrichten-Bubbles (eigene rechts/blau, andere links/grau)
-- Pilotname + Zeitstempel pro Nachricht
-- Input-Feld + Sende-Button unten
-- Profiles der Chat-Teilnehmer laden (Pilotname, Avatar)
-- Auto-Scroll bei neuen Nachrichten
+### 2. Neue Seiten
 
-### 3. `src/pages/EventDetail.tsx`
-- `EventChat` Komponente am Ende der Seite einbinden
-- Props: `eventId`, `groupId`
+**`src/pages/Training.tsx`** — Kontrollblatt-Übersicht
+- Collapsible Accordion pro Kategorie
+- Jedes Item zeigt 3 Sterne (orange gefüllt nach Rating, grau wenn leer)
+- Antippen eines Items → Detailseite
+- Sterne direkt antippbar zum schnellen Bewerten
 
-### 4. i18n-Strings (de/en/fr)
-- `events.chat`, `events.typeMessage`, `events.sendMessage`, `events.noMessages`
+**`src/pages/TrainingItemDetail.tsx`** — Detail eines Manövers
+- Header mit Name
+- Sektionen: Ziel, Inhalt, Fehler (Bullet-Liste), Gefahr
+- Sterne-Bewertung editierbar
+- Optionales Notizfeld
+
+### 3. Navigation
+- Neuer Tab in BottomNav: `GraduationCap` Icon, Label "Training"
+- Route `/training` und `/training/:itemId`
+
+### 4. i18n
+- Neue Keys: `training.title`, `training.goal`, `training.content`, `training.mistakes`, `training.danger`, `training.rating`, `training.noRating`
 
 ## Dateien
-- **Migration**: `event_messages` Tabelle + RLS + Realtime
-- **Neu**: `src/components/EventChat.tsx`
-- **Edit**: `src/pages/EventDetail.tsx` — Chat einbinden
-- **Edit**: `src/i18n/locales/{de,fr,en}.json` — Chat-Übersetzungen
+- **Migration**: 3 Tabellen + Seed-Daten + RLS
+- **Neu**: `src/pages/Training.tsx`
+- **Neu**: `src/pages/TrainingItemDetail.tsx`
+- **Edit**: `src/App.tsx` — Routen
+- **Edit**: `src/components/BottomNav.tsx` — Neuer Tab
+- **Edit**: `src/i18n/locales/{de,fr,en}.json` — Übersetzungen
+
+## Technische Details
+- Seed-Daten enthalten alle ~50 Items aus den Screenshots mit deutschem Text für goal/content/mistakes/danger
+- Sterne-Bewertung: Upsert auf `training_progress` (INSERT ON CONFLICT UPDATE)
+- Accordion verwendet bestehende shadcn Accordion-Komponente
 
