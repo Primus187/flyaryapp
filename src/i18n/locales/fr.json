@@ -516,7 +516,9 @@
     "daysAgo": "il y a {{count}}j",
     "goalReached": "Objectif atteint !",
     "challengeCompleted": "Challenge réussi !",
-    "signUp": "S'inscrire"
+    "signUp": "S'inscrire",
+    "you": "Toi",
+    "loadingMore": "Chargement..."
   },
   "leaderboard": {
     "title": "Classement",

@@ -518,7 +518,9 @@
     "daysAgo": "vor {{count}} Tagen",
     "goalReached": "Ziel erreicht!",
     "challengeCompleted": "Challenge geschafft!",
-    "signUp": "Anmelden"
+    "signUp": "Anmelden",
+    "you": "Du",
+    "loadingMore": "Mehr laden..."
   },
   "leaderboard": {
     "title": "Rangliste",
