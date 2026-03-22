@@ -1,35 +1,29 @@
 
 
-# Länder-Flaggen bei Orten anzeigen
+# Bestehende Orte mit Ländercode aktualisieren & Listen-Refresh fixen
 
 ## Problem
-Die `locations`-Tabelle hat kein `country`-Feld. Flaggen können daher nicht angezeigt werden.
+1. Alle ~50 bestehenden Orte haben `country_code: null`, obwohl Koordinaten vorhanden sind
+2. Die Orte-Liste aktualisiert sich möglicherweise nicht korrekt nach Änderungen
 
 ## Lösung
 
-### 1. Migration: `country` Spalte hinzufügen
-- Neue Spalte `country_code text` (2-Buchstaben ISO-Code, z.B. "CH", "DE", "AT") auf `locations`
-- Nullable, da bestehende Orte keinen Ländercode haben
+### 1. Automatisches Backfill beim Laden der Orte-Seite
+- Beim Laden der Orte prüfen, welche `country_code: null` haben aber gültige Koordinaten (lat/lng != 0)
+- Für diese Orte sequentiell Reverse Geocoding via Nominatim durchführen (1 Request/Sekunde Rate Limit)
+- Jeden Ort einzeln updaten und danach die Liste neu laden
+- Fortschrittsanzeige: kleiner Banner "Ländercodes werden aktualisiert... (12/48)"
+- Läuft nur einmal, da beim nächsten Laden alle country_codes gesetzt sind
 
-### 2. Flaggen-Emoji aus Country-Code
-- Einfache Hilfsfunktion: ISO-Code → Flaggen-Emoji (z.B. "CH" → 🇨🇭) via Unicode Regional Indicator Symbols
-- Keine Library nötig, nur 2 Zeilen Code
-
-### 3. Locations-Liste: Flagge anzeigen
-- In `renderLocationCard` neben dem Ortsnamen die Flagge als Emoji anzeigen
-- Nur wenn `country_code` gesetzt
-
-### 4. Formular: Country-Code Feld
-- Im Create/Edit-Dialog ein neues Feld "Land" als Select mit den gängigsten Ländern (CH, DE, AT, FR, IT, ES, etc.) oder als freies Input für den 2-Buchstaben-Code
-- `form`-State um `country_code` erweitern
-
-### 5. LocationDetail, ImportLocations
-- `LocationDetail.tsx`: Country-Flagge neben dem Namen anzeigen
-- `ImportLocations` / CSV-Import: bestehende `country`-Spalte aus CSV in `country_code` mappen
+### 2. Listen-Refresh absichern
+- `fetchLocations` wird nach dem Backfill erneut aufgerufen
+- `useEffect` Dependency korrekt setzen
 
 ## Dateien
-- **Migration**: `ALTER TABLE locations ADD COLUMN country_code text`
-- **Edit**: `src/pages/Locations.tsx` — Form + Flaggen-Anzeige
-- **Edit**: `src/pages/LocationDetail.tsx` — Flagge anzeigen
-- **Edit**: `src/pages/ImportLocations.tsx` — Country-Code beim Import setzen
+- **Edit**: `src/pages/Locations.tsx` — Backfill-Logik + Fortschrittsanzeige beim Mount
+
+## Technische Details
+- Nominatim Rate Limit: 1 req/sec, daher `await new Promise(r => setTimeout(r, 1100))` zwischen Requests
+- Bei ~50 Orten dauert das ca. 1 Minute beim ersten Mal
+- Abbruch wenn Seite verlassen wird (cleanup in useEffect)
 
