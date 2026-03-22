@@ -46,7 +46,7 @@ export default function ImportLocations() {
     try {
       const batchSize = 50; let inserted = 0;
       for (let i = 0; i < newLocations.length; i += batchSize) {
-        const batch = newLocations.slice(i, i + batchSize).map((l) => ({ user_id: user.id, name: l.name, type: l.type as any, latitude: l.latitude, longitude: l.longitude, altitude: l.altitude, description: [l.country, l.notes].filter(Boolean).join(" · ") || null }));
+        const batch = newLocations.slice(i, i + batchSize).map((l) => ({ user_id: user.id, name: l.name, type: l.type as any, latitude: l.latitude, longitude: l.longitude, altitude: l.altitude, description: [l.country, l.notes].filter(Boolean).join(" · ") || null, country_code: l.country && l.country.length === 2 ? l.country.toUpperCase() : null }));
         const { error } = await supabase.from("locations").insert(batch); if (error) throw error;
         inserted += batch.length; setProgress(Math.round((inserted / newLocations.length) * 100));
       }

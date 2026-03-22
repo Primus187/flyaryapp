@@ -54,7 +54,7 @@ export default function LocationDetail() {
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button><h1 className="text-xl font-bold tracking-tight">{location.name}</h1></div>
+        <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-xl font-bold tracking-tight">{location.name}</h1></div>
         <div className="flex gap-1"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/locations`)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div>
       </div>
       {hasCoords && (<div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 220 }}><MapContainer center={[location.latitude, location.longitude]} zoom={13} className="h-full w-full" zoomControl={false}><TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} /><Marker position={[location.latitude, location.longitude]} icon={markerIcon} /></MapContainer></div>)}
