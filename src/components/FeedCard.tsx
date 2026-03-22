@@ -5,9 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Heart, MessageCircle, Send, MapPin, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, MapPin, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MentionCommentInput from "@/components/MentionCommentInput";
 import useEmblaCarousel from "embla-carousel-react";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
 
@@ -42,6 +42,7 @@ interface FeedCardProps {
   onComment: (flightId: string, message: string) => void;
   onBookmarkToggle?: (flightId: string) => void;
   onCommentLike?: (commentId: string) => void;
+  groupMembers?: { user_id: string; pilot_name: string }[];
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
@@ -96,11 +97,10 @@ function PhotoCarousel({ urls }: { urls: string[] }) {
   );
 }
 
-export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: FeedCardProps) {
+export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
@@ -130,10 +130,8 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
     setTimeout(() => setLikeAnimating(false), 400);
   }, [isLiked, onLikeToggle, flight.id]);
 
-  const handleSubmitComment = () => {
-    if (!comment.trim()) return;
-    onComment(flight.id, comment.trim());
-    setComment("");
+  const handleSubmitComment = (msg: string) => {
+    onComment(flight.id, msg);
   };
 
   return (
@@ -245,15 +243,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           </div>
         )}
 
-        <div className="flex items-center gap-2 pt-1">
-          <Input value={comment} onChange={e => setComment(e.target.value)} placeholder={t("feed.addComment")}
-            className="h-8 text-sm bg-muted/50 border-0" onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
-          {comment.trim() && (
-            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>
-              <Send className="h-4 w-4 text-primary" />
-            </Button>
-          )}
-        </div>
+        <MentionCommentInput onSubmit={handleSubmitComment} members={groupMembers} />
       </CardContent>
     </Card>
   );

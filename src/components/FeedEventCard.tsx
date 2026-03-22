@@ -5,9 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Calendar, MapPin, Users, Clock, ChevronRight, Heart, MessageCircle, Send, Bookmark } from "lucide-react";
+
+import { Calendar, MapPin, Users, Clock, ChevronRight, Heart, MessageCircle, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MentionCommentInput from "@/components/MentionCommentInput";
 
 export interface FeedEvent {
   id: string;
@@ -34,6 +35,7 @@ interface FeedEventCardProps {
   onComment: (eventId: string, message: string) => void;
   onBookmarkToggle?: (eventId: string) => void;
   onCommentLike?: (commentId: string) => void;
+  groupMembers?: { user_id: string; pilot_name: string }[];
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
@@ -47,11 +49,10 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: FeedEventCardProps) {
+export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedEventCardProps) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
@@ -81,10 +82,8 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
     onLikeToggle(event.id);
   }, [isLiked, onLikeToggle, event.id]);
 
-  const handleSubmitComment = () => {
-    if (!comment.trim()) return;
-    onComment(event.id, comment.trim());
-    setComment("");
+  const handleSubmitComment = (msg: string) => {
+    onComment(event.id, msg);
   };
 
   return (
@@ -184,16 +183,7 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <Input value={comment} onChange={e => setComment(e.target.value)}
-            placeholder={t("feed.addComment")} className="h-8 text-sm bg-muted/50 border-0"
-            onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
-          {comment.trim() && (
-            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>
-              <Send className="h-4 w-4 text-primary" />
-            </Button>
-          )}
-        </div>
+        <MentionCommentInput onSubmit={handleSubmitComment} members={groupMembers} />
       </CardContent>
     </Card>
   );

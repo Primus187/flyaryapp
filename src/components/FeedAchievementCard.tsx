@@ -6,9 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, Heart, MessageCircle, Send, ChevronRight, Bookmark } from "lucide-react";
+import { Trophy, Target, Heart, MessageCircle, ChevronRight, Bookmark } from "lucide-react";
+import MentionCommentInput from "@/components/MentionCommentInput";
 import { cn } from "@/lib/utils";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
 
@@ -37,6 +37,7 @@ interface Props {
   onComment: (id: string, message: string) => void;
   onBookmarkToggle?: (id: string) => void;
   onCommentLike?: (commentId: string) => void;
+  groupMembers?: { user_id: string; pilot_name: string }[];
 }
 
 function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
@@ -50,11 +51,10 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedAchievementCard({ achievement, onLikeToggle, onComment, onBookmarkToggle, onCommentLike }: Props) {
+export default function FeedAchievementCard({ achievement, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: Props) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
@@ -81,10 +81,8 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
     setTimeout(() => setLikeAnimating(false), 400);
   }, [isLiked, onLikeToggle, achievement.id]);
 
-  const handleSubmitComment = () => {
-    if (!comment.trim()) return;
-    onComment(achievement.id, comment.trim());
-    setComment("");
+  const handleSubmitComment = (msg: string) => {
+    onComment(achievement.id, msg);
   };
 
   return (
@@ -183,16 +181,7 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
           </div>
         )}
 
-        <div className="flex items-center gap-2 pt-1">
-          <Input value={comment} onChange={e => setComment(e.target.value)}
-            placeholder={t("feed.addComment")} className="h-8 text-sm bg-muted/50 border-0"
-            onKeyDown={e => e.key === "Enter" && handleSubmitComment()} />
-          {comment.trim() && (
-            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleSubmitComment}>
-              <Send className="h-4 w-4 text-primary" />
-            </Button>
-          )}
-        </div>
+        <MentionCommentInput onSubmit={handleSubmitComment} members={groupMembers} />
       </CardContent>
     </Card>
   );

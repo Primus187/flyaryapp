@@ -56,6 +56,7 @@ export default function Feed() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [groupIds, setGroupIds] = useState<string[]>([]);
+  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
@@ -80,6 +81,17 @@ export default function Feed() {
 
       gIds = memberships.map(m => m.group_id);
       setGroupIds(gIds);
+
+      // Load group members for @mentions
+      const { data: members } = await supabase
+        .from("group_members")
+        .select("user_id")
+        .in("group_id", gIds);
+      if (members) {
+        const memberIds = [...new Set(members.map(m => m.user_id))];
+        const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
+        setGroupMembers((profs || []).map(p => ({ user_id: p.user_id, pilot_name: p.pilot_name || "Pilot" })));
+      }
 
       const { data: groups } = await supabase
         .from("groups")
@@ -351,7 +363,8 @@ export default function Feed() {
                 onLikeToggle={(id) => handleLikeToggle("flight", id)}
                 onComment={(id, msg) => handleComment("flight", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("flight", id)}
-                onCommentLike={handleCommentLikeToggle} />;
+                onCommentLike={handleCommentLikeToggle}
+                groupMembers={groupMembers} />;
             }
             if (item.type === "event") {
               return <FeedEventCard key={`e-${item.data.id}`} event={item.data}
@@ -359,14 +372,16 @@ export default function Feed() {
                 onLikeToggle={(id) => handleLikeToggle("event", id)}
                 onComment={(id, msg) => handleComment("event", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("event", id)}
-                onCommentLike={handleCommentLikeToggle} />;
+                onCommentLike={handleCommentLikeToggle}
+                groupMembers={groupMembers} />;
             }
             if (item.type === "achievement") {
               return <FeedAchievementCard key={`a-${item.data.id}`} achievement={item.data}
                 onLikeToggle={(id) => handleLikeToggle("achievement", id)}
                 onComment={(id, msg) => handleComment("achievement", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("achievement", id)}
-                onCommentLike={handleCommentLikeToggle} />;
+                onCommentLike={handleCommentLikeToggle}
+                groupMembers={groupMembers} />;
             }
             return null;
           })}
