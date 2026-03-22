@@ -99,6 +99,11 @@ export default function FlightForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!user) return; setLoading(true);
     try {
+      const pendingYoutubeUrls = [...youtubeUrls, newYoutubeUrl]
+        .map((u) => u.trim())
+        .filter(Boolean)
+        .filter((url, index, arr) => arr.indexOf(url) === index);
+
       const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv } as any;
       let flightId: string;
       if (isEdit) { const { error } = await supabase.from("flights").update(flightData).eq("id", id); if (error) throw error; flightId = id!; }
@@ -117,10 +122,14 @@ export default function FlightForm() {
       }
       // Save YouTube videos (upsert for edit mode)
       if (isEdit) {
-        await supabase.from("flight_videos").delete().eq("flight_id", flightId);
+        const { error: deleteVideosError } = await supabase.from("flight_videos").delete().eq("flight_id", flightId);
+        if (deleteVideosError) throw deleteVideosError;
       }
-      if (youtubeUrls.filter(u => u.trim()).length > 0) {
-        await supabase.from("flight_videos").insert(youtubeUrls.filter(u => u.trim()).map((url) => ({ flight_id: flightId, youtube_url: url })));
+      if (pendingYoutubeUrls.length > 0) {
+        const { error: insertVideosError } = await supabase.from("flight_videos").insert(
+          pendingYoutubeUrls.map((url) => ({ flight_id: flightId, youtube_url: url }))
+        );
+        if (insertVideosError) throw insertVideosError;
       }
       // Save training items
       if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
