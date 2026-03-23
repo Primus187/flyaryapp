@@ -4,11 +4,14 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Trophy, Target, Check, Trash2, Plus } from "lucide-react";
+import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save } from "lucide-react";
 import ChallengeGoalForm from "@/components/ChallengeGoalForm";
 
 const ChallengeMap = lazy(() => import("@/components/ChallengeMap"));
