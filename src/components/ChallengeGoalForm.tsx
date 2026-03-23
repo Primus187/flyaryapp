@@ -112,6 +112,7 @@ export default function ChallengeGoalForm({ locations, onSave, onCancel }: Props
             latitude={latitude || 0}
             longitude={longitude || 0}
             onSelect={handleMapSelect}
+            showSearch
           />
           {latitude && longitude && (
             <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">
