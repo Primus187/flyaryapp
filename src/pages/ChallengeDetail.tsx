@@ -54,6 +54,11 @@ export default function ChallengeDetail() {
   const [loading, setLoading] = useState(true);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
