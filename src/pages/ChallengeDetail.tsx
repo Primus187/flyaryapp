@@ -217,16 +217,49 @@ export default function ChallengeDetail() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <button onClick={() => navigate(-1)} className="p-1"><ChevronLeft className="h-5 w-5" /></button>
-        <h1 className="text-xl font-bold tracking-tight flex-1 truncate">{challenge.title}</h1>
-        {isAdmin && (
+        {editing ? (
+          <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="flex-1 text-lg font-bold" />
+        ) : (
+          <h1 className="text-xl font-bold tracking-tight flex-1 truncate">{challenge.title}</h1>
+        )}
+        {isAdmin && !editing && (
+          <button onClick={startEditing} className="p-1.5 text-muted-foreground hover:text-foreground">
+            <Pencil className="h-4 w-4" />
+          </button>
+        )}
+        {isAdmin && !editing && (
           <button onClick={handleDeleteChallenge} className="p-1.5 text-destructive">
             <Trash2 className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {challenge.description && (
-        <p className="text-sm text-muted-foreground">{challenge.description}</p>
+      {editing ? (
+        <div className="space-y-3 p-4 rounded-xl border border-border/50 bg-card">
+          <div className="space-y-1.5">
+            <Label className="text-xs">{t("challenges.challengeDescription")}</Label>
+            <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">{t("challenges.endDate")}</Label>
+            <Input type="date" value={editEndDate} onChange={e => setEditEndDate(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleSaveChallenge} disabled={!editTitle.trim() || saving} className="gap-1.5">
+              <Save className="h-3.5 w-3.5" /> {saving ? "..." : t("common.save")}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setEditing(false)}>{t("common.cancel")}</Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {challenge.description && (
+            <p className="text-sm text-muted-foreground">{challenge.description}</p>
+          )}
+          {challenge.end_date && (
+            <p className="text-xs text-muted-foreground">{t("challenges.endDate")}: {new Date(challenge.end_date).toLocaleDateString()}</p>
+          )}
+        </>
       )}
 
       {/* Map */}
