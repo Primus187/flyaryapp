@@ -278,7 +278,17 @@ export default function FlightForm() {
               <LocationCombobox
                 locations={locations}
                 value={form.landing_location_id}
-                onChange={(v) => setForm({ ...form, landing_location_id: v })}
+                onChange={(v) => {
+                  const newForm = { ...form, landing_location_id: v };
+                  if (!igcData && form.takeoff_location_id && v) {
+                    const takeoff = locations.find(l => l.id === form.takeoff_location_id);
+                    const landing = locations.find(l => l.id === v);
+                    if (takeoff?.altitude != null && landing?.altitude != null) {
+                      newForm.altitude_gain = Math.max(0, takeoff.altitude - landing.altitude).toString();
+                    }
+                  }
+                  setForm(newForm);
+                }}
                 filterType="landing"
                 onLocationCreated={() => {
                   if (user) supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
