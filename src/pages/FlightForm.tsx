@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 
-interface LocationOption { id: string; name: string; type: string; }
+interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
@@ -50,7 +50,7 @@ export default function FlightForm() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+    supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
@@ -257,10 +257,20 @@ export default function FlightForm() {
               <LocationCombobox
                 locations={locations}
                 value={form.takeoff_location_id}
-                onChange={(v) => setForm({ ...form, takeoff_location_id: v })}
+                onChange={(v) => {
+                  const newForm = { ...form, takeoff_location_id: v };
+                  if (!igcData && v && form.landing_location_id) {
+                    const takeoff = locations.find(l => l.id === v);
+                    const landing = locations.find(l => l.id === form.landing_location_id);
+                    if (takeoff?.altitude != null && landing?.altitude != null) {
+                      newForm.altitude_gain = Math.max(0, takeoff.altitude - landing.altitude).toString();
+                    }
+                  }
+                  setForm(newForm);
+                }}
                 filterType="takeoff"
                 onLocationCreated={() => {
-                  if (user) supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                  if (user) supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
                 }}
               />
             </div>
@@ -268,10 +278,20 @@ export default function FlightForm() {
               <LocationCombobox
                 locations={locations}
                 value={form.landing_location_id}
-                onChange={(v) => setForm({ ...form, landing_location_id: v })}
+                onChange={(v) => {
+                  const newForm = { ...form, landing_location_id: v };
+                  if (!igcData && form.takeoff_location_id && v) {
+                    const takeoff = locations.find(l => l.id === form.takeoff_location_id);
+                    const landing = locations.find(l => l.id === v);
+                    if (takeoff?.altitude != null && landing?.altitude != null) {
+                      newForm.altitude_gain = Math.max(0, takeoff.altitude - landing.altitude).toString();
+                    }
+                  }
+                  setForm(newForm);
+                }}
                 filterType="landing"
                 onLocationCreated={() => {
-                  if (user) supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                  if (user) supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
                 }}
               />
             </div>
