@@ -16,23 +16,34 @@ interface LocationOption {
   longitude?: number;
 }
 
+interface GoalData {
+  label: string;
+  points: number;
+  goal_type: string;
+  latitude: number | null;
+  longitude: number | null;
+  radius_meters: number;
+  location_id: string | null;
+}
+
 interface Props {
   locations: LocationOption[];
-  onSave: (goal: { label: string; points: number; goal_type: string; latitude: number | null; longitude: number | null; radius_meters: number; location_id: string | null }) => void;
+  onSave: (goal: GoalData) => void;
   onCancel: () => void;
+  initialValues?: Partial<GoalData>;
 }
 
 const GOAL_TYPES = ["start", "turnpoint", "waypoint", "goal"];
 
-export default function ChallengeGoalForm({ locations, onSave, onCancel }: Props) {
+export default function ChallengeGoalForm({ locations, onSave, onCancel, initialValues }: Props) {
   const { t } = useTranslation();
-  const [label, setLabel] = useState("");
-  const [points, setPoints] = useState("10");
-  const [goalType, setGoalType] = useState("waypoint");
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [radius, setRadius] = useState("400");
-  const [locationId, setLocationId] = useState("");
+  const [label, setLabel] = useState(initialValues?.label || "");
+  const [points, setPoints] = useState(String(initialValues?.points ?? 10));
+  const [goalType, setGoalType] = useState(initialValues?.goal_type || "waypoint");
+  const [latitude, setLatitude] = useState<number | null>(initialValues?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(initialValues?.longitude ?? null);
+  const [radius, setRadius] = useState(String(initialValues?.radius_meters ?? 400));
+  const [locationId, setLocationId] = useState(initialValues?.location_id || "");
   const [tab, setTab] = useState("map");
 
   const handleLocationSelect = (locId: string) => {

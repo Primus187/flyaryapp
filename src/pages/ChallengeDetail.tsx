@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save } from "lucide-react";
+import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save, SquarePen } from "lucide-react";
 import ChallengeGoalForm from "@/components/ChallengeGoalForm";
 
 const ChallengeMap = lazy(() => import("@/components/ChallengeMap"));
@@ -53,6 +53,7 @@ export default function ChallengeDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -163,6 +164,21 @@ export default function ChallengeDetail() {
     await supabase.from("challenge_goals" as any).delete().eq("id", goalId);
     loadData();
     toast({ title: t("challenges.goalRemoved") });
+  };
+
+  const handleEditGoal = async (goalId: string, goal: { label: string; points: number; goal_type: string; latitude: number | null; longitude: number | null; radius_meters: number; location_id: string | null }) => {
+    await supabase.from("challenge_goals" as any).update({
+      label: goal.label,
+      points: goal.points,
+      goal_type: goal.goal_type,
+      latitude: goal.latitude,
+      longitude: goal.longitude,
+      radius_meters: goal.radius_meters,
+      location_id: goal.location_id,
+    } as any).eq("id", goalId);
+    setEditingGoalId(null);
+    loadData();
+    toast({ title: t("common.saved") });
   };
 
   const handleDeleteChallenge = async () => {
@@ -300,6 +316,27 @@ export default function ChallengeDetail() {
 
         {goals.map(goal => {
           const done = myProgress.has(goal.id);
+
+          if (editingGoalId === goal.id) {
+            return (
+              <ChallengeGoalForm
+                key={goal.id}
+                locations={locations}
+                initialValues={{
+                  label: goal.label || "",
+                  points: goal.points,
+                  goal_type: goal.goal_type,
+                  latitude: goal.latitude,
+                  longitude: goal.longitude,
+                  radius_meters: goal.radius_meters,
+                  location_id: goal.location_id,
+                }}
+                onSave={(g) => handleEditGoal(goal.id, g)}
+                onCancel={() => setEditingGoalId(null)}
+              />
+            );
+          }
+
           return (
             <button
               key={goal.id}
@@ -325,12 +362,20 @@ export default function ChallengeDetail() {
                 {goal.points} pts
               </Badge>
               {isAdmin && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteGoal(goal.id); }}
-                  className="p-1 text-destructive/50 hover:text-destructive"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingGoalId(goal.id); }}
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteGoal(goal.id); }}
+                    className="p-1 text-destructive/50 hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </>
               )}
             </button>
           );
