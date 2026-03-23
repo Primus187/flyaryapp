@@ -173,6 +173,31 @@ export default function ChallengeDetail() {
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
+  const startEditing = () => {
+    setEditTitle(challenge.title);
+    setEditDesc(challenge.description || "");
+    setEditEndDate(challenge.end_date || "");
+    setEditing(true);
+  };
+
+  const handleSaveChallenge = async () => {
+    if (!editTitle.trim() || !id) return;
+    setSaving(true);
+    const { error } = await supabase.from("challenges" as any).update({
+      title: editTitle.trim(),
+      description: editDesc.trim() || null,
+      end_date: editEndDate || null,
+    } as any).eq("id", id);
+    setSaving(false);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } else {
+      setChallenge({ ...challenge, title: editTitle.trim(), description: editDesc.trim() || null, end_date: editEndDate || null });
+      setEditing(false);
+      toast({ title: t("common.saved") });
+    }
+  };
+
   if (!challenge) return null;
 
   const totalGoals = goals.length;
