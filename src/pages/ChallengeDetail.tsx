@@ -4,11 +4,14 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Trophy, Target, Check, Trash2, Plus } from "lucide-react";
+import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save } from "lucide-react";
 import ChallengeGoalForm from "@/components/ChallengeGoalForm";
 
 const ChallengeMap = lazy(() => import("@/components/ChallengeMap"));
@@ -51,6 +54,11 @@ export default function ChallengeDetail() {
   const [loading, setLoading] = useState(true);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -165,6 +173,31 @@ export default function ChallengeDetail() {
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
+  const startEditing = () => {
+    setEditTitle(challenge.title);
+    setEditDesc(challenge.description || "");
+    setEditEndDate(challenge.end_date || "");
+    setEditing(true);
+  };
+
+  const handleSaveChallenge = async () => {
+    if (!editTitle.trim() || !id) return;
+    setSaving(true);
+    const { error } = await supabase.from("challenges" as any).update({
+      title: editTitle.trim(),
+      description: editDesc.trim() || null,
+      end_date: editEndDate || null,
+    } as any).eq("id", id);
+    setSaving(false);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } else {
+      setChallenge({ ...challenge, title: editTitle.trim(), description: editDesc.trim() || null, end_date: editEndDate || null });
+      setEditing(false);
+      toast({ title: t("common.saved") });
+    }
+  };
+
   if (!challenge) return null;
 
   const totalGoals = goals.length;
@@ -184,16 +217,49 @@ export default function ChallengeDetail() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <button onClick={() => navigate(-1)} className="p-1"><ChevronLeft className="h-5 w-5" /></button>
-        <h1 className="text-xl font-bold tracking-tight flex-1 truncate">{challenge.title}</h1>
-        {isAdmin && (
+        {editing ? (
+          <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="flex-1 text-lg font-bold" />
+        ) : (
+          <h1 className="text-xl font-bold tracking-tight flex-1 truncate">{challenge.title}</h1>
+        )}
+        {isAdmin && !editing && (
+          <button onClick={startEditing} className="p-1.5 text-muted-foreground hover:text-foreground">
+            <Pencil className="h-4 w-4" />
+          </button>
+        )}
+        {isAdmin && !editing && (
           <button onClick={handleDeleteChallenge} className="p-1.5 text-destructive">
             <Trash2 className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {challenge.description && (
-        <p className="text-sm text-muted-foreground">{challenge.description}</p>
+      {editing ? (
+        <div className="space-y-3 p-4 rounded-xl border border-border/50 bg-card">
+          <div className="space-y-1.5">
+            <Label className="text-xs">{t("challenges.challengeDescription")}</Label>
+            <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">{t("challenges.endDate")}</Label>
+            <Input type="date" value={editEndDate} onChange={e => setEditEndDate(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleSaveChallenge} disabled={!editTitle.trim() || saving} className="gap-1.5">
+              <Save className="h-3.5 w-3.5" /> {saving ? "..." : t("common.save")}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setEditing(false)}>{t("common.cancel")}</Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {challenge.description && (
+            <p className="text-sm text-muted-foreground">{challenge.description}</p>
+          )}
+          {challenge.end_date && (
+            <p className="text-xs text-muted-foreground">{t("challenges.endDate")}: {new Date(challenge.end_date).toLocaleDateString()}</p>
+          )}
+        </>
       )}
 
       {/* Map */}
