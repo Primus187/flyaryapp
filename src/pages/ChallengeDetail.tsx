@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save } from "lucide-react";
+import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save, SquarePen } from "lucide-react";
 import ChallengeGoalForm from "@/components/ChallengeGoalForm";
 
 const ChallengeMap = lazy(() => import("@/components/ChallengeMap"));
