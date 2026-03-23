@@ -50,7 +50,7 @@ export default function FlightForm() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+    supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
