@@ -53,6 +53,7 @@ export default function ChallengeDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
