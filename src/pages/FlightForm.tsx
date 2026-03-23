@@ -270,7 +270,7 @@ export default function FlightForm() {
                 }}
                 filterType="takeoff"
                 onLocationCreated={() => {
-                  if (user) supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                  if (user) supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
                 }}
               />
             </div>
