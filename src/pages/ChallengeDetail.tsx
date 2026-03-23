@@ -166,6 +166,21 @@ export default function ChallengeDetail() {
     toast({ title: t("challenges.goalRemoved") });
   };
 
+  const handleEditGoal = async (goalId: string, goal: { label: string; points: number; goal_type: string; latitude: number | null; longitude: number | null; radius_meters: number; location_id: string | null }) => {
+    await supabase.from("challenge_goals" as any).update({
+      label: goal.label,
+      points: goal.points,
+      goal_type: goal.goal_type,
+      latitude: goal.latitude,
+      longitude: goal.longitude,
+      radius_meters: goal.radius_meters,
+      location_id: goal.location_id,
+    } as any).eq("id", goalId);
+    setEditingGoalId(null);
+    loadData();
+    toast({ title: t("common.saved") });
+  };
+
   const handleDeleteChallenge = async () => {
     if (!confirm(t("challenges.deleteConfirm"))) return;
     await supabase.from("challenges" as any).delete().eq("id", id);
