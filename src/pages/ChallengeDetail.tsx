@@ -316,6 +316,27 @@ export default function ChallengeDetail() {
 
         {goals.map(goal => {
           const done = myProgress.has(goal.id);
+
+          if (editingGoalId === goal.id) {
+            return (
+              <ChallengeGoalForm
+                key={goal.id}
+                locations={locations}
+                initialValues={{
+                  label: goal.label || "",
+                  points: goal.points,
+                  goal_type: goal.goal_type,
+                  latitude: goal.latitude,
+                  longitude: goal.longitude,
+                  radius_meters: goal.radius_meters,
+                  location_id: goal.location_id,
+                }}
+                onSave={(g) => handleEditGoal(goal.id, g)}
+                onCancel={() => setEditingGoalId(null)}
+              />
+            );
+          }
+
           return (
             <button
               key={goal.id}
@@ -341,12 +362,20 @@ export default function ChallengeDetail() {
                 {goal.points} pts
               </Badge>
               {isAdmin && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteGoal(goal.id); }}
-                  className="p-1 text-destructive/50 hover:text-destructive"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingGoalId(goal.id); }}
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteGoal(goal.id); }}
+                    className="p-1 text-destructive/50 hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </>
               )}
             </button>
           );
