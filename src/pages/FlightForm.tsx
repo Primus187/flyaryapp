@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 
-interface LocationOption { id: string; name: string; type: string; }
+interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
