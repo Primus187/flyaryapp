@@ -340,7 +340,13 @@
     "xcontestSyncDone_zero": "No new flights found",
     "xcontestWarning": "Your credentials are stored encrypted and only used for flight import.",
     "xcontestSaved": "XContest credentials saved",
-    "xcontestError": "Sync failed"
+    "xcontestError": "Sync failed",
+    "healthConsentInfo": "To store emergency data, we need your explicit consent per Art. 9 GDPR (special data categories).",
+    "giveConsent": "Give consent",
+    "healthConsentTitle": "Health Data Consent",
+    "healthConsentText": "I consent to storing my health and emergency data (blood type, allergies, medical notes, emergency contact) in the app. This data is only visible to admins and participants of my events. I can withdraw consent at any time by deleting the data.",
+    "acceptConsent": "I consent",
+    "consentGranted": "Consent granted"
   },
   "auth": {
     "signIn": "Sign in",
