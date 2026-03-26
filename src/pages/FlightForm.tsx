@@ -269,6 +269,29 @@ export default function FlightForm() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
         <h1 className="text-xl font-bold">{isEdit ? t("flights.editFlight") : t("flights.newFlight")}</h1>
       </div>
+      {/* Templates */}
+      {!isEdit && templates.length > 0 && (
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("flights.templates")}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {templates.map((tpl) => (
+                <div key={tpl.id} className="group relative">
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs pr-6" onClick={() => loadTemplate(tpl)}>
+                    {tpl.name}
+                  </Button>
+                  <button type="button" onClick={() => deleteTemplate(tpl.id)} className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
           <CardContent className="p-4">
