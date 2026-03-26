@@ -230,7 +230,8 @@
     "flightCount_one": "1 vol",
     "searchLocation": "Rechercher un site...",
     "createNew": "+ Créer un nouveau site",
-    "noResults": "Aucun site trouvé"
+    "noResults": "Aucun site trouvé",
+    "weather": "Météo"
   },
   "groups": {
     "title": "Groupes",
@@ -340,7 +341,13 @@
     "xcontestSyncDone_zero": "Aucun nouveau vol trouvé",
     "xcontestWarning": "Vos identifiants sont stockés de manière chiffrée et utilisés uniquement pour l'import des vols.",
     "xcontestSaved": "Identifiants XContest enregistrés",
-    "xcontestError": "Échec de la synchronisation"
+    "xcontestError": "Échec de la synchronisation",
+    "healthConsentInfo": "Pour stocker les données d'urgence, nous avons besoin de votre consentement explicite selon l'art. 9 RGPD (catégories spéciales de données).",
+    "giveConsent": "Donner le consentement",
+    "healthConsentTitle": "Consentement données de santé",
+    "healthConsentText": "Je consens au stockage de mes données de santé et d'urgence (groupe sanguin, allergies, notes médicales, contact d'urgence) dans l'application. Ces données ne sont visibles que par les admins et les participants de mes événements. Je peux retirer mon consentement à tout moment en supprimant les données.",
+    "acceptConsent": "Je consens",
+    "consentGranted": "Consentement accordé"
   },
   "auth": {
     "signIn": "Connectez-vous",
@@ -385,6 +392,11 @@
     "flightsPerYear": "Vols par année",
     "flightTimePerMonth": "Temps de vol par mois (min)",
     "flightTimePerYear": "Temps de vol par année (min)",
+    "yearComparison": "Comparaison annuelle",
+    "cumulativeHours": "Heures de vol cumulées",
+    "topTakeoffs": "Top 5 décollages",
+    "altitudeTrend": "⌀ Dénivelé par mois",
+    "activityHeatmap": "Activité",
     "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
     "monthsShort": ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"]
   },
@@ -457,6 +469,7 @@
   },
   "more": {
     "title": "Plus",
+    "search": "Recherche",
     "profile": "Profil",
     "training": "Formation",
     "map": "Carte",
@@ -675,5 +688,12 @@
     "shvNumber": "Numéro FSVL",
     "viewPublicProfile": "Voir le profil public",
     "photos": "Photos"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Rechercher vols, sites, pilotes...",
+    "noResults": "Aucun résultat trouvé",
+    "hint": "Entrez un terme pour trouver des vols, sites, événements et pilotes.",
+    "pilots": "Pilotes"
   }
 }

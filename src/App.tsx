@@ -37,6 +37,7 @@ import Legal from "@/pages/Legal";
 import Leaderboard from "@/pages/Leaderboard";
 import ChallengeDetail from "@/pages/ChallengeDetail";
 import PilotProfile from "@/pages/PilotProfile";
+import SearchPage from "@/pages/Search";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ const App = () => {
                   <Route path="/more" element={<More />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/stats" element={<Stats />} />
+                  <Route path="/search" element={<SearchPage />} />
                   <Route path="/import" element={<ImportFlights />} />
                   <Route path="/import-locations" element={<ImportLocations />} />
                   <Route path="/legal" element={<Legal />} />

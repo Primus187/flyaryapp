@@ -920,8 +920,11 @@ export type Database = {
           created_at: string
           id: string
           is_default: boolean
+          last_check_date: string | null
           manufacturer: string
           model: string
+          next_check_date: string | null
+          reserve_repack_date: string | null
           size: string | null
           user_id: string
         }
@@ -929,8 +932,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_default?: boolean
+          last_check_date?: string | null
           manufacturer: string
           model: string
+          next_check_date?: string | null
+          reserve_repack_date?: string | null
           size?: string | null
           user_id: string
         }
@@ -938,8 +944,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_default?: boolean
+          last_check_date?: string | null
           manufacturer?: string
           model?: string
+          next_check_date?: string | null
+          reserve_repack_date?: string | null
           size?: string | null
           user_id?: string
         }
@@ -1007,6 +1016,7 @@ export type Database = {
           exam_theory_date: string | null
           flight_school: string | null
           glider_info: string | null
+          health_data_consent_at: string | null
           id: string
           medical_notes: string | null
           pilot_name: string | null
@@ -1029,6 +1039,7 @@ export type Database = {
           exam_theory_date?: string | null
           flight_school?: string | null
           glider_info?: string | null
+          health_data_consent_at?: string | null
           id?: string
           medical_notes?: string | null
           pilot_name?: string | null
@@ -1051,6 +1062,7 @@ export type Database = {
           exam_theory_date?: string | null
           flight_school?: string | null
           glider_info?: string | null
+          health_data_consent_at?: string | null
           id?: string
           medical_notes?: string | null
           pilot_name?: string | null

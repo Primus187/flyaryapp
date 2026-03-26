@@ -230,7 +230,8 @@
     "flightCount_one": "1 flight",
     "searchLocation": "Search location...",
     "createNew": "+ Create new location",
-    "noResults": "No location found"
+    "noResults": "No location found",
+    "weather": "Weather"
   },
   "groups": {
     "title": "Groups",
@@ -340,7 +341,13 @@
     "xcontestSyncDone_zero": "No new flights found",
     "xcontestWarning": "Your credentials are stored encrypted and only used for flight import.",
     "xcontestSaved": "XContest credentials saved",
-    "xcontestError": "Sync failed"
+    "xcontestError": "Sync failed",
+    "healthConsentInfo": "To store emergency data, we need your explicit consent per Art. 9 GDPR (special data categories).",
+    "giveConsent": "Give consent",
+    "healthConsentTitle": "Health Data Consent",
+    "healthConsentText": "I consent to storing my health and emergency data (blood type, allergies, medical notes, emergency contact) in the app. This data is only visible to admins and participants of my events. I can withdraw consent at any time by deleting the data.",
+    "acceptConsent": "I consent",
+    "consentGranted": "Consent granted"
   },
   "auth": {
     "signIn": "Sign in",
@@ -385,6 +392,11 @@
     "flightsPerYear": "Flights per year",
     "flightTimePerMonth": "Flight time per month (min)",
     "flightTimePerYear": "Flight time per year (min)",
+    "yearComparison": "Year comparison",
+    "cumulativeHours": "Cumulative flight hours",
+    "topTakeoffs": "Top 5 takeoffs",
+    "altitudeTrend": "⌀ Altitude gain per month",
+    "activityHeatmap": "Activity",
     "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   },
@@ -457,6 +469,7 @@
   },
   "more": {
     "title": "More",
+    "search": "Search",
     "profile": "Profile",
     "training": "Training",
     "map": "Map",
@@ -675,5 +688,12 @@
     "shvNumber": "SHV Number",
     "viewPublicProfile": "View public profile",
     "photos": "Photos"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search flights, sites, pilots...",
+    "noResults": "No results found",
+    "hint": "Enter a search term to find flights, sites, events and pilots.",
+    "pilots": "Pilots"
   }
 }

@@ -215,7 +215,8 @@
     "flightCount_one": "1 Flug",
     "searchLocation": "Ort suchen...",
     "createNew": "+ Neuen Ort erstellen",
-    "noResults": "Kein Ort gefunden"
+    "noResults": "Kein Ort gefunden",
+    "weather": "Wetter"
   },
   "groups": {
     "title": "Gruppen",
@@ -325,7 +326,13 @@
     "xcontestSyncDone_zero": "Keine neuen Flüge gefunden",
     "xcontestWarning": "Deine Zugangsdaten werden verschlüsselt gespeichert und nur für den Flug-Import verwendet.",
     "xcontestSaved": "XContest-Zugangsdaten gespeichert",
-    "xcontestError": "Synchronisation fehlgeschlagen"
+    "xcontestError": "Synchronisation fehlgeschlagen",
+    "healthConsentInfo": "Um Notfalldaten speichern zu können, benötigen wir deine ausdrückliche Einwilligung gemäss Art. 9 DSGVO / revDSG (besondere Datenkategorien).",
+    "giveConsent": "Einwilligung erteilen",
+    "healthConsentTitle": "Einwilligung Gesundheitsdaten",
+    "healthConsentText": "Ich willige ein, dass meine Gesundheits- und Notfalldaten (Blutgruppe, Allergien, medizinische Hinweise, Notfallkontakt) in der App gespeichert werden. Diese Daten sind nur für Admins und Teilnehmer meiner Termine sichtbar. Ich kann diese Einwilligung jederzeit widerrufen, indem ich die Daten lösche.",
+    "acceptConsent": "Einwilligen",
+    "consentGranted": "Einwilligung erteilt"
   },
   "auth": {
     "signIn": "Melde dich an",
@@ -370,6 +377,11 @@
     "flightsPerYear": "Flüge pro Jahr",
     "flightTimePerMonth": "Flugzeit pro Monat (min)",
     "flightTimePerYear": "Flugzeit pro Jahr (min)",
+    "yearComparison": "Jahresvergleich",
+    "cumulativeHours": "Kumulative Flugstunden",
+    "topTakeoffs": "Top 5 Startplätze",
+    "altitudeTrend": "⌀ Höhenmeter pro Monat",
+    "activityHeatmap": "Aktivität",
     "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
     "monthsShort": ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
   },
@@ -503,6 +515,7 @@
   },
   "more": {
     "title": "Mehr",
+    "search": "Suche",
     "profile": "Profil",
     "training": "Training",
     "map": "Karte",
@@ -677,5 +690,12 @@
     "shvNumber": "SHV-Nummer",
     "viewPublicProfile": "Öffentliches Profil ansehen",
     "photos": "Fotos"
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Flüge, Orte, Piloten suchen...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "hint": "Gib einen Suchbegriff ein, um Flüge, Orte, Termine und Piloten zu finden.",
+    "pilots": "Piloten"
   }
 }
