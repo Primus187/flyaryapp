@@ -48,7 +48,8 @@
     "activeChallenges": "Challenges actifs",
     "noFlights": "Aucun vol enregistré",
     "noFlightsDesc": "Enregistrez votre premier vol et commencez votre carnet.",
-    "firstFlight": "Enregistrer un premier vol"
+    "firstFlight": "Enregistrer un premier vol",
+    "maintenanceWarning": "Maintenance en retard !"
   },
   "flights": {
     "title": "Carnet de vol",
