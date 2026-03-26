@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, Target } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, Target, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
+  const [overdueGliders, setOverdueGliders] = useState<{ name: string; type: string }[]>([]);
 
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
@@ -154,6 +155,20 @@ export default function Dashboard() {
           })));
         }
       }
+
+      // Check glider maintenance
+      const { data: glidersData } = await supabase.from("pilot_gliders" as any).select("manufacturer, model, next_check_date, reserve_repack_date").eq("user_id", user.id);
+      if (glidersData) {
+        const now = new Date();
+        const warnings: { name: string; type: string }[] = [];
+        (glidersData as any[]).forEach(g => {
+          const name = `${g.manufacturer} ${g.model}`;
+          if (g.next_check_date && new Date(g.next_check_date) < now) warnings.push({ name, type: "check" });
+          if (g.reserve_repack_date && new Date(g.reserve_repack_date) < now) warnings.push({ name, type: "reserve" });
+        });
+        setOverdueGliders(warnings);
+      }
+
       setLoading(false);
     };
     fetchData();
@@ -219,6 +234,25 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* Maintenance warnings */}
+      {overdueGliders.length > 0 && (
+        <button onClick={() => navigate("/profile")} className="w-full">
+          <Card className="border border-destructive/30 bg-destructive/5 shadow-sm">
+            <CardContent className="p-3 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-destructive">{t("dashboard.maintenanceWarning")}</p>
+                {overdueGliders.map((g, i) => (
+                  <p key={i} className="text-xs text-muted-foreground">
+                    {g.name} — {g.type === "check" ? t("profile.checkOverdue") : t("profile.reserveOverdue")}
+                  </p>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </button>
+      )}
 
       {/* Events */}
       {events.length > 0 && (

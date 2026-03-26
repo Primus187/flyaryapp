@@ -48,7 +48,8 @@
     "activeChallenges": "Challenges actifs",
     "noFlights": "Aucun vol enregistré",
     "noFlightsDesc": "Enregistrez votre premier vol et commencez votre carnet.",
-    "firstFlight": "Enregistrer un premier vol"
+    "firstFlight": "Enregistrer un premier vol",
+    "maintenanceWarning": "Maintenance en retard !"
   },
   "flights": {
     "title": "Carnet de vol",
@@ -305,7 +306,13 @@
     "sizePlaceholder": "p.ex. M",
     "defaultGlider": "Voile par défaut",
     "gliderAdded": "Voile ajoutée",
+    "gliderUpdated": "Voile mise à jour",
     "gliderRemoved": "Voile supprimée",
+    "lastCheck": "Dernier contrôle",
+    "nextCheck": "Prochain contrôle",
+    "reserveRepack": "Secours repliage",
+    "checkOverdue": "⚠ Contrôle de voile en retard ! Faites vérifier votre voile.",
+    "reserveOverdue": "⚠ Repliage du secours en retard !",
     "emergency": "Informations d'urgence",
     "emergencyDesc": "Visibles par les admins et participants de vos événements",
     "emergencyName": "Contact d'urgence — Nom",

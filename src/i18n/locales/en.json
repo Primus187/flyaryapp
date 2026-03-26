@@ -48,7 +48,8 @@
     "activeChallenges": "Active Challenges",
     "noFlights": "No flights recorded yet",
     "noFlightsDesc": "Record your first flight and start building your logbook.",
-    "firstFlight": "Record your first flight"
+    "firstFlight": "Record your first flight",
+    "maintenanceWarning": "Maintenance overdue!"
   },
   "flights": {
     "title": "Logbook",
@@ -305,7 +306,13 @@
     "sizePlaceholder": "e.g. M",
     "defaultGlider": "Default glider",
     "gliderAdded": "Glider added",
+    "gliderUpdated": "Glider updated",
     "gliderRemoved": "Glider removed",
+    "lastCheck": "Last check",
+    "nextCheck": "Next check",
+    "reserveRepack": "Reserve repack",
+    "checkOverdue": "⚠ Glider check overdue! Please have your glider inspected.",
+    "reserveOverdue": "⚠ Reserve repack overdue!",
     "emergency": "Emergency information",
     "emergencyDesc": "Visible to admins and participants of your events",
     "emergencyName": "Emergency contact name",

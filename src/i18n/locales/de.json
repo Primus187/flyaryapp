@@ -290,7 +290,13 @@
     "sizePlaceholder": "z.B. M",
     "defaultGlider": "Standardschirm",
     "gliderAdded": "Schirm hinzugefügt",
+    "gliderUpdated": "Schirm aktualisiert",
     "gliderRemoved": "Schirm entfernt",
+    "lastCheck": "Letzter Check",
+    "nextCheck": "Nächster Check",
+    "reserveRepack": "Rettungsschirm",
+    "checkOverdue": "⚠ Schirmcheck überfällig! Bitte lasse deinen Schirm prüfen.",
+    "reserveOverdue": "⚠ Rettungsschirm-Nachpacken überfällig!",
     "emergency": "Notfall-Informationen",
     "emergencyDesc": "Sichtbar für Admins und Teilnehmer deiner Termine",
     "emergencyName": "Notfallkontakt Name",
@@ -530,7 +536,8 @@
     "activeChallenges": "Aktive Challenges",
     "noFlights": "Noch keine Flüge erfasst",
     "noFlightsDesc": "Erfasse deinen ersten Flug und baue dein Flugbuch auf.",
-    "firstFlight": "Ersten Flug erfassen"
+    "firstFlight": "Ersten Flug erfassen",
+    "maintenanceWarning": "Wartung überfällig!"
   },
   "more": {
     "title": "Mehr",
