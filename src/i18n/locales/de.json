@@ -536,7 +536,8 @@
     "activeChallenges": "Aktive Challenges",
     "noFlights": "Noch keine Flüge erfasst",
     "noFlightsDesc": "Erfasse deinen ersten Flug und baue dein Flugbuch auf.",
-    "firstFlight": "Ersten Flug erfassen"
+    "firstFlight": "Ersten Flug erfassen",
+    "maintenanceWarning": "Wartung überfällig!"
   },
   "more": {
     "title": "Mehr",
