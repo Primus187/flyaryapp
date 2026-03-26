@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
+  const [overdueGliders, setOverdueGliders] = useState<{ name: string; type: string }[]>([]);
 
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
