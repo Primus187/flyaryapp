@@ -21,6 +21,7 @@ interface LocationOption { id: string; name: string; type: string; altitude?: nu
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
+interface FlightTemplate { id: string; name: string; takeoff_location_id: string | null; landing_location_id: string | null; glider: string | null; group_id: string | null; }
 
 export default function FlightForm() {
   const { id } = useParams();
