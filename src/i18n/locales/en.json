@@ -230,7 +230,8 @@
     "flightCount_one": "1 flight",
     "searchLocation": "Search location...",
     "createNew": "+ Create new location",
-    "noResults": "No location found"
+    "noResults": "No location found",
+    "weather": "Weather"
   },
   "groups": {
     "title": "Groups",
