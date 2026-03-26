@@ -13,6 +13,7 @@ import { parseIGC } from "@/lib/igc-parser";
 import { compressImage } from "@/lib/image-compress";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
+import CoachFeedback from "@/components/CoachFeedback";
 
 export default function FlightDetail() {
   const { id } = useParams();
