@@ -391,6 +391,11 @@
     "flightsPerYear": "Flights per year",
     "flightTimePerMonth": "Flight time per month (min)",
     "flightTimePerYear": "Flight time per year (min)",
+    "yearComparison": "Year comparison",
+    "cumulativeHours": "Cumulative flight hours",
+    "topTakeoffs": "Top 5 takeoffs",
+    "altitudeTrend": "⌀ Altitude gain per month",
+    "activityHeatmap": "Activity",
     "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   },
