@@ -33,7 +33,7 @@ export default function BottomNav() {
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <Icon className="h-6 w-6" strokeWidth={isActive ? 2.2 : 1.5} />
+              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.5} />
               {isActive && (
                 <span className="h-1 w-1 rounded-full bg-primary" />
               )}
