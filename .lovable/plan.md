@@ -1,99 +1,75 @@
 
 
-# Flyary — Optimierungsplan
+# Training-Tracker nach SHV-Ausbildungsreglement umbauen
 
-## Analyse der aktuellen Schwachstellen
+## Problemstellung
 
-Nach Durchsicht des Codes identifiziere ich diese Hauptbereiche:
-
----
-
-## 1. Performance: Lazy Loading für Routen
-
-**Problem**: Alle 25+ Seiten werden beim App-Start geladen (kein Code-Splitting). `App.tsx` importiert jede Seite direkt.
-
-**Lösung**: `React.lazy()` + `Suspense` für alle Routen ausser Dashboard und Auth. Reduziert initiales Bundle um ~60%.
+Die aktuellen Seed-Daten im Training-Tracker sind generisch und entsprechen nicht dem offiziellen SHV-Ausbildungsreglement (Schweizerischer Hängegleiter-Verband). Die Kategorien und Übungen sollen sich an den tatsächlichen SHV-Prüfungsanforderungen orientieren.
 
 ---
 
-## 2. Performance: Dashboard Wasserfall-Queries
+## SHV-Quellen (recherchiert)
 
-**Problem**: `Dashboard.tsx` führt 8+ sequentielle Supabase-Abfragen in einem einzigen `useEffect` aus (Profil → Flüge → Fotos → Mitgliedschaften → Events → Challenges → Gliders). Jede wartet auf die vorherige.
+Aus den offiziellen SHV-Weisungen "Fähigkeitsprüfung Gleitschirm Pilot" (Juli 2025) stammen diese konkreten Prüfungsinhalte:
 
-**Lösung**: `Promise.all` für unabhängige Queries (Profil, Flüge, Mitgliedschaften, Gliders parallel). Signed URLs batch-generieren statt in Schleifen.
+**Theorie** (5 Sachgebiete): Fluglehre, Wetterkunde, Gesetzgebung, Materialkunde, Flugpraxis
 
----
+**Praktische Prüfung - Flugfiguren** (Ziffer 5.7.2):
+- a) Doppelkreis (2 Kreise rechtsdrehend, max. 20s)
+- b) Acht (1× links + 1× rechts, max. 25s)
+- c) Ohren beschleunigt geradeaus (25% Spannweite, 10s halten)
+- d) Ohren mit Richtungswechsel (90° links/rechts per Gewicht)
+- e) Seitenklapper stabilisiert (40% einklappen, 3s halten)
+- f) Nicken (max. 5 Impulse, innerhalb 5s stabilisieren)
+- g) Rollen (max. 5 Impulse, innerhalb 8s stabilisieren)
 
-## 3. Performance: Signed URLs cachen
-
-**Problem**: Jeder Seitenaufruf generiert neue Signed URLs für Avatare und Fotos (3600s Gültigkeit, aber nie gecacht).
-
-**Lösung**: Einfacher In-Memory-Cache (Map) für Signed URLs mit TTL, als shared Utility. Vermeidet redundante Storage-Calls beim Navigieren.
-
----
-
-## 4. Code-Qualität: Dashboard & Feed aufräumen
-
-**Problem**: `Dashboard.tsx` (351 Zeilen) hat die gesamte Datenlogik in einem monolithischen `useEffect`. `Feed.tsx` (741 Zeilen) ist ähnlich gross.
-
-**Lösung**: Custom Hooks extrahieren:
-- `useDashboardData()` — Profil, Stats, Events, Challenges, Glider-Warnings
-- `useFeedData()` — Feed-Items, Bookmarks, Pull-to-Refresh
+**Weitere Prüfungselemente**: 5-Punkte-Check, Vorwärts-/Rückwärtsstart, Landeeinteilung (Gegenanflug → Queranflug → Endanflug), Landeflächen (Kreis 34m / Rechteck 20×45m / 15×60m)
 
 ---
 
-## 5. UX: Error States & Retry
+## Umsetzung
 
-**Problem**: Fast keine Seite zeigt Fehlermeldungen bei fehlgeschlagenen API-Calls. Daten verschwinden einfach stillschweigend.
+### 1. DB-Migration: Seed-Daten komplett ersetzen
 
-**Lösung**: Error-State mit Retry-Button auf Dashboard, Feed, Flights, Stats. Einfaches Pattern: `{ loading, error, data }` statt nur `{ loading, data }`.
+Bestehende Kategorien und Items löschen (CASCADE löscht auch `flight_training_items` und `training_progress` — Fortschritt geht verloren, muss dem User kommuniziert werden). Neue Struktur:
 
----
+**Kategorien** (neu, SHV-konform):
+1. **Theorie (SHV)** — 5 Sachgebiete gemäss Prüfung
+2. **Starttechnik** — Vorwärts-/Rückwärtsstart, 5-Punkte-Check
+3. **SHV-Prüfungsmanöver** — Die 7 offiziellen Flugfiguren a–g
+4. **Landeeinteilung** — Volten, Landeanflug, Landeflächen
+5. **Groundhandling** — Bodenübungen
+6. **Flugpraxis** — Thermik, Soaring, Streckenflug, aktives Fliegen, Flugentscheid
+7. **Sicherheitstraining / SIV** — Klapper, Fullstall, Spirale, Rettung
+8. **Übungshang** — Basisübungen für Anfänger
 
-## 6. UX: Pull-to-Refresh auf Dashboard
+**Items pro Kategorie**: Jedes Item bekommt `goal`, `content`, `mistakes`, `danger` Texte die direkt aus dem SHV-Reglement abgeleitet sind (z.B. exakte Zeitvorgaben, Winkel, Spannweiten-Prozente).
 
-**Problem**: Feed hat Pull-to-Refresh, Dashboard aber nicht. Bei Rückkehr zum Dashboard sieht man veraltete Daten.
+### 2. Kennzeichnung der Prüfungsmanöver
 
-**Lösung**: Pull-to-Refresh analog zum Feed implementieren, oder alternativ Daten bei `visibilitychange` neu laden.
+Neues Feld `is_exam_maneuver boolean DEFAULT false` auf `training_items` — damit können die 7 SHV-Hauptmanöver (a–g) visuell hervorgehoben werden (z.B. mit einem Prüfungs-Badge).
 
----
+### 3. UI-Anpassung in Training.tsx
 
-## 7. Accessibility: Semantik & ARIA
+- Prüfungsmanöver mit einem kleinen "SHV" Badge markieren
+- Kategorie "SHV-Prüfungsmanöver" visuell hervorheben (z.B. andere Farbe)
 
-**Problem**: Viele interaktive Elemente nutzen `<div>` oder `<button>` ohne Labels. Event-Karten haben verschachtelte `onClick` ohne `role`.
+### 4. TrainingItemDetail.tsx
 
-**Lösung**: Semantische Tags (`<article>`, `<nav>`, `<section>`), `aria-label` auf Icon-Buttons, `sr-only` Beschriftungen.
-
----
-
-## 8. Security: `as any` Type-Casts entfernen
-
-**Problem**: Dashboard und andere Seiten nutzen `as any` für Supabase-Queries auf `challenges`, `challenge_goals`, `pilot_gliders`. Dies umgeht TypeScript-Sicherheit.
-
-**Lösung**: Supabase-Types aktualisieren (Regeneration der Types nach letzten Migrationen), dann Casts entfernen.
-
----
-
-## Umsetzungsreihenfolge
-
-1. **Lazy Loading** für Routen in `App.tsx`
-2. **Dashboard-Queries parallelisieren** mit `Promise.all`
-3. **Signed-URL-Cache** als Utility
-4. **Custom Hooks** extrahieren (`useDashboardData`, `useFeedData`)
-5. **Error States** mit Retry auf Hauptseiten
-6. **Pull-to-Refresh** auf Dashboard
-7. **Accessibility** Verbesserungen
-8. **Type-Cast Cleanup**
+- Bei `is_exam_maneuver = true`: SHV-Referenz anzeigen (z.B. "SHV Flugfigur c — Ziffer 5.7.2")
 
 ---
 
 ## Dateien
 
-- **Edit**: `src/App.tsx` — React.lazy + Suspense
-- **Edit**: `src/pages/Dashboard.tsx` — Query-Parallelisierung, Custom Hook, Error/Retry, Pull-to-Refresh
-- **Edit**: `src/pages/Feed.tsx` — Custom Hook Extraktion
-- **Neu**: `src/hooks/use-dashboard-data.ts`
-- **Neu**: `src/hooks/use-feed-data.ts`
-- **Neu**: `src/lib/signed-url-cache.ts`
-- **Edit**: Diverse Seiten — Error States, Accessibility
+- **Migration**: Neue SQL-Migration — DELETE alte Seeds, INSERT neue SHV-konforme Daten, ALTER TABLE für `is_exam_maneuver`
+- **Edit**: `src/pages/Training.tsx` — SHV-Badge bei Prüfungsmanövern
+- **Edit**: `src/pages/TrainingItemDetail.tsx` — SHV-Referenz anzeigen
+- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Label für "SHV-Prüfungsmanöver" etc.
+
+---
+
+## Hinweis
+
+Der bestehende Fortschritt (Sterne/Notizen) aller User geht durch das Löschen der alten Items verloren, da `training_progress` über `item_id` referenziert und die alten UUIDs gelöscht werden. Bei einer produktiven App mit vielen Usern wäre ein Mapping sinnvoll — bei aktuellem Stand ist ein Reset vertretbar.
 
