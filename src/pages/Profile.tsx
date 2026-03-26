@@ -75,6 +75,7 @@ export default function Profile() {
       if (data) {
         setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
+        setHealthConsent((data as any).health_data_consent_at || null);
         if ((data as any).cover_photo_url) {
           setCoverPhotoUrl((data as any).cover_photo_url);
           resolveSignedUrl((data as any).cover_photo_url).then(u => u && setCoverSignedUrl(u));
