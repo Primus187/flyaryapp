@@ -58,6 +58,10 @@ export default function FlightForm() {
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
+    // Load flight templates
+    supabase.from("flight_templates" as any).select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
+      if (data) setTemplates(data as any as FlightTemplate[]);
+    });
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
     });
