@@ -36,8 +36,9 @@ export default function Profile() {
   const [healthConsent, setHealthConsent] = useState<string | null>(null);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [gliders, setGliders] = useState<Glider[]>([]);
-  const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
+  const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false, last_check_date: "", next_check_date: "", reserve_repack_date: "" });
   const [showAddGlider, setShowAddGlider] = useState(false);
+  const [editingGliderId, setEditingGliderId] = useState<string | null>(null);
   const [avatarSignedUrl, setAvatarSignedUrl] = useState("");
   const [xp, setXp] = useState<{ total_xp: number; level: number } | null>(null);
   const [xcontestUsername, setXcontestUsername] = useState("");
