@@ -219,6 +219,40 @@ export default function FlightForm() {
   };
 
   const addYoutubeUrl = () => { if (newYoutubeUrl.trim()) { setYoutubeUrls([...youtubeUrls, newYoutubeUrl.trim()]); setNewYoutubeUrl(""); } };
+
+  const loadTemplate = (tpl: FlightTemplate) => {
+    setForm(prev => ({
+      ...prev,
+      takeoff_location_id: tpl.takeoff_location_id || "",
+      landing_location_id: tpl.landing_location_id || "",
+      glider: tpl.glider || prev.glider,
+      group_id: tpl.group_id || "",
+    }));
+    toast({ title: t("flights.templateLoaded") });
+  };
+
+  const saveTemplate = async () => {
+    if (!user || !templateName.trim()) return;
+    const { data, error } = await supabase.from("flight_templates" as any).insert({
+      user_id: user.id,
+      name: templateName.trim(),
+      takeoff_location_id: form.takeoff_location_id || null,
+      landing_location_id: form.landing_location_id || null,
+      glider: form.glider || null,
+      group_id: form.group_id || null,
+    } as any).select().single();
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setTemplates(prev => [data as any as FlightTemplate, ...prev]);
+    setTemplateName("");
+    setShowSaveTemplate(false);
+    toast({ title: t("flights.templateSaved") });
+  };
+
+  const deleteTemplate = async (tplId: string) => {
+    await supabase.from("flight_templates" as any).delete().eq("id", tplId);
+    setTemplates(prev => prev.filter(t => t.id !== tplId));
+    toast({ title: t("flights.templateDeleted") });
+  };
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [key]: e.target.value });
   const takeoffs = locations.filter((l) => l.type === "takeoff" || l.type === "both");
   const landings = locations.filter((l) => l.type === "landing" || l.type === "both");
