@@ -42,6 +42,9 @@ export default function FlightForm() {
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [templates, setTemplates] = useState<FlightTemplate[]>([]);
+  const [templateName, setTemplateName] = useState("");
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
