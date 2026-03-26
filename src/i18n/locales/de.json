@@ -325,7 +325,13 @@
     "xcontestSyncDone_zero": "Keine neuen Flüge gefunden",
     "xcontestWarning": "Deine Zugangsdaten werden verschlüsselt gespeichert und nur für den Flug-Import verwendet.",
     "xcontestSaved": "XContest-Zugangsdaten gespeichert",
-    "xcontestError": "Synchronisation fehlgeschlagen"
+    "xcontestError": "Synchronisation fehlgeschlagen",
+    "healthConsentInfo": "Um Notfalldaten speichern zu können, benötigen wir deine ausdrückliche Einwilligung gemäss Art. 9 DSGVO / revDSG (besondere Datenkategorien).",
+    "giveConsent": "Einwilligung erteilen",
+    "healthConsentTitle": "Einwilligung Gesundheitsdaten",
+    "healthConsentText": "Ich willige ein, dass meine Gesundheits- und Notfalldaten (Blutgruppe, Allergien, medizinische Hinweise, Notfallkontakt) in der App gespeichert werden. Diese Daten sind nur für Admins und Teilnehmer meiner Termine sichtbar. Ich kann diese Einwilligung jederzeit widerrufen, indem ich die Daten lösche.",
+    "acceptConsent": "Einwilligen",
+    "consentGranted": "Einwilligung erteilt"
   },
   "auth": {
     "signIn": "Melde dich an",
