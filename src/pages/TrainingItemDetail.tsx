@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Star, Target, BookOpen, AlertTriangle, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Star, Target, BookOpen, AlertTriangle, ShieldAlert, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ interface Item {
   content: string | null;
   mistakes: string | null;
   danger: string | null;
+  is_exam_maneuver: boolean;
 }
 
 export default function TrainingItemDetail() {
@@ -30,7 +32,7 @@ export default function TrainingItemDetail() {
   useEffect(() => {
     if (!itemId || !user) return;
     Promise.all([
-      supabase.from("training_items").select("id, name, goal, content, mistakes, danger").eq("id", itemId).single(),
+      supabase.from("training_items").select("id, name, goal, content, mistakes, danger, is_exam_maneuver").eq("id", itemId).single(),
       supabase.from("training_progress").select("rating, notes").eq("user_id", user.id).eq("item_id", itemId).maybeSingle(),
     ]).then(([itemRes, progRes]) => {
       if (itemRes.data) setItem(itemRes.data);
@@ -90,6 +92,12 @@ export default function TrainingItemDetail() {
 
       <div>
         <h1 className="text-xl font-bold">{item.name}</h1>
+        {item.is_exam_maneuver && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <Shield className="h-4 w-4 text-amber-500" />
+            <span className="text-xs text-amber-600 font-medium">{t("training.shvExamManeuver")}</span>
+          </div>
+        )}
         <div className="flex gap-1 mt-3">
           {[1, 2, 3].map((star) => (
             <button key={star} onClick={() => handleRate(star)} className="p-0.5 active:scale-90 transition-transform">

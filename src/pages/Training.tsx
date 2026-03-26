@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Star } from "lucide-react";
+import { Star, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ interface TrainingItem {
   category_id: string;
   name: string;
   sort_order: number;
+  is_exam_maneuver: boolean;
 }
 
 interface Progress {
@@ -93,9 +95,10 @@ export default function Training() {
         {categories.map((cat) => {
           const pct = categoryProgress(cat.id);
           return (
-            <AccordionItem key={cat.id} value={cat.id} className="border rounded-xl bg-card overflow-hidden">
+            <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-amber-500/50 bg-amber-500/5")}>
               <AccordionTrigger className="px-4 py-3 hover:no-underline">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {cat.name === "SHV-Prüfungsmanöver" && <Shield className="h-4 w-4 text-amber-500 shrink-0" />}
                   <span className="font-semibold text-sm truncate">{cat.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground shrink-0">{pct}%</span>
                 </div>
@@ -112,7 +115,10 @@ export default function Training() {
                           onClick={() => navigate(`/training/${item.id}`)}
                           className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left"
                         >
-                          <span className="text-sm truncate pr-2">{item.name}</span>
+                          <span className="text-sm truncate pr-2 flex items-center gap-1.5">
+                            {item.name}
+                            {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600 shrink-0">SHV</Badge>}
+                          </span>
                           <div className="flex gap-0.5 shrink-0">
                             {[1, 2, 3].map((star) => (
                               <button

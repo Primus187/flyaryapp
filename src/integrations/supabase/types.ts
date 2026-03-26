@@ -1167,6 +1167,7 @@ export type Database = {
           danger: string | null
           goal: string | null
           id: string
+          is_exam_maneuver: boolean
           mistakes: string | null
           name: string
           sort_order: number
@@ -1178,6 +1179,7 @@ export type Database = {
           danger?: string | null
           goal?: string | null
           id?: string
+          is_exam_maneuver?: boolean
           mistakes?: string | null
           name: string
           sort_order?: number
@@ -1189,6 +1191,7 @@ export type Database = {
           danger?: string | null
           goal?: string | null
           id?: string
+          is_exam_maneuver?: boolean
           mistakes?: string | null
           name?: string
           sort_order?: number

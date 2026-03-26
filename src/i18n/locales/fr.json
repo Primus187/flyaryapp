@@ -484,7 +484,8 @@
     "mistakes": "Erreurs fréquentes",
     "danger": "Danger",
     "notes": "Notes personnelles",
-    "notesPlaceholder": "Vos notes sur cet exercice..."
+    "notesPlaceholder": "Vos notes sur cet exercice...",
+    "shvExamManeuver": "Manœuvre d'examen FSVL — Section 5.7.2"
   },
   "more": {
     "title": "Plus",
