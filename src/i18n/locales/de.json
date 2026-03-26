@@ -201,6 +201,8 @@
     "coachNotePlaceholder": "Kommentar zum Manöver...",
     "noStudentFlights": "Keine Schülerflüge an diesem Tag",
     "noTrainingItems": "Keine Manöver erfasst",
+    "selectManeuvers": "Manöver auswählen",
+    "addManeuvers": "Manöver hinzufügen",
     "eventLinked": "Flug mit Flugtag verknüpft"
   },
   "locations": {
