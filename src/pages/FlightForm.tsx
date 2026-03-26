@@ -12,7 +12,7 @@ import LocationCombobox from "@/components/LocationCombobox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
-import { ArrowLeft, Upload, Plus, X, Youtube, Check } from "lucide-react";
+import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,6 +21,7 @@ interface LocationOption { id: string; name: string; type: string; altitude?: nu
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
+interface FlightTemplate { id: string; name: string; takeoff_location_id: string | null; landing_location_id: string | null; glider: string | null; group_id: string | null; }
 
 export default function FlightForm() {
   const { id } = useParams();
@@ -41,6 +42,9 @@ export default function FlightForm() {
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [templates, setTemplates] = useState<FlightTemplate[]>([]);
+  const [templateName, setTemplateName] = useState("");
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
@@ -53,6 +57,10 @@ export default function FlightForm() {
     supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
+    });
+    // Load flight templates
+    supabase.from("flight_templates" as any).select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
+      if (data) setTemplates(data as any as FlightTemplate[]);
     });
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
@@ -211,6 +219,40 @@ export default function FlightForm() {
   };
 
   const addYoutubeUrl = () => { if (newYoutubeUrl.trim()) { setYoutubeUrls([...youtubeUrls, newYoutubeUrl.trim()]); setNewYoutubeUrl(""); } };
+
+  const loadTemplate = (tpl: FlightTemplate) => {
+    setForm(prev => ({
+      ...prev,
+      takeoff_location_id: tpl.takeoff_location_id || "",
+      landing_location_id: tpl.landing_location_id || "",
+      glider: tpl.glider || prev.glider,
+      group_id: tpl.group_id || "",
+    }));
+    toast({ title: t("flights.templateLoaded") });
+  };
+
+  const saveTemplate = async () => {
+    if (!user || !templateName.trim()) return;
+    const { data, error } = await supabase.from("flight_templates" as any).insert({
+      user_id: user.id,
+      name: templateName.trim(),
+      takeoff_location_id: form.takeoff_location_id || null,
+      landing_location_id: form.landing_location_id || null,
+      glider: form.glider || null,
+      group_id: form.group_id || null,
+    } as any).select().single();
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setTemplates(prev => [data as any as FlightTemplate, ...prev]);
+    setTemplateName("");
+    setShowSaveTemplate(false);
+    toast({ title: t("flights.templateSaved") });
+  };
+
+  const deleteTemplate = async (tplId: string) => {
+    await supabase.from("flight_templates" as any).delete().eq("id", tplId);
+    setTemplates(prev => prev.filter(t => t.id !== tplId));
+    toast({ title: t("flights.templateDeleted") });
+  };
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [key]: e.target.value });
   const takeoffs = locations.filter((l) => l.type === "takeoff" || l.type === "both");
   const landings = locations.filter((l) => l.type === "landing" || l.type === "both");
@@ -227,6 +269,29 @@ export default function FlightForm() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
         <h1 className="text-xl font-bold">{isEdit ? t("flights.editFlight") : t("flights.newFlight")}</h1>
       </div>
+      {/* Templates */}
+      {!isEdit && templates.length > 0 && (
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("flights.templates")}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {templates.map((tpl) => (
+                <div key={tpl.id} className="group relative">
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs pr-6" onClick={() => loadTemplate(tpl)}>
+                    {tpl.name}
+                  </Button>
+                  <button type="button" onClick={() => deleteTemplate(tpl.id)} className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
           <CardContent className="p-4">
@@ -410,6 +475,25 @@ export default function FlightForm() {
           </CardContent>
         </Card>
         <Button type="submit" className="w-full" disabled={loading}>{loading ? t("flights.saving") : isEdit ? t("common.update") : t("flights.flightSaved")}</Button>
+        {!isEdit && (
+          <div className="space-y-2">
+            {showSaveTemplate ? (
+              <div className="flex gap-2">
+                <Input placeholder={t("flights.templateNamePlaceholder")} value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="text-sm" />
+                <Button type="button" size="sm" onClick={saveTemplate} disabled={!templateName.trim()}>
+                  <Save className="h-4 w-4" />
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setShowSaveTemplate(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" variant="outline" className="w-full gap-2 text-sm" onClick={() => setShowSaveTemplate(true)}>
+                <Save className="h-4 w-4" /> {t("flights.saveAsTemplate")}
+              </Button>
+            )}
+          </div>
+        )}
       </form>
     </div>
   );

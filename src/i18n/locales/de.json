@@ -114,7 +114,13 @@
     "addPhotos2": "Fotos hinzufügen",
     "deletePhoto": "Foto löschen?",
     "photoDeleted": "Foto gelöscht",
-    "photoAdded": "Foto hinzugefügt"
+    "photoAdded": "Foto hinzugefügt",
+    "templates": "Vorlagen",
+    "templateLoaded": "Vorlage geladen",
+    "templateSaved": "Vorlage gespeichert",
+    "templateDeleted": "Vorlage gelöscht",
+    "saveAsTemplate": "Als Vorlage speichern",
+    "templateNamePlaceholder": "Name der Vorlage..."
   },
   "events": {
     "title": "Termine",
@@ -457,6 +463,12 @@
     "trainedManeuvers": "Trainierte Manöver",
     "selectManeuvers": "Manöver auswählen...",
     "noManeuvers": "Keine Manöver"
+  },
+  "coach": {
+    "instructorFeedback": "Fluglehrer-Feedback",
+    "addFeedback": "Feedback geben",
+    "feedbackSaved": "Feedback gespeichert",
+    "notePlaceholder": "Bemerkung zum Manöver..."
   },
   "onboarding": {
     "welcome": "Willkommen bei Flyary! 🪂",

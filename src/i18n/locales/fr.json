@@ -129,7 +129,13 @@
     "addPhotos2": "Ajouter des photos",
     "deletePhoto": "Supprimer cette photo ?",
     "photoDeleted": "Photo supprimée",
-    "photoAdded": "Photo ajoutée"
+    "photoAdded": "Photo ajoutée",
+    "templates": "Modèles",
+    "templateLoaded": "Modèle chargé",
+    "templateSaved": "Modèle enregistré",
+    "templateDeleted": "Modèle supprimé",
+    "saveAsTemplate": "Enregistrer comme modèle",
+    "templateNamePlaceholder": "Nom du modèle..."
   },
   "events": {
     "title": "Événements",
@@ -485,6 +491,12 @@
     "trainedManeuvers": "Manœuvres entraînées",
     "selectManeuvers": "Sélectionner des manœuvres...",
     "noManeuvers": "Aucune manœuvre"
+  },
+  "coach": {
+    "instructorFeedback": "Feedback de l'instructeur",
+    "addFeedback": "Donner un feedback",
+    "feedbackSaved": "Feedback enregistré",
+    "notePlaceholder": "Remarque sur cette manœuvre..."
   },
   "onboarding": {
     "welcome": "Bienvenue sur Flyary ! 🪂",

@@ -575,17 +575,81 @@ export type Database = {
           },
         ]
       }
+      flight_templates: {
+        Row: {
+          created_at: string
+          glider: string | null
+          group_id: string | null
+          id: string
+          landing_location_id: string | null
+          name: string
+          takeoff_location_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          glider?: string | null
+          group_id?: string | null
+          id?: string
+          landing_location_id?: string | null
+          name: string
+          takeoff_location_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          glider?: string | null
+          group_id?: string | null
+          id?: string
+          landing_location_id?: string | null
+          name?: string
+          takeoff_location_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_templates_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_templates_landing_location_id_fkey"
+            columns: ["landing_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_templates_takeoff_location_id_fkey"
+            columns: ["takeoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_training_items: {
         Row: {
           flight_id: string
+          instructor_id: string | null
+          instructor_note: string | null
+          instructor_rating: number | null
           item_id: string
         }
         Insert: {
           flight_id: string
+          instructor_id?: string | null
+          instructor_note?: string | null
+          instructor_rating?: number | null
           item_id: string
         }
         Update: {
           flight_id?: string
+          instructor_id?: string | null
+          instructor_note?: string | null
+          instructor_rating?: number | null
           item_id?: string
         }
         Relationships: [
