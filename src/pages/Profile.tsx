@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import AvatarCropDialog from "@/components/AvatarCropDialog";
 import { compressImage } from "@/lib/image-compress";
 import BadgeGrid from "@/components/BadgeGrid";
