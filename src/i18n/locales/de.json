@@ -114,7 +114,13 @@
     "addPhotos2": "Fotos hinzufügen",
     "deletePhoto": "Foto löschen?",
     "photoDeleted": "Foto gelöscht",
-    "photoAdded": "Foto hinzugefügt"
+    "photoAdded": "Foto hinzugefügt",
+    "templates": "Vorlagen",
+    "templateLoaded": "Vorlage geladen",
+    "templateSaved": "Vorlage gespeichert",
+    "templateDeleted": "Vorlage gelöscht",
+    "saveAsTemplate": "Als Vorlage speichern",
+    "templateNamePlaceholder": "Name der Vorlage..."
   },
   "events": {
     "title": "Termine",
