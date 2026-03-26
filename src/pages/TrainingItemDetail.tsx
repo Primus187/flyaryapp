@@ -92,6 +92,12 @@ export default function TrainingItemDetail() {
 
       <div>
         <h1 className="text-xl font-bold">{item.name}</h1>
+        {item.is_exam_maneuver && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <Shield className="h-4 w-4 text-amber-500" />
+            <span className="text-xs text-amber-600 font-medium">{t("training.shvExamManeuver")}</span>
+          </div>
+        )}
         <div className="flex gap-1 mt-3">
           {[1, 2, 3].map((star) => (
             <button key={star} onClick={() => handleRate(star)} className="p-0.5 active:scale-90 transition-transform">

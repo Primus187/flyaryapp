@@ -484,7 +484,8 @@
     "mistakes": "Common Mistakes",
     "danger": "Danger",
     "notes": "Personal Notes",
-    "notesPlaceholder": "Your notes on this exercise..."
+    "notesPlaceholder": "Your notes on this exercise...",
+    "shvExamManeuver": "SHV Exam Maneuver — Section 5.7.2"
   },
   "more": {
     "title": "More",

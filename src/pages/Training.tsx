@@ -115,7 +115,10 @@ export default function Training() {
                           onClick={() => navigate(`/training/${item.id}`)}
                           className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left"
                         >
-                          <span className="text-sm truncate pr-2">{item.name}</span>
+                          <span className="text-sm truncate pr-2 flex items-center gap-1.5">
+                            {item.name}
+                            {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600 shrink-0">SHV</Badge>}
+                          </span>
                           <div className="flex gap-0.5 shrink-0">
                             {[1, 2, 3].map((star) => (
                               <button
