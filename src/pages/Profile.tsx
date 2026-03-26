@@ -232,16 +232,43 @@ export default function Profile() {
   const handleAddGlider = async () => {
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
     if (newGlider.is_default) await supabase.from("pilot_gliders" as any).update({ is_default: false } as any).eq("user_id", user.id);
-    const { data, error } = await supabase.from("pilot_gliders" as any).insert({ user_id: user.id, ...newGlider } as any).select().single();
+    const insertData: any = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null };
+    const { data, error } = await supabase.from("pilot_gliders" as any).insert(insertData).select().single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     if (newGlider.is_default) setGliders(prev => [...prev.map(g => ({ ...g, is_default: false })), data as any]);
     else setGliders(prev => [...prev, data as any]);
-    setNewGlider({ manufacturer: "", model: "", size: "", is_default: false }); setShowAddGlider(false);
+    setNewGlider({ manufacturer: "", model: "", size: "", is_default: false, last_check_date: "", next_check_date: "", reserve_repack_date: "" }); setShowAddGlider(false);
     toast({ title: t("profile.gliderAdded") });
+  };
+
+  const handleUpdateGlider = async (glider: Glider) => {
+    if (!glider.id) return;
+    const { error } = await supabase.from("pilot_gliders" as any).update({
+      manufacturer: glider.manufacturer, model: glider.model, size: glider.size || null,
+      last_check_date: glider.last_check_date || null, next_check_date: glider.next_check_date || null,
+      reserve_repack_date: glider.reserve_repack_date || null,
+    } as any).eq("id", glider.id);
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setGliders(prev => prev.map(g => g.id === glider.id ? { ...glider } : g));
+    setEditingGliderId(null);
+    toast({ title: t("profile.gliderUpdated") });
   };
 
   const handleDeleteGlider = async (id: string) => { await supabase.from("pilot_gliders" as any).delete().eq("id", id); setGliders(prev => prev.filter(g => g.id !== id)); toast({ title: t("profile.gliderRemoved") }); };
   const handleSetDefault = async (id: string) => { if (!user) return; await supabase.from("pilot_gliders" as any).update({ is_default: false } as any).eq("user_id", user.id); await supabase.from("pilot_gliders" as any).update({ is_default: true } as any).eq("id", id); setGliders(prev => prev.map(g => ({ ...g, is_default: g.id === id }))); };
+
+  const isOverdue = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
+    return new Date(dateStr) < new Date();
+  };
+
+  const isExpiringSoon = (dateStr: string | null | undefined, days = 30) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    const now = new Date();
+    const soon = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+    return d >= now && d <= soon;
+  };
 
   const handleExportPdf = async () => {
     setExporting(true);
