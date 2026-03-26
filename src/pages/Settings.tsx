@@ -140,6 +140,8 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      <TrainingLevelCard />
+
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
