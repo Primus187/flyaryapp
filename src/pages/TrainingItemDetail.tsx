@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Star, Target, BookOpen, AlertTriangle, ShieldAlert, Shield } from "lucide-react";
+import { ArrowLeft, Star, Target, BookOpen, AlertTriangle, ShieldAlert, Shield, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
