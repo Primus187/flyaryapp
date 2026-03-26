@@ -502,10 +502,93 @@ export default function Profile() {
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.examTheoryDate")}</Label><Input type="date" value={form.exam_theory_date} onChange={e => setForm({ ...form, exam_theory_date: e.target.value })} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.examPracticalDate")}</Label><Input type="date" value={form.exam_practical_date} onChange={e => setForm({ ...form, exam_practical_date: e.target.value })} /></div></div>
       </CardContent></Card>
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base">{t("profile.myGliders")}</CardTitle><Button variant="ghost" size="sm" onClick={() => setShowAddGlider(true)}><Plus className="h-4 w-4 mr-1" /> {t("common.add")}</Button></CardHeader><CardContent className="space-y-2">
+      <Card className="border-0 shadow-sm"><CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base flex items-center gap-2"><Wrench className="h-4 w-4 text-primary" /> {t("profile.myGliders")}</CardTitle><Button variant="ghost" size="sm" onClick={() => setShowAddGlider(true)}><Plus className="h-4 w-4 mr-1" /> {t("common.add")}</Button></CardHeader><CardContent className="space-y-3">
         {gliders.length === 0 && !showAddGlider && <p className="text-sm text-muted-foreground">{t("profile.noGliders")}</p>}
-        {gliders.map(g => (<div key={g.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50"><div className="flex items-center gap-2">{g.is_default && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}<div><p className="text-sm font-medium">{g.manufacturer} {g.model}</p>{g.size && <p className="text-xs text-muted-foreground">{t("profile.size")}: {g.size}</p>}</div></div><div className="flex gap-1">{!g.is_default && <Button variant="ghost" size="sm" onClick={() => handleSetDefault(g.id!)}><Star className="h-3.5 w-3.5" /></Button>}<Button variant="ghost" size="sm" onClick={() => handleDeleteGlider(g.id!)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div>))}
-        {showAddGlider && (<div className="p-3 rounded-lg border space-y-2"><div className="grid grid-cols-2 gap-2"><div className="space-y-1"><Label className="text-xs">{t("profile.manufacturer")}</Label><Input value={newGlider.manufacturer} onChange={e => setNewGlider({ ...newGlider, manufacturer: e.target.value })} placeholder={t("profile.manufacturerPlaceholder")} /></div><div className="space-y-1"><Label className="text-xs">{t("profile.model")}</Label><Input value={newGlider.model} onChange={e => setNewGlider({ ...newGlider, model: e.target.value })} placeholder={t("profile.modelPlaceholder")} /></div></div><div className="space-y-1"><Label className="text-xs">{t("profile.size")}</Label><Input value={newGlider.size} onChange={e => setNewGlider({ ...newGlider, size: e.target.value })} placeholder={t("profile.sizePlaceholder")} /></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={newGlider.is_default} onChange={e => setNewGlider({ ...newGlider, is_default: e.target.checked })} />{t("profile.defaultGlider")}</label><div className="flex gap-2"><Button size="sm" onClick={handleAddGlider} disabled={!newGlider.manufacturer || !newGlider.model}>{t("common.save")}</Button><Button size="sm" variant="outline" onClick={() => setShowAddGlider(false)}>{t("common.cancel")}</Button></div></div>)}
+        {gliders.map(g => {
+          const checkOverdue = isOverdue(g.next_check_date);
+          const checkSoon = !checkOverdue && isExpiringSoon(g.next_check_date);
+          const reserveOverdue = isOverdue(g.reserve_repack_date);
+          const reserveSoon = !reserveOverdue && isExpiringSoon(g.reserve_repack_date);
+          const hasWarning = checkOverdue || reserveOverdue;
+          const hasCaution = checkSoon || reserveSoon;
+
+          return (
+            <div key={g.id} className={`p-3 rounded-lg space-y-2 ${hasWarning ? 'bg-destructive/10 border border-destructive/30' : hasCaution ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800' : 'bg-muted/50'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {g.is_default && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}
+                  {hasWarning && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
+                  <div>
+                    <p className="text-sm font-medium">{g.manufacturer} {g.model}</p>
+                    {g.size && <p className="text-xs text-muted-foreground">{t("profile.size")}: {g.size}</p>}
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => setEditingGliderId(editingGliderId === g.id ? null : g.id!)}>
+                    <Wrench className="h-3.5 w-3.5" />
+                  </Button>
+                  {!g.is_default && <Button variant="ghost" size="sm" onClick={() => handleSetDefault(g.id!)}><Star className="h-3.5 w-3.5" /></Button>}
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteGlider(g.id!)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                </div>
+              </div>
+
+              {/* Maintenance status summary */}
+              <div className="grid grid-cols-3 gap-2 text-[10px]">
+                <div>
+                  <p className="text-muted-foreground uppercase tracking-wider">{t("profile.lastCheck")}</p>
+                  <p className={`font-medium ${!g.last_check_date ? 'text-muted-foreground' : ''}`}>
+                    {g.last_check_date ? new Date(g.last_check_date).toLocaleDateString() : '–'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground uppercase tracking-wider">{t("profile.nextCheck")}</p>
+                  <p className={`font-medium ${checkOverdue ? 'text-destructive' : checkSoon ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                    {g.next_check_date ? new Date(g.next_check_date).toLocaleDateString() : '–'}
+                    {checkOverdue && <span className="ml-1">⚠️</span>}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground uppercase tracking-wider">{t("profile.reserveRepack")}</p>
+                  <p className={`font-medium ${reserveOverdue ? 'text-destructive' : reserveSoon ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                    {g.reserve_repack_date ? new Date(g.reserve_repack_date).toLocaleDateString() : '–'}
+                    {reserveOverdue && <span className="ml-1">⚠️</span>}
+                  </p>
+                </div>
+              </div>
+
+              {/* Warning messages */}
+              {checkOverdue && (
+                <p className="text-xs text-destructive font-medium">{t("profile.checkOverdue")}</p>
+              )}
+              {reserveOverdue && (
+                <p className="text-xs text-destructive font-medium">{t("profile.reserveOverdue")}</p>
+              )}
+
+              {/* Edit maintenance dates */}
+              {editingGliderId === g.id && (
+                <div className="pt-2 border-t space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1"><Label className="text-xs">{t("profile.lastCheck")}</Label><Input type="date" value={g.last_check_date || ""} onChange={e => setGliders(prev => prev.map(gl => gl.id === g.id ? { ...gl, last_check_date: e.target.value } : gl))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">{t("profile.nextCheck")}</Label><Input type="date" value={g.next_check_date || ""} onChange={e => setGliders(prev => prev.map(gl => gl.id === g.id ? { ...gl, next_check_date: e.target.value } : gl))} /></div>
+                  </div>
+                  <div className="space-y-1"><Label className="text-xs">{t("profile.reserveRepack")}</Label><Input type="date" value={g.reserve_repack_date || ""} onChange={e => setGliders(prev => prev.map(gl => gl.id === g.id ? { ...gl, reserve_repack_date: e.target.value } : gl))} /></div>
+                  <Button size="sm" onClick={() => handleUpdateGlider(g)}>{t("common.save")}</Button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {showAddGlider && (<div className="p-3 rounded-lg border space-y-2">
+          <div className="grid grid-cols-2 gap-2"><div className="space-y-1"><Label className="text-xs">{t("profile.manufacturer")}</Label><Input value={newGlider.manufacturer} onChange={e => setNewGlider({ ...newGlider, manufacturer: e.target.value })} placeholder={t("profile.manufacturerPlaceholder")} /></div><div className="space-y-1"><Label className="text-xs">{t("profile.model")}</Label><Input value={newGlider.model} onChange={e => setNewGlider({ ...newGlider, model: e.target.value })} placeholder={t("profile.modelPlaceholder")} /></div></div>
+          <div className="space-y-1"><Label className="text-xs">{t("profile.size")}</Label><Input value={newGlider.size} onChange={e => setNewGlider({ ...newGlider, size: e.target.value })} placeholder={t("profile.sizePlaceholder")} /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1"><Label className="text-xs">{t("profile.lastCheck")}</Label><Input type="date" value={newGlider.last_check_date || ""} onChange={e => setNewGlider({ ...newGlider, last_check_date: e.target.value })} /></div>
+            <div className="space-y-1"><Label className="text-xs">{t("profile.nextCheck")}</Label><Input type="date" value={newGlider.next_check_date || ""} onChange={e => setNewGlider({ ...newGlider, next_check_date: e.target.value })} /></div>
+          </div>
+          <div className="space-y-1"><Label className="text-xs">{t("profile.reserveRepack")}</Label><Input type="date" value={newGlider.reserve_repack_date || ""} onChange={e => setNewGlider({ ...newGlider, reserve_repack_date: e.target.value })} /></div>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={newGlider.is_default} onChange={e => setNewGlider({ ...newGlider, is_default: e.target.checked })} />{t("profile.defaultGlider")}</label>
+          <div className="flex gap-2"><Button size="sm" onClick={handleAddGlider} disabled={!newGlider.manufacturer || !newGlider.model}>{t("common.save")}</Button><Button size="sm" variant="outline" onClick={() => setShowAddGlider(false)}>{t("common.cancel")}</Button></div>
+        </div>)}
       </CardContent></Card>
 
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
