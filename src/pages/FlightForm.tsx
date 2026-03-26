@@ -475,6 +475,25 @@ export default function FlightForm() {
           </CardContent>
         </Card>
         <Button type="submit" className="w-full" disabled={loading}>{loading ? t("flights.saving") : isEdit ? t("common.update") : t("flights.flightSaved")}</Button>
+        {!isEdit && (
+          <div className="space-y-2">
+            {showSaveTemplate ? (
+              <div className="flex gap-2">
+                <Input placeholder={t("flights.templateNamePlaceholder")} value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="text-sm" />
+                <Button type="button" size="sm" onClick={saveTemplate} disabled={!templateName.trim()}>
+                  <Save className="h-4 w-4" />
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setShowSaveTemplate(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" variant="outline" className="w-full gap-2 text-sm" onClick={() => setShowSaveTemplate(true)}>
+                <Save className="h-4 w-4" /> {t("flights.saveAsTemplate")}
+              </Button>
+            )}
+          </div>
+        )}
       </form>
     </div>
   );
