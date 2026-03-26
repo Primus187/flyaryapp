@@ -239,6 +239,77 @@ export type Database = {
           },
         ]
       }
+      event_briefing_tasks: {
+        Row: {
+          assigned_user_id: string | null
+          event_id: string
+          id: string
+          label: string
+          sort_order: number
+          task_type: string
+        }
+        Insert: {
+          assigned_user_id?: string | null
+          event_id: string
+          id?: string
+          label: string
+          sort_order?: number
+          task_type?: string
+        }
+        Update: {
+          assigned_user_id?: string | null
+          event_id?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          task_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_briefing_tasks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_maneuvers: {
+        Row: {
+          event_id: string
+          id: string
+          sort_order: number
+          training_item_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          sort_order?: number
+          training_item_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          sort_order?: number
+          training_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_maneuvers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_maneuvers_training_item_id_fkey"
+            columns: ["training_item_id"]
+            isOneToOne: false
+            referencedRelation: "training_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_messages: {
         Row: {
           created_at: string
@@ -480,10 +551,14 @@ export type Database = {
           chat_link: string | null
           created_at: string
           created_by: string
+          day_topic: string | null
+          departure_info: string | null
           description: string | null
           event_date: string
           event_type: string | null
           feed_description: string | null
+          flight_area: string | null
+          flight_prep_notes: string | null
           group_id: string
           id: string
           instructor: string | null
@@ -500,10 +575,14 @@ export type Database = {
           chat_link?: string | null
           created_at?: string
           created_by: string
+          day_topic?: string | null
+          departure_info?: string | null
           description?: string | null
           event_date: string
           event_type?: string | null
           feed_description?: string | null
+          flight_area?: string | null
+          flight_prep_notes?: string | null
           group_id: string
           id?: string
           instructor?: string | null
@@ -520,10 +599,14 @@ export type Database = {
           chat_link?: string | null
           created_at?: string
           created_by?: string
+          day_topic?: string | null
+          departure_info?: string | null
           description?: string | null
           event_date?: string
           event_type?: string | null
           feed_description?: string | null
+          flight_area?: string | null
+          flight_prep_notes?: string | null
           group_id?: string
           id?: string
           instructor?: string | null
@@ -706,6 +789,7 @@ export type Database = {
           date: string
           distance_km: number | null
           duration_minutes: number | null
+          event_id: string | null
           feed_photo_ids: Json | null
           glider: string | null
           group_id: string | null
@@ -728,6 +812,7 @@ export type Database = {
           date?: string
           distance_km?: number | null
           duration_minutes?: number | null
+          event_id?: string | null
           feed_photo_ids?: Json | null
           glider?: string | null
           group_id?: string | null
@@ -750,6 +835,7 @@ export type Database = {
           date?: string
           distance_km?: number | null
           duration_minutes?: number | null
+          event_id?: string | null
           feed_photo_ids?: Json | null
           glider?: string | null
           group_id?: string | null
@@ -766,6 +852,13 @@ export type Database = {
           wind_speed?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "flights_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "flights_group_id_fkey"
             columns: ["group_id"]
@@ -1085,6 +1178,7 @@ export type Database = {
           medical_notes: string | null
           pilot_name: string | null
           shv_number: string | null
+          training_level: string | null
           updated_at: string
           user_id: string
           xcontest_password_encrypted: string | null
@@ -1108,6 +1202,7 @@ export type Database = {
           medical_notes?: string | null
           pilot_name?: string | null
           shv_number?: string | null
+          training_level?: string | null
           updated_at?: string
           user_id: string
           xcontest_password_encrypted?: string | null
@@ -1131,6 +1226,7 @@ export type Database = {
           medical_notes?: string | null
           pilot_name?: string | null
           shv_number?: string | null
+          training_level?: string | null
           updated_at?: string
           user_id?: string
           xcontest_password_encrypted?: string | null
@@ -1144,18 +1240,21 @@ export type Database = {
           id: string
           name: string
           sort_order: number
+          training_level: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
           sort_order?: number
+          training_level?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
           sort_order?: number
+          training_level?: string | null
         }
         Relationships: []
       }
