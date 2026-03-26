@@ -18,6 +18,7 @@ interface TrainingItem {
   category_id: string;
   name: string;
   sort_order: number;
+  is_exam_maneuver: boolean;
 }
 
 interface Progress {
