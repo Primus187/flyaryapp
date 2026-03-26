@@ -287,10 +287,70 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                         );
                       })}
                     </div>
+                  ) : addingForFlightId === flight.id ? (
+                    <div className="space-y-2 pt-1 border-t border-border/50">
+                      {loadingItems ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{t("common.loading")}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-xs font-medium">{t("events.selectManeuvers")}</p>
+                          <div className="max-h-40 overflow-y-auto space-y-1.5">
+                            {availableItems.map((item) => (
+                              <label key={item.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                                <Checkbox
+                                  checked={selectedItemIds.has(item.id)}
+                                  onCheckedChange={(checked) => {
+                                    setSelectedItemIds((prev) => {
+                                      const next = new Set(prev);
+                                      checked ? next.add(item.id) : next.delete(item.id);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                                {item.name}
+                              </label>
+                            ))}
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-xs h-7"
+                              onClick={() => setAddingForFlightId(null)}
+                            >
+                              {t("common.cancel")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="text-xs h-7"
+                              disabled={selectedItemIds.size === 0 || savingItems}
+                              onClick={() => handleConfirmAddItems(flight.id)}
+                            >
+                              {savingItems && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                              {t("common.add")} ({selectedItemIds.size})
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground italic pt-1 border-t border-border/50">
-                      {t("events.noTrainingItems")}
-                    </p>
+                    <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground italic flex-1">
+                        {t("events.noTrainingItems")}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7 gap-1"
+                        onClick={() => handleStartAddItems(flight.id)}
+                      >
+                        <Plus className="h-3 w-3" />
+                        {t("events.addManeuvers")}
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
