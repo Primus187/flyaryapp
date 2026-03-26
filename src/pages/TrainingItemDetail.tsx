@@ -31,7 +31,7 @@ export default function TrainingItemDetail() {
   useEffect(() => {
     if (!itemId || !user) return;
     Promise.all([
-      supabase.from("training_items").select("id, name, goal, content, mistakes, danger").eq("id", itemId).single(),
+      supabase.from("training_items").select("id, name, goal, content, mistakes, danger, is_exam_maneuver").eq("id", itemId).single(),
       supabase.from("training_progress").select("rating, notes").eq("user_id", user.id).eq("item_id", itemId).maybeSingle(),
     ]).then(([itemRes, progRes]) => {
       if (itemRes.data) setItem(itemRes.data);
