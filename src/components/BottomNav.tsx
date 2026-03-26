@@ -10,6 +10,7 @@ export default function BottomNav() {
     { path: "/", icon: Home },
     { path: "/feed", icon: Compass },
     { path: "/flights", icon: BookOpen },
+    { path: "/events", icon: Calendar },
     { path: "/locations", icon: MapPin },
     { path: "/more", icon: LayoutGrid },
   ];
@@ -28,11 +29,11 @@ export default function BottomNav() {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-2 px-5 transition-colors active:scale-95",
+                "flex flex-col items-center justify-center gap-1 py-2 px-3 transition-colors active:scale-95",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <Icon className="h-6 w-6" strokeWidth={isActive ? 2.2 : 1.5} />
+              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.5} />
               {isActive && (
                 <span className="h-1 w-1 rounded-full bg-primary" />
               )}

@@ -87,6 +87,15 @@ export default function Events() {
         <h1 className="text-2xl font-bold tracking-tight">{t("events.title")}</h1>
         {anyCanCreate && <Button size="sm" className="gap-1.5" onClick={() => navigate("/events/new")}><Plus className="h-4 w-4" /> {t("events.newEvent")}</Button>}
       </div>
+      {anyCanCreate && (
+        <Button
+          size="icon"
+          className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg"
+          onClick={() => navigate("/events/new")}
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      )}
       {groups.length === 0 ? (
         <EmptyState
           icon={Users}
