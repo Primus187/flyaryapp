@@ -340,7 +340,13 @@
     "xcontestSyncDone_zero": "Aucun nouveau vol trouvé",
     "xcontestWarning": "Vos identifiants sont stockés de manière chiffrée et utilisés uniquement pour l'import des vols.",
     "xcontestSaved": "Identifiants XContest enregistrés",
-    "xcontestError": "Échec de la synchronisation"
+    "xcontestError": "Échec de la synchronisation",
+    "healthConsentInfo": "Pour stocker les données d'urgence, nous avons besoin de votre consentement explicite selon l'art. 9 RGPD (catégories spéciales de données).",
+    "giveConsent": "Donner le consentement",
+    "healthConsentTitle": "Consentement données de santé",
+    "healthConsentText": "Je consens au stockage de mes données de santé et d'urgence (groupe sanguin, allergies, notes médicales, contact d'urgence) dans l'application. Ces données ne sont visibles que par les admins et les participants de mes événements. Je peux retirer mon consentement à tout moment en supprimant les données.",
+    "acceptConsent": "Je consens",
+    "consentGranted": "Consentement accordé"
   },
   "auth": {
     "signIn": "Connectez-vous",
