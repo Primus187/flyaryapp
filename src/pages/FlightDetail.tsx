@@ -206,6 +206,8 @@ export default function FlightDetail() {
           </CardContent>
         </Card>
       )}
+      {/* Coach/Instructor Feedback */}
+      <CoachFeedback flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-sm">{t("flights.photos")}</CardTitle>
