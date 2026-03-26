@@ -42,6 +42,11 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const [loading, setLoading] = useState(true);
   const [expandedFlightId, setExpandedFlightId] = useState<string | null>(null);
   const [noteEdits, setNoteEdits] = useState<Record<string, string>>({});
+  const [addingForFlightId, setAddingForFlightId] = useState<string | null>(null);
+  const [availableItems, setAvailableItems] = useState<{ id: string; name: string }[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+  const [loadingItems, setLoadingItems] = useState(false);
+  const [savingItems, setSavingItems] = useState(false);
 
   useEffect(() => {
     const fetchFlights = async () => {
