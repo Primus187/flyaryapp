@@ -472,7 +472,8 @@
     "exportFilter": "Export-Filter",
     "selectGroups": "Gruppen auswählen",
     "noGroup": "Ohne Gruppe",
-    "exportAll": "Alle exportieren"
+    "exportAll": "Alle exportieren",
+    "trainingLevel": "Ausbildungsstand"
   },
   "splash": {
     "loading": "Laden..."
