@@ -12,7 +12,7 @@ import LocationCombobox from "@/components/LocationCombobox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
-import { ArrowLeft, Upload, Plus, X, Youtube, Check } from "lucide-react";
+import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
