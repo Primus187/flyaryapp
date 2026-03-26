@@ -79,6 +79,34 @@ export default function LocationDetail() {
         <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Plane className="h-3 w-3" /> {t("dashboard.flights")}</div><p className="text-sm font-medium">{flights.length}</p></CardContent></Card>
       </div>
       {location.description && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><FileText className="h-3 w-3" /> {t("locations.descriptionLabel")}</div><p className="text-sm">{location.description}</p></CardContent></Card>)}
+      {/* Windy Weather Widget */}
+      {hasCoords && (
+        <div>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-2">{t("locations.weather")}</h2>
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <CardContent className="p-0">
+              <iframe
+                src={`https://embed.windy.com/embed2.html?lat=${location.latitude}&lon=${location.longitude}&detailLat=${location.latitude}&detailLon=${location.longitude}&width=400&height=300&zoom=10&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=12&pressure=&type=map&location=coordinates&detail=true&metricWind=km%2Fh&metricTemp=%C2%B0C&ra498darRange=-1`}
+                className="w-full border-0"
+                style={{ height: 300 }}
+                title="Windy Weather"
+                loading="lazy"
+                allowFullScreen
+              />
+            </CardContent>
+          </Card>
+          {location.country_code === "CH" && (
+            <a
+              href={`https://www.meteoschweiz.admin.ch/#tab=forecast-map`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline mt-1 inline-block"
+            >
+              MeteoSchweiz →
+            </a>
+          )}
+        </div>
+      )}
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground mb-2">{t("locations.flightsAtLocation")}</h2>
         {flights.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">{t("locations.noFlightsHere")}</p> : (

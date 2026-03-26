@@ -481,10 +481,41 @@ export default function Profile() {
       </CardContent></Card>
 
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
+        {!healthConsent && (
+          <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 space-y-2">
+            <p>{t("profile.healthConsentInfo")}</p>
+            <Button size="sm" variant="outline" onClick={() => setShowConsentDialog(true)}>{t("profile.giveConsent")}</Button>
+          </div>
+        )}
+        {healthConsent && (
+          <>
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5 col-span-2 sm:col-span-1"><Label className="text-xs">{t("profile.emergencyName")}</Label><Input value={form.emergency_contact_name} onChange={e => setForm({ ...form, emergency_contact_name: e.target.value })} /></div><div className="space-y-1.5 col-span-2 sm:col-span-1"><Label className="text-xs">{t("profile.emergencyPhone")}</Label><Input value={form.emergency_contact_phone} onChange={e => setForm({ ...form, emergency_contact_phone: e.target.value })} placeholder="+41 79 ..." type="tel" /></div></div>
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.bloodType")}</Label><Input value={form.blood_type} onChange={e => setForm({ ...form, blood_type: e.target.value })} placeholder={t("profile.bloodTypePlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.allergies")}</Label><Input value={form.allergies} onChange={e => setForm({ ...form, allergies: e.target.value })} placeholder={t("profile.allergiesPlaceholder")} /></div></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.medicalNotes")}</Label><Textarea value={form.medical_notes} onChange={e => setForm({ ...form, medical_notes: e.target.value })} placeholder={t("profile.medicalNotesPlaceholder")} rows={2} /></div>
+          </>
+        )}
       </CardContent></Card>
+
+      {/* DSGVO Consent Dialog */}
+      <Dialog open={showConsentDialog} onOpenChange={setShowConsentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("profile.healthConsentTitle")}</DialogTitle>
+            <DialogDescription>{t("profile.healthConsentText")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConsentDialog(false)}>{t("common.cancel")}</Button>
+            <Button onClick={async () => {
+              if (!user) return;
+              const now = new Date().toISOString();
+              await supabase.from("profiles").update({ health_data_consent_at: now } as any).eq("user_id", user.id);
+              setHealthConsent(now);
+              setShowConsentDialog(false);
+              toast({ title: t("profile.consentGranted") });
+            }}>{t("profile.acceptConsent")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> {t("profile.xcontestTitle")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.xcontestWarning")}</p></CardHeader><CardContent className="space-y-3">
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestUsername")}</Label><Input value={xcontestUsername} onChange={e => setXcontestUsername(e.target.value)} placeholder={t("profile.xcontestUsernamePlaceholder")} /></div>
