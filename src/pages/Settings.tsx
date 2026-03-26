@@ -10,8 +10,46 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+function TrainingLevelCard() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [level, setLevel] = useState("grundkurs");
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("training_level").eq("user_id", user.id).single().then(({ data }) => {
+      if (data && (data as any).training_level) setLevel((data as any).training_level);
+    });
+  }, [user]);
+  const handleChange = async (v: string) => {
+    setLevel(v);
+    if (user) {
+      await supabase.from("profiles").update({ training_level: v } as any).eq("user_id", user.id);
+      toast({ title: t("common.saved") });
+    }
+  };
+  const levels = [
+    { value: "grundkurs", label: t("training.grundkurs") },
+    { value: "brevetkurs", label: t("training.brevetkurs") },
+    { value: "siku", label: t("training.siku") },
+    { value: "pilot", label: t("training.pilot") },
+  ];
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {t("settings.trainingLevel")}</CardTitle></CardHeader>
+      <CardContent>
+        <Select value={level} onValueChange={handleChange}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>{levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}</SelectContent>
+        </Select>
+      </CardContent>
+    </Card>
+  );
+}
 
 interface GroupOption { id: string; name: string; }
 
@@ -139,6 +177,8 @@ export default function Settings() {
           }}>{changingPassword ? "..." : t("auth.changePassword")}</Button>
         </CardContent>
       </Card>
+
+      <TrainingLevelCard />
 
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>

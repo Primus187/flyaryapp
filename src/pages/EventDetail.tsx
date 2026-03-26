@@ -6,9 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle, ImagePlus, Trash2, Share2, X } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle, ImagePlus, Trash2, Share2, X, Mountain, BookOpen } from "lucide-react";
 import EventChat from "@/components/EventChat";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
+import EventBriefingTasks from "@/components/EventBriefingTasks";
+import EventStudentFlights from "@/components/EventStudentFlights";
+import TelegramTextGenerator from "@/components/TelegramTextGenerator";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,6 +34,8 @@ export default function EventDetail() {
   const [pilotName, setPilotName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [groupName, setGroupName] = useState("");
+  const [briefingTasks, setBriefingTasks] = useState<any[]>([]);
+  const [maneuverNames, setManeuverNames] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
@@ -50,9 +55,9 @@ export default function EventDetail() {
       if (members) {
         const me = members.find((m: any) => m.user_id === user.id);
         setIsAdmin(me?.role === "admin");
-        const userIds = (sups || []).map((s: any) => s.user_id);
-        if (userIds.length > 0) {
-          const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
+        const allUserIds = [...new Set([...(sups || []).map((s: any) => s.user_id), ...members.map(m => m.user_id)])];
+        if (allUserIds.length > 0) {
+          const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allUserIds);
           if (profs) {
             const map: Record<string, string> = {};
             profs.forEach((p: any) => { map[p.user_id] = p.pilot_name || t("common.unknown"); });
@@ -66,16 +71,26 @@ export default function EventDetail() {
       if (myProf) {
         setPilotName(myProf.pilot_name || "Pilot");
         if (myProf.avatar_url) {
-          if (myProf.avatar_url.startsWith("http")) {
-            setAvatarUrl(myProf.avatar_url);
-          } else {
+          if (myProf.avatar_url.startsWith("http")) setAvatarUrl(myProf.avatar_url);
+          else {
             const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(myProf.avatar_url, 3600);
             if (signed?.signedUrl) setAvatarUrl(signed.signedUrl);
           }
         }
       }
 
-      // Load photos
+      // Load briefing tasks
+      const { data: tasks } = await supabase.from("event_briefing_tasks" as any).select("*").eq("event_id", id).order("sort_order" as any);
+      if (tasks) setBriefingTasks(tasks as any[]);
+
+      // Load planned maneuvers
+      const { data: maneuvers } = await supabase.from("event_maneuvers" as any).select("training_item_id").eq("event_id", id);
+      if (maneuvers && (maneuvers as any[]).length > 0) {
+        const itemIds = (maneuvers as any[]).map((m: any) => m.training_item_id);
+        const { data: items } = await supabase.from("training_items").select("id, name").in("id", itemIds);
+        if (items) setManeuverNames(items.map(i => i.name));
+      }
+
       await loadPhotos(id);
       setLoading(false);
     };
@@ -90,9 +105,7 @@ export default function EventDetail() {
       const urlMap: Record<string, string> = {};
       signedUrls?.forEach(s => { if (s.signedUrl) urlMap[s.path] = s.signedUrl; });
       setPhotos(photoRows.map(p => ({ id: p.id, url: urlMap[p.storage_path] || "", storage_path: p.storage_path })));
-    } else {
-      setPhotos([]);
-    }
+    } else { setPhotos([]); }
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,10 +121,7 @@ export default function EventDetail() {
       }
       await loadPhotos(id);
       toast({ title: t("flights.photoAdded") });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    } finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ""; }
   };
 
   const handleDeletePhoto = async (photoId: string, storagePath: string) => {
@@ -124,23 +134,15 @@ export default function EventDetail() {
   const handlePublish = async (selectedPhotoIds: string[], feedDescription: string) => {
     if (!id) return;
     setPublishing(true);
-    await supabase.from("flight_events").update({
-      published_to_feed: true,
-      published_at: new Date().toISOString(),
-      feed_description: feedDescription || null,
-    } as any).eq("id", id);
+    await supabase.from("flight_events").update({ published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription || null } as any).eq("id", id);
     setEvent((prev: any) => ({ ...prev, published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription }));
-    setPublishing(false);
-    setShowPreview(false);
+    setPublishing(false); setShowPreview(false);
     toast({ title: t("events.publishedToFeed") });
   };
 
   const handleUnpublish = async () => {
     if (!id) return;
-    await supabase.from("flight_events").update({
-      published_to_feed: false,
-      published_at: null,
-    } as any).eq("id", id);
+    await supabase.from("flight_events").update({ published_to_feed: false, published_at: null } as any).eq("id", id);
     setEvent((prev: any) => ({ ...prev, published_to_feed: false, published_at: null }));
     toast({ title: t("events.unpublishedFromFeed") });
   };
@@ -185,6 +187,11 @@ export default function EventDetail() {
       )}
 
       {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
+
+      {/* Telegram text copy - only for admins */}
+      {isAdmin && (
+        <TelegramTextGenerator event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
+      )}
 
       {/* Photos section */}
       {isCreator && (
@@ -232,14 +239,30 @@ export default function EventDetail() {
         <InfoCard icon={Clock} label={t("events.time")} value={new Date(event.event_date).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} />
         {event.event_type && <InfoCard icon={Calendar} label={t("events.eventTypeLabel")} value={event.event_type} />}
         {event.meeting_point && <InfoCard icon={MapPin} label={t("events.meetingPoint")} value={event.meeting_point} />}
+        {event.flight_area && <InfoCard icon={Mountain} label={t("events.flightArea")} value={event.flight_area} />}
+        {event.day_topic && <InfoCard icon={BookOpen} label={t("events.dayTopic")} value={event.day_topic} />}
         {event.instructor && <InfoCard icon={User} label={t("events.instructor")} value={event.instructor} />}
         {event.launch_helper && <InfoCard icon={User} label={t("events.launchHelper")} value={event.launch_helper} />}
         {event.signup_deadline && <InfoCard icon={Clock} label={t("events.signupDeadline")} value={new Date(event.signup_deadline).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })} />}
         <InfoCard icon={Users} label={t("events.participants")} value={`${totalSignedUp}${event.max_participants ? ` / ${event.max_participants}` : ""}`} />
       </div>
 
+      {/* Departure info */}
+      {event.departure_info && (
+        <Card className="border-0 shadow-sm"><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
+      )}
+
       {event.description && <Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-sm whitespace-pre-wrap">{event.description}</p></CardContent></Card>}
 
+      {/* Flight prep notes */}
+      {event.flight_prep_notes && (
+        <Card className="border-0 shadow-sm"><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.flightPrep")}</h3><p className="text-sm whitespace-pre-wrap">{event.flight_prep_notes}</p></CardContent></Card>
+      )}
+
+      {/* Briefing tasks & maneuvers */}
+      <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
+
+      {/* Participants */}
       <div>
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("events.participants")}</h2>
         {signups.filter(s => s.signed_up).length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
@@ -250,20 +273,12 @@ export default function EventDetail() {
         )}
       </div>
 
+      {/* Student flights - admin only */}
+      <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+
       <EventChat eventId={id!} groupId={event.group_id} />
 
-      {/* Publish preview dialog */}
-      <EventPublishPreviewDialog
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        onPublish={handlePublish}
-        event={event}
-        pilotName={pilotName}
-        avatarUrl={avatarUrl}
-        groupName={groupName}
-        photos={photos.map(p => ({ id: p.id, url: p.url }))}
-        loading={publishing}
-      />
+      <EventPublishPreviewDialog open={showPreview} onOpenChange={setShowPreview} onPublish={handlePublish} event={event} pilotName={pilotName} avatarUrl={avatarUrl} groupName={groupName} photos={photos.map(p => ({ id: p.id, url: p.url }))} loading={publishing} />
     </div>
   );
 }
