@@ -100,7 +100,7 @@ export default function Training() {
         <p className="text-xs text-muted-foreground">{t("training.shvResourcesDescription")}</p>
         <div className="flex flex-col gap-2">
           <a
-            href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen_Faehigkeitspruefung_GS_Pilot_2025.pdf"
+            href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen/Gleitschirm_Pilot_Juli2025_DE.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-xs text-primary hover:underline"
@@ -110,7 +110,7 @@ export default function Training() {
             <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
           </a>
           <a
-            href="https://www.shv-fsvl.ch/ausbildung/"
+            href="https://www.shv-fsvl.ch/ausbildung/pruefungen/gleitschirm/gs-pilot/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-xs text-primary hover:underline"
@@ -120,13 +120,23 @@ export default function Training() {
             <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
           </a>
           <a
-            href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Ausbildungsreglement_2025.pdf"
+            href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Pruefungen/GS_Checklisten/Checkliste_Pilot_GS_DE.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-xs text-primary hover:underline"
           >
             <FileText className="h-3.5 w-3.5 shrink-0" />
-            {t("training.shvTrainingRegulations")}
+            {t("training.shvExamChecklist")}
+            <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
+          </a>
+          <a
+            href="https://www.shv-fsvl.ch/ausbildung/e-learning/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-primary hover:underline"
+          >
+            <FileText className="h-3.5 w-3.5 shrink-0" />
+            {t("training.shvElearning")}
             <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
           </a>
         </div>
