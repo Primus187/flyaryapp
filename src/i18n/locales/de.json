@@ -469,7 +469,13 @@
     "danger": "Gefahr",
     "notes": "Eigene Notizen",
     "notesPlaceholder": "Deine Notizen zu dieser Übung...",
-    "shvExamManeuver": "SHV-Prüfungsmanöver — Ziffer 5.7.2"
+    "shvExamManeuver": "SHV-Prüfungsmanöver — Ziffer 5.7.2",
+    "shvResources": "SHV-Dokumente & Prüfungsunterlagen",
+    "shvResourcesDescription": "Offizielle Unterlagen des Schweizerischen Hängegleiter-Verbands für die Gleitschirm-Pilotenausbildung.",
+    "shvExamRegulations": "Weisungen Fähigkeitsprüfung GS Pilot (2025)",
+    "shvTrainingPortal": "SHV Ausbildungsportal",
+    "shvTrainingRegulations": "Ausbildungsreglement (2025)",
+    "shvOpenRegulations": "SHV-Prüfungsweisungen öffnen"
   },
   
   "flights_training": {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Star, Shield } from "lucide-react";
+import { Star, Shield, ExternalLink, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -90,6 +90,47 @@ export default function Training() {
   return (
     <div className="px-4 pt-6 pb-24 max-w-lg mx-auto space-y-4">
       <h1 className="text-2xl font-bold">{t("training.title")}</h1>
+
+      {/* SHV Resources Card */}
+      <div className="border rounded-xl bg-card p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4 text-amber-500" />
+          <h2 className="font-semibold text-sm">{t("training.shvResources")}</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">{t("training.shvResourcesDescription")}</p>
+        <div className="flex flex-col gap-2">
+          <a
+            href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen_Faehigkeitspruefung_GS_Pilot_2025.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-primary hover:underline"
+          >
+            <FileText className="h-3.5 w-3.5 shrink-0" />
+            {t("training.shvExamRegulations")}
+            <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
+          </a>
+          <a
+            href="https://www.shv-fsvl.ch/ausbildung/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-primary hover:underline"
+          >
+            <FileText className="h-3.5 w-3.5 shrink-0" />
+            {t("training.shvTrainingPortal")}
+            <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
+          </a>
+          <a
+            href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Ausbildungsreglement_2025.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-primary hover:underline"
+          >
+            <FileText className="h-3.5 w-3.5 shrink-0" />
+            {t("training.shvTrainingRegulations")}
+            <ExternalLink className="h-3 w-3 shrink-0 ml-auto" />
+          </a>
+        </div>
+      </div>
 
       <Accordion type="multiple" className="space-y-2">
         {categories.map((cat) => {

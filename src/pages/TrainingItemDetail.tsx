@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Star, Target, BookOpen, AlertTriangle, ShieldAlert, Shield } from "lucide-react";
+import { ArrowLeft, Star, Target, BookOpen, AlertTriangle, ShieldAlert, Shield, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -93,9 +93,20 @@ export default function TrainingItemDetail() {
       <div>
         <h1 className="text-xl font-bold">{item.name}</h1>
         {item.is_exam_maneuver && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <Shield className="h-4 w-4 text-amber-500" />
-            <span className="text-xs text-amber-600 font-medium">{t("training.shvExamManeuver")}</span>
+          <div className="mt-2 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-4 w-4 text-amber-500" />
+              <span className="text-xs text-amber-600 font-medium">{t("training.shvExamManeuver")}</span>
+            </div>
+            <a
+              href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen_Faehigkeitspruefung_GS_Pilot_2025.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              {t("training.shvOpenRegulations")}
+              <ExternalLink className="h-3 w-3" />
+            </a>
           </div>
         )}
         <div className="flex gap-1 mt-3">

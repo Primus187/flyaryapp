@@ -485,7 +485,13 @@
     "danger": "Danger",
     "notes": "Notes personnelles",
     "notesPlaceholder": "Vos notes sur cet exercice...",
-    "shvExamManeuver": "Manœuvre d'examen FSVL — Section 5.7.2"
+    "shvExamManeuver": "Manœuvre d'examen FSVL — Section 5.7.2",
+    "shvResources": "Documents FSVL & matériel d'examen",
+    "shvResourcesDescription": "Documents officiels de la Fédération suisse de vol libre pour la formation des pilotes de parapente.",
+    "shvExamRegulations": "Directives d'examen pilote parapente (2025)",
+    "shvTrainingPortal": "Portail de formation FSVL",
+    "shvTrainingRegulations": "Règlement de formation (2025)",
+    "shvOpenRegulations": "Ouvrir les directives d'examen FSVL"
   },
   "more": {
     "title": "Plus",
