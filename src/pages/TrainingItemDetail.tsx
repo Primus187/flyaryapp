@@ -15,6 +15,7 @@ interface Item {
   content: string | null;
   mistakes: string | null;
   danger: string | null;
+  is_exam_maneuver: boolean;
 }
 
 export default function TrainingItemDetail() {
