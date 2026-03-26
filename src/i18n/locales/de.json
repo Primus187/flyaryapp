@@ -490,7 +490,14 @@
     "noEventsDesc": "Deine Gruppen haben noch keine Termine erstellt."
   },
   "offline": {
-    "banner": "Du bist offline — einige Funktionen sind eingeschränkt."
+    "banner": "Du bist offline — einige Funktionen sind eingeschränkt.",
+    "flightSaved": "Flug offline gespeichert",
+    "flightSavedDesc": "Dein Flug wird automatisch synchronisiert, sobald du wieder online bist.",
+    "pendingFlights": "Flüge ausstehend",
+    "tapToSync": "Tippen zum Synchronisieren",
+    "syncing": "Synchronisiere...",
+    "syncComplete": "Synchronisierung abgeschlossen",
+    "flightsSynced": "Flüge synchronisiert"
   },
   "legal": {
     "title": "Rechtliches",

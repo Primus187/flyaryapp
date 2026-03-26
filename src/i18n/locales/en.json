@@ -518,7 +518,14 @@
     "noEventsDesc": "Your groups haven't created any events yet."
   },
   "offline": {
-    "banner": "You're offline — some features may be limited."
+    "banner": "You're offline — some features may be limited.",
+    "flightSaved": "Flight saved offline",
+    "flightSavedDesc": "Your flight will sync automatically when you're back online.",
+    "pendingFlights": "flights pending",
+    "tapToSync": "Tap to sync",
+    "syncing": "Syncing...",
+    "syncComplete": "Sync complete",
+    "flightsSynced": "flights synced"
   },
   "legal": {
     "title": "Legal",

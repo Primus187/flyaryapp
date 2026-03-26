@@ -518,7 +518,14 @@
     "noEventsDesc": "Vos groupes n'ont pas encore créé d'événements."
   },
   "offline": {
-    "banner": "Vous êtes hors ligne — certaines fonctions sont limitées."
+    "banner": "Vous êtes hors ligne — certaines fonctions sont limitées.",
+    "flightSaved": "Vol enregistré hors ligne",
+    "flightSavedDesc": "Votre vol sera synchronisé automatiquement dès que vous serez en ligne.",
+    "pendingFlights": "vols en attente",
+    "tapToSync": "Appuyer pour synchroniser",
+    "syncing": "Synchronisation...",
+    "syncComplete": "Synchronisation terminée",
+    "flightsSynced": "vols synchronisés"
   },
   "legal": {
     "title": "Mentions légales",
