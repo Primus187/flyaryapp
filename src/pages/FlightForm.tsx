@@ -112,7 +112,22 @@ export default function FlightForm() {
         .filter(Boolean)
         .filter((url, index, arr) => arr.indexOf(url) === index);
 
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv } as any;
+      // Auto-link event_id when group + date match
+      let eventId: string | null = null;
+      if (form.group_id && form.date) {
+        const dateStart = new Date(form.date + "T00:00:00").toISOString();
+        const dateEnd = new Date(form.date + "T23:59:59").toISOString();
+        const { data: matchingEvent } = await supabase.from("flight_events")
+          .select("id")
+          .eq("group_id", form.group_id)
+          .gte("event_date", dateStart)
+          .lte("event_date", dateEnd)
+          .limit(1)
+          .maybeSingle();
+        if (matchingEvent) eventId = matchingEvent.id;
+      }
+
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId } as any;
 
       // Offline save when not connected
       if (!navigator.onLine && !isEdit) {
