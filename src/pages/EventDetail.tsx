@@ -11,6 +11,7 @@ import EventChat from "@/components/EventChat";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
+import CoachDayView from "@/components/CoachDayView";
 import TelegramTextGenerator from "@/components/TelegramTextGenerator";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
