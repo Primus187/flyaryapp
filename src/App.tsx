@@ -94,6 +94,7 @@ const App = () => {
                   <Route path="/more" element={<More />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/stats" element={<Stats />} />
+                  <Route path="/search" element={<SearchPage />} />
                   <Route path="/import" element={<ImportFlights />} />
                   <Route path="/import-locations" element={<ImportLocations />} />
                   <Route path="/legal" element={<Legal />} />

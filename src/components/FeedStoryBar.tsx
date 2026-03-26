@@ -31,7 +31,34 @@ export default function FeedStoryBar({ userId, groupIds }: { userId: string; gro
         .gte("published_at", since)
         .order("published_at", { ascending: false });
 
-      if (!recentFlights || recentFlights.length === 0) return;
+      // Fallback to 7 days if less than 3 pilots in 48h window
+      if (!recentFlights || recentFlights.length === 0) {
+        const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: fallbackFlights } = await supabase
+          .from("flights")
+          .select("id, user_id, published_at")
+          .in("group_id", groupIds)
+          .eq("published_to_feed", true)
+          .gte("published_at", since7d)
+          .order("published_at", { ascending: false });
+        if (!fallbackFlights || fallbackFlights.length === 0) return;
+        // Use fallback data - continue with same logic below
+        recentFlights = fallbackFlights as typeof recentFlights;
+      }
+      const uniqueUsers = new Set((recentFlights).map(f => f.user_id));
+      if (uniqueUsers.size < 3) {
+        const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: extendedFlights } = await supabase
+          .from("flights")
+          .select("id, user_id, published_at")
+          .in("group_id", groupIds)
+          .eq("published_to_feed", true)
+          .gte("published_at", since7d)
+          .order("published_at", { ascending: false });
+        if (extendedFlights && extendedFlights.length > recentFlights.length) {
+          recentFlights = extendedFlights as typeof recentFlights;
+        }
+      }
 
       // Deduplicate by user, keep latest
       const seen = new Map<string, string>();

@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin, Scale, Trophy } from "lucide-react";
+import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin, Scale, Trophy, Search } from "lucide-react";
 
 const tiles = [
+  { path: "/search", icon: Search, labelKey: "more.search" },
   { path: "/profile", icon: User, labelKey: "more.profile" },
   { path: "/training", icon: GraduationCap, labelKey: "more.training" },
   { path: "/map", icon: Map, labelKey: "more.map" },
