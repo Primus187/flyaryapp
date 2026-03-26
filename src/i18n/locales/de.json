@@ -215,7 +215,8 @@
     "flightCount_one": "1 Flug",
     "searchLocation": "Ort suchen...",
     "createNew": "+ Neuen Ort erstellen",
-    "noResults": "Kein Ort gefunden"
+    "noResults": "Kein Ort gefunden",
+    "weather": "Wetter"
   },
   "groups": {
     "title": "Gruppen",

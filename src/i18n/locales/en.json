@@ -688,5 +688,12 @@
     "shvNumber": "SHV Number",
     "viewPublicProfile": "View public profile",
     "photos": "Photos"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search flights, sites, pilots...",
+    "noResults": "No results found",
+    "hint": "Enter a search term to find flights, sites, events and pilots.",
+    "pilots": "Pilots"
   }
 }

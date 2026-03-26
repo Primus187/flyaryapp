@@ -688,5 +688,12 @@
     "shvNumber": "Numéro FSVL",
     "viewPublicProfile": "Voir le profil public",
     "photos": "Photos"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Rechercher vols, sites, pilotes...",
+    "noResults": "Aucun résultat trouvé",
+    "hint": "Entrez un terme pour trouver des vols, sites, événements et pilotes.",
+    "pilots": "Pilotes"
   }
 }
