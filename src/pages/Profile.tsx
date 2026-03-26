@@ -33,6 +33,8 @@ export default function Profile() {
   const [exporting, setExporting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({ pilot_name: "", glider_info: "", bio: "", avatar_url: "", emergency_contact_name: "", emergency_contact_phone: "", blood_type: "", allergies: "", medical_notes: "", shv_number: "", exam_theory_date: "", exam_practical_date: "", flight_school: "" });
+  const [healthConsent, setHealthConsent] = useState<string | null>(null);
+  const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [gliders, setGliders] = useState<Glider[]>([]);
   const [newGlider, setNewGlider] = useState<Glider>({ manufacturer: "", model: "", size: "", is_default: false });
   const [showAddGlider, setShowAddGlider] = useState(false);
