@@ -32,7 +32,8 @@
     "required": "Pflichtfeld",
     "confirm": "Bestätigen",
     "saved": "Gespeichert",
-    "noPosition": "Keine Position"
+    "noPosition": "Keine Position",
+    "retry": "Erneut versuchen"
   },
   
   "flights": {
