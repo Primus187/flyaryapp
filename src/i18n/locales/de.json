@@ -196,7 +196,12 @@
     "addManeuver": "Manöver hinzufügen",
     "copyTelegramText": "Telegram-Text kopieren",
     "telegramCopied": "Text in Zwischenablage kopiert",
-    "studentFlights": "Schülerflüge"
+    "studentFlights": "Schülerflüge",
+    "coachDayView": "Bewertungsübersicht",
+    "coachNotePlaceholder": "Kommentar zum Manöver...",
+    "noStudentFlights": "Keine Schülerflüge an diesem Tag",
+    "noTrainingItems": "Keine Manöver erfasst",
+    "eventLinked": "Flug mit Flugtag verknüpft"
   },
   "locations": {
     "title": "Orte",

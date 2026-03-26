@@ -274,8 +274,13 @@ export default function EventDetail() {
         )}
       </div>
 
-      {/* Student flights - admin only */}
+      {/* Student flights - admin only (simple view) */}
       <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+
+      {/* Coach batch evaluation - admin only */}
+      {isAdmin && (
+        <CoachDayView eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
+      )}
 
       <EventChat eventId={id!} groupId={event.group_id} />
 
