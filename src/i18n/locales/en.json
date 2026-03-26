@@ -410,6 +410,11 @@
     "topTakeoffs": "Top 5 takeoffs",
     "altitudeTrend": "⌀ Altitude gain per month",
     "activityHeatmap": "Activity",
+    "distanceTrend": "Distance per month (km)",
+    "distanceTrendYear": "Distance per year (km)",
+    "gliderDistribution": "Glider distribution",
+    "weekdayDistribution": "Flight days (weekday)",
+    "weekdaysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   },

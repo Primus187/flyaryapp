@@ -410,6 +410,11 @@
     "topTakeoffs": "Top 5 décollages",
     "altitudeTrend": "⌀ Dénivelé par mois",
     "activityHeatmap": "Activité",
+    "distanceTrend": "Distance par mois (km)",
+    "distanceTrendYear": "Distance par année (km)",
+    "gliderDistribution": "Répartition des voiles",
+    "weekdayDistribution": "Jours de vol (semaine)",
+    "weekdaysShort": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
     "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
     "monthsShort": ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"]
   },

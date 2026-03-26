@@ -394,6 +394,11 @@
     "topTakeoffs": "Top 5 Startplätze",
     "altitudeTrend": "⌀ Höhenmeter pro Monat",
     "activityHeatmap": "Aktivität",
+    "distanceTrend": "Strecke pro Monat (km)",
+    "distanceTrendYear": "Strecke pro Jahr (km)",
+    "gliderDistribution": "Schirmverteilung",
+    "weekdayDistribution": "Flugtage (Wochentag)",
+    "weekdaysShort": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
     "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
     "monthsShort": ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
   },
