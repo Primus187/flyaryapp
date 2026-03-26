@@ -492,7 +492,11 @@
     "shvTrainingPortal": "SHV Prüfungsseite GS Pilot",
     "shvExamChecklist": "Prüfungsvorbereitung — Checkliste",
     "shvElearning": "SHV E-Learning (Theoriefragen)",
-    "shvOpenRegulations": "SHV-Prüfungsweisungen öffnen"
+    "shvOpenRegulations": "SHV-Prüfungsweisungen öffnen",
+    "grundkurs": "Grundkurs",
+    "brevetkurs": "Brevetkurs",
+    "siku": "SiKu",
+    "pilot": "Pilot"
   },
   
   "flights_training": {
