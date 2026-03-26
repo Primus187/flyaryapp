@@ -230,7 +230,8 @@
     "flightCount_one": "1 vol",
     "searchLocation": "Rechercher un site...",
     "createNew": "+ Créer un nouveau site",
-    "noResults": "Aucun site trouvé"
+    "noResults": "Aucun site trouvé",
+    "weather": "Météo"
   },
   "groups": {
     "title": "Groupes",
