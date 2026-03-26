@@ -95,9 +95,10 @@ export default function Training() {
         {categories.map((cat) => {
           const pct = categoryProgress(cat.id);
           return (
-            <AccordionItem key={cat.id} value={cat.id} className="border rounded-xl bg-card overflow-hidden">
+            <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-amber-500/50 bg-amber-500/5")}>
               <AccordionTrigger className="px-4 py-3 hover:no-underline">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {cat.name === "SHV-Prüfungsmanöver" && <Shield className="h-4 w-4 text-amber-500 shrink-0" />}
                   <span className="font-semibold text-sm truncate">{cat.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground shrink-0">{pct}%</span>
                 </div>
