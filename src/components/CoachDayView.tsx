@@ -145,6 +145,69 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     toast({ title: t("common.saved") });
   };
 
+  const handleStartAddItems = async (flightId: string) => {
+    setAddingForFlightId(flightId);
+    setSelectedItemIds(new Set());
+    setLoadingItems(true);
+
+    // Try event maneuvers first, fall back to all training items
+    const { data: eventManeuvers } = await supabase
+      .from("event_maneuvers")
+      .select("training_item_id, training_items(id, name)")
+      .eq("event_id", eventId)
+      .order("sort_order");
+
+    if (eventManeuvers && eventManeuvers.length > 0) {
+      setAvailableItems(
+        eventManeuvers
+          .filter((em: any) => em.training_items)
+          .map((em: any) => ({ id: em.training_items.id, name: em.training_items.name }))
+      );
+    } else {
+      const { data: allItems } = await supabase
+        .from("training_items")
+        .select("id, name")
+        .order("sort_order");
+      setAvailableItems(allItems || []);
+    }
+    setLoadingItems(false);
+  };
+
+  const handleConfirmAddItems = async (flightId: string) => {
+    if (!user || selectedItemIds.size === 0) return;
+    setSavingItems(true);
+
+    const inserts = Array.from(selectedItemIds).map((itemId) => ({
+      flight_id: flightId,
+      item_id: itemId,
+    }));
+
+    const { error } = await supabase.from("flight_training_items").insert(inserts as any);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      setSavingItems(false);
+      return;
+    }
+
+    // Update local state
+    const newItems: TrainingItemRating[] = Array.from(selectedItemIds).map((itemId) => ({
+      item_id: itemId,
+      name: availableItems.find((a) => a.id === itemId)?.name || "?",
+      instructor_rating: null,
+      instructor_note: null,
+    }));
+
+    setFlights((prev) =>
+      prev.map((f) =>
+        f.id === flightId ? { ...f, training_items: [...f.training_items, ...newItems] } : f
+      )
+    );
+
+    setAddingForFlightId(null);
+    setSavingItems(false);
+    toast({ title: t("common.saved") });
+  };
+
   if (loading) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
   if (flights.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
 
