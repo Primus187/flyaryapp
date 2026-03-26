@@ -489,8 +489,9 @@
     "shvResources": "Documents FSVL & matériel d'examen",
     "shvResourcesDescription": "Documents officiels de la Fédération suisse de vol libre pour la formation des pilotes de parapente.",
     "shvExamRegulations": "Directives d'examen pilote parapente (2025)",
-    "shvTrainingPortal": "Portail de formation FSVL",
-    "shvTrainingRegulations": "Règlement de formation (2025)",
+    "shvTrainingPortal": "Page d'examen FSVL — Parapente Pilote",
+    "shvExamChecklist": "Préparation à l'examen — Checklist",
+    "shvElearning": "FSVL E-Learning (Questions de théorie)",
     "shvOpenRegulations": "Ouvrir les directives d'examen FSVL"
   },
   "more": {

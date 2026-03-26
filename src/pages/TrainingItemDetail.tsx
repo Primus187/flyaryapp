@@ -99,7 +99,7 @@ export default function TrainingItemDetail() {
               <span className="text-xs text-amber-600 font-medium">{t("training.shvExamManeuver")}</span>
             </div>
             <a
-              href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen_Faehigkeitspruefung_GS_Pilot_2025.pdf"
+              href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen/Gleitschirm_Pilot_Juli2025_DE.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline"

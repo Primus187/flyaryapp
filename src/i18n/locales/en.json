@@ -489,8 +489,9 @@
     "shvResources": "SHV Documents & Exam Materials",
     "shvResourcesDescription": "Official documents from the Swiss Hang Gliding Association for paraglider pilot training.",
     "shvExamRegulations": "Exam Regulations GS Pilot (2025)",
-    "shvTrainingPortal": "SHV Training Portal",
-    "shvTrainingRegulations": "Training Regulations (2025)",
+    "shvTrainingPortal": "SHV Exam Page — GS Pilot",
+    "shvExamChecklist": "Exam Preparation — Checklist",
+    "shvElearning": "SHV E-Learning (Theory Questions)",
     "shvOpenRegulations": "Open SHV exam regulations"
   },
   "more": {
