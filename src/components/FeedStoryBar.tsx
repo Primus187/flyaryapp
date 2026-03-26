@@ -21,7 +21,8 @@ export default function FeedStoryBar({ userId, groupIds }: { userId: string; gro
     if (!groupIds.length) return;
 
     (async () => {
-      const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      // Start with 48h, fallback to 7 days if too few results
+      let since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
       const { data: recentFlights } = await supabase
         .from("flights")
         .select("id, user_id, published_at")
