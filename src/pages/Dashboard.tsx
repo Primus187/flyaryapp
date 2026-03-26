@@ -155,6 +155,20 @@ export default function Dashboard() {
           })));
         }
       }
+
+      // Check glider maintenance
+      const { data: glidersData } = await supabase.from("pilot_gliders" as any).select("manufacturer, model, next_check_date, reserve_repack_date").eq("user_id", user.id);
+      if (glidersData) {
+        const now = new Date();
+        const warnings: { name: string; type: string }[] = [];
+        (glidersData as any[]).forEach(g => {
+          const name = `${g.manufacturer} ${g.model}`;
+          if (g.next_check_date && new Date(g.next_check_date) < now) warnings.push({ name, type: "check" });
+          if (g.reserve_repack_date && new Date(g.reserve_repack_date) < now) warnings.push({ name, type: "reserve" });
+        });
+        setOverdueGliders(warnings);
+      }
+
       setLoading(false);
     };
     fetchData();
