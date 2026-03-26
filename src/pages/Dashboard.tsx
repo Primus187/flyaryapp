@@ -235,6 +235,25 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Maintenance warnings */}
+      {overdueGliders.length > 0 && (
+        <button onClick={() => navigate("/profile")} className="w-full">
+          <Card className="border border-destructive/30 bg-destructive/5 shadow-sm">
+            <CardContent className="p-3 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-destructive">{t("dashboard.maintenanceWarning")}</p>
+                {overdueGliders.map((g, i) => (
+                  <p key={i} className="text-xs text-muted-foreground">
+                    {g.name} — {g.type === "check" ? t("profile.checkOverdue") : t("profile.reserveOverdue")}
+                  </p>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </button>
+      )}
+
       {/* Events */}
       {events.length > 0 && (
         <div>
