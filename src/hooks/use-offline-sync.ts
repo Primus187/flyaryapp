@@ -37,7 +37,7 @@ export function useOfflineSync() {
         // Insert flight
         const { data, error } = await supabase
           .from("flights")
-          .insert(flight.flightData)
+          .insert(flight.flightData as any)
           .select("id")
           .single();
         if (error) throw error;
