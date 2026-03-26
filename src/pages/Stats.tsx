@@ -102,6 +102,38 @@ export default function Stats() {
     });
   }, [filtered, mode, monthsShort]);
 
+  // Distance trend per month/year
+  const distanceTrend = useMemo(() => {
+    if (mode === "all") {
+      const map: Record<string, number> = {};
+      flights.forEach(f => { const y = new Date(f.date).getFullYear().toString(); map[y] = (map[y] || 0) + (Number(f.distance_km) || 0); });
+      return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).map(([label, km]) => ({ label, km: Math.round(km * 10) / 10 }));
+    }
+    return monthsShort.map((label, i) => {
+      const km = filtered.filter(f => new Date(f.date).getMonth() === i).reduce((s, f) => s + (Number(f.distance_km) || 0), 0);
+      return { label, km: Math.round(km * 10) / 10 };
+    });
+  }, [flights, filtered, mode, monthsShort]);
+
+  // Glider distribution
+  const gliderDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    filtered.forEach(f => { if (f.glider) counts[f.glider] = (counts[f.glider] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+  }, [filtered]);
+
+  // Weekday distribution
+  const weekdayDistribution = useMemo(() => {
+    const weekdaysShort = t("stats.weekdaysShort", { returnObjects: true }) as string[];
+    const counts = new Array(7).fill(0);
+    filtered.forEach(f => {
+      const day = new Date(f.date).getDay(); // 0=Sun
+      const idx = day === 0 ? 6 : day - 1; // Mon=0..Sun=6
+      counts[idx]++;
+    });
+    return weekdaysShort.map((label, i) => ({ label, flights: counts[i] }));
+  }, [filtered, t]);
+
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m}m`; };
   const navigatePeriod = (dir: number) => { if (mode === "month") { let m = selectedMonth + dir; let y = selectedYear; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } setSelectedMonth(m); setSelectedYear(y); } else if (mode === "year") setSelectedYear((y) => y + dir); };
   const chartConfig = { flights: { label: t("stats.flights"), color: "hsl(var(--primary))" }, minutes: { label: "Min", color: "hsl(var(--primary) / 0.6)" } };
@@ -267,7 +299,74 @@ export default function Stats() {
         </div>
       )}
 
-      {/* Activity Heatmap */}
+      {/* Distance trend */}
+      {distanceTrend.some(d => d.km > 0) && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{mode === "all" ? t("stats.distanceTrendYear") : t("stats.distanceTrend")}</h2>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-3">
+              <ChartContainer config={{ km: { label: "km", color: "hsl(var(--primary) / 0.5)" } }} className="h-[180px] w-full">
+                <BarChart data={distanceTrend} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10 }} interval={mode === "all" ? 0 : 1} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="km" fill="var(--color-km)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Glider distribution */}
+      {gliderDistribution.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("stats.gliderDistribution")}</h2>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-3 space-y-2">
+              {gliderDistribution.map((g, i) => {
+                const max = gliderDistribution[0].count;
+                return (
+                  <div key={g.name} className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-4 tabular-nums">{i + 1}.</span>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <span className="text-xs font-medium truncate">{g.name}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">{g.count}</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full" style={{ width: `${(g.count / max) * 100}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Weekday distribution */}
+      {weekdayDistribution.some(d => d.flights > 0) && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("stats.weekdayDistribution")}</h2>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-3">
+              <ChartContainer config={{ flights: { label: t("stats.flights"), color: "hsl(var(--primary) / 0.6)" } }} className="h-[180px] w-full">
+                <BarChart data={weekdayDistribution} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10 }} interval={0} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="flights" fill="var(--color-flights)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {(mode === "year" || mode === "all") && Object.keys(heatmapData.days).length > 0 && (
         <div>
           <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("stats.activityHeatmap")} {heatmapData.year}</h2>
