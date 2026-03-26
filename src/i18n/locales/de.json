@@ -464,6 +464,12 @@
     "selectManeuvers": "Manöver auswählen...",
     "noManeuvers": "Keine Manöver"
   },
+  "coach": {
+    "instructorFeedback": "Fluglehrer-Feedback",
+    "addFeedback": "Feedback geben",
+    "feedbackSaved": "Feedback gespeichert",
+    "notePlaceholder": "Bemerkung zum Manöver..."
+  },
   "onboarding": {
     "welcome": "Willkommen bei Flyary! 🪂",
     "intro": "Dein digitales Flugbuch für Gleitschirmpiloten. In drei Schritten bist du startklar.",

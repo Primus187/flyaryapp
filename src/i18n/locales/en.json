@@ -492,6 +492,12 @@
     "selectManeuvers": "Select maneuvers...",
     "noManeuvers": "No maneuvers"
   },
+  "coach": {
+    "instructorFeedback": "Instructor feedback",
+    "addFeedback": "Add feedback",
+    "feedbackSaved": "Feedback saved",
+    "notePlaceholder": "Note about this maneuver..."
+  },
   "onboarding": {
     "welcome": "Welcome to Flyary! 🪂",
     "intro": "Your digital logbook for paragliding pilots. Get started in three easy steps.",
