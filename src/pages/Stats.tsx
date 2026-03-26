@@ -102,6 +102,38 @@ export default function Stats() {
     });
   }, [filtered, mode, monthsShort]);
 
+  // Distance trend per month/year
+  const distanceTrend = useMemo(() => {
+    if (mode === "all") {
+      const map: Record<string, number> = {};
+      flights.forEach(f => { const y = new Date(f.date).getFullYear().toString(); map[y] = (map[y] || 0) + (Number(f.distance_km) || 0); });
+      return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).map(([label, km]) => ({ label, km: Math.round(km * 10) / 10 }));
+    }
+    return monthsShort.map((label, i) => {
+      const km = filtered.filter(f => new Date(f.date).getMonth() === i).reduce((s, f) => s + (Number(f.distance_km) || 0), 0);
+      return { label, km: Math.round(km * 10) / 10 };
+    });
+  }, [flights, filtered, mode, monthsShort]);
+
+  // Glider distribution
+  const gliderDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    filtered.forEach(f => { if (f.glider) counts[f.glider] = (counts[f.glider] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+  }, [filtered]);
+
+  // Weekday distribution
+  const weekdayDistribution = useMemo(() => {
+    const weekdaysShort = t("stats.weekdaysShort", { returnObjects: true }) as string[];
+    const counts = new Array(7).fill(0);
+    filtered.forEach(f => {
+      const day = new Date(f.date).getDay(); // 0=Sun
+      const idx = day === 0 ? 6 : day - 1; // Mon=0..Sun=6
+      counts[idx]++;
+    });
+    return weekdaysShort.map((label, i) => ({ label, flights: counts[i] }));
+  }, [filtered, t]);
+
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m}m`; };
   const navigatePeriod = (dir: number) => { if (mode === "month") { let m = selectedMonth + dir; let y = selectedYear; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } setSelectedMonth(m); setSelectedYear(y); } else if (mode === "year") setSelectedYear((y) => y + dir); };
   const chartConfig = { flights: { label: t("stats.flights"), color: "hsl(var(--primary))" }, minutes: { label: "Min", color: "hsl(var(--primary) / 0.6)" } };
