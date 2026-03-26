@@ -689,5 +689,12 @@
     "shvNumber": "SHV-Nummer",
     "viewPublicProfile": "Öffentliches Profil ansehen",
     "photos": "Fotos"
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Flüge, Orte, Piloten suchen...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "hint": "Gib einen Suchbegriff ein, um Flüge, Orte, Termine und Piloten zu finden.",
+    "pilots": "Piloten"
   }
 }
