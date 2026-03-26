@@ -485,7 +485,13 @@
     "danger": "Danger",
     "notes": "Personal Notes",
     "notesPlaceholder": "Your notes on this exercise...",
-    "shvExamManeuver": "SHV Exam Maneuver — Section 5.7.2"
+    "shvExamManeuver": "SHV Exam Maneuver — Section 5.7.2",
+    "shvResources": "SHV Documents & Exam Materials",
+    "shvResourcesDescription": "Official documents from the Swiss Hang Gliding Association for paraglider pilot training.",
+    "shvExamRegulations": "Exam Regulations GS Pilot (2025)",
+    "shvTrainingPortal": "SHV Training Portal",
+    "shvTrainingRegulations": "Training Regulations (2025)",
+    "shvOpenRegulations": "Open SHV exam regulations"
   },
   "more": {
     "title": "More",
