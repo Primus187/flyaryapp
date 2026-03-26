@@ -32,7 +32,8 @@
     "required": "Required",
     "confirm": "Confirm",
     "saved": "Saved",
-    "noPosition": "No position"
+    "noPosition": "No position",
+    "retry": "Retry"
   },
   "dashboard": {
     "title": "Flyary",
