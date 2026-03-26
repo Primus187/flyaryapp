@@ -129,7 +129,13 @@
     "addPhotos2": "Ajouter des photos",
     "deletePhoto": "Supprimer cette photo ?",
     "photoDeleted": "Photo supprimée",
-    "photoAdded": "Photo ajoutée"
+    "photoAdded": "Photo ajoutée",
+    "templates": "Modèles",
+    "templateLoaded": "Modèle chargé",
+    "templateSaved": "Modèle enregistré",
+    "templateDeleted": "Modèle supprimé",
+    "saveAsTemplate": "Enregistrer comme modèle",
+    "templateNamePlaceholder": "Nom du modèle..."
   },
   "events": {
     "title": "Événements",
