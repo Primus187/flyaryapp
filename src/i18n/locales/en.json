@@ -129,7 +129,13 @@
     "addPhotos2": "Add photos",
     "deletePhoto": "Delete this photo?",
     "photoDeleted": "Photo deleted",
-    "photoAdded": "Photo added"
+    "photoAdded": "Photo added",
+    "templates": "Templates",
+    "templateLoaded": "Template loaded",
+    "templateSaved": "Template saved",
+    "templateDeleted": "Template deleted",
+    "saveAsTemplate": "Save as template",
+    "templateNamePlaceholder": "Template name..."
   },
   "events": {
     "title": "Events",
