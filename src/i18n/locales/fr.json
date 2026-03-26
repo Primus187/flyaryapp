@@ -201,6 +201,8 @@
     "coachNotePlaceholder": "Commentaire sur la manœuvre...",
     "noStudentFlights": "Aucun vol d'élève ce jour",
     "noTrainingItems": "Aucune manœuvre enregistrée",
+    "selectManeuvers": "Sélectionner des manœuvres",
+    "addManeuvers": "Ajouter des manœuvres",
     "eventLinked": "Vol lié à l'événement",
     "studentFlights": "Vols des élèves",
     "flightArea": "Zone de vol",

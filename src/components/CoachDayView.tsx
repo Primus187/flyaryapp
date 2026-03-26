@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, Plane, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Star, Plane, ChevronDown, ChevronUp, MessageSquare, Plus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,6 +42,11 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const [loading, setLoading] = useState(true);
   const [expandedFlightId, setExpandedFlightId] = useState<string | null>(null);
   const [noteEdits, setNoteEdits] = useState<Record<string, string>>({});
+  const [addingForFlightId, setAddingForFlightId] = useState<string | null>(null);
+  const [availableItems, setAvailableItems] = useState<{ id: string; name: string }[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+  const [loadingItems, setLoadingItems] = useState(false);
+  const [savingItems, setSavingItems] = useState(false);
 
   useEffect(() => {
     const fetchFlights = async () => {
@@ -139,6 +145,69 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     toast({ title: t("common.saved") });
   };
 
+  const handleStartAddItems = async (flightId: string) => {
+    setAddingForFlightId(flightId);
+    setSelectedItemIds(new Set());
+    setLoadingItems(true);
+
+    // Try event maneuvers first, fall back to all training items
+    const { data: eventManeuvers } = await supabase
+      .from("event_maneuvers")
+      .select("training_item_id, training_items(id, name)")
+      .eq("event_id", eventId)
+      .order("sort_order");
+
+    if (eventManeuvers && eventManeuvers.length > 0) {
+      setAvailableItems(
+        eventManeuvers
+          .filter((em: any) => em.training_items)
+          .map((em: any) => ({ id: em.training_items.id, name: em.training_items.name }))
+      );
+    } else {
+      const { data: allItems } = await supabase
+        .from("training_items")
+        .select("id, name")
+        .order("sort_order");
+      setAvailableItems(allItems || []);
+    }
+    setLoadingItems(false);
+  };
+
+  const handleConfirmAddItems = async (flightId: string) => {
+    if (!user || selectedItemIds.size === 0) return;
+    setSavingItems(true);
+
+    const inserts = Array.from(selectedItemIds).map((itemId) => ({
+      flight_id: flightId,
+      item_id: itemId,
+    }));
+
+    const { error } = await supabase.from("flight_training_items").insert(inserts as any);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      setSavingItems(false);
+      return;
+    }
+
+    // Update local state
+    const newItems: TrainingItemRating[] = Array.from(selectedItemIds).map((itemId) => ({
+      item_id: itemId,
+      name: availableItems.find((a) => a.id === itemId)?.name || "?",
+      instructor_rating: null,
+      instructor_note: null,
+    }));
+
+    setFlights((prev) =>
+      prev.map((f) =>
+        f.id === flightId ? { ...f, training_items: [...f.training_items, ...newItems] } : f
+      )
+    );
+
+    setAddingForFlightId(null);
+    setSavingItems(false);
+    toast({ title: t("common.saved") });
+  };
+
   if (loading) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
   if (flights.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
 
@@ -218,10 +287,70 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                         );
                       })}
                     </div>
+                  ) : addingForFlightId === flight.id ? (
+                    <div className="space-y-2 pt-1 border-t border-border/50">
+                      {loadingItems ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{t("common.loading")}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-xs font-medium">{t("events.selectManeuvers")}</p>
+                          <div className="max-h-40 overflow-y-auto space-y-1.5">
+                            {availableItems.map((item) => (
+                              <label key={item.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                                <Checkbox
+                                  checked={selectedItemIds.has(item.id)}
+                                  onCheckedChange={(checked) => {
+                                    setSelectedItemIds((prev) => {
+                                      const next = new Set(prev);
+                                      checked ? next.add(item.id) : next.delete(item.id);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                                {item.name}
+                              </label>
+                            ))}
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-xs h-7"
+                              onClick={() => setAddingForFlightId(null)}
+                            >
+                              {t("common.cancel")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="text-xs h-7"
+                              disabled={selectedItemIds.size === 0 || savingItems}
+                              onClick={() => handleConfirmAddItems(flight.id)}
+                            >
+                              {savingItems && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                              {t("common.add")} ({selectedItemIds.size})
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground italic pt-1 border-t border-border/50">
-                      {t("events.noTrainingItems")}
-                    </p>
+                    <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground italic flex-1">
+                        {t("events.noTrainingItems")}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7 gap-1"
+                        onClick={() => handleStartAddItems(flight.id)}
+                      >
+                        <Plus className="h-3 w-3" />
+                        {t("events.addManeuvers")}
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}

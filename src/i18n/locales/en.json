@@ -201,6 +201,8 @@
     "coachNotePlaceholder": "Comment on maneuver...",
     "noStudentFlights": "No student flights on this day",
     "noTrainingItems": "No maneuvers recorded",
+    "selectManeuvers": "Select maneuvers",
+    "addManeuvers": "Add maneuvers",
     "eventLinked": "Flight linked to event",
     "studentFlights": "Student flights",
     "flightArea": "Flight area",
