@@ -10,6 +10,7 @@ export default function BottomNav() {
     { path: "/", icon: Home },
     { path: "/feed", icon: Compass },
     { path: "/flights", icon: BookOpen },
+    { path: "/events", icon: Calendar },
     { path: "/locations", icon: MapPin },
     { path: "/more", icon: LayoutGrid },
   ];
