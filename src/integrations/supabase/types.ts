@@ -1234,6 +1234,50 @@ export type Database = {
         }
         Relationships: []
       }
+      student_day_notes: {
+        Row: {
+          created_at: string
+          event_id: string
+          flight_number: number | null
+          id: string
+          instructor_id: string | null
+          note: string
+          student_user_id: string
+          updated_at: string
+          visible_to_student: boolean
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          flight_number?: number | null
+          id?: string
+          instructor_id?: string | null
+          note?: string
+          student_user_id: string
+          updated_at?: string
+          visible_to_student?: boolean
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          flight_number?: number | null
+          id?: string
+          instructor_id?: string | null
+          note?: string
+          student_user_id?: string
+          updated_at?: string
+          visible_to_student?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_day_notes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_categories: {
         Row: {
           created_at: string
