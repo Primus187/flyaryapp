@@ -283,6 +283,11 @@ export default function EventDetail() {
         <CoachDayView eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
       )}
 
+      {/* Student feedback view - non-admin only */}
+      {!isAdmin && (
+        <StudentDayFeedback eventId={id!} />
+      )}
+
       <EventChat eventId={id!} groupId={event.group_id} />
 
       <EventPublishPreviewDialog open={showPreview} onOpenChange={setShowPreview} onPublish={handlePublish} event={event} pilotName={pilotName} avatarUrl={avatarUrl} groupName={groupName} photos={photos.map(p => ({ id: p.id, url: p.url }))} loading={publishing} />
