@@ -42,6 +42,7 @@ const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 const ChallengeDetail = lazy(() => import("@/pages/ChallengeDetail"));
 const PilotProfile = lazy(() => import("@/pages/PilotProfile"));
 const SearchPage = lazy(() => import("@/pages/Search"));
+const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
