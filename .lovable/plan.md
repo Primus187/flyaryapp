@@ -1,25 +1,83 @@
 
 
-# Events prominenter platzieren
+# Digitales Ausbildungsblatt — Flugtag-Bewertungstabelle
 
-## Aktueller Stand
-Die BottomNav hat 5 Tabs: **Home, Feed, Logbuch, Orte, Mehr**. Events/Termine sind aktuell nur über die Events-Seite erreichbar (via Mehr-Hub oder direkte URL), aber **nicht in der BottomNav**.
+## Konzept
 
-## Lösung: Events in die BottomNav aufnehmen
+Das aktuelle CoachDayView wird durch ein tabellenartiges "Ausbildungsblatt" ersetzt, das dem handschriftlichen Formular des Fluglehrers entspricht:
 
-Die BottomNav wird von 5 auf 6 Tabs erweitert — das Calendar-Icon ist bereits importiert aber nicht verwendet:
+```text
+┌──────────┬─────────┬─────────┬─────────┬───┬─────────┬──────────────┐
+│ Schüler  │ Flug 1  │ Flug 2  │ Flug 3  │...│ Flug 6  │ Zusammen-    │
+│          │         │         │         │   │         │ fassung      │
+├──────────┼─────────┼─────────┼─────────┼───┼─────────┼──────────────┤
+│ Max M.   │ 🔒 gut  │ 👁 Ohren│         │   │         │ Bereit für   │
+│          │ gestartet│ geübt   │         │   │         │ Brevetkurs   │
+├──────────┼─────────┼─────────┼─────────┼───┼─────────┼──────────────┤
+│ Lisa K.  │ 👁 Start│         │         │   │         │ Muss Nicken  │
+│          │ unsauber│         │         │   │         │ verbessern   │
+└──────────┴─────────┴─────────┴─────────┴───┴─────────┴──────────────┘
 
+🔒 = nur Fluglehrer sichtbar   👁 = Schüler sichtbar
 ```
-Home | Feed | Logbuch | Events | Orte | Mehr
- 🏠    🧭     📖       📅      📍     ⊞
-```
 
-### Änderung in `src/components/BottomNav.tsx`
-- Events-Tab `{ path: "/events", icon: Calendar }` zwischen Logbuch und Orte einfügen
-- Icon-Grösse und Padding leicht reduzieren (`h-5 w-5`, `px-3`), damit 6 Tabs auf 395px passen
+## Datenbank
 
-### Zusätzlich: FAB auf Events-Seite
-- Floating Action Button (runder Plus-Button) unten rechts in `src/pages/Events.tsx`
-- Nur sichtbar wenn User Event-Erstellrechte hat
-- Positioniert über der BottomNav (`bottom-20 right-4`)
+Neue Tabelle `student_day_notes`:
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| id | uuid PK | |
+| event_id | uuid | Flugtag-Referenz |
+| student_user_id | uuid | Schüler |
+| flight_number | int (1-6) | NULL = Zusammenfassung |
+| note | text | Freitext-Feedback |
+| visible_to_student | boolean | Default false (nur Lehrer) |
+| instructor_id | uuid | Wer hat geschrieben |
+| created_at / updated_at | timestamptz | |
+
+- `flight_number = NULL` → Zusammenfassungs-Spalte
+- Die Zusammenfassung wird beim Erstellen eines neuen Events automatisch vom letzten Event der gleichen Gruppe kopiert (Client-Logik)
+
+### RLS-Policies
+- SELECT: Lehrer (group admin) sehen alles; Schüler sehen nur eigene Zeilen mit `visible_to_student = true`
+- INSERT/UPDATE/DELETE: Nur group admins
+
+## UI-Redesign: CoachDayView
+
+### Mobile-optimiertes Layout (395px)
+Da eine 8-spaltige Tabelle auf 395px nicht funktioniert, wird ein **Schüler-Karten-Layout** mit horizontalem Scroll für die Flüge verwendet:
+
+1. **Schüler-Karte** (pro Schüler eine Card)
+   - Header: Pilotname + Zusammenfassungs-Badge
+   - Horizontaler Scroll-Container mit 6 Flug-Slots
+   - Jeder Slot: Tap zum Bearbeiten, Sichtbarkeits-Toggle (Auge/Schloss-Icon)
+
+2. **Zusammenfassungs-Sektion** am Ende jeder Karte
+   - Textarea, vorausgefüllt vom letzten Flugtag
+   - Toggle: Schüler darf sehen (ja/nein)
+
+3. **Sichtbarkeits-Toggle**: Kleines Auge- oder Schloss-Icon pro Notiz
+   - Tap wechselt zwischen `visible_to_student: true/false`
+   - Visuell: Auge-Icon = sichtbar, Schloss = nur Lehrer
+
+### Schüler-Ansicht
+- Auf der Event-Detail-Seite sieht der Schüler nur seine eigenen Feedbacks mit `visible_to_student = true`
+- Dargestellt als einfache Liste: "Flug 1: ...", "Flug 2: ...", "Zusammenfassung: ..."
+
+## Umsetzung
+
+### Migration
+- Tabelle `student_day_notes` erstellen
+- RLS: Security-Definer-Funktion für Schüler-Sicht
+
+### Dateien
+- **Neu**: Migration für `student_day_notes`
+- **Rewrite**: `src/components/CoachDayView.tsx` — Komplettes Redesign mit Karten + horizontalem Scroll
+- **Neu**: `src/components/StudentDayFeedback.tsx` — Schüler-Ansicht der freigegebenen Notizen
+- **Edit**: `src/pages/EventDetail.tsx` — StudentDayFeedback für Nicht-Admins einbinden
+- **Edit**: `src/i18n/locales/{de,en,fr}.json` — Neue Labels
+
+### Zusammenfassungs-Übernahme
+Beim Laden der CoachDayView wird geprüft, ob für diesen Event bereits Zusammenfassungen existieren. Falls nicht, wird die letzte Zusammenfassung des Schülers aus dem vorherigen Event der gleichen Gruppe geladen und als Vorschlag angezeigt (noch nicht gespeichert, bis der Lehrer bestätigt).
 
