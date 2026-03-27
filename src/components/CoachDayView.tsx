@@ -1,11 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff, Plane, Loader2, FileText } from "lucide-react";
+import {
+  Eye, EyeOff, Plane, FileText, Check, PauseCircle, ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,6 +22,8 @@ interface DayNote {
   note: string;
   visible_to_student: boolean;
   dirty?: boolean;
+  saving?: boolean;
+  saved?: boolean;
   carryOver?: boolean;
 }
 
@@ -28,7 +31,8 @@ interface StudentCard {
   user_id: string;
   pilot_name: string;
   flight_count: number;
-  notes: DayNote[]; // flight_number 1-6 + null (summary)
+  paused: boolean;
+  notes: DayNote[]; // index 0-5 = flights 1-6, index 6 = summary
 }
 
 export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
@@ -37,12 +41,13 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const { toast } = useToast();
   const [students, setStudents] = useState<StudentCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0); // 0-5 for F1-F6
+  const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const fetchData = useCallback(async () => {
     if (!user) return;
 
-    // Get group members (students = non-admin members)
     const { data: members } = await supabase
       .from("group_members")
       .select("user_id, role")
@@ -52,7 +57,6 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const studentIds = members.filter(m => m.role === "member").map(m => m.user_id);
     if (studentIds.length === 0) { setLoading(false); return; }
 
-    // Parallel: profiles, flights count per student, existing notes
     const dateStr = new Date(eventDate).toISOString().split("T")[0];
 
     const [profilesRes, flightsRes, notesRes] = await Promise.all([
@@ -71,14 +75,13 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
 
     const existingNotes = (notesRes.data as any[] || []);
 
-    // For students without a summary, try to carry over from previous event
+    // Carry-over logic for summaries
     const studentsNeedingCarryOver = studentIds.filter(sid =>
       !existingNotes.some((n: any) => n.student_user_id === sid && n.flight_number === null)
     );
 
     let carryOverMap: Record<string, string> = {};
     if (studentsNeedingCarryOver.length > 0) {
-      // Find the most recent previous event in same group
       const { data: prevEvents } = await supabase
         .from("flight_events")
         .select("id")
@@ -101,12 +104,10 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       }
     }
 
-    // Build student cards
     const cards: StudentCard[] = studentIds.map(uid => {
       const studentNotes = existingNotes.filter((n: any) => n.student_user_id === uid);
       const notes: DayNote[] = [];
 
-      // Slots 1-6
       for (let i = 1; i <= 6; i++) {
         const existing = studentNotes.find((n: any) => n.flight_number === i);
         notes.push({
@@ -117,7 +118,6 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
         });
       }
 
-      // Summary (flight_number = null)
       const summaryNote = studentNotes.find((n: any) => n.flight_number === null);
       const carryOver = !summaryNote && carryOverMap[uid];
       notes.push({
@@ -128,60 +128,38 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
         carryOver: !!carryOver,
       });
 
+      const pausedNote = studentNotes.find((n: any) => n.flight_number === -1);
+
       return {
         user_id: uid,
         pilot_name: profileMap[uid] || "?",
         flight_count: flightCountMap[uid] || 0,
+        paused: !!pausedNote,
         notes,
       };
     });
 
-    setStudents(cards.sort((a, b) => a.pilot_name.localeCompare(b.pilot_name)));
+    // Sort: non-paused first, then alphabetical
+    cards.sort((a, b) => {
+      if (a.paused !== b.paused) return a.paused ? 1 : -1;
+      return a.pilot_name.localeCompare(b.pilot_name);
+    });
+
+    setStudents(cards);
     setLoading(false);
   }, [eventId, eventDate, groupId, user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleNoteChange = (studentIdx: number, noteIdx: number, value: string) => {
-    setStudents(prev => prev.map((s, si) =>
-      si === studentIdx ? {
-        ...s,
-        notes: s.notes.map((n, ni) =>
-          ni === noteIdx ? { ...n, note: value, dirty: true, carryOver: false } : n
-        ),
-      } : s
-    ));
-  };
+  // Cleanup debounce timers
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
 
-  const toggleVisibility = async (studentIdx: number, noteIdx: number) => {
-    const student = students[studentIdx];
-    const note = student.notes[noteIdx];
-    const newVisible = !note.visible_to_student;
-
-    // Update local state immediately
-    setStudents(prev => prev.map((s, si) =>
-      si === studentIdx ? {
-        ...s,
-        notes: s.notes.map((n, ni) =>
-          ni === noteIdx ? { ...n, visible_to_student: newVisible } : n
-        ),
-      } : s
-    ));
-
-    // If note exists in DB, update it
-    if (note.id) {
-      await supabase.from("student_day_notes" as any)
-        .update({ visible_to_student: newVisible } as any)
-        .eq("id", note.id);
-    }
-  };
-
-  const saveNote = async (studentIdx: number, noteIdx: number) => {
+  const persistNote = useCallback(async (student: StudentCard, noteIdx: number, note: DayNote) => {
     if (!user) return;
-    const student = students[studentIdx];
-    const note = student.notes[noteIdx];
-    const key = `${student.user_id}-${noteIdx}`;
-    setSaving(key);
 
     const payload = {
       event_id: eventId,
@@ -196,174 +174,318 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       await supabase.from("student_day_notes" as any)
         .update({ note: note.note, visible_to_student: note.visible_to_student, instructor_id: user.id } as any)
         .eq("id", note.id);
-    } else {
+    } else if (note.note.trim()) {
       const { data } = await supabase.from("student_day_notes" as any)
         .insert(payload as any)
         .select("id")
         .single();
       if (data) {
-        setStudents(prev => prev.map((s, si) =>
-          si === studentIdx ? {
+        setStudents(prev => prev.map(s =>
+          s.user_id === student.user_id ? {
             ...s,
             notes: s.notes.map((n, ni) =>
-              ni === noteIdx ? { ...n, id: (data as any).id, dirty: false, carryOver: false } : n
+              ni === noteIdx ? { ...n, id: (data as any).id } : n
             ),
           } : s
         ));
       }
     }
 
-    setStudents(prev => prev.map((s, si) =>
-      si === studentIdx ? {
+    // Show saved indicator
+    setStudents(prev => prev.map(s =>
+      s.user_id === student.user_id ? {
         ...s,
         notes: s.notes.map((n, ni) =>
-          ni === noteIdx ? { ...n, dirty: false } : n
+          ni === noteIdx ? { ...n, dirty: false, saving: false, saved: true } : n
         ),
       } : s
     ));
 
-    setSaving(null);
-    toast({ title: t("common.saved") });
+    // Clear saved indicator after 2s
+    setTimeout(() => {
+      setStudents(prev => prev.map(s =>
+        s.user_id === student.user_id ? {
+          ...s,
+          notes: s.notes.map((n, ni) =>
+            ni === noteIdx ? { ...n, saved: false } : n
+          ),
+        } : s
+      ));
+    }, 2000);
+  }, [eventId, user]);
+
+  const handleNoteChange = (studentId: string, noteIdx: number, value: string) => {
+    setStudents(prev => prev.map(s =>
+      s.user_id === studentId ? {
+        ...s,
+        notes: s.notes.map((n, ni) =>
+          ni === noteIdx ? { ...n, note: value, dirty: true, saved: false, carryOver: false } : n
+        ),
+      } : s
+    ));
+
+    // Debounced auto-save
+    const key = `${studentId}-${noteIdx}`;
+    if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+    debounceTimers.current[key] = setTimeout(() => {
+      setStudents(prev => {
+        const student = prev.find(s => s.user_id === studentId);
+        if (student) {
+          const note = student.notes[noteIdx];
+          persistNote(student, noteIdx, { ...note, note: value });
+        }
+        return prev.map(s =>
+          s.user_id === studentId ? {
+            ...s,
+            notes: s.notes.map((n, ni) =>
+              ni === noteIdx ? { ...n, saving: true } : n
+            ),
+          } : s
+        );
+      });
+    }, 800);
+  };
+
+  const toggleVisibility = async (studentId: string, noteIdx: number) => {
+    const student = students.find(s => s.user_id === studentId);
+    if (!student) return;
+    const note = student.notes[noteIdx];
+    const newVisible = !note.visible_to_student;
+
+    setStudents(prev => prev.map(s =>
+      s.user_id === studentId ? {
+        ...s,
+        notes: s.notes.map((n, ni) =>
+          ni === noteIdx ? { ...n, visible_to_student: newVisible } : n
+        ),
+      } : s
+    ));
+
+    if (note.id) {
+      await supabase.from("student_day_notes" as any)
+        .update({ visible_to_student: newVisible } as any)
+        .eq("id", note.id);
+    }
+  };
+
+  const togglePaused = async (studentId: string) => {
+    if (!user) return;
+    const student = students.find(s => s.user_id === studentId);
+    if (!student) return;
+
+    const newPaused = !student.paused;
+
+    if (newPaused) {
+      await supabase.from("student_day_notes" as any)
+        .insert({
+          event_id: eventId,
+          student_user_id: studentId,
+          flight_number: -1,
+          note: "paused",
+          visible_to_student: false,
+          instructor_id: user.id,
+        } as any);
+    } else {
+      await supabase.from("student_day_notes" as any)
+        .delete()
+        .eq("event_id", eventId)
+        .eq("student_user_id", studentId)
+        .eq("flight_number", -1);
+    }
+
+    setStudents(prev => {
+      const updated = prev.map(s =>
+        s.user_id === studentId ? { ...s, paused: newPaused } : s
+      );
+      updated.sort((a, b) => {
+        if (a.paused !== b.paused) return a.paused ? 1 : -1;
+        return a.pilot_name.localeCompare(b.pilot_name);
+      });
+      return updated;
+    });
+
+    toast({ title: newPaused ? t("events.studentPaused") : t("events.studentResumed") });
   };
 
   if (loading) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
   if (students.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+    <div className="space-y-1">
+      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
         {t("events.coachDayView")} ({students.length})
       </h2>
 
-      {students.map((student, si) => {
-        const summaryNote = student.notes[6]; // index 6 = summary
+      {students.map((student) => {
+        const isExpanded = expandedId === student.user_id;
+        const notesWithContent = student.notes.slice(0, 6).filter(n => n.note.trim()).length;
+
         return (
-          <Card key={student.user_id} className="border-0 shadow-sm overflow-hidden">
-            <CardContent className="p-0">
-              {/* Student header */}
-              <div className="p-3 flex items-center gap-2 border-b border-border/50">
-                <Plane className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm font-medium flex-1">{student.pilot_name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {student.flight_count} {student.flight_count === 1 ? t("events.flightSlot") : t("events.flightSlot") + (student.flight_count > 1 ? "e" : "")}
-                </span>
-              </div>
+          <div key={student.user_id} className="rounded-lg border border-border/50 overflow-hidden bg-card">
+            {/* Compact row */}
+            <button
+              onClick={() => {
+                setExpandedId(isExpanded ? null : student.user_id);
+                setActiveTab(0);
+              }}
+              className={cn(
+                "w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors",
+                student.paused && "opacity-50",
+                isExpanded && "bg-muted/40"
+              )}
+            >
+              <ChevronRight className={cn(
+                "h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform",
+                isExpanded && "rotate-90"
+              )} />
+              <span className="text-sm font-medium flex-1 truncate">{student.pilot_name}</span>
 
-              {/* Horizontal scroll: flight slots */}
-              <div className="overflow-x-auto">
-                <div className="flex gap-0 min-w-max">
-                  {student.notes.slice(0, 6).map((note, ni) => (
-                    <FlightSlot
-                      key={ni}
-                      label={`${t("events.flightSlot")} ${ni + 1}`}
-                      note={note}
-                      saving={saving === `${student.user_id}-${ni}`}
-                      onNoteChange={(val) => handleNoteChange(si, ni, val)}
-                      onToggleVisibility={() => toggleVisibility(si, ni)}
-                      onSave={() => saveNote(si, ni)}
-                      isActive={ni < student.flight_count}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Summary section */}
-              <div className="p-3 border-t border-border/50 bg-muted/30">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <FileText className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">{t("events.summary")}</span>
-                  {summaryNote.carryOver && (
-                    <span className="text-[10px] text-muted-foreground italic">
-                      ({t("events.summaryCarryOver")})
-                    </span>
-                  )}
-                  <button
-                    onClick={() => toggleVisibility(si, 6)}
-                    className="ml-auto p-1"
-                    title={summaryNote.visible_to_student ? t("events.visibleToStudent") : t("events.hiddenFromStudent")}
-                  >
-                    {summaryNote.visible_to_student
-                      ? <Eye className="h-3.5 w-3.5 text-primary" />
-                      : <EyeOff className="h-3.5 w-3.5 text-muted-foreground/50" />}
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <Textarea
-                    className="text-xs min-h-[2.5rem] h-10 resize-none flex-1"
-                    value={summaryNote.note}
-                    onChange={(e) => handleNoteChange(si, 6, e.target.value)}
-                    placeholder={t("events.coachNotePlaceholder")}
+              {/* Note dots */}
+              <div className="flex gap-0.5">
+                {student.notes.slice(0, 6).map((n, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full",
+                      n.note.trim() ? "bg-primary" : "bg-muted-foreground/20"
+                    )}
                   />
+                ))}
+              </div>
+
+              <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                {student.flight_count}<Plane className="h-3 w-3" />
+              </span>
+
+              {student.paused && (
+                <PauseCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              )}
+            </button>
+
+            {/* Expanded content */}
+            {isExpanded && (
+              <div className="border-t border-border/50">
+                {/* Pause toggle */}
+                <div className="px-3 py-1.5 flex justify-end border-b border-border/30">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="shrink-0 h-10 text-xs"
-                    disabled={!summaryNote.dirty && !summaryNote.carryOver}
-                    onClick={() => saveNote(si, 6)}
+                    className={cn("h-7 text-xs gap-1", student.paused && "text-amber-500")}
+                    onClick={(e) => { e.stopPropagation(); togglePaused(student.user_id); }}
                   >
-                    {saving === `${student.user_id}-6`
-                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      : t("common.save")}
+                    <PauseCircle className="h-3.5 w-3.5" />
+                    {student.paused ? t("events.resumeStudent") : t("events.pauseStudent")}
                   </Button>
                 </div>
+
+                {/* Flight tabs F1-F6 */}
+                <div className="flex border-b border-border/30">
+                  {[0, 1, 2, 3, 4, 5].map(i => {
+                    const hasNote = student.notes[i].note.trim();
+                    const isActive = activeTab === i;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setActiveTab(i)}
+                        className={cn(
+                          "flex-1 py-2 text-xs font-medium relative transition-colors",
+                          isActive
+                            ? "text-primary border-b-2 border-primary"
+                            : "text-muted-foreground hover:text-foreground",
+                          i < student.flight_count ? "" : "opacity-40"
+                        )}
+                      >
+                        F{i + 1}
+                        {hasNote && (
+                          <span className="absolute top-1 right-1/2 translate-x-3 w-1.5 h-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active flight note */}
+                <div className="p-3 space-y-2">
+                  <NoteEditor
+                    note={student.notes[activeTab]}
+                    placeholder={`${t("events.flightSlot")} ${activeTab + 1}...`}
+                    onChange={(val) => handleNoteChange(student.user_id, activeTab, val)}
+                    onToggleVisibility={() => toggleVisibility(student.user_id, activeTab)}
+                    t={t}
+                  />
+
+                  {/* Summary */}
+                  <div className="pt-2 border-t border-border/30">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <FileText className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t("events.summary")}
+                      </span>
+                      {student.notes[6].carryOver && (
+                        <span className="text-[10px] text-muted-foreground italic">
+                          ({t("events.summaryCarryOver")})
+                        </span>
+                      )}
+                    </div>
+                    <NoteEditor
+                      note={student.notes[6]}
+                      placeholder={t("events.coachNotePlaceholder")}
+                      onChange={(val) => handleNoteChange(student.user_id, 6, val)}
+                      onToggleVisibility={() => toggleVisibility(student.user_id, 6)}
+                      t={t}
+                    />
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         );
       })}
     </div>
   );
 }
 
-function FlightSlot({
-  label,
+function NoteEditor({
   note,
-  saving,
-  onNoteChange,
+  placeholder,
+  onChange,
   onToggleVisibility,
-  onSave,
-  isActive,
+  t,
 }: {
-  label: string;
   note: DayNote;
-  saving: boolean;
-  onNoteChange: (val: string) => void;
+  placeholder: string;
+  onChange: (val: string) => void;
   onToggleVisibility: () => void;
-  onSave: () => void;
-  isActive: boolean;
+  t: (key: string) => string;
 }) {
-  const { t } = useTranslation();
-
   return (
-    <div className={cn(
-      "w-40 shrink-0 p-2.5 border-r border-border/30 last:border-r-0",
-      !isActive && "opacity-40"
-    )}>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-        <button onClick={onToggleVisibility} className="p-0.5" title={note.visible_to_student ? t("events.visibleToStudent") : t("events.hiddenFromStudent")}>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onToggleVisibility}
+          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          title={note.visible_to_student ? t("events.visibleToStudent") : t("events.hiddenFromStudent")}
+        >
           {note.visible_to_student
-            ? <Eye className="h-3 w-3 text-primary" />
-            : <EyeOff className="h-3 w-3 text-muted-foreground/50" />}
+            ? <><Eye className="h-3 w-3 text-primary" /><span>{t("events.visibleToStudent")}</span></>
+            : <><EyeOff className="h-3 w-3 text-muted-foreground/50" /><span>{t("events.hiddenFromStudent")}</span></>
+          }
         </button>
+        {note.saving && (
+          <span className="text-[10px] text-muted-foreground animate-pulse">{t("common.saving")}...</span>
+        )}
+        {note.saved && (
+          <span className="text-[10px] text-primary flex items-center gap-0.5">
+            <Check className="h-3 w-3" /> {t("common.saved")}
+          </span>
+        )}
       </div>
       <Textarea
-        className="text-xs min-h-[3rem] h-12 resize-none w-full"
+        className="text-xs min-h-[3rem] h-12 resize-none"
         value={note.note}
-        onChange={(e) => onNoteChange(e.target.value)}
-        placeholder="..."
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
       />
-      {note.dirty && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-1 h-6 text-[10px] w-full"
-          onClick={onSave}
-          disabled={saving}
-        >
-          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : t("common.save")}
-        </Button>
-      )}
     </div>
   );
 }
