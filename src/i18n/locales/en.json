@@ -537,7 +537,8 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "legal": "Legal",
-    "leaderboard": "Leaderboard"
+    "leaderboard": "Leaderboard",
+    "school": "Flight School"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",
