@@ -537,7 +537,8 @@
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
     "legal": "Mentions légales",
-    "leaderboard": "Classement"
+    "leaderboard": "Classement",
+    "school": "École de vol"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
