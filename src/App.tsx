@@ -117,6 +117,7 @@ const App = () => {
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/challenges/:id" element={<ChallengeDetail />} />
                     <Route path="/pilot/:userId" element={<PilotProfile />} />
+                    <Route path="/school" element={<SchoolDashboard />} />
                   </Route>
                   <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />

@@ -760,6 +760,23 @@
     "viewPublicProfile": "View public profile",
     "photos": "Photos"
   },
+  "school": {
+    "title": "Flight School",
+    "noSchool": "You are not an admin of any flight school. Create a group of type «Flight School» to use this dashboard.",
+    "overview": "Overview",
+    "students": "Students",
+    "flightDays": "Flight Days",
+    "activeStudents": "Active Students",
+    "openReviews": "Open Reviews",
+    "nextFlightDay": "Next Flight Day",
+    "openEvent": "Open Event",
+    "newFlightDay": "New Flight Day",
+    "telegram": "Telegram",
+    "flights": "flights",
+    "noStudents": "No students in this group yet.",
+    "noFlightDays": "No flight days recorded yet.",
+    "notes": "notes"
+  },
   "search": {
     "title": "Search",
     "placeholder": "Search flights, sites, pilots...",

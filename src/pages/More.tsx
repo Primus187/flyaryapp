@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, FileDown, MapPin, Scale, Trophy, Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search } from "lucide-react";
 
-const tiles = [
+const baseTiles = [
   { path: "/search", icon: Search, labelKey: "more.search" },
   { path: "/profile", icon: User, labelKey: "more.profile" },
   { path: "/training", icon: GraduationCap, labelKey: "more.training" },
@@ -19,7 +21,32 @@ const tiles = [
 export default function More() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [isSchoolAdmin, setIsSchoolAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const check = async () => {
+      const { data: adminMemberships } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", user.id)
+        .eq("role", "admin");
+      if (!adminMemberships?.length) return;
+      const { data: schools } = await supabase
+        .from("groups")
+        .select("id")
+        .in("id", adminMemberships.map((m) => m.group_id))
+        .eq("group_type", "school")
+        .limit(1);
+      setIsSchoolAdmin((schools?.length ?? 0) > 0);
+    };
+    check();
+  }, [user]);
+
+  const tiles = isSchoolAdmin
+    ? [{ path: "/school", icon: GraduationCap, labelKey: "more.school" }, ...baseTiles]
+    : baseTiles;
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">

@@ -601,7 +601,25 @@
     "settings": "Einstellungen",
     "signOut": "Abmelden",
     "legal": "Rechtliches",
-    "leaderboard": "Rangliste"
+    "leaderboard": "Rangliste",
+    "school": "Flugschule"
+  },
+  "school": {
+    "title": "Flugschule",
+    "noSchool": "Du bist kein Admin einer Flugschule. Erstelle eine Gruppe vom Typ «Flugschule», um dieses Dashboard zu nutzen.",
+    "overview": "Übersicht",
+    "students": "Schüler",
+    "flightDays": "Flugtage",
+    "activeStudents": "Aktive Schüler",
+    "openReviews": "Offene Bewertungen",
+    "nextFlightDay": "Nächster Flugtag",
+    "openEvent": "Zum Flugtag",
+    "newFlightDay": "Neuer Flugtag",
+    "telegram": "Telegram",
+    "flights": "Flüge",
+    "noStudents": "Noch keine Schüler in dieser Gruppe.",
+    "noFlightDays": "Noch keine Flugtage erfasst.",
+    "notes": "Notizen"
   },
   "feed": {
     "title": "Feed",
