@@ -12,6 +12,7 @@ import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
 import CoachDayView from "@/components/CoachDayView";
+import StudentDayFeedback from "@/components/StudentDayFeedback";
 import TelegramTextGenerator from "@/components/TelegramTextGenerator";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
@@ -280,6 +281,11 @@ export default function EventDetail() {
       {/* Coach batch evaluation - admin only */}
       {isAdmin && (
         <CoachDayView eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
+      )}
+
+      {/* Student feedback view - non-admin only */}
+      {!isAdmin && (
+        <StudentDayFeedback eventId={id!} />
       )}
 
       <EventChat eventId={id!} groupId={event.group_id} />
