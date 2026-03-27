@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Star, Plane, ChevronDown, ChevronUp, MessageSquare, Plus, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Plane, Loader2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,348 +15,355 @@ interface Props {
   groupId: string;
 }
 
-interface TrainingItemRating {
-  item_id: string;
-  name: string;
-  instructor_rating: number | null;
-  instructor_note: string | null;
+interface DayNote {
+  id?: string;
+  flight_number: number | null;
+  note: string;
+  visible_to_student: boolean;
+  dirty?: boolean;
+  carryOver?: boolean;
 }
 
-interface StudentFlight {
-  id: string;
+interface StudentCard {
   user_id: string;
   pilot_name: string;
-  duration_minutes: number | null;
-  glider: string | null;
-  takeoff_name: string | null;
-  landing_name: string | null;
-  training_items: TrainingItemRating[];
+  flight_count: number;
+  notes: DayNote[]; // flight_number 1-6 + null (summary)
 }
 
 export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [flights, setFlights] = useState<StudentFlight[]>([]);
+  const [students, setStudents] = useState<StudentCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedFlightId, setExpandedFlightId] = useState<string | null>(null);
-  const [noteEdits, setNoteEdits] = useState<Record<string, string>>({});
-  const [addingForFlightId, setAddingForFlightId] = useState<string | null>(null);
-  const [availableItems, setAvailableItems] = useState<{ id: string; name: string }[]>([]);
-  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
-  const [loadingItems, setLoadingItems] = useState(false);
-  const [savingItems, setSavingItems] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchFlights = async () => {
-      const { data: members } = await supabase.from("group_members").select("user_id").eq("group_id", groupId);
-      if (!members || members.length === 0) { setLoading(false); return; }
-      const userIds = members.map(m => m.user_id);
-
-      const dateStr = new Date(eventDate).toISOString().split("T")[0];
-      const { data: flightsData } = await supabase.from("flights")
-        .select("id, user_id, duration_minutes, glider, takeoff_location_id, landing_location_id")
-        .in("user_id", userIds)
-        .eq("date", dateStr);
-
-      if (!flightsData || flightsData.length === 0) { setLoading(false); return; }
-
-      // Parallel fetches
-      const flightIds = flightsData.map(f => f.id);
-      const locIds = [...new Set([
-        ...flightsData.map(f => f.takeoff_location_id).filter(Boolean),
-        ...flightsData.map(f => f.landing_location_id).filter(Boolean),
-      ])] as string[];
-
-      const [profilesRes, locsRes, ftiRes] = await Promise.all([
-        supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds),
-        locIds.length > 0 ? supabase.from("locations").select("id, name").in("id", locIds) : { data: [] },
-        supabase.from("flight_training_items" as any).select("flight_id, item_id, instructor_rating, instructor_note").in("flight_id", flightIds),
-      ]);
-
-      const profileMap: Record<string, string> = {};
-      profilesRes.data?.forEach(p => { profileMap[p.user_id] = p.pilot_name || "?"; });
-      const locMap: Record<string, string> = {};
-      (locsRes.data as any[] || []).forEach((l: any) => { locMap[l.id] = l.name; });
-
-      const itemIds = [...new Set((ftiRes.data as any[] || []).map((d: any) => d.item_id))];
-      const itemNameMap: Record<string, string> = {};
-      if (itemIds.length > 0) {
-        const { data: items } = await supabase.from("training_items").select("id, name").in("id", itemIds);
-        items?.forEach(i => { itemNameMap[i.id] = i.name; });
-      }
-
-      const result: StudentFlight[] = flightsData.map(f => ({
-        id: f.id,
-        user_id: f.user_id,
-        pilot_name: profileMap[f.user_id] || "?",
-        duration_minutes: f.duration_minutes,
-        glider: f.glider,
-        takeoff_name: f.takeoff_location_id ? locMap[f.takeoff_location_id] || null : null,
-        landing_name: f.landing_location_id ? locMap[f.landing_location_id] || null : null,
-        training_items: (ftiRes.data as any[] || [])
-          .filter((d: any) => d.flight_id === f.id)
-          .map((d: any) => ({
-            item_id: d.item_id,
-            name: itemNameMap[d.item_id] || "?",
-            instructor_rating: d.instructor_rating,
-            instructor_note: d.instructor_note,
-          })),
-      }));
-
-      setFlights(result.sort((a, b) => a.pilot_name.localeCompare(b.pilot_name)));
-      setLoading(false);
-    };
-    fetchFlights();
-  }, [eventId, eventDate, groupId]);
-
-  const handleRate = async (flightId: string, itemId: string, rating: number) => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
-    const current = flights.find(f => f.id === flightId)?.training_items.find(ti => ti.item_id === itemId);
-    const newRating = current?.instructor_rating === rating ? rating - 1 : rating;
 
-    await supabase.from("flight_training_items" as any)
-      .update({ instructor_rating: newRating, instructor_id: user.id } as any)
-      .eq("flight_id", flightId)
-      .eq("item_id", itemId);
+    // Get group members (students = non-admin members)
+    const { data: members } = await supabase
+      .from("group_members")
+      .select("user_id, role")
+      .eq("group_id", groupId);
+    if (!members || members.length === 0) { setLoading(false); return; }
 
-    setFlights(prev => prev.map(f => f.id === flightId ? {
-      ...f,
-      training_items: f.training_items.map(ti => ti.item_id === itemId ? { ...ti, instructor_rating: newRating } : ti),
-    } : f));
-  };
+    const studentIds = members.filter(m => m.role === "member").map(m => m.user_id);
+    if (studentIds.length === 0) { setLoading(false); return; }
 
-  const handleSaveNote = async (flightId: string, itemId: string) => {
-    if (!user) return;
-    const key = `${flightId}-${itemId}`;
-    const note = noteEdits[key] ?? "";
+    // Parallel: profiles, flights count per student, existing notes
+    const dateStr = new Date(eventDate).toISOString().split("T")[0];
 
-    await supabase.from("flight_training_items" as any)
-      .update({ instructor_note: note || null, instructor_id: user.id } as any)
-      .eq("flight_id", flightId)
-      .eq("item_id", itemId);
+    const [profilesRes, flightsRes, notesRes] = await Promise.all([
+      supabase.from("profiles").select("user_id, pilot_name").in("user_id", studentIds),
+      supabase.from("flights").select("user_id").in("user_id", studentIds).eq("date", dateStr),
+      supabase.from("student_day_notes" as any).select("*").eq("event_id", eventId),
+    ]);
 
-    setFlights(prev => prev.map(f => f.id === flightId ? {
-      ...f,
-      training_items: f.training_items.map(ti => ti.item_id === itemId ? { ...ti, instructor_note: note || null } : ti),
-    } : f));
+    const profileMap: Record<string, string> = {};
+    profilesRes.data?.forEach(p => { profileMap[p.user_id] = p.pilot_name || "?"; });
 
-    toast({ title: t("common.saved") });
-  };
+    const flightCountMap: Record<string, number> = {};
+    (flightsRes.data || []).forEach(f => {
+      flightCountMap[f.user_id] = (flightCountMap[f.user_id] || 0) + 1;
+    });
 
-  const handleStartAddItems = async (flightId: string) => {
-    setAddingForFlightId(flightId);
-    setSelectedItemIds(new Set());
-    setLoadingItems(true);
+    const existingNotes = (notesRes.data as any[] || []);
 
-    // Try event maneuvers first, fall back to all training items
-    const { data: eventManeuvers } = await supabase
-      .from("event_maneuvers")
-      .select("training_item_id, training_items(id, name)")
-      .eq("event_id", eventId)
-      .order("sort_order");
-
-    if (eventManeuvers && eventManeuvers.length > 0) {
-      setAvailableItems(
-        eventManeuvers
-          .filter((em: any) => em.training_items)
-          .map((em: any) => ({ id: em.training_items.id, name: em.training_items.name }))
-      );
-    } else {
-      const { data: allItems } = await supabase
-        .from("training_items")
-        .select("id, name")
-        .order("sort_order");
-      setAvailableItems(allItems || []);
-    }
-    setLoadingItems(false);
-  };
-
-  const handleConfirmAddItems = async (flightId: string) => {
-    if (!user || selectedItemIds.size === 0) return;
-    setSavingItems(true);
-
-    const inserts = Array.from(selectedItemIds).map((itemId) => ({
-      flight_id: flightId,
-      item_id: itemId,
-    }));
-
-    const { error } = await supabase.from("flight_training_items").insert(inserts as any);
-    if (error) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
-      setSavingItems(false);
-      return;
-    }
-
-    // Update local state
-    const newItems: TrainingItemRating[] = Array.from(selectedItemIds).map((itemId) => ({
-      item_id: itemId,
-      name: availableItems.find((a) => a.id === itemId)?.name || "?",
-      instructor_rating: null,
-      instructor_note: null,
-    }));
-
-    setFlights((prev) =>
-      prev.map((f) =>
-        f.id === flightId ? { ...f, training_items: [...f.training_items, ...newItems] } : f
-      )
+    // For students without a summary, try to carry over from previous event
+    const studentsNeedingCarryOver = studentIds.filter(sid =>
+      !existingNotes.some((n: any) => n.student_user_id === sid && n.flight_number === null)
     );
 
-    setAddingForFlightId(null);
-    setSavingItems(false);
+    let carryOverMap: Record<string, string> = {};
+    if (studentsNeedingCarryOver.length > 0) {
+      // Find the most recent previous event in same group
+      const { data: prevEvents } = await supabase
+        .from("flight_events")
+        .select("id")
+        .eq("group_id", groupId)
+        .lt("event_date", eventDate)
+        .order("event_date", { ascending: false })
+        .limit(1);
+
+      if (prevEvents && prevEvents.length > 0) {
+        const { data: prevNotes } = await supabase
+          .from("student_day_notes" as any)
+          .select("student_user_id, note")
+          .eq("event_id", prevEvents[0].id)
+          .is("flight_number", null)
+          .in("student_user_id", studentsNeedingCarryOver);
+
+        (prevNotes as any[] || []).forEach((n: any) => {
+          carryOverMap[n.student_user_id] = n.note;
+        });
+      }
+    }
+
+    // Build student cards
+    const cards: StudentCard[] = studentIds.map(uid => {
+      const studentNotes = existingNotes.filter((n: any) => n.student_user_id === uid);
+      const notes: DayNote[] = [];
+
+      // Slots 1-6
+      for (let i = 1; i <= 6; i++) {
+        const existing = studentNotes.find((n: any) => n.flight_number === i);
+        notes.push({
+          id: existing?.id,
+          flight_number: i,
+          note: existing?.note || "",
+          visible_to_student: existing?.visible_to_student ?? false,
+        });
+      }
+
+      // Summary (flight_number = null)
+      const summaryNote = studentNotes.find((n: any) => n.flight_number === null);
+      const carryOver = !summaryNote && carryOverMap[uid];
+      notes.push({
+        id: summaryNote?.id,
+        flight_number: null,
+        note: summaryNote?.note || carryOver || "",
+        visible_to_student: summaryNote?.visible_to_student ?? false,
+        carryOver: !!carryOver,
+      });
+
+      return {
+        user_id: uid,
+        pilot_name: profileMap[uid] || "?",
+        flight_count: flightCountMap[uid] || 0,
+        notes,
+      };
+    });
+
+    setStudents(cards.sort((a, b) => a.pilot_name.localeCompare(b.pilot_name)));
+    setLoading(false);
+  }, [eventId, eventDate, groupId, user]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const handleNoteChange = (studentIdx: number, noteIdx: number, value: string) => {
+    setStudents(prev => prev.map((s, si) =>
+      si === studentIdx ? {
+        ...s,
+        notes: s.notes.map((n, ni) =>
+          ni === noteIdx ? { ...n, note: value, dirty: true, carryOver: false } : n
+        ),
+      } : s
+    ));
+  };
+
+  const toggleVisibility = async (studentIdx: number, noteIdx: number) => {
+    const student = students[studentIdx];
+    const note = student.notes[noteIdx];
+    const newVisible = !note.visible_to_student;
+
+    // Update local state immediately
+    setStudents(prev => prev.map((s, si) =>
+      si === studentIdx ? {
+        ...s,
+        notes: s.notes.map((n, ni) =>
+          ni === noteIdx ? { ...n, visible_to_student: newVisible } : n
+        ),
+      } : s
+    ));
+
+    // If note exists in DB, update it
+    if (note.id) {
+      await supabase.from("student_day_notes" as any)
+        .update({ visible_to_student: newVisible } as any)
+        .eq("id", note.id);
+    }
+  };
+
+  const saveNote = async (studentIdx: number, noteIdx: number) => {
+    if (!user) return;
+    const student = students[studentIdx];
+    const note = student.notes[noteIdx];
+    const key = `${student.user_id}-${noteIdx}`;
+    setSaving(key);
+
+    const payload = {
+      event_id: eventId,
+      student_user_id: student.user_id,
+      flight_number: note.flight_number,
+      note: note.note,
+      visible_to_student: note.visible_to_student,
+      instructor_id: user.id,
+    };
+
+    if (note.id) {
+      await supabase.from("student_day_notes" as any)
+        .update({ note: note.note, visible_to_student: note.visible_to_student, instructor_id: user.id } as any)
+        .eq("id", note.id);
+    } else {
+      const { data } = await supabase.from("student_day_notes" as any)
+        .insert(payload as any)
+        .select("id")
+        .single();
+      if (data) {
+        setStudents(prev => prev.map((s, si) =>
+          si === studentIdx ? {
+            ...s,
+            notes: s.notes.map((n, ni) =>
+              ni === noteIdx ? { ...n, id: (data as any).id, dirty: false, carryOver: false } : n
+            ),
+          } : s
+        ));
+      }
+    }
+
+    setStudents(prev => prev.map((s, si) =>
+      si === studentIdx ? {
+        ...s,
+        notes: s.notes.map((n, ni) =>
+          ni === noteIdx ? { ...n, dirty: false } : n
+        ),
+      } : s
+    ));
+
+    setSaving(null);
     toast({ title: t("common.saved") });
   };
 
   if (loading) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
-  if (flights.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
+  if (students.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
 
   return (
     <div className="space-y-3">
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        {t("events.coachDayView")} ({flights.length})
+        {t("events.coachDayView")} ({students.length})
       </h2>
-      {flights.map((flight) => {
-        const isExpanded = expandedFlightId === flight.id;
+
+      {students.map((student, si) => {
+        const summaryNote = student.notes[6]; // index 6 = summary
         return (
-          <Card key={flight.id} className="border-0 shadow-sm">
+          <Card key={student.user_id} className="border-0 shadow-sm overflow-hidden">
             <CardContent className="p-0">
-              <button
-                className="w-full p-3 flex items-center gap-2 text-left"
-                onClick={() => setExpandedFlightId(isExpanded ? null : flight.id)}
-              >
+              {/* Student header */}
+              <div className="p-3 flex items-center gap-2 border-b border-border/50">
                 <Plane className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm font-medium flex-1">{flight.pilot_name}</span>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {flight.duration_minutes && <span>{flight.duration_minutes} min</span>}
-                  {flight.glider && <span>🪂 {flight.glider}</span>}
+                <span className="text-sm font-medium flex-1">{student.pilot_name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {student.flight_count} {student.flight_count === 1 ? t("events.flightSlot") : t("events.flightSlot") + (student.flight_count > 1 ? "e" : "")}
+                </span>
+              </div>
+
+              {/* Horizontal scroll: flight slots */}
+              <div className="overflow-x-auto">
+                <div className="flex gap-0 min-w-max">
+                  {student.notes.slice(0, 6).map((note, ni) => (
+                    <FlightSlot
+                      key={ni}
+                      label={`${t("events.flightSlot")} ${ni + 1}`}
+                      note={note}
+                      saving={saving === `${student.user_id}-${ni}`}
+                      onNoteChange={(val) => handleNoteChange(si, ni, val)}
+                      onToggleVisibility={() => toggleVisibility(si, ni)}
+                      onSave={() => saveNote(si, ni)}
+                      isActive={ni < student.flight_count}
+                    />
+                  ))}
                 </div>
-                {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-              </button>
+              </div>
 
-              {isExpanded && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div className="text-xs text-muted-foreground flex gap-2 flex-wrap">
-                    {flight.takeoff_name && <span>↗ {flight.takeoff_name}</span>}
-                    {flight.landing_name && <span>↘ {flight.landing_name}</span>}
-                  </div>
-
-                  {flight.training_items.length > 0 ? (
-                    <div className="space-y-3 pt-1 border-t border-border/50">
-                      {flight.training_items.map((ti) => {
-                        const noteKey = `${flight.id}-${ti.item_id}`;
-                        const noteValue = noteEdits[noteKey] ?? ti.instructor_note ?? "";
-                        return (
-                          <div key={ti.item_id} className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-medium truncate pr-2">{ti.name}</span>
-                              <div className="flex gap-0.5 shrink-0">
-                                {[1, 2, 3].map((star) => (
-                                  <button
-                                    key={star}
-                                    onClick={() => handleRate(flight.id, ti.item_id, star)}
-                                    className="p-1 active:scale-90 transition-transform"
-                                  >
-                                    <Star className={cn(
-                                      "h-5 w-5 transition-colors",
-                                      star <= (ti.instructor_rating || 0)
-                                        ? "fill-amber-400 text-amber-400"
-                                        : "text-muted-foreground/30"
-                                    )} />
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Textarea
-                                placeholder={t("events.coachNotePlaceholder")}
-                                className="text-xs min-h-[2rem] h-8 resize-none"
-                                value={noteValue}
-                                onChange={(e) => setNoteEdits(prev => ({ ...prev, [noteKey]: e.target.value }))}
-                              />
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="shrink-0 h-8 w-8"
-                                onClick={() => handleSaveNote(flight.id, ti.item_id)}
-                              >
-                                <MessageSquare className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : addingForFlightId === flight.id ? (
-                    <div className="space-y-2 pt-1 border-t border-border/50">
-                      {loadingItems ? (
-                        <div className="flex items-center gap-2 py-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{t("common.loading")}</span>
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-xs font-medium">{t("events.selectManeuvers")}</p>
-                          <div className="max-h-40 overflow-y-auto space-y-1.5">
-                            {availableItems.map((item) => (
-                              <label key={item.id} className="flex items-center gap-2 text-xs cursor-pointer">
-                                <Checkbox
-                                  checked={selectedItemIds.has(item.id)}
-                                  onCheckedChange={(checked) => {
-                                    setSelectedItemIds((prev) => {
-                                      const next = new Set(prev);
-                                      checked ? next.add(item.id) : next.delete(item.id);
-                                      return next;
-                                    });
-                                  }}
-                                />
-                                {item.name}
-                              </label>
-                            ))}
-                          </div>
-                          <div className="flex gap-2 pt-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-xs h-7"
-                              onClick={() => setAddingForFlightId(null)}
-                            >
-                              {t("common.cancel")}
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="text-xs h-7"
-                              disabled={selectedItemIds.size === 0 || savingItems}
-                              onClick={() => handleConfirmAddItems(flight.id)}
-                            >
-                              {savingItems && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-                              {t("common.add")} ({selectedItemIds.size})
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 pt-1 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground italic flex-1">
-                        {t("events.noTrainingItems")}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs h-7 gap-1"
-                        onClick={() => handleStartAddItems(flight.id)}
-                      >
-                        <Plus className="h-3 w-3" />
-                        {t("events.addManeuvers")}
-                      </Button>
-                    </div>
+              {/* Summary section */}
+              <div className="p-3 border-t border-border/50 bg-muted/30">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <FileText className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">{t("events.summary")}</span>
+                  {summaryNote.carryOver && (
+                    <span className="text-[10px] text-muted-foreground italic">
+                      ({t("events.summaryCarryOver")})
+                    </span>
                   )}
+                  <button
+                    onClick={() => toggleVisibility(si, 6)}
+                    className="ml-auto p-1"
+                    title={summaryNote.visible_to_student ? t("events.visibleToStudent") : t("events.hiddenFromStudent")}
+                  >
+                    {summaryNote.visible_to_student
+                      ? <Eye className="h-3.5 w-3.5 text-primary" />
+                      : <EyeOff className="h-3.5 w-3.5 text-muted-foreground/50" />}
+                  </button>
                 </div>
-              )}
+                <div className="flex gap-2">
+                  <Textarea
+                    className="text-xs min-h-[2.5rem] h-10 resize-none flex-1"
+                    value={summaryNote.note}
+                    onChange={(e) => handleNoteChange(si, 6, e.target.value)}
+                    placeholder={t("events.coachNotePlaceholder")}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 h-10 text-xs"
+                    disabled={!summaryNote.dirty && !summaryNote.carryOver}
+                    onClick={() => saveNote(si, 6)}
+                  >
+                    {saving === `${student.user_id}-6`
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : t("common.save")}
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         );
       })}
+    </div>
+  );
+}
+
+function FlightSlot({
+  label,
+  note,
+  saving,
+  onNoteChange,
+  onToggleVisibility,
+  onSave,
+  isActive,
+}: {
+  label: string;
+  note: DayNote;
+  saving: boolean;
+  onNoteChange: (val: string) => void;
+  onToggleVisibility: () => void;
+  onSave: () => void;
+  isActive: boolean;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className={cn(
+      "w-40 shrink-0 p-2.5 border-r border-border/30 last:border-r-0",
+      !isActive && "opacity-40"
+    )}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+        <button onClick={onToggleVisibility} className="p-0.5" title={note.visible_to_student ? t("events.visibleToStudent") : t("events.hiddenFromStudent")}>
+          {note.visible_to_student
+            ? <Eye className="h-3 w-3 text-primary" />
+            : <EyeOff className="h-3 w-3 text-muted-foreground/50" />}
+        </button>
+      </div>
+      <Textarea
+        className="text-xs min-h-[3rem] h-12 resize-none w-full"
+        value={note.note}
+        onChange={(e) => onNoteChange(e.target.value)}
+        placeholder="..."
+      />
+      {note.dirty && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 h-6 text-[10px] w-full"
+          onClick={onSave}
+          disabled={saving}
+        >
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : t("common.save")}
+        </Button>
+      )}
     </div>
   );
 }

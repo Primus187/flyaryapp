@@ -197,13 +197,21 @@
     "copyTelegramText": "Telegram-Text kopieren",
     "telegramCopied": "Text in Zwischenablage kopiert",
     "studentFlights": "Schülerflüge",
-    "coachDayView": "Bewertungsübersicht",
+    "coachDayView": "Ausbildungsblatt",
     "coachNotePlaceholder": "Kommentar zum Manöver...",
     "noStudentFlights": "Keine Schülerflüge an diesem Tag",
     "noTrainingItems": "Keine Manöver erfasst",
     "selectManeuvers": "Manöver auswählen",
     "addManeuvers": "Manöver hinzufügen",
-    "eventLinked": "Flug mit Flugtag verknüpft"
+    "eventLinked": "Flug mit Flugtag verknüpft",
+    "flightSlot": "Flug",
+    "summary": "Zusammenfassung",
+    "summaryCarryOver": "Übernommen vom letzten Flugtag",
+    "visibleToStudent": "Für Schüler sichtbar",
+    "hiddenFromStudent": "Nur für Fluglehrer",
+    "noNotes": "Noch kein Feedback",
+    "yourFeedback": "Dein Feedback",
+    "noFeedbackYet": "Noch kein Feedback vom Fluglehrer"
   },
   "locations": {
     "title": "Orte",
