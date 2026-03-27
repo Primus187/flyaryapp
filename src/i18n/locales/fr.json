@@ -537,7 +537,8 @@
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
     "legal": "Mentions légales",
-    "leaderboard": "Classement"
+    "leaderboard": "Classement",
+    "school": "École de vol"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
@@ -759,6 +760,23 @@
     "shvNumber": "Numéro FSVL",
     "viewPublicProfile": "Voir le profil public",
     "photos": "Photos"
+  },
+  "school": {
+    "title": "École de vol",
+    "noSchool": "Vous n'êtes administrateur d'aucune école de vol. Créez un groupe de type «École de vol» pour utiliser ce tableau de bord.",
+    "overview": "Aperçu",
+    "students": "Élèves",
+    "flightDays": "Jours de vol",
+    "activeStudents": "Élèves actifs",
+    "openReviews": "Évaluations en attente",
+    "nextFlightDay": "Prochain jour de vol",
+    "openEvent": "Ouvrir l'événement",
+    "newFlightDay": "Nouveau jour de vol",
+    "telegram": "Telegram",
+    "flights": "vols",
+    "noStudents": "Aucun élève dans ce groupe pour le moment.",
+    "noFlightDays": "Aucun jour de vol enregistré.",
+    "notes": "notes"
   },
   "search": {
     "title": "Recherche",
