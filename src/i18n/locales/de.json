@@ -209,6 +209,10 @@
     "summaryCarryOver": "Übernommen vom letzten Flugtag",
     "visibleToStudent": "Für Schüler sichtbar",
     "hiddenFromStudent": "Nur für Fluglehrer",
+    "pauseStudent": "Pause",
+    "resumeStudent": "Weiter",
+    "studentPaused": "Schüler pausiert",
+    "studentResumed": "Schüler wieder aktiv",
     "noNotes": "Noch kein Feedback",
     "yourFeedback": "Dein Feedback",
     "noFeedbackYet": "Noch kein Feedback vom Fluglehrer"
