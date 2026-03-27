@@ -1,0 +1,75 @@
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ChevronRight } from "lucide-react";
+
+interface StudentInfo {
+  userId: string;
+  pilotName: string;
+  trainingLevel: string | null;
+  flightCount: number;
+  examProgress: number; // 0-100
+  lastSummary: string | null;
+}
+
+interface Props {
+  students: StudentInfo[];
+}
+
+export default function SchoolStudents({ students }: Props) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  if (students.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground text-sm">
+        {t("school.noStudents")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {students.map((s) => (
+        <Card
+          key={s.userId}
+          className="border-0 shadow-sm cursor-pointer hover:bg-muted/30 active:scale-[0.99] transition-all"
+          onClick={() => navigate(`/pilot/${s.userId}`)}
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                {(s.pilotName || "?").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-sm truncate">{s.pilotName || t("common.unknown")}</p>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                {s.trainingLevel && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                    {s.trainingLevel}
+                  </span>
+                )}
+                <span className="text-[10px] text-muted-foreground">{s.flightCount} {t("school.flights")}</span>
+              </div>
+              <div className="mt-1.5 flex items-center gap-2">
+                <Progress value={s.examProgress} className="h-1.5 flex-1" />
+                <span className="text-[10px] text-muted-foreground w-8 text-right">{s.examProgress}%</span>
+              </div>
+              {s.lastSummary && (
+                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 italic">
+                  "{s.lastSummary}"
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
