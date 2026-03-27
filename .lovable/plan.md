@@ -1,101 +1,70 @@
 
 
-# Flugschul-Management Hub — Zentrales Schulungscockpit
+# Ausbildungsblatt UX-Redesign: Kompakte Liste + Accordion + Pausiert-Status
 
-## Analyse des aktuellen Zustands
+## Problem
 
-Das **Ausbildungsblatt** (CoachDayView) ist aktuell nur innerhalb eines einzelnen Events sichtbar (EventDetail → ganz unten, nur für Admins). Es ist schwer zu finden und nicht als eigenständiges Management-Tool zugänglich. Die Flugschul-Funktionen sind über mehrere Seiten verstreut:
+Aktuell zeigt die CoachDayView alle Schüler mit allen 6 Flug-Slots + Summary gleichzeitig an. Bei 6+ Schülern wird das auf 395px extrem lang und unübersichtlich. An einem hektischen Flugtag muss der Lehrer schnell den richtigen Schüler finden und Notizen eintragen.
 
-- **Events** → Flugtag-Planung, Briefing, Telegram-Generator
-- **EventDetail** → Ausbildungsblatt (CoachDayView), Schüler-Feedback
-- **Groups** → Mitglieder, Einladungen
-- **Training** → SHV-Prüfungsmanöver (persönlicher Fortschritt)
+## Lösung
 
-Es fehlt ein **zentraler Ort** für Fluglehrer, um alle schulrelevanten Daten zu überblicken.
+### 1. Kompakte Schüler-Liste mit Accordion
 
----
-
-## Lösung: Flugschul-Dashboard (`/school`)
-
-Eine neue Seite, die nur für Admins von Flugschul-Gruppen (`group_type = 'flight_school'`) sichtbar ist. Sie bündelt alle Schulungsfunktionen in einem Tab-Layout:
+Die Schüler werden als **kompakte einzeilige Rows** angezeigt. Tap auf einen Schüler klappt dessen Flug-Slots auf. Nur ein Schüler ist gleichzeitig geöffnet.
 
 ```text
-┌─────────────────────────────────────────────┐
-│  🎓 Flugschule [Gruppenname]           [▼]  │  ← Gruppen-Switcher (falls mehrere)
-├──────┬───────────┬──────────┬───────────────┤
-│Über- │ Schüler   │ Flugtage │  Alumni       │
-│sicht │           │          │               │
-├──────┴───────────┴──────────┴───────────────┤
-│                                             │
-│  [Tab-Inhalt]                               │
-│                                             │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ Ausbildungsblatt (6)                │
+├─────────────────────────────────────┤
+│ ▸ Max Müller        2✈  ⏸         │  ← kompakt, 1 Zeile
+│ ▾ Lisa Keller       3✈            │  ← geöffnet
+│   ┌─────┬─────┬─────┬─────┬───┬───┐│
+│   │ F1  │ F2  │ F3  │ F4  │F5 │F6 ││  ← Flug-Tabs
+│   ├─────┴─────┴─────┴─────┴───┴───┤│
+│   │ [Textarea für aktiven Tab]     ││
+│   │ 👁 sichtbar    [Speichern]    ││
+│   ├────────────────────────────────┤│
+│   │ 📋 Zusammenfassung            ││
+│   │ [Textarea]         [Speichern]││
+│   └────────────────────────────────┘│
+│ ▸ Peter Schmidt     1✈            │
+│ ▸ Anna Weber        0✈  ⏸ Pause  │  ← pausiert
+│ ▸ Tom Berger        2✈            │
+└─────────────────────────────────────┘
 ```
 
-### Tab 1: Übersicht
-- Aktive Schüleranzahl, nächster Flugtag, offene Bewertungen
-- Quick-Actions: "Neuen Flugtag erstellen", "Telegram senden"
-- Letzte Aktivität (neue Flüge, abgeschlossene Manöver)
+### 2. Flug-Tabs statt horizontaler Scroll
 
-### Tab 2: Schüler
-- Liste aller aktiven Schüler mit:
-  - Ausbildungsstufe (Grundkurs/Brevetkurs/SiKu)
-  - Fluganzahl, letzte Zusammenfassung
-  - Fortschrittsbalken (Prüfungsmanöver)
-- Tap → Schüler-Detailansicht (Profil, alle Bewertungen, Flughistorie)
+Statt 6 nebeneinander scrollender Textareas: **6 Tab-Buttons** (F1-F6) oben, darunter ein einzelnes Textarea-Feld. Das spart Platz und der Lehrer sieht auf einen Blick welche Flüge Notizen haben (gefüllte Tabs farbig markiert).
 
-### Tab 3: Flugtage
-- Chronologische Liste aller Events der Flugschule
-- Jeder Eintrag zeigt: Datum, Teilnehmer, Bewertungsstatus
-- Tap → öffnet EventDetail (mit Ausbildungsblatt)
-- **Direkt-Link zum Ausbildungsblatt** als primäre Aktion
+### 3. "Pausiert"-Status pro Schüler
 
-### Tab 4: Alumni
-- Ehemalige Schüler (manuell markiert oder nach Brevet-Abschluss)
-- Archiv vergangener Ausbildungszyklen
+Neues Feature: Ein Toggle-Button in der kompakten Zeile, der den Schüler als "pausiert" (Flug ausgesetzt) markiert. Wird als `flight_number = -1` in `student_day_notes` gespeichert (kein Schema-Change nötig, nur Convention). Pausierte Schüler werden visuell abgedimmt und ans Ende der Liste sortiert.
 
----
+### 4. Quick-Indicators in der kompakten Zeile
 
-## Navigation
-
-- Neuer Tile im **Mehr-Hub**: "Flugschule" (🎓 GraduationCap)
-- Nur sichtbar wenn User Admin einer Flugschul-Gruppe ist
-- Für **Schüler**: Kein Zugriff auf `/school`, aber StudentDayFeedback bleibt im EventDetail
-
----
+Jede Schüler-Zeile zeigt auf einen Blick:
+- Name
+- Fluganzahl (z.B. "3✈")
+- Dots/Badges für Flüge mit Notizen (gefüllte Kreise)
+- Pause-Icon falls pausiert
 
 ## Technische Umsetzung
-
-### Keine DB-Änderungen nötig
-Alle Daten existieren bereits: `groups`, `group_members`, `flight_events`, `flights`, `student_day_notes`, `training_progress`, `profiles`. Es werden nur neue Queries zusammengestellt.
 
 ### Dateien
 
 | Aktion | Datei | Beschreibung |
 |--------|-------|-------------|
-| **Neu** | `src/pages/SchoolDashboard.tsx` | Hauptseite mit Tabs (Übersicht, Schüler, Flugtage, Alumni) |
-| **Neu** | `src/components/school/SchoolOverview.tsx` | KPI-Cards + Quick-Actions |
-| **Neu** | `src/components/school/SchoolStudents.tsx` | Schüler-Liste mit Fortschritt |
-| **Neu** | `src/components/school/SchoolDays.tsx` | Flugtage-Liste mit Bewertungsstatus |
-| **Edit** | `src/pages/More.tsx` | Neuer Tile "Flugschule" (conditional) |
-| **Edit** | `src/App.tsx` | Route `/school` hinzufügen |
-| **Edit** | `src/i18n/locales/{de,en,fr}.json` | Labels für School-Dashboard |
+| **Rewrite** | `src/components/CoachDayView.tsx` | Accordion-Layout, Tab-basierte Flug-Slots, Pause-Toggle |
+| **Edit** | `src/i18n/locales/{de,en,fr}.json` | Labels: "paused", "flightTabs" etc. |
 
-### Schüler-Detailansicht
-Beim Tap auf einen Schüler in der Liste wird ein Sheet/Page geöffnet mit:
-- Alle `student_day_notes` des Schülers (chronologisch)
-- Trainingsfortschritt (Prüfungsmanöver-Completion)
-- Flughistorie in der Gruppe
+### Keine DB-Migration nötig
+- "Pausiert" wird als `student_day_notes` mit `flight_number = -1` und `note = 'paused'` gespeichert
+- Bestehende Datenstruktur bleibt kompatibel
 
-### Ausbildungsblatt-Zugang
-Das Ausbildungsblatt (CoachDayView) bleibt im EventDetail, wird aber zusätzlich aus der Flugtage-Liste im School-Dashboard direkt erreichbar — ein Button "Ausbildungsblatt" führt zum EventDetail und scrollt automatisch zur CoachDayView-Sektion.
-
----
-
-## UX-Prinzipien
-
-- **Mobile-first**: Alle Tabs als vertikale Listen mit Cards
-- **Keine Redundanz**: School-Dashboard aggregiert, verlinkt aber auf bestehende Detail-Seiten
-- **Progressive Disclosure**: Übersicht zeigt KPIs, Details nur bei Tap
-- **Rollenbasiert**: Nur Flugschul-Admins sehen den Tile und die Seite
+### Key UX-Details
+- **Auto-Save mit Debounce** (800ms): Kein manueller Save-Button mehr nötig. Der Lehrer tippt und die Notiz speichert sich automatisch. Visueller Indicator (kleiner Haken) bestätigt
+- **Accordion**: State `expandedStudent` — nur einer offen, Tap auf anderen schliesst den vorherigen
+- **Tab-Badges**: Tabs F1-F6 zeigen einen kleinen Dot wenn eine Notiz vorhanden ist
+- **Pause-Toggle**: Long-press oder dedizierter kleiner Button in der kompakten Zeile
 
