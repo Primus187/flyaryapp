@@ -16,6 +16,10 @@ export interface IGCData {
   startTime: string | null;
   endTime: string | null;
   durationMinutes: number;
+  maxClimbRate: number;    // m/s
+  maxSinkRate: number;     // m/s (negative)
+  avgSpeedKmh: number;
+  totalDistanceKm: number;
 }
 
 function parseLatitude(raw: string): number {
@@ -77,10 +81,35 @@ export function parseIGC(content: string): IGCData {
 
   let maxAltitude = 0;
   let minAltitude = Infinity;
-  for (const p of points) {
+  let maxClimbRate = 0;
+  let maxSinkRate = 0;
+  let totalDistanceKm = 0;
+
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
     if (p.altitude > maxAltitude) maxAltitude = p.altitude;
     if (p.altitude < minAltitude) minAltitude = p.altitude;
+
+    if (i > 0) {
+      const prev = points[i - 1];
+      // Time diff in seconds
+      const [ph, pm, ps] = prev.time.split(":").map(Number);
+      const [ch, cm, cs] = p.time.split(":").map(Number);
+      const dt = (ch * 3600 + cm * 60 + cs) - (ph * 3600 + pm * 60 + ps);
+      if (dt > 0) {
+        const vario = (p.altitude - prev.altitude) / dt;
+        if (vario > maxClimbRate) maxClimbRate = vario;
+        if (vario < maxSinkRate) maxSinkRate = vario;
+      }
+      // Haversine distance
+      const R = 6371;
+      const dLat = (p.lat - prev.lat) * Math.PI / 180;
+      const dLon = (p.lng - prev.lng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(prev.lat * Math.PI / 180) * Math.cos(p.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      totalDistanceKm += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
   }
+
   if (points.length === 0) minAltitude = 0;
   const startTime = points[0]?.time ?? null;
   const endTime = points[points.length - 1]?.time ?? null;
@@ -92,5 +121,7 @@ export function parseIGC(content: string): IGCData {
     durationMinutes = Math.round(((eh * 3600 + em * 60 + es) - (sh * 3600 + sm * 60 + ss)) / 60);
   }
 
-  return { points, date, pilot, glider, maxAltitude, minAltitude, startTime, endTime, durationMinutes };
+  const avgSpeedKmh = durationMinutes > 0 ? totalDistanceKm / (durationMinutes / 60) : 0;
+
+  return { points, date, pilot, glider, maxAltitude, minAltitude, startTime, endTime, durationMinutes, maxClimbRate: Math.round(maxClimbRate * 10) / 10, maxSinkRate: Math.round(maxSinkRate * 10) / 10, avgSpeedKmh: Math.round(avgSpeedKmh * 10) / 10, totalDistanceKm: Math.round(totalDistanceKm * 100) / 100 };
 }

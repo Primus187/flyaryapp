@@ -124,7 +124,8 @@ export default function FlightDetail() {
       const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, file, { upsert: true }); if (storageErr) throw storageErr;
       const limitedPoints = parsed.points.filter((_, i) => i % Math.max(1, Math.floor(parsed.points.length / 2000)) === 0);
       if (track) await supabase.from("igc_tracks").delete().eq("id", track.id);
-      const { data: newTrack, error: trackErr } = await supabase.from("igc_tracks").insert({ flight_id: id, storage_path: path, track_data: { points: limitedPoints } as any }).select().single();
+      const igcStats = { maxAltitude: parsed.maxAltitude, minAltitude: parsed.minAltitude, maxClimbRate: parsed.maxClimbRate, maxSinkRate: parsed.maxSinkRate, avgSpeedKmh: parsed.avgSpeedKmh, totalDistanceKm: parsed.totalDistanceKm, startTime: parsed.startTime, endTime: parsed.endTime, durationMinutes: parsed.durationMinutes };
+      const { data: newTrack, error: trackErr } = await supabase.from("igc_tracks").insert({ flight_id: id, storage_path: path, track_data: { points: limitedPoints, stats: igcStats } as any }).select().single();
       if (trackErr) throw trackErr;
       setTrack(newTrack);
       toast({ title: t("flights.igcUploaded"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
@@ -208,16 +209,28 @@ export default function FlightDetail() {
         <FlightDetailMap takeoff={flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
       )}
       <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: t("flights.flightTime"), value: flight.duration_minutes ? formatDuration(flight.duration_minutes) : "–" },
-          { label: t("flights.altitude"), value: flight.altitude_gain ? `+${flight.altitude_gain} m` : "–" },
-          { label: t("flights.distanceLabel"), value: flight.distance_km ? `${Number(flight.distance_km).toFixed(1)} km` : "–" },
-          { label: t("flights.gliderLabel"), value: flight.glider || "–" },
-          { label: t("flights.thermalsLabel"), value: flight.thermals || "–" },
-          { label: t("flights.windLabel"), value: flight.wind_speed ? `${flight.wind_speed} km/h ${flight.wind_direction || ""}` : "–" },
-        ].map(({ label, value }) => (
-          <Card key={label} className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p><p className="text-sm font-medium mt-0.5">{value}</p></CardContent></Card>
-        ))}
+        {(() => {
+          const igcStats = (track?.track_data as any)?.stats;
+          const items = [
+            { label: t("flights.flightTime"), value: flight.duration_minutes ? formatDuration(flight.duration_minutes) : igcStats?.durationMinutes ? formatDuration(igcStats.durationMinutes) : "–" },
+            { label: t("flights.altitude"), value: flight.altitude_gain ? `+${flight.altitude_gain} m` : "–" },
+            { label: t("flights.distanceLabel"), value: flight.distance_km ? `${Number(flight.distance_km).toFixed(1)} km` : igcStats?.totalDistanceKm ? `${igcStats.totalDistanceKm} km` : "–" },
+            { label: t("flights.gliderLabel"), value: flight.glider || "–" },
+            { label: t("flights.thermalsLabel"), value: flight.thermals || "–" },
+            { label: t("flights.windLabel"), value: flight.wind_speed ? `${flight.wind_speed} km/h ${flight.wind_direction || ""}` : "–" },
+          ];
+          if (igcStats) {
+            items.push(
+              { label: t("flights.maxAltitude"), value: `${igcStats.maxAltitude} m` },
+              { label: t("flights.maxClimb"), value: `${igcStats.maxClimbRate} m/s` },
+              { label: t("flights.avgSpeed"), value: `${igcStats.avgSpeedKmh} km/h` },
+              { label: t("flights.startTimeLabel"), value: igcStats.startTime || "–" },
+            );
+          }
+          return items.map(({ label, value }) => (
+            <Card key={label} className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p><p className="text-sm font-medium mt-0.5">{value}</p></CardContent></Card>
+          ));
+        })()}
       </div>
       {flight.comments && (<Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
       {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
