@@ -99,7 +99,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
-  const animMarkerRef = useRef<maplibregl.Marker | null>(null);
+  
   const [mapReady, setMapReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [animProgress, setAnimProgress] = useState(0);
@@ -335,8 +335,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       marker.getElement().style.display = "none";
       markerRef.current = marker;
 
-      // Ground shadow marker for animation (subtle)
-      animMarkerRef.current = null;
 
       setMapReady(true);
     });
@@ -347,7 +345,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
-      animMarkerRef.current = null;
       setMapReady(false);
       setPlaying(false);
       playingRef.current = false;
@@ -369,7 +366,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   }, [highlightIndex, mapReady, points, renderPoints]);
 
   const animate = useCallback(() => {
-    if (!playingRef.current || !mapRef.current || !animMarkerRef.current) return;
+    if (!playingRef.current || !mapRef.current) return;
 
     progressRef.current += speedRef.current;
     if (progressRef.current >= 1) {
