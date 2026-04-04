@@ -96,7 +96,7 @@ const FOLLOW_SMOOTHING = 0.12;
 const FOLLOW_PAUSE_MS = 400;
 
 
-export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
+export default function Flight3DMap({ points, highlightIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
