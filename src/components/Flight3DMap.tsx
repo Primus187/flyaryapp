@@ -359,13 +359,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       setPlaying(false);
       playingRef.current = false;
       followRef.current = false;
-      userInteractingRef.current = false;
-      if (interactionTimeoutRef.current != null) {
-        window.clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = null;
-      }
-      setFollowing(false);
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      followPausedUntilRef.current = 0;
     };
   }, [renderPoints]);
 
