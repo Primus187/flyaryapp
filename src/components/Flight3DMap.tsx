@@ -37,7 +37,7 @@ function getColor(alt: number, min: number, max: number): string {
 function segmentToPolygon(
   p1: TrackPoint,
   p2: TrackPoint,
-  width: number = 0.00015
+  width: number = 0.0002
 ): [number, number][] {
   const dx = p2.lng - p1.lng;
   const dy = p2.lat - p1.lat;
@@ -54,6 +54,17 @@ function segmentToPolygon(
   ];
 }
 
+function pointToPolygon(p: TrackPoint, size: number = 0.0004): [number, number][] {
+  const s = size;
+  return [
+    [p.lng - s, p.lat - s],
+    [p.lng + s, p.lat - s],
+    [p.lng + s, p.lat + s],
+    [p.lng - s, p.lat + s],
+    [p.lng - s, p.lat - s],
+  ];
+}
+
 function downsample(pts: TrackPoint[], maxPts: number): TrackPoint[] {
   if (pts.length <= maxPts) return pts;
   const step = pts.length / maxPts;
@@ -67,12 +78,26 @@ function downsample(pts: TrackPoint[], maxPts: number): TrackPoint[] {
   return result;
 }
 
+function calcGroundLevel(pts: TrackPoint[]): number {
+  const n = Math.min(5, Math.floor(pts.length / 2));
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < n; i++) {
+    sum += pts[i].altitude;
+    sum += pts[pts.length - 1 - i].altitude;
+    count += 2;
+  }
+  return count > 0 ? sum / count : pts[0].altitude;
+}
+
 const SPEED_STEPS = [
   { label: "1x", value: 0.0004 },
   { label: "2x", value: 0.0008 },
   { label: "5x", value: 0.002 },
   { label: "10x", value: 0.004 },
 ];
+
+const TRAIL_LENGTH = 50;
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,7 +112,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const playingRef = useRef(false);
   const progressRef = useRef(0);
   const frameCountRef = useRef(0);
-  const altRangeRef = useRef({ min: 0, max: 1 });
+  const groundLevelRef = useRef(0);
   const speedRef = useRef(SPEED_STEPS[0].value);
 
   const renderPoints = useMemo(() => downsample(points, 800), [points]);
@@ -105,7 +130,9 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       if (p.altitude < minAlt) minAlt = p.altitude;
       if (p.altitude > maxAlt) maxAlt = p.altitude;
     }
-    altRangeRef.current = { min: minAlt, max: maxAlt };
+
+    const groundLevel = calcGroundLevel(renderPoints);
+    groundLevelRef.current = groundLevel;
 
     const center: [number, number] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 
@@ -165,13 +192,12 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     map.on("load", () => {
       const extrusionFeatures: GeoJSON.Feature[] = [];
       const shadowCoords: [number, number][] = [];
-      const dropFeatures: GeoJSON.Feature[] = [];
 
       for (let i = 0; i < renderPoints.length - 1; i++) {
         const p1 = renderPoints[i];
         const p2 = renderPoints[i + 1];
         const avgAlt = (p1.altitude + p2.altitude) / 2;
-        const relHeight = avgAlt - minAlt;
+        const relHeight = Math.max(0, avgAlt - groundLevel);
 
         extrusionFeatures.push({
           type: "Feature",
@@ -188,23 +214,9 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
         if (i === 0) shadowCoords.push([p1.lng, p1.lat]);
         shadowCoords.push([p2.lng, p2.lat]);
-
-        if (i % 30 === 0) {
-          dropFeatures.push({
-            type: "Feature",
-            properties: { height: p1.altitude - minAlt, base: 0 },
-            geometry: {
-              type: "Polygon",
-              coordinates: [segmentToPolygon(
-                p1,
-                { ...p1, lng: p1.lng + 0.00002, lat: p1.lat + 0.00002 },
-                0.00003
-              )],
-            },
-          });
-        }
       }
 
+      // Shadow line on ground
       map.addSource("track-shadow", {
         type: "geojson",
         data: {
@@ -225,24 +237,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
-      if (dropFeatures.length > 0) {
-        map.addSource("drop-lines", {
-          type: "geojson",
-          data: { type: "FeatureCollection", features: dropFeatures },
-        });
-        map.addLayer({
-          id: "drop-lines-layer",
-          type: "fill-extrusion",
-          source: "drop-lines",
-          paint: {
-            "fill-extrusion-color": "rgba(255,255,255,0.3)",
-            "fill-extrusion-height": ["get", "height"],
-            "fill-extrusion-base": ["get", "base"],
-            "fill-extrusion-opacity": 0.4,
-          },
-        });
-      }
-
+      // Main 3D track ribbon
       map.addSource("track-extrusion", {
         type: "geojson",
         data: { type: "FeatureCollection", features: extrusionFeatures },
@@ -260,6 +255,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
+      // Animated drop-surface (blue curtain with fade)
       map.addSource("track-animated", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -270,13 +266,32 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         type: "fill-extrusion",
         source: "track-animated",
         paint: {
-          "fill-extrusion-color": "#ffffff",
+          "fill-extrusion-color": ["get", "color"],
           "fill-extrusion-height": ["get", "height"],
-          "fill-extrusion-base": ["get", "base"],
-          "fill-extrusion-opacity": 0.95,
+          "fill-extrusion-base": 0,
+          "fill-extrusion-opacity": 0.9,
         },
       });
 
+      // Animated position marker on flight line
+      map.addSource("track-pos-marker", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "track-pos-marker-3d",
+        type: "fill-extrusion",
+        source: "track-pos-marker",
+        paint: {
+          "fill-extrusion-color": "#ffffff",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "base"],
+          "fill-extrusion-opacity": 1,
+        },
+      });
+
+      // Start/Landing markers
       new maplibregl.Marker({ color: "#22c55e" })
         .setLngLat([renderPoints[0].lng, renderPoints[0].lat])
         .setPopup(new maplibregl.Popup().setText("Start"))
@@ -290,16 +305,19 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       const bounds = new maplibregl.LngLatBounds([minLng, minLat], [maxLng, maxLat]);
       map.fitBounds(bounds, { padding: 60, pitch: 60, duration: 1000 });
 
+      // Highlight marker (for altitude profile hover)
       const marker = new maplibregl.Marker({ color: "#fff", scale: 0.6 })
         .setLngLat(center)
         .addTo(map);
       marker.getElement().style.display = "none";
       markerRef.current = marker;
 
-      const animMarker = new maplibregl.Marker({ color: "#facc15", scale: 0.8 })
+      // Ground shadow marker for animation (dezent)
+      const animMarker = new maplibregl.Marker({ color: "#888", scale: 0.4 })
         .setLngLat(center)
         .addTo(map);
       animMarker.getElement().style.display = "none";
+      animMarker.getElement().style.opacity = "0.5";
       animMarkerRef.current = animMarker;
 
       setMapReady(true);
@@ -349,28 +367,49 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     const idx = Math.floor(progressRef.current * (renderPoints.length - 1));
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
+    const gl = groundLevelRef.current;
 
+    // Update ground shadow marker
     animMarkerRef.current.setLngLat([p.lng, p.lat]);
     animMarkerRef.current.getElement().style.display = "block";
 
+    // Update position marker on flight line (white prominent dot)
+    const posSource = mapRef.current.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
+    if (posSource) {
+      const relH = Math.max(0, p.altitude - gl);
+      posSource.setData({
+        type: "FeatureCollection",
+        features: [{
+          type: "Feature",
+          properties: { height: relH + 5, base: Math.max(0, relH - 5) },
+          geometry: { type: "Polygon", coordinates: [pointToPolygon(p, 0.0003)] },
+        }],
+      });
+    }
+
+    // Update dynamic drop-surface with fade
     const source = mapRef.current.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) {
-      const { min: mAlt } = altRangeRef.current;
       const features: GeoJSON.Feature[] = [];
-      for (let i = 0; i < Math.min(idx, renderPoints.length - 1); i++) {
+      const startIdx = Math.max(0, idx - TRAIL_LENGTH);
+
+      for (let i = startIdx; i <= Math.min(idx, renderPoints.length - 2); i++) {
         const p1 = renderPoints[i];
         const p2 = renderPoints[i + 1];
         const avgAlt = (p1.altitude + p2.altitude) / 2;
-        const relHeight = avgAlt - mAlt;
+        const relHeight = Math.max(0, avgAlt - gl);
+        const age = idx - i;
+        const alpha = Math.max(0.05, 0.6 * (1 - age / TRAIL_LENGTH));
+
         features.push({
           type: "Feature",
           properties: {
-            height: relHeight + 2,
-            base: Math.max(0, relHeight - 2),
+            height: relHeight,
+            color: `rgba(59, 130, 246, ${alpha.toFixed(2)})`,
           },
           geometry: {
             type: "Polygon",
-            coordinates: [segmentToPolygon(p1, p2, 0.0002)],
+            coordinates: [segmentToPolygon(p1, p2, 0.00025)],
           },
         });
       }
@@ -391,6 +430,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       setAnimProgress(0);
       const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
       if (source) source.setData({ type: "FeatureCollection", features: [] });
+      const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
+      if (posSource) posSource.setData({ type: "FeatureCollection", features: [] });
     }
     playingRef.current = true;
     setPlaying(true);
@@ -407,6 +448,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     }
     const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) source.setData({ type: "FeatureCollection", features: [] });
+    const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
+    if (posSource) posSource.setData({ type: "FeatureCollection", features: [] });
   }, []);
 
   const handleSpeed = useCallback(() => {
