@@ -345,7 +345,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
-      animMarkerRef.current = null;
       setMapReady(false);
       setPlaying(false);
       playingRef.current = false;
