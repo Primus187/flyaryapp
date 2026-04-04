@@ -93,6 +93,9 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
+const FOLLOW_SMOOTHING = 0.16;
+const FOLLOW_RESUME_DELAY = 180;
+
 function calcBearing(p1: TrackPoint, p2: TrackPoint): number {
   const dx = p2.lng - p1.lng;
   const dy = p2.lat - p1.lat;
@@ -116,6 +119,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const frameCountRef = useRef(0);
   const speedRef = useRef(SPEED_STEPS[0].value);
   const followRef = useRef(false);
+  const userInteractingRef = useRef(false);
+  const interactionTimeoutRef = useRef<number | null>(null);
   const extrusionFeaturesRef = useRef<GeoJSON.Feature[]>([]);
 
   const renderPoints = useMemo(() => downsample(points, 800), [points]);
@@ -189,7 +194,35 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
-    // Drag no longer disables follow — only the button does
+    const pauseFollowForGesture = () => {
+      if (!followRef.current) return;
+      userInteractingRef.current = true;
+      map.stop();
+      if (interactionTimeoutRef.current != null) {
+        window.clearTimeout(interactionTimeoutRef.current);
+        interactionTimeoutRef.current = null;
+      }
+    };
+
+    const resumeFollowAfterGesture = () => {
+      if (!followRef.current) return;
+      if (interactionTimeoutRef.current != null) {
+        window.clearTimeout(interactionTimeoutRef.current);
+      }
+      interactionTimeoutRef.current = window.setTimeout(() => {
+        userInteractingRef.current = false;
+        interactionTimeoutRef.current = null;
+      }, FOLLOW_RESUME_DELAY);
+    };
+
+    map.on("dragstart", pauseFollowForGesture);
+    map.on("dragend", resumeFollowAfterGesture);
+    map.on("zoomstart", pauseFollowForGesture);
+    map.on("zoomend", resumeFollowAfterGesture);
+    map.on("rotatestart", pauseFollowForGesture);
+    map.on("rotateend", resumeFollowAfterGesture);
+    map.on("pitchstart", pauseFollowForGesture);
+    map.on("pitchend", resumeFollowAfterGesture);
 
     map.on("load", () => {
       const extrusionFeatures: GeoJSON.Feature[] = [];
@@ -350,6 +383,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       setPlaying(false);
       playingRef.current = false;
       followRef.current = false;
+      userInteractingRef.current = false;
+      if (interactionTimeoutRef.current != null) {
+        window.clearTimeout(interactionTimeoutRef.current);
+        interactionTimeoutRef.current = null;
+      }
       setFollowing(false);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
@@ -442,9 +480,13 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     }
 
     // Follow mode: smooth continuous tracking
-    if (followRef.current) {
+    if (followRef.current && !userInteractingRef.current) {
+      const currentCenter = mapRef.current.getCenter();
       mapRef.current.jumpTo({
-        center: [p.lng, p.lat],
+        center: [
+          currentCenter.lng + (p.lng - currentCenter.lng) * FOLLOW_SMOOTHING,
+          currentCenter.lat + (p.lat - currentCenter.lat) * FOLLOW_SMOOTHING,
+        ],
       });
     }
 
@@ -499,8 +541,14 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
   const handleFollow = useCallback(() => {
     setFollowing(prev => {
-      followRef.current = !prev;
-      return !prev;
+      const next = !prev;
+      followRef.current = next;
+      userInteractingRef.current = false;
+      if (interactionTimeoutRef.current != null) {
+        window.clearTimeout(interactionTimeoutRef.current);
+        interactionTimeoutRef.current = null;
+      }
+      return next;
     });
   }, []);
 
