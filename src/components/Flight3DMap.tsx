@@ -257,6 +257,27 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
+      // Store features for progressive rendering
+      extrusionFeaturesRef.current = extrusionFeatures;
+
+      // Progressive track source/layer (used during animation)
+      map.addSource("track-progress", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "track-progress-3d",
+        type: "fill-extrusion",
+        source: "track-progress",
+        paint: {
+          "fill-extrusion-color": ["get", "color"],
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "base"],
+          "fill-extrusion-opacity": 0.92,
+        },
+      });
+
       // Animated drop-surface (blue curtain with fade)
       map.addSource("track-animated", {
         type: "geojson",
