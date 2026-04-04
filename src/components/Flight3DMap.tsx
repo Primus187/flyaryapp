@@ -449,15 +449,17 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       });
     }
 
-    // Follow mode: smooth continuous tracking
-    if (followRef.current && !userInteractingRef.current) {
+    // Follow mode: smooth continuous tracking (pauses during user gestures)
+    if (followRef.current && Date.now() > followPausedUntilRef.current) {
       const currentCenter = mapRef.current.getCenter();
+      programmaticMoveRef.current = true;
       mapRef.current.jumpTo({
         center: [
           currentCenter.lng + (p.lng - currentCenter.lng) * FOLLOW_SMOOTHING,
           currentCenter.lat + (p.lat - currentCenter.lat) * FOLLOW_SMOOTHING,
         ],
       });
+      programmaticMoveRef.current = false;
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
