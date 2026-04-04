@@ -501,6 +501,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
     if (posSource) posSource.setData({ type: "FeatureCollection", features: [] });
+    const progSource = mapRef.current?.getSource("track-progress") as maplibregl.GeoJSONSource;
+    if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
+    // Show full track again
+    mapRef.current?.setLayoutProperty("track-3d", "visibility", "visible");
   }, []);
 
   const handleSpeed = useCallback(() => {
