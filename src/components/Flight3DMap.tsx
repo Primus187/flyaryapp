@@ -189,11 +189,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
-    // Disable follow on user drag
-    map.on("dragstart", () => {
-      followRef.current = false;
-      setFollowing(false);
-    });
+    // Drag no longer disables follow — only the button does
 
     map.on("load", () => {
       const extrusionFeatures: GeoJSON.Feature[] = [];
@@ -445,19 +441,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       });
     }
 
-    // Follow mode: POV camera trailing behind pilot
+    // Follow mode: center on pilot, keep user's own pitch/bearing/zoom
     if (followRef.current && frameCountRef.current % 20 === 0) {
-      const nextIdx = Math.min(idx + 1, renderPoints.length - 1);
-      const bearing = calcBearing(renderPoints[Math.min(idx, renderPoints.length - 2)], renderPoints[nextIdx]);
-      const bearingRad = (bearing * Math.PI) / 180;
-      const offset = 0.001;
-      const offsetLng = p.lng - Math.sin(bearingRad) * offset;
-      const offsetLat = p.lat - Math.cos(bearingRad) * offset;
       mapRef.current.easeTo({
-        center: [offsetLng, offsetLat],
-        bearing,
-        pitch: 70,
-        zoom: 14,
+        center: [p.lng, p.lat],
         duration: 300,
       });
     }
