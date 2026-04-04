@@ -441,11 +441,12 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       });
     }
 
-    // Follow mode: center on pilot, keep user's own pitch/bearing/zoom
-    if (followRef.current && frameCountRef.current % 20 === 0) {
+    // Follow mode: smooth continuous tracking
+    if (followRef.current) {
       mapRef.current.easeTo({
         center: [p.lng, p.lat],
-        duration: 300,
+        duration: 600,
+        easing: (t: number) => t,
       });
     }
 
