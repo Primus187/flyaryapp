@@ -124,7 +124,8 @@ export default function FlightDetail() {
       const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, file, { upsert: true }); if (storageErr) throw storageErr;
       const limitedPoints = parsed.points.filter((_, i) => i % Math.max(1, Math.floor(parsed.points.length / 2000)) === 0);
       if (track) await supabase.from("igc_tracks").delete().eq("id", track.id);
-      const { data: newTrack, error: trackErr } = await supabase.from("igc_tracks").insert({ flight_id: id, storage_path: path, track_data: { points: limitedPoints } as any }).select().single();
+      const igcStats = { maxAltitude: parsed.maxAltitude, minAltitude: parsed.minAltitude, maxClimbRate: parsed.maxClimbRate, maxSinkRate: parsed.maxSinkRate, avgSpeedKmh: parsed.avgSpeedKmh, totalDistanceKm: parsed.totalDistanceKm, startTime: parsed.startTime, endTime: parsed.endTime, durationMinutes: parsed.durationMinutes };
+      const { data: newTrack, error: trackErr } = await supabase.from("igc_tracks").insert({ flight_id: id, storage_path: path, track_data: { points: limitedPoints, stats: igcStats } as any }).select().single();
       if (trackErr) throw trackErr;
       setTrack(newTrack);
       toast({ title: t("flights.igcUploaded"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
