@@ -93,7 +93,7 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
-const TRAIL_LENGTH = 25;
+const TRAIL_LENGTH = 10;
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
