@@ -292,7 +292,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
           "fill-extrusion-color": ["get", "color"],
           "fill-extrusion-height": ["get", "height"],
           "fill-extrusion-base": 0,
-          "fill-extrusion-opacity": 0.9,
+          "fill-extrusion-opacity": 0.5,
         },
       });
 
