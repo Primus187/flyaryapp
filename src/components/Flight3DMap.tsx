@@ -93,7 +93,7 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
-const TRAIL_LENGTH = 25;
+const TRAIL_LENGTH = 10;
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -429,13 +429,13 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         const bl = (calcBaseline(renderPoints, i) + calcBaseline(renderPoints, i + 1)) / 2;
         const relHeight = Math.max(0, avgAlt - bl);
         const age = idx - i;
-        const alpha = Math.max(0.02, 0.3 * (1 - age / TRAIL_LENGTH));
+        const alpha = Math.max(0, 0.25 * (1 - age / TRAIL_LENGTH));
 
         features.push({
           type: "Feature",
           properties: {
             height: relHeight,
-            color: `rgba(59, 130, 246, ${alpha.toFixed(2)})`,
+            color: `rgba(135, 206, 250, ${alpha.toFixed(2)})`,
           },
           geometry: {
             type: "Polygon",
