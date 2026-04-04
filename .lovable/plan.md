@@ -1,30 +1,48 @@
 
 
-# Fix: Flughöhe relativ zum Terrain + Geschwindigkeitsregler
+# 3D-Flugvisualisierung: Start-Fix, Linie statt Segmente, dynamische Drop-Fläche
 
-## Problem 1: Track zu hoch
+## Probleme
 
-MapLibre's `fill-extrusion` mit aktivem 3D-Terrain **addiert** die Extrusions-Höhe auf die Terrain-Höhe. Ein Punkt bei 1500m ASL auf einem Berg bei 1200m wird also bei 1200+1500 = 2700m gerendert statt bei 1500m.
+1. **Start hängt in der Luft**: `minAlt` ist die tiefste Altitude im Track, aber der Startpunkt hat ggf. eine höhere Altitude als `minAlt` (Landung tiefer als Start). Die Höhe wird als `altitude - minAlt` berechnet — funktioniert nur wenn Start = tiefster Punkt.
+2. **Boden-Marker zu prominent**: Gelber animierter Marker (`scale: 0.8`) zu auffällig.
+3. **Track als Segmente statt durchgängige Linie**: Die fill-extrusion Ribbon-Segmente haben sichtbare Lücken.
+4. **Drop-Lines permanent sichtbar**: Statische weisse Balken alle 30 Segmente statt dynamisch bei aktueller Position.
 
-**Lösung**: Höhe relativ zum Boden (AGL) berechnen. Die minimale Altitude im Track wird als Bodenniveau approximiert. `height = altitude - minAlt` ergibt bei Start/Landung ~0m (am Boden) und zeigt Thermik-Höhengewinne korrekt an.
+## Lösung
 
-## Problem 2: Animation zu schnell
+### 1. Start-Höhe korrigieren
 
-Aktuell `progressRef.current += 0.002` pro Frame (500 Frames = ~8 Sekunden für ganzen Flug).
+Statt `minAlt` als globales Minimum verwenden, den **Startpunkt** als Baseline nehmen. Besser: den Durchschnitt der ersten und letzten 5 Punkte als Bodenniveau berechnen. So starten und landen beide nahe am Boden.
 
-**Lösung**: Speed-Selector (1x, 2x, 5x, 10x) in den Playback-Controls. Default wird auf ~30 Sekunden Gesamtdauer gesetzt (langsamer). Ein kleiner Button-Toggle zeigt die aktuelle Geschwindigkeit.
+```text
+groundLevel = avg(first 5 points altitude, last 5 points altitude)
+relHeight = altitude - groundLevel
+// Clamp auf min 0, damit negative Werte am Boden bleiben
+```
+
+### 2. Track als durchgängige Linie auf Flugebene
+
+Die weisse Animations-Spur wird ersetzt durch einen prominenten **Positions-Marker auf der Fluglinie** (fill-extrusion Punkt-Polygon, grösser, leuchtend). Der Haupttrack bleibt als durchgängiger farbiger Ribbon — die Segment-Breite wird leicht erhöht und Lücken minimiert.
+
+### 3. Boden-Marker dezenter
+
+- Boden-Schatten-Marker: Kleiner (`scale: 0.4`), grau/halbtransparent statt gelb
+- Neuer **Fluglinien-Marker**: Prominenter Punkt auf dem 3D-Track (fill-extrusion Kreis-Polygon, weiss/leuchtend, etwas breiter als Track)
+
+### 4. Dynamische Drop-Fläche mit Fade
+
+Statische Drop-Lines entfernen. Stattdessen im Animations-Loop:
+- **Aktuelle Position**: Gefüllte blaue Fläche (fill-extrusion) vom Boden bis zur Flughöhe, leicht transparent
+- **Letzte ~50 Segmente**: Gleiche blaue Fläche mit abnehmender Opacity (neueste = `0.6`, älteste = `0.0`)
+- Da `fill-extrusion-opacity` keine per-Feature-Expression unterstützt, wird der Fade über die **Farb-Alpha-Komponente** gelöst: `rgba(60,130,246, 0.6)` → `rgba(60,130,246, 0.05)`
 
 ## Änderungen in `src/components/Flight3DMap.tsx`
 
-1. **Höhenberechnung anpassen**:
-   - `height: avgAlt - minAlt` statt `height: avgAlt`
-   - `base: Math.max(0, avgAlt - minAlt - 8)` statt `Math.max(0, avgAlt - 12)`
-   - Drop-lines: `height: p.altitude - minAlt`, `base: 0`
-   - Animated track: gleiche relative Berechnung
-
-2. **Speed-State hinzufügen**:
-   - `speedRef` mit Werten `[0.0004, 0.0008, 0.002, 0.004]` für 1x/2x/5x/10x
-   - Default: `0.0004` (~40 Sekunden bei 800 Punkten)
-   - Speed-Button in Controls der zwischen Stufen wechselt
-   - Anzeige: "1x", "2x", "5x", "10x"
+1. **groundLevel-Berechnung**: Avg der ersten/letzten 5 Punkte statt globales Min
+2. **Statische Drop-Lines entfernen**: `drop-lines` Source/Layer komplett raus
+3. **Animated trail umbauen**: Statt weisser Ribbon-Spur → dynamische blaue Drop-Flächen mit Fade (letzte ~50 Segmente, Opacity per Farbe)
+4. **Animierter Positions-Marker auf Fluglinie**: Fill-extrusion Punkt auf Flughöhe (weiss, prominent)
+5. **Boden-Marker**: `scale: 0.4`, Farbe `#888`, dezent
+6. **Segment-Breite**: Leicht erhöht für lückenlosere Darstellung
 
