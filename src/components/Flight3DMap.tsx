@@ -99,7 +99,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
-  const animMarkerRef = useRef<maplibregl.Marker | null>(null);
+  
   const [mapReady, setMapReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [animProgress, setAnimProgress] = useState(0);
