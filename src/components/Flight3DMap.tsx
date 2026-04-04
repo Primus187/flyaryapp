@@ -93,6 +93,11 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
+function calcBearing(p1: TrackPoint, p2: TrackPoint): number {
+  const dx = p2.lng - p1.lng;
+  const dy = p2.lat - p1.lat;
+  return (Math.atan2(dx, dy) * 180) / Math.PI;
+}
 
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
