@@ -515,16 +515,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     setFollowing(prev => {
       const next = !prev;
       followRef.current = next;
-      userInteractingRef.current = false;
-      if (interactionTimeoutRef.current != null) {
-        window.clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = null;
-      }
-      return next;
-    });
-  }, []);
-
-  return (
+      followPausedUntilRef.current = 0;
     <div className="relative">
       <div
         ref={containerRef}
