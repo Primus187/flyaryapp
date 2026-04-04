@@ -206,7 +206,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
           properties: {
             color: getColor(avgAlt, minAlt, maxAlt),
             height: relHeight,
-            base: Math.max(0, relHeight - 8),
+            base: relHeight,
           },
           geometry: {
             type: "Polygon",
