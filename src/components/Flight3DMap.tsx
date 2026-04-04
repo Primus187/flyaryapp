@@ -446,6 +446,15 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       source.setData({ type: "FeatureCollection", features });
     }
 
+    // Progressive track build-up
+    const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
+    if (progSource && extrusionFeaturesRef.current.length > 0) {
+      progSource.setData({
+        type: "FeatureCollection",
+        features: extrusionFeaturesRef.current.slice(0, Math.min(idx, extrusionFeaturesRef.current.length)),
+      });
+    }
+
     // Follow mode: smooth camera tracking every ~20 frames
     if (followRef.current && frameCountRef.current % 20 === 0) {
       mapRef.current.easeTo({
