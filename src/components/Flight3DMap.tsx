@@ -336,12 +336,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       markerRef.current = marker;
 
       // Ground shadow marker for animation (subtle)
-      const animMarker = new maplibregl.Marker({ color: "#888", scale: 0.4 })
-        .setLngLat(center)
-        .addTo(map);
-      animMarker.getElement().style.display = "none";
-      animMarker.getElement().style.opacity = "0.5";
-      animMarkerRef.current = animMarker;
+      animMarkerRef.current = null;
 
       setMapReady(true);
     });
@@ -398,9 +393,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
 
-    // Update ground shadow marker
-    animMarkerRef.current.setLngLat([p.lng, p.lat]);
-    animMarkerRef.current.getElement().style.display = "block";
+    // Ground marker removed — drop surface is sufficient
 
     // Update position marker on flight line (white prominent dot)
     const posSource = mapRef.current.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
@@ -494,9 +487,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     setPlaying(false);
     progressRef.current = 0;
     setAnimProgress(0);
-    if (animMarkerRef.current) {
-      animMarkerRef.current.getElement().style.display = "none";
-    }
     const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
