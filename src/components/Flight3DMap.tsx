@@ -190,33 +190,15 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     const pauseFollowForGesture = () => {
       if (!followRef.current) return;
-      userInteractingRef.current = true;
-      map.stop();
-      if (interactionTimeoutRef.current != null) {
-        window.clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = null;
-      }
-    };
-
-    const resumeFollowAfterGesture = () => {
-      if (!followRef.current) return;
-      if (interactionTimeoutRef.current != null) {
-        window.clearTimeout(interactionTimeoutRef.current);
-      }
-      interactionTimeoutRef.current = window.setTimeout(() => {
-        userInteractingRef.current = false;
-        interactionTimeoutRef.current = null;
-      }, FOLLOW_RESUME_DELAY);
+      if (programmaticMoveRef.current) return;
+      followPausedUntilRef.current = Date.now() + FOLLOW_PAUSE_MS;
     };
 
     map.on("dragstart", pauseFollowForGesture);
-    map.on("dragend", resumeFollowAfterGesture);
     map.on("zoomstart", pauseFollowForGesture);
-    map.on("zoomend", resumeFollowAfterGesture);
     map.on("rotatestart", pauseFollowForGesture);
-    map.on("rotateend", resumeFollowAfterGesture);
     map.on("pitchstart", pauseFollowForGesture);
-    map.on("pitchend", resumeFollowAfterGesture);
+    map.on("touchmove", pauseFollowForGesture);
 
     map.on("load", () => {
       const extrusionFeatures: GeoJSON.Feature[] = [];
