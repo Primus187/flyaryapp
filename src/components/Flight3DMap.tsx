@@ -93,6 +93,11 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
+function calcBearing(p1: TrackPoint, p2: TrackPoint): number {
+  const dx = p2.lng - p1.lng;
+  const dy = p2.lat - p1.lat;
+  return (Math.atan2(dx, dy) * 180) / Math.PI;
+}
 
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
@@ -440,10 +445,19 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       });
     }
 
-    // Follow mode: smooth camera tracking every ~20 frames
+    // Follow mode: POV camera trailing behind pilot
     if (followRef.current && frameCountRef.current % 20 === 0) {
+      const nextIdx = Math.min(idx + 1, renderPoints.length - 1);
+      const bearing = calcBearing(renderPoints[Math.min(idx, renderPoints.length - 2)], renderPoints[nextIdx]);
+      const bearingRad = (bearing * Math.PI) / 180;
+      const offset = 0.001;
+      const offsetLng = p.lng - Math.sin(bearingRad) * offset;
+      const offsetLat = p.lat - Math.cos(bearingRad) * offset;
       mapRef.current.easeTo({
-        center: [p.lng, p.lat],
+        center: [offsetLng, offsetLat],
+        bearing,
+        pitch: 70,
+        zoom: 14,
         duration: 300,
       });
     }
