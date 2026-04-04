@@ -382,6 +382,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       playingRef.current = false;
       setPlaying(false);
       setAnimProgress(1);
+      // Show full track, hide progress
+      mapRef.current.setLayoutProperty("track-3d", "visibility", "visible");
+      const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
+      if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
       return;
     }
 
