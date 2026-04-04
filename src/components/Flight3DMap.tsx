@@ -336,12 +336,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       markerRef.current = marker;
 
       // Ground shadow marker for animation (subtle)
-      const animMarker = new maplibregl.Marker({ color: "#888", scale: 0.4 })
-        .setLngLat(center)
-        .addTo(map);
-      animMarker.getElement().style.display = "none";
-      animMarker.getElement().style.opacity = "0.5";
-      animMarkerRef.current = animMarker;
+      animMarkerRef.current = null;
 
       setMapReady(true);
     });
