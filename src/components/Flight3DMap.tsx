@@ -516,6 +516,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       const next = !prev;
       followRef.current = next;
       followPausedUntilRef.current = 0;
+      return next;
+    });
+  }, []);
+
+  return (
     <div className="relative">
       <div
         ref={containerRef}
