@@ -425,7 +425,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         const bl = (calcBaseline(renderPoints, i) + calcBaseline(renderPoints, i + 1)) / 2;
         const relHeight = Math.max(0, avgAlt - bl);
         const age = idx - i;
-        const alpha = Math.max(0.05, 0.6 * (1 - age / TRAIL_LENGTH));
+        const alpha = Math.max(0.02, 0.3 * (1 - age / TRAIL_LENGTH));
 
         features.push({
           type: "Feature",
