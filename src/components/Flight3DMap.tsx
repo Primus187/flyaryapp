@@ -406,34 +406,29 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       });
     }
 
-    // Update dynamic drop-surface with fade
+    // Update dynamic drop-surface — single segment only
     const source = mapRef.current.getSource("track-animated") as maplibregl.GeoJSONSource;
-    if (source) {
-      const features: GeoJSON.Feature[] = [];
-      const startIdx = Math.max(0, idx - TRAIL_LENGTH);
+    if (source && idx < renderPoints.length - 1) {
+      const p1 = renderPoints[idx];
+      const p2 = renderPoints[idx + 1];
+      const avgAlt = (p1.altitude + p2.altitude) / 2;
+      const bl = (calcBaseline(renderPoints, idx) + calcBaseline(renderPoints, idx + 1)) / 2;
+      const relHeight = Math.max(0, avgAlt - bl);
 
-      for (let i = startIdx; i <= Math.min(idx, renderPoints.length - 2); i++) {
-        const p1 = renderPoints[i];
-        const p2 = renderPoints[i + 1];
-        const avgAlt = (p1.altitude + p2.altitude) / 2;
-        const bl = (calcBaseline(renderPoints, i) + calcBaseline(renderPoints, i + 1)) / 2;
-        const relHeight = Math.max(0, avgAlt - bl);
-        const age = idx - i;
-        const alpha = Math.max(0, 0.25 * (1 - age / TRAIL_LENGTH));
-
-        features.push({
+      source.setData({
+        type: "FeatureCollection",
+        features: [{
           type: "Feature",
           properties: {
             height: relHeight,
-            color: `rgba(135, 206, 250, ${alpha.toFixed(2)})`,
+            color: "rgba(135, 206, 250, 0.3)",
           },
           geometry: {
             type: "Polygon",
             coordinates: [segmentToPolygon(p1, p2, 0.00025)],
           },
-        });
-      }
-      source.setData({ type: "FeatureCollection", features });
+        }],
+      });
     }
 
     // Progressive track build-up
