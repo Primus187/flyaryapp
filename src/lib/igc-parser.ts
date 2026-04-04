@@ -16,6 +16,10 @@ export interface IGCData {
   startTime: string | null;
   endTime: string | null;
   durationMinutes: number;
+  maxClimbRate: number;    // m/s
+  maxSinkRate: number;     // m/s (negative)
+  avgSpeedKmh: number;
+  totalDistanceKm: number;
 }
 
 function parseLatitude(raw: string): number {
