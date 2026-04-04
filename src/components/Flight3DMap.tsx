@@ -13,7 +13,6 @@ interface TrackPoint {
 
 interface Props {
   points: TrackPoint[];
-  onHoverIndex?: (index: number | null) => void;
   highlightIndex?: number | null;
 }
 
