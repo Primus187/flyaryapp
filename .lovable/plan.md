@@ -1,35 +1,30 @@
 
 
-# Follow-Modus als POV-Kamera
+# Fix: Follow-Modus blockiert Benutzer-Gesten
 
-## Aktuell
-Der Follow-Modus zentriert die Karte nur auf die aktuelle Position (`easeTo({ center })`), ohne Bearing oder Pitch zu ändern — eine Draufsicht.
+## Ursache
+
+`easeTo()` wird **jeden Frame** mit `duration: 600` aufgerufen. Jeder `easeTo`-Aufruf startet eine interne MapLibre-Animation, die alle User-Interaktionen (Pinch, Drag, Rotate) sofort überschreibt. Der Benutzer kann die Karte nicht bedienen, weil seine Gesten ständig von der nächsten `easeTo`-Animation unterbrochen werden.
 
 ## Lösung
-Im Follow-Modus die Kamera **hinter dem Piloten** positionieren, in Flugrichtung blickend:
 
-### Änderungen in `Flight3DMap.tsx`
+Statt `easeTo` die Methode **`jumpTo`** verwenden, die die Kamera **sofort ohne Animation** repositioniert. Das blockiert keine Gesten. MapLibre verarbeitet User-Gesten zwischen den Frames normal, und beim nächsten Frame wird nur das Center neu gesetzt.
 
-1. **Bearing aus Flugrichtung berechnen**: Aus aktuellem und nächstem Punkt den Kurs (Heading) ableiten:
-   ```
-   bearing = atan2(dx, dy) * 180 / PI
-   ```
+### Änderung in `Flight3DMap.tsx`
 
-2. **Kamera leicht versetzt hinter dem Piloten**: `easeTo` mit:
-   - `center`: leicht hinter der aktuellen Position (entgegen der Flugrichtung versetzt)
-   - `bearing`: Flugrichtung
-   - `pitch`: 70° (steiler Blickwinkel von hinten)
-   - `zoom`: 14 (näher dran)
-   - `duration`: 300ms (smooth)
+Zeilen 446-450: `easeTo` durch `jumpTo` ersetzen:
 
-3. **Follow-Modus aktivieren**: Beim Einschalten auch sofort Pitch/Zoom/Bearing setzen. Beim Deaktivieren oder Drag → zurück zum freien Modus (Pitch/Zoom bleiben wie vom User gesetzt).
+```typescript
+if (followRef.current) {
+  mapRef.current.jumpTo({
+    center: [p.lng, p.lat],
+  });
+}
+```
 
-4. **Update-Frequenz**: Weiterhin alle ~20 Frames, Bearing wird geglättet um Zittern zu vermeiden.
+- Kein `duration`, kein `easing` — sofortige Positionierung
+- Pitch, Bearing, Zoom bleiben unangetastet → User kann frei steuern
+- Kein Konflikt mit Gesten, da keine interne Animation läuft
 
-### Technisch
-- Neue Hilfsfunktion `calcBearing(p1, p2)` → Grad
-- Offset-Berechnung: ~0.001° entgegen Bearing für "hinter dem Piloten"-Effekt
-- Nur der Follow-Block im `animate()` Loop ändert sich (Zeilen 443-449)
-
-Eine Datei, eine Funktion ergänzt, ein Block angepasst.
+Eine Zeile geändert, eine Datei.
 
