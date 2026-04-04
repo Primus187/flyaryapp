@@ -393,9 +393,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
 
-    // Update ground shadow marker
-    animMarkerRef.current.setLngLat([p.lng, p.lat]);
-    animMarkerRef.current.getElement().style.display = "block";
+    // Ground marker removed — drop surface is sufficient
 
     // Update position marker on flight line (white prominent dot)
     const posSource = mapRef.current.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
