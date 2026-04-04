@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Play, Pause, RotateCcw } from "lucide-react";
@@ -81,9 +81,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
+  const frameCountRef = useRef(0);
+  const altRangeRef = useRef({ min: 0, max: 1 });
 
-  // Use downsampled points for rendering
-  const renderPoints = downsample(points, 800);
+  // Stabilize renderPoints with useMemo to prevent map re-init on re-render
+  const renderPoints = useMemo(() => downsample(points, 800), [points]);
 
   useEffect(() => {
     if (!containerRef.current || renderPoints.length < 2) return;
@@ -98,6 +100,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       if (p.altitude < minAlt) minAlt = p.altitude;
       if (p.altitude > maxAlt) maxAlt = p.altitude;
     }
+    altRangeRef.current = { min: minAlt, max: maxAlt };
 
     const center: [number, number] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 
@@ -334,11 +337,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     }
   }, [highlightIndex, mapReady, points, renderPoints]);
 
-  // Animation loop
+  // Animation loop — updates MapLibre directly, throttles React state
   const animate = useCallback(() => {
     if (!playingRef.current || !mapRef.current || !animMarkerRef.current) return;
 
-    progressRef.current += 0.002; // ~8 seconds for full flight at 60fps
+    progressRef.current += 0.002;
     if (progressRef.current >= 1) {
       progressRef.current = 1;
       playingRef.current = false;
@@ -347,25 +350,22 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       return;
     }
 
-    setAnimProgress(progressRef.current);
+    // Throttle React state updates to ~6-7fps (every 10 frames)
+    frameCountRef.current++;
+    if (frameCountRef.current % 10 === 0) {
+      setAnimProgress(progressRef.current);
+    }
 
     const idx = Math.floor(progressRef.current * (renderPoints.length - 1));
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     
-    // Move animation marker
+    // Move animation marker (direct MapLibre, no React re-render)
     animMarkerRef.current.setLngLat([p.lng, p.lat]);
     animMarkerRef.current.getElement().style.display = "block";
 
-    // Update animated track (white overlay showing progress)
-    const map = mapRef.current;
-    const source = map.getSource("track-animated") as maplibregl.GeoJSONSource;
+    // Update animated track overlay (direct MapLibre)
+    const source = mapRef.current.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) {
-      let minAlt = Infinity, maxAlt = -Infinity;
-      for (const pt of renderPoints) {
-        if (pt.altitude < minAlt) minAlt = pt.altitude;
-        if (pt.altitude > maxAlt) maxAlt = pt.altitude;
-      }
-      
       const features: GeoJSON.Feature[] = [];
       for (let i = 0; i < Math.min(idx, renderPoints.length - 1); i++) {
         const p1 = renderPoints[i];
@@ -374,7 +374,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         features.push({
           type: "Feature",
           properties: {
-            height: avgAlt + 2, // slightly above the main track
+            height: avgAlt + 2,
             base: avgAlt - 2,
           },
           geometry: {
