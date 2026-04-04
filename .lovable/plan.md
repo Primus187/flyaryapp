@@ -1,30 +1,43 @@
 
+Ziel: Der Follow-Modus soll flüssig bleiben, aber Zoom, Pitch und Blickrichtung auf Mobile und Desktop jederzeit zulassen. Follow bleibt aktiv, bis das Crosshair deaktiviert wird, pausiert aber die automatische Zentrierung zuverlässig während echter Benutzer-Gesten.
 
-# Fix: Follow-Modus blockiert Benutzer-Gesten
+1. Ursache beheben
+- Die Kamera wird aktuell im Animations-Loop weiter per `jumpTo` nachgeführt.
+- Dadurch wird die Kartenmitte selbst dann noch laufend überschrieben, wenn der Nutzer gerade mit den Fingern zoomt, dreht oder kippt.
+- Die aktuelle Gesture-Erkennung mit kurzer Timeout-Logik ist dafür zu unzuverlässig, besonders auf Touch-Geräten.
 
-## Ursache
+2. Follow-Logik robuster machen
+- In `src/components/Flight3DMap.tsx` die aktuelle `userInteractingRef`-Steuerung auf ein klareres Pause-System umstellen:
+  - `followPausedUntilRef`
+  - `programmaticMoveRef`
+- Bei echten Nutzer-Gesten die Follow-Zentrierung nur temporär pausieren, nicht deaktivieren.
+- Beim Ende der Geste automatisch nach kurzer Verzögerung wieder aufnehmen.
 
-`easeTo()` wird **jeden Frame** mit `duration: 600` aufgerufen. Jeder `easeTo`-Aufruf startet eine interne MapLibre-Animation, die alle User-Interaktionen (Pinch, Drag, Rotate) sofort überschreibt. Der Benutzer kann die Karte nicht bedienen, weil seine Gesten ständig von der nächsten `easeTo`-Animation unterbrochen werden.
+3. Nutzer-Gesten zuverlässiger erkennen
+- Nicht nur auf einzelne Start/End-Events verlassen.
+- Zusätzliche Move-bezogene Karten-Events verwenden, damit auch Pinch/Rotate/Pitch auf Mobile sauber erkannt werden.
+- Programmgesteuerte Kamera-Updates dabei ausfiltern, damit Follow sich nicht selbst als User-Interaktion markiert.
 
-## Lösung
+4. Kamera-Update entschärfen
+- `map.stop()` aus der Gesture-Logik entfernen.
+- Im Follow-Block nur dann zentrieren, wenn gerade keine User-Interaktion aktiv ist.
+- Weiterhin nur das `center` nachführen, niemals `zoom`, `bearing` oder `pitch`.
+- Eine sanfte Interpolation beibehalten, aber mit kleinerem Smoothing und optionalem Mindestabstand, damit die Kamera nicht mikroruckelt.
 
-Statt `easeTo` die Methode **`jumpTo`** verwenden, die die Kamera **sofort ohne Animation** repositioniert. Das blockiert keine Gesten. MapLibre verarbeitet User-Gesten zwischen den Frames normal, und beim nächsten Frame wird nur das Center neu gesetzt.
+5. Resume-Verhalten verbessern
+- Die Pause nach einer Geste etwas länger wählen als aktuell, damit die Kamera nicht sofort zurückschnappt.
+- So kann der Nutzer nach Zoom/Rotate/Pitch noch kurz in seiner gewählten Perspektive bleiben, bevor Follow wieder weich übernimmt.
 
-### Änderung in `Flight3DMap.tsx`
+6. Erwartetes Ergebnis
+- Animation bleibt flüssig.
+- Während der Wiedergabe kann der Nutzer mit den Fingern frei zoomen, drehen und kippen.
+- Follow bleibt aktiv, solange das Crosshair aktiv ist.
+- Nach Ende einer Geste übernimmt die Kamera wieder automatisch und weich.
 
-Zeilen 446-450: `easeTo` durch `jumpTo` ersetzen:
-
-```typescript
-if (followRef.current) {
-  mapRef.current.jumpTo({
-    center: [p.lng, p.lat],
-  });
-}
-```
-
-- Kein `duration`, kein `easing` — sofortige Positionierung
-- Pitch, Bearing, Zoom bleiben unangetastet → User kann frei steuern
-- Kein Konflikt mit Gesten, da keine interne Animation läuft
-
-Eine Zeile geändert, eine Datei.
-
+Technische Details
+- Datei: nur `src/components/Flight3DMap.tsx`
+- Wahrscheinlich anzupassen:
+  - Event-Handler rund um `pauseFollowForGesture` / `resumeFollowAfterGesture`
+  - Refs für Interaction-/Pause-Status
+  - Follow-Block im `animate()`-Loop
+  - Entfernen von `map.stop()` und Vereinfachung der bisherigen Timeout-Logik
