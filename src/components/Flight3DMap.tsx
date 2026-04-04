@@ -81,9 +81,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
+  const frameCountRef = useRef(0);
+  const altRangeRef = useRef({ min: 0, max: 1 });
 
-  // Use downsampled points for rendering
-  const renderPoints = downsample(points, 800);
+  // Stabilize renderPoints with useMemo to prevent map re-init on re-render
+  const renderPoints = useMemo(() => downsample(points, 800), [points]);
 
   useEffect(() => {
     if (!containerRef.current || renderPoints.length < 2) return;
