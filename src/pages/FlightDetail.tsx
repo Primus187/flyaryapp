@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X, Share2, CheckCircle } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X, Share2, CheckCircle, Mountain } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
@@ -14,6 +14,9 @@ import { compressImage } from "@/lib/image-compress";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
+
+const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
+const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
 
 export default function FlightDetail() {
   const { id } = useParams();
