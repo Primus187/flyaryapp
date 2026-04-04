@@ -443,10 +443,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     // Follow mode: smooth continuous tracking
     if (followRef.current) {
-      mapRef.current.easeTo({
+      mapRef.current.jumpTo({
         center: [p.lng, p.lat],
-        duration: 600,
-        easing: (t: number) => t,
       });
     }
 
