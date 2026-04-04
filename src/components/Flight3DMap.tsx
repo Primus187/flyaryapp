@@ -34,7 +34,6 @@ function getColor(alt: number, min: number, max: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
-/** Create a thin polygon perpendicular to the flight direction */
 function segmentToPolygon(
   p1: TrackPoint,
   p2: TrackPoint,
@@ -55,7 +54,6 @@ function segmentToPolygon(
   ];
 }
 
-/** Downsample points for performance – keep every Nth point */
 function downsample(pts: TrackPoint[], maxPts: number): TrackPoint[] {
   if (pts.length <= maxPts) return pts;
   const step = pts.length / maxPts;
@@ -63,12 +61,18 @@ function downsample(pts: TrackPoint[], maxPts: number): TrackPoint[] {
   for (let i = 0; i < maxPts; i++) {
     result.push(pts[Math.floor(i * step)]);
   }
-  // always include last point
   if (result[result.length - 1] !== pts[pts.length - 1]) {
     result.push(pts[pts.length - 1]);
   }
   return result;
 }
+
+const SPEED_STEPS = [
+  { label: "1x", value: 0.0004 },
+  { label: "2x", value: 0.0008 },
+  { label: "5x", value: 0.002 },
+  { label: "10x", value: 0.004 },
+];
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,13 +82,14 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const [mapReady, setMapReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [animProgress, setAnimProgress] = useState(0);
+  const [speedIdx, setSpeedIdx] = useState(0);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
   const frameCountRef = useRef(0);
   const altRangeRef = useRef({ min: 0, max: 1 });
+  const speedRef = useRef(SPEED_STEPS[0].value);
 
-  // Stabilize renderPoints with useMemo to prevent map re-init on re-render
   const renderPoints = useMemo(() => downsample(points, 800), [points]);
 
   useEffect(() => {
@@ -158,24 +163,22 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
     map.on("load", () => {
-      // Build fill-extrusion polygons for elevated track
       const extrusionFeatures: GeoJSON.Feature[] = [];
-      // Build ground shadow line
       const shadowCoords: [number, number][] = [];
-      // Build vertical drop-lines for spatial reference (every Nth segment)
       const dropFeatures: GeoJSON.Feature[] = [];
 
       for (let i = 0; i < renderPoints.length - 1; i++) {
         const p1 = renderPoints[i];
         const p2 = renderPoints[i + 1];
         const avgAlt = (p1.altitude + p2.altitude) / 2;
+        const relHeight = avgAlt - minAlt;
 
         extrusionFeatures.push({
           type: "Feature",
           properties: {
             color: getColor(avgAlt, minAlt, maxAlt),
-            height: avgAlt,
-            base: Math.max(0, avgAlt - 12),
+            height: relHeight,
+            base: Math.max(0, relHeight - 8),
           },
           geometry: {
             type: "Polygon",
@@ -186,11 +189,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         if (i === 0) shadowCoords.push([p1.lng, p1.lat]);
         shadowCoords.push([p2.lng, p2.lat]);
 
-        // Add vertical reference lines every 30 segments
         if (i % 30 === 0) {
           dropFeatures.push({
             type: "Feature",
-            properties: { height: p1.altitude, base: 0 },
+            properties: { height: p1.altitude - minAlt, base: 0 },
             geometry: {
               type: "Polygon",
               coordinates: [segmentToPolygon(
@@ -203,7 +205,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         }
       }
 
-      // Ground shadow line
       map.addSource("track-shadow", {
         type: "geojson",
         data: {
@@ -224,7 +225,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
-      // Vertical drop-lines
       if (dropFeatures.length > 0) {
         map.addSource("drop-lines", {
           type: "geojson",
@@ -243,7 +243,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         });
       }
 
-      // Elevated track as fill-extrusion
       map.addSource("track-extrusion", {
         type: "geojson",
         data: { type: "FeatureCollection", features: extrusionFeatures },
@@ -261,7 +260,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
-      // Animated track source (starts empty, filled during playback)
       map.addSource("track-animated", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -279,7 +277,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
-      // Start/end markers
       new maplibregl.Marker({ color: "#22c55e" })
         .setLngLat([renderPoints[0].lng, renderPoints[0].lat])
         .setPopup(new maplibregl.Popup().setText("Start"))
@@ -290,18 +287,15 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         .setPopup(new maplibregl.Popup().setText("Landing"))
         .addTo(map);
 
-      // Fit bounds
       const bounds = new maplibregl.LngLatBounds([minLng, minLat], [maxLng, maxLat]);
       map.fitBounds(bounds, { padding: 60, pitch: 60, duration: 1000 });
 
-      // Hover marker
       const marker = new maplibregl.Marker({ color: "#fff", scale: 0.6 })
         .setLngLat(center)
         .addTo(map);
       marker.getElement().style.display = "none";
       markerRef.current = marker;
 
-      // Animation marker (larger, visible during playback)
       const animMarker = new maplibregl.Marker({ color: "#facc15", scale: 0.8 })
         .setLngLat(center)
         .addTo(map);
@@ -325,7 +319,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     };
   }, [renderPoints]);
 
-  // Sync highlight marker
   useEffect(() => {
     if (!mapReady || !markerRef.current || !renderPoints.length) return;
     if (highlightIndex != null && highlightIndex >= 0 && highlightIndex < points.length) {
@@ -337,11 +330,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     }
   }, [highlightIndex, mapReady, points, renderPoints]);
 
-  // Animation loop — updates MapLibre directly, throttles React state
   const animate = useCallback(() => {
     if (!playingRef.current || !mapRef.current || !animMarkerRef.current) return;
 
-    progressRef.current += 0.002;
+    progressRef.current += speedRef.current;
     if (progressRef.current >= 1) {
       progressRef.current = 1;
       playingRef.current = false;
@@ -350,7 +342,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       return;
     }
 
-    // Throttle React state updates to ~6-7fps (every 10 frames)
     frameCountRef.current++;
     if (frameCountRef.current % 10 === 0) {
       setAnimProgress(progressRef.current);
@@ -358,24 +349,24 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     const idx = Math.floor(progressRef.current * (renderPoints.length - 1));
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
-    
-    // Move animation marker (direct MapLibre, no React re-render)
+
     animMarkerRef.current.setLngLat([p.lng, p.lat]);
     animMarkerRef.current.getElement().style.display = "block";
 
-    // Update animated track overlay (direct MapLibre)
     const source = mapRef.current.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) {
+      const { min: mAlt } = altRangeRef.current;
       const features: GeoJSON.Feature[] = [];
       for (let i = 0; i < Math.min(idx, renderPoints.length - 1); i++) {
         const p1 = renderPoints[i];
         const p2 = renderPoints[i + 1];
         const avgAlt = (p1.altitude + p2.altitude) / 2;
+        const relHeight = avgAlt - mAlt;
         features.push({
           type: "Feature",
           properties: {
-            height: avgAlt + 2,
-            base: avgAlt - 2,
+            height: relHeight + 2,
+            base: Math.max(0, relHeight - 2),
           },
           geometry: {
             type: "Polygon",
@@ -395,11 +386,9 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       setPlaying(false);
       return;
     }
-    // Reset if at end
     if (progressRef.current >= 1) {
       progressRef.current = 0;
       setAnimProgress(0);
-      // Clear animated track
       const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
       if (source) source.setData({ type: "FeatureCollection", features: [] });
     }
@@ -420,6 +409,14 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     if (source) source.setData({ type: "FeatureCollection", features: [] });
   }, []);
 
+  const handleSpeed = useCallback(() => {
+    setSpeedIdx(prev => {
+      const next = (prev + 1) % SPEED_STEPS.length;
+      speedRef.current = SPEED_STEPS[next].value;
+      return next;
+    });
+  }, []);
+
   return (
     <div className="relative">
       <div
@@ -427,8 +424,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         className="w-full rounded-xl overflow-hidden border border-border"
         style={{ height: "55vh", minHeight: 300 }}
       />
-      
-      {/* Playback controls */}
+
       {mapReady && (
         <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur rounded-lg p-1.5 shadow-lg border border-border">
           <Button
@@ -447,7 +443,13 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
-          {/* Progress bar */}
+          <Button
+            variant="ghost"
+            className="h-8 px-2 text-xs font-mono min-w-[36px]"
+            onClick={handleSpeed}
+          >
+            {SPEED_STEPS[speedIdx].label}
+          </Button>
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-[width] duration-100"
