@@ -479,7 +479,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       if (source) source.setData({ type: "FeatureCollection", features: [] });
       const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
       if (posSource) posSource.setData({ type: "FeatureCollection", features: [] });
+      const progSource = mapRef.current?.getSource("track-progress") as maplibregl.GeoJSONSource;
+      if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
     }
+    // Hide full track, show progressive
+    mapRef.current?.setLayoutProperty("track-3d", "visibility", "none");
     playingRef.current = true;
     setPlaying(true);
     animFrameRef.current = requestAnimationFrame(animate);
