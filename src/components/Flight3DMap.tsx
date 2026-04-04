@@ -210,7 +210,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
           },
           geometry: {
             type: "Polygon",
-            coordinates: [segmentToPolygon(p1, p2, 0.00025)],
+            coordinates: [segmentToPolygon(p1, p2, 0.00008)],
           },
         });
 
