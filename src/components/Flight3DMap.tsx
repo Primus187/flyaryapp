@@ -189,11 +189,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
-    // Disable follow on user drag
-    map.on("dragstart", () => {
-      followRef.current = false;
-      setFollowing(false);
-    });
+    // Drag no longer disables follow — only the button does
 
     map.on("load", () => {
       const extrusionFeatures: GeoJSON.Feature[] = [];
