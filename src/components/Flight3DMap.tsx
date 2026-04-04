@@ -93,7 +93,7 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
-const TRAIL_LENGTH = 50;
+const TRAIL_LENGTH = 25;
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -111,6 +111,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const frameCountRef = useRef(0);
   const speedRef = useRef(SPEED_STEPS[0].value);
   const followRef = useRef(false);
+  const extrusionFeaturesRef = useRef<GeoJSON.Feature[]>([]);
 
   const renderPoints = useMemo(() => downsample(points, 800), [points]);
 
@@ -256,6 +257,27 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         },
       });
 
+      // Store features for progressive rendering
+      extrusionFeaturesRef.current = extrusionFeatures;
+
+      // Progressive track source/layer (used during animation)
+      map.addSource("track-progress", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "track-progress-3d",
+        type: "fill-extrusion",
+        source: "track-progress",
+        paint: {
+          "fill-extrusion-color": ["get", "color"],
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "base"],
+          "fill-extrusion-opacity": 0.92,
+        },
+      });
+
       // Animated drop-surface (blue curtain with fade)
       map.addSource("track-animated", {
         type: "geojson",
@@ -360,6 +382,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       playingRef.current = false;
       setPlaying(false);
       setAnimProgress(1);
+      // Show full track, hide progress
+      mapRef.current.setLayoutProperty("track-3d", "visibility", "visible");
+      const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
+      if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
       return;
     }
 
@@ -403,7 +429,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         const bl = (calcBaseline(renderPoints, i) + calcBaseline(renderPoints, i + 1)) / 2;
         const relHeight = Math.max(0, avgAlt - bl);
         const age = idx - i;
-        const alpha = Math.max(0.05, 0.6 * (1 - age / TRAIL_LENGTH));
+        const alpha = Math.max(0.02, 0.3 * (1 - age / TRAIL_LENGTH));
 
         features.push({
           type: "Feature",
@@ -418,6 +444,15 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         });
       }
       source.setData({ type: "FeatureCollection", features });
+    }
+
+    // Progressive track build-up
+    const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
+    if (progSource && extrusionFeaturesRef.current.length > 0) {
+      progSource.setData({
+        type: "FeatureCollection",
+        features: extrusionFeaturesRef.current.slice(0, Math.min(idx, extrusionFeaturesRef.current.length)),
+      });
     }
 
     // Follow mode: smooth camera tracking every ~20 frames
@@ -444,7 +479,11 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       if (source) source.setData({ type: "FeatureCollection", features: [] });
       const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
       if (posSource) posSource.setData({ type: "FeatureCollection", features: [] });
+      const progSource = mapRef.current?.getSource("track-progress") as maplibregl.GeoJSONSource;
+      if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
     }
+    // Hide full track, show progressive
+    mapRef.current?.setLayoutProperty("track-3d", "visibility", "none");
     playingRef.current = true;
     setPlaying(true);
     animFrameRef.current = requestAnimationFrame(animate);
@@ -462,6 +501,10 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
     if (posSource) posSource.setData({ type: "FeatureCollection", features: [] });
+    const progSource = mapRef.current?.getSource("track-progress") as maplibregl.GeoJSONSource;
+    if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
+    // Show full track again
+    mapRef.current?.setLayoutProperty("track-3d", "visibility", "visible");
   }, []);
 
   const handleSpeed = useCallback(() => {
