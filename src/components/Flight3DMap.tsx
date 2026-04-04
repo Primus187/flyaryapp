@@ -101,7 +101,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       if (p.altitude > maxAlt) maxAlt = p.altitude;
     }
     altRangeRef.current = { min: minAlt, max: maxAlt };
-    }
 
     const center: [number, number] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 
