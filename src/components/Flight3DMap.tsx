@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TrackPoint {
@@ -78,16 +78,12 @@ function downsample(pts: TrackPoint[], maxPts: number): TrackPoint[] {
   return result;
 }
 
-function calcGroundLevel(pts: TrackPoint[]): number {
-  const n = Math.min(5, Math.floor(pts.length / 2));
-  let sum = 0;
-  let count = 0;
-  for (let i = 0; i < n; i++) {
-    sum += pts[i].altitude;
-    sum += pts[pts.length - 1 - i].altitude;
-    count += 2;
-  }
-  return count > 0 ? sum / count : pts[0].altitude;
+/** Interpolated baseline: start alt → end alt, so track touches ground at both ends */
+function calcBaseline(pts: TrackPoint[], index: number): number {
+  const startAlt = pts[0].altitude;
+  const endAlt = pts[pts.length - 1].altitude;
+  const t = pts.length > 1 ? index / (pts.length - 1) : 0;
+  return startAlt + (endAlt - startAlt) * t;
 }
 
 const SPEED_STEPS = [
@@ -108,12 +104,13 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   const [playing, setPlaying] = useState(false);
   const [animProgress, setAnimProgress] = useState(0);
   const [speedIdx, setSpeedIdx] = useState(0);
+  const [following, setFollowing] = useState(false);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
   const frameCountRef = useRef(0);
-  const groundLevelRef = useRef(0);
   const speedRef = useRef(SPEED_STEPS[0].value);
+  const followRef = useRef(false);
 
   const renderPoints = useMemo(() => downsample(points, 800), [points]);
 
@@ -130,9 +127,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       if (p.altitude < minAlt) minAlt = p.altitude;
       if (p.altitude > maxAlt) maxAlt = p.altitude;
     }
-
-    const groundLevel = calcGroundLevel(renderPoints);
-    groundLevelRef.current = groundLevel;
 
     const center: [number, number] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 
@@ -189,6 +183,12 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
+    // Disable follow on user drag
+    map.on("dragstart", () => {
+      followRef.current = false;
+      setFollowing(false);
+    });
+
     map.on("load", () => {
       const extrusionFeatures: GeoJSON.Feature[] = [];
       const shadowCoords: [number, number][] = [];
@@ -197,7 +197,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         const p1 = renderPoints[i];
         const p2 = renderPoints[i + 1];
         const avgAlt = (p1.altitude + p2.altitude) / 2;
-        const relHeight = Math.max(0, avgAlt - groundLevel);
+        const baseline = (calcBaseline(renderPoints, i) + calcBaseline(renderPoints, i + 1)) / 2;
+        const relHeight = Math.max(0, avgAlt - baseline);
 
         extrusionFeatures.push({
           type: "Feature",
@@ -208,7 +209,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
           },
           geometry: {
             type: "Polygon",
-            coordinates: [segmentToPolygon(p1, p2)],
+            coordinates: [segmentToPolygon(p1, p2, 0.00025)],
           },
         });
 
@@ -312,7 +313,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       marker.getElement().style.display = "none";
       markerRef.current = marker;
 
-      // Ground shadow marker for animation (dezent)
+      // Ground shadow marker for animation (subtle)
       const animMarker = new maplibregl.Marker({ color: "#888", scale: 0.4 })
         .setLngLat(center)
         .addTo(map);
@@ -333,6 +334,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       setMapReady(false);
       setPlaying(false);
       playingRef.current = false;
+      followRef.current = false;
+      setFollowing(false);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [renderPoints]);
@@ -367,7 +370,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
 
     const idx = Math.floor(progressRef.current * (renderPoints.length - 1));
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
-    const gl = groundLevelRef.current;
+    const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
 
     // Update ground shadow marker
     animMarkerRef.current.setLngLat([p.lng, p.lat]);
@@ -376,7 +379,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     // Update position marker on flight line (white prominent dot)
     const posSource = mapRef.current.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
     if (posSource) {
-      const relH = Math.max(0, p.altitude - gl);
+      const relH = Math.max(0, p.altitude - baseline);
       posSource.setData({
         type: "FeatureCollection",
         features: [{
@@ -397,7 +400,8 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         const p1 = renderPoints[i];
         const p2 = renderPoints[i + 1];
         const avgAlt = (p1.altitude + p2.altitude) / 2;
-        const relHeight = Math.max(0, avgAlt - gl);
+        const bl = (calcBaseline(renderPoints, i) + calcBaseline(renderPoints, i + 1)) / 2;
+        const relHeight = Math.max(0, avgAlt - bl);
         const age = idx - i;
         const alpha = Math.max(0.05, 0.6 * (1 - age / TRAIL_LENGTH));
 
@@ -414,6 +418,14 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
         });
       }
       source.setData({ type: "FeatureCollection", features });
+    }
+
+    // Follow mode: smooth camera tracking every ~20 frames
+    if (followRef.current && frameCountRef.current % 20 === 0) {
+      mapRef.current.easeTo({
+        center: [p.lng, p.lat],
+        duration: 300,
+      });
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
@@ -460,6 +472,13 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
     });
   }, []);
 
+  const handleFollow = useCallback(() => {
+    setFollowing(prev => {
+      followRef.current = !prev;
+      return !prev;
+    });
+  }, []);
+
   return (
     <div className="relative">
       <div
@@ -492,6 +511,14 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
             onClick={handleSpeed}
           >
             {SPEED_STEPS[speedIdx].label}
+          </Button>
+          <Button
+            size="icon"
+            variant={following ? "default" : "ghost"}
+            className="h-8 w-8"
+            onClick={handleFollow}
+          >
+            <Crosshair className="h-4 w-4" />
           </Button>
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
