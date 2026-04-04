@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X, Share2, CheckCircle } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X, Share2, CheckCircle, Mountain } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
@@ -14,6 +14,9 @@ import { compressImage } from "@/lib/image-compress";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
+
+const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
+const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
 
 export default function FlightDetail() {
   const { id } = useParams();
@@ -35,6 +38,8 @@ export default function FlightDetail() {
   const [showPublishPreview, setShowPublishPreview] = useState(false);
   const [publishLoading, setPublishLoading] = useState(false);
   const [pilotProfile, setPilotProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
+  const [show3D, setShow3D] = useState(false);
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
@@ -179,7 +184,29 @@ export default function FlightDetail() {
       {(flight.takeoff || flight.landing) && (
         <Card className="border-0 shadow-sm"><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{flight.takeoff?.name || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{flight.landing?.name || "–"}</span></div></CardContent></Card>
       )}
-      <FlightDetailMap takeoff={flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
+      {/* Map with 3D toggle */}
+      {track?.track_data && (track.track_data as any).points?.length > 1 && (
+        <div className="flex gap-1 justify-end">
+          <Button variant={show3D ? "outline" : "default"} size="sm" className="h-7 text-xs" onClick={() => setShow3D(false)}>2D</Button>
+          <Button variant={show3D ? "default" : "outline"} size="sm" className="h-7 text-xs gap-1" onClick={() => setShow3D(true)}>
+            <Mountain className="h-3.5 w-3.5" /> 3D
+          </Button>
+        </div>
+      )}
+      {show3D && track?.track_data ? (
+        <Suspense fallback={<div className="h-[55vh] rounded-xl border border-border bg-muted animate-pulse" />}>
+          <Flight3DMap
+            points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
+            highlightIndex={hoverIdx}
+          />
+          <FlightAltitudeProfile
+            points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
+            onHoverIndex={setHoverIdx}
+          />
+        </Suspense>
+      ) : (
+        <FlightDetailMap takeoff={flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
+      )}
       <div className="grid grid-cols-2 gap-3">
         {[
           { label: t("flights.flightTime"), value: flight.duration_minutes ? formatDuration(flight.duration_minutes) : "–" },
