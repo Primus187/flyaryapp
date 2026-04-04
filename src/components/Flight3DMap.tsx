@@ -369,7 +369,7 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
   }, [highlightIndex, mapReady, points, renderPoints]);
 
   const animate = useCallback(() => {
-    if (!playingRef.current || !mapRef.current || !animMarkerRef.current) return;
+    if (!playingRef.current || !mapRef.current) return;
 
     progressRef.current += speedRef.current;
     if (progressRef.current >= 1) {
