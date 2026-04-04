@@ -1,33 +1,23 @@
 
 
-# 3D-Flugtrack auf korrekter Höhe über Terrain
+# Fix: Flüssige Flug-Animation ohne Flimmern
 
-## Problem
+## Ursache
 
-Die Flugbahn wird aktuell als `line`-Layer gerendert, der in MapLibre GL immer auf das Terrain "gedraped" wird — also auf Bodenhöhe klebt. MapLibre unterstützt im Gegensatz zu Mapbox GL kein `line-z-offset` oder `line-elevation-reference`.
+Die Animation ruft **jeden Frame** (60x/Sekunde) `setAnimProgress()` auf → React-Re-render → `downsample()` erzeugt ein neues Array → der Haupteffekt mit `[renderPoints]` Dependency **zerstört und erstellt die gesamte Karte neu**. Das verursacht das Flimmern.
 
-## Lösung: Fill-Extrusion statt Line
+## Lösung
 
-Der Track wird als `fill-extrusion`-Layer gerendert. Jedes Segment wird zu einem dünnen Polygon (schmaler Streifen) mit `fill-extrusion-height` = Flughöhe und `fill-extrusion-base` = Flughöhe - 5m. Das erzeugt schmale "Balken" die in der richtigen Höhe über dem Terrain schweben — genau wie bei Burnair.
+Drei Änderungen in `src/components/Flight3DMap.tsx`:
 
-```text
-Aktuell:     Track liegt auf dem Boden ___/\___/\___ 
-Neu:         Track schwebt in Flughöhe    ─────────
-                                        /          \
-                              Terrain: /            \____
-```
+1. **`renderPoints` mit `useMemo` stabilisieren** — verhindert, dass bei jedem Re-render ein neues Array entsteht und den Map-Effekt triggert
 
-## Technische Umsetzung
+2. **Progress-Bar nur alle ~10 Frames updaten** — statt `setAnimProgress` bei jedem `requestAnimationFrame` nur alle ~150ms den React-State updaten. Der Marker und die GeoJSON-Source werden weiterhin jeden Frame aktualisiert (das ist rein MapLibre-intern, kein React-Render)
 
-### Datei: `src/components/Flight3DMap.tsx`
+3. **`minAlt`/`maxAlt` aus dem Animations-Loop entfernen** — diese werden aktuell in jedem Frame neu berechnet. Stattdessen einmal berechnen und in einem Ref speichern
 
-1. **Segmente als Polygone**: Jedes Liniensegment (2 Punkte) wird zu einem schmalen Rechteck (~0.00005° breit, senkrecht zur Flugrichtung) aufgeblasen
-2. **Fill-Extrusion Layer**: Statt `line`-Layer wird ein `fill-extrusion`-Layer verwendet mit:
-   - `fill-extrusion-height`: IGC GPS-Altitude des Segments
-   - `fill-extrusion-base`: Altitude - 5m (dünner Balken)
-   - `fill-extrusion-color`: Bestehender Farbgradient (blau→gelb→rot)
-3. **Schatten-Linie**: Optional eine zweite, gedämpfte `line`-Ebene auf dem Boden als "Schatten" für räumliche Orientierung
-4. **Terrain-Exaggeration**: Von 1.5 auf 1.3 reduzieren, damit Proportionen besser stimmen
-
-Keine neuen Dateien, keine DB-Änderungen — nur Umbau der Rendering-Logik in `Flight3DMap.tsx`.
+### Resultat
+- MapLibre-Marker-Bewegung und GeoJSON-Updates: ~60fps (rein GPU/MapLibre, kein React)
+- React-Re-renders: ~7fps (nur für Progress-Bar)
+- Kein Map-Neuaufbau während der Animation
 
