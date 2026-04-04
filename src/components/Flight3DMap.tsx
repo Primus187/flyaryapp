@@ -93,14 +93,8 @@ const SPEED_STEPS = [
   { label: "10x", value: 0.004 },
 ];
 
-const FOLLOW_SMOOTHING = 0.16;
-const FOLLOW_RESUME_DELAY = 180;
-
-function calcBearing(p1: TrackPoint, p2: TrackPoint): number {
-  const dx = p2.lng - p1.lng;
-  const dy = p2.lat - p1.lat;
-  return (Math.atan2(dx, dy) * 180) / Math.PI;
-}
+const FOLLOW_SMOOTHING = 0.12;
+const FOLLOW_PAUSE_MS = 400;
 
 
 export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Props) {
