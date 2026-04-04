@@ -335,8 +335,6 @@ export default function Flight3DMap({ points, onHoverIndex, highlightIndex }: Pr
       marker.getElement().style.display = "none";
       markerRef.current = marker;
 
-      // Ground shadow marker for animation (subtle)
-      animMarkerRef.current = null;
 
       setMapReady(true);
     });
