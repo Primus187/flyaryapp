@@ -12,6 +12,7 @@ import LocationCombobox from "@/components/LocationCombobox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
+import { uploadIgcTrack } from "@/lib/igc-upload";
 import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -150,23 +151,13 @@ export default function FlightForm() {
       else { const { data, error } = await supabase.from("flights").insert(flightData).select("id").single(); if (error) throw error; flightId = data.id; }
       if (igcFile) {
         try {
-          const path = `${user.id}/${flightId}/${igcFile.name}`;
-          // Retry upload up to 3 times on network errors
-          let storageErr: any = null;
-          for (let attempt = 0; attempt < 3; attempt++) {
-            const res = await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true });
-            storageErr = res.error;
-            if (!storageErr) break;
-            if (storageErr.message?.includes("Failed to fetch") && attempt < 2) {
-              console.warn(`IGC upload attempt ${attempt + 1} failed, retrying...`);
-              await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
-            } else break;
-          }
-          if (storageErr) throw storageErr;
-          const limitedPoints = igcData ? igcData.points.filter((_, i) => i % Math.max(1, Math.floor(igcData.points.length / 2000)) === 0) : null;
-          const igcStats = igcData ? { maxAltitude: igcData.maxAltitude, minAltitude: igcData.minAltitude, maxClimbRate: igcData.maxClimbRate, maxSinkRate: igcData.maxSinkRate, avgSpeedKmh: igcData.avgSpeedKmh, totalDistanceKm: igcData.totalDistanceKm, startTime: igcData.startTime, endTime: igcData.endTime, durationMinutes: igcData.durationMinutes } : null;
-          if (isEdit) { await supabase.from("igc_tracks").delete().eq("flight_id", flightId); }
-          const { error: trackErr } = await supabase.from("igc_tracks").insert([{ flight_id: flightId, storage_path: path, track_data: limitedPoints ? { points: limitedPoints, stats: igcStats } as any : null }]); if (trackErr) throw trackErr;
+          const content = await igcFile.text();
+          await uploadIgcTrack({
+            flightId,
+            fileName: igcFile.name,
+            fileContent: content,
+            igcData,
+          });
         } catch (igcErr: any) { console.error("IGC upload failed:", igcErr); toast({ title: t("flights.igcUploadFailed"), description: t("flights.igcUploadFailedDesc"), variant: "destructive" }); }
       }
       for (const photo of photoFiles) {

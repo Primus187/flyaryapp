@@ -10,6 +10,7 @@ import { ArrowLeft, Edit, Trash2, Youtube, MapPin, Upload, Copy, Plus, X, Share2
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
+import { uploadIgcTrack } from "@/lib/igc-upload";
 import { compressImage } from "@/lib/image-compress";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
@@ -127,24 +128,12 @@ export default function FlightDetail() {
     const file = e.target.files?.[0]; if (!file || !user || !id) return; setUploading(true);
     try {
       const content = await file.text(); const parsed = parseIGC(content);
-      const path = `${user.id}/${id}/${file.name}`;
-      // Retry upload up to 3 times on network errors
-      let storageErr: any = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const res = await supabase.storage.from("igc-files").upload(path, file, { upsert: true });
-        storageErr = res.error;
-        if (!storageErr) break;
-        if (storageErr.message?.includes("Failed to fetch") && attempt < 2) {
-          console.warn(`IGC upload attempt ${attempt + 1} failed, retrying...`);
-          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
-        } else break;
-      }
-      if (storageErr) throw storageErr;
-      const limitedPoints = parsed.points.filter((_, i) => i % Math.max(1, Math.floor(parsed.points.length / 2000)) === 0);
-      if (track) { const { error: delErr } = await supabase.from("igc_tracks").delete().eq("id", track.id); if (delErr) console.warn("Failed to delete old track:", delErr); }
-      const igcStats = { maxAltitude: parsed.maxAltitude, minAltitude: parsed.minAltitude, maxClimbRate: parsed.maxClimbRate, maxSinkRate: parsed.maxSinkRate, avgSpeedKmh: parsed.avgSpeedKmh, totalDistanceKm: parsed.totalDistanceKm, startTime: parsed.startTime, endTime: parsed.endTime, durationMinutes: parsed.durationMinutes };
-      const { data: newTrack, error: trackErr } = await supabase.from("igc_tracks").insert({ flight_id: id, storage_path: path, track_data: { points: limitedPoints, stats: igcStats } as any }).select().single();
-      if (trackErr) throw trackErr;
+      const { track: newTrack } = await uploadIgcTrack({
+        flightId: id,
+        fileName: file.name,
+        fileContent: content,
+        igcData: parsed,
+      });
       setTrack(newTrack);
       toast({ title: t("flights.igcUploaded"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
     } catch (err: any) { toast({ title: t("flights.igcUploadFailed"), description: err.message, variant: "destructive" }); }
