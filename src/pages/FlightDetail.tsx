@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, lazy, Suspense } from "react";
+import { useEffect, useState, useRef, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,12 @@ export default function FlightDetail() {
   const igcInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
+
+  const trackPoints3D = useMemo(() => {
+    const raw = (track?.track_data as any)?.points;
+    if (!raw || !Array.isArray(raw)) return [];
+    return raw.map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
+  }, [track]);
 
   const loadPhotos = async () => {
     if (!id) return;
@@ -198,12 +204,12 @@ export default function FlightDetail() {
       {show3D && track?.track_data ? (
         <Suspense fallback={<div className="h-[55vh] rounded-xl border border-border bg-muted animate-pulse" />}>
           <Flight3DMap
-            points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
+            points={trackPoints3D}
             highlightIndex={hoverIdx}
             onAnimIndex={setAnimIdx}
           />
           <FlightAltitudeProfile
-            points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
+            points={trackPoints3D}
             onHoverIndex={setHoverIdx}
             animIndex={animIdx}
           />
