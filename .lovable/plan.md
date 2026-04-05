@@ -1,23 +1,16 @@
 
 
-# Aktuelle Animationsposition im Höhenprofil anzeigen
+# Toggle: Nur letzte 25 Segmente anzeigen
 
-## Änderungen
+## Übersicht
+Ein neuer Toggle-Button in der Kontrollleiste, der während der Animation nur die letzten 25 Segmente des Tracks anzeigt statt den gesamten bisherigen Verlauf. Erzeugt einen "Schlangen"-Effekt.
 
-### 1. `Flight3DMap.tsx` — Animations-Index nach aussen geben
-- Neuen optionalen Callback `onAnimIndex?: (index: number | null) => void` zur Props-Interface hinzufügen
-- Im `animate()` Loop: bei jedem ~10. Frame den aktuellen Index (`idx`) über `onAnimIndex` nach aussen melden
-- Bei Stop/Reset: `onAnimIndex(null)` aufrufen
+## Änderungen in `src/components/Flight3DMap.tsx`
 
-### 2. `FlightAltitudeProfile.tsx` — Weisse Linie für aktuelle Position
-- Neuen optionalen Prop `animIndex?: number | null` hinzufügen
-- Den Index auf den downgesampelten Daten-Index mappen
-- Eine Recharts `ReferenceLine` (bereits importiert) an der entsprechenden X-Position rendern: dünne weisse vertikale Linie (`stroke="#ffffff"`, `strokeWidth={1.5}`)
+1. **State + Ref**: `trailMode` Boolean State + `trailModeRef` hinzufügen
+2. **Toggle-Button**: Neuer Button in der Kontrollleiste (z.B. `Orbit`-Icon von Lucide oder ein einfaches Label "Trail") zwischen Crosshair und Fortschrittsbalken
+3. **Progressive Track anpassen** (Zeilen 447-454): Wenn `trailModeRef.current` aktiv, statt `slice(0, idx)` nur `slice(Math.max(0, idx - 25), idx)` verwenden — zeigt nur die letzten 25 Segmente
+4. **Bei Animation-Ende/Reset**: Wenn trailMode aktiv ist, nach Stopp trotzdem den vollen Track wieder anzeigen (bestehendes Verhalten bleibt)
 
-### 3. `FlightDetail.tsx` — State verbinden
-- Neuen State `animIdx` (number | null) anlegen
-- `onAnimIndex={setAnimIdx}` an `Flight3DMap` übergeben
-- `animIndex={animIdx}` an `FlightAltitudeProfile` übergeben
-
-Drei Dateien, minimale Änderungen.
+Nur eine Datei, wenige Zeilen.
 
