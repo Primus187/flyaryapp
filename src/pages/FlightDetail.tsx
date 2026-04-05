@@ -45,6 +45,12 @@ export default function FlightDetail() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
+  const trackPoints3D = useMemo(() => {
+    const raw = (track?.track_data as any)?.points;
+    if (!raw || !Array.isArray(raw)) return [];
+    return raw.map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
+  }, [track]);
+
   const loadPhotos = async () => {
     if (!id) return;
     const { data } = await supabase.from("flight_photos").select("*").eq("flight_id", id);
