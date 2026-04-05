@@ -449,9 +449,11 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     // Progressive track build-up
     const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
     if (progSource && extrusionFeaturesRef.current.length > 0) {
+      const endIdx = Math.min(idx, extrusionFeaturesRef.current.length);
+      const startIdx = trailModeRef.current ? Math.max(0, endIdx - 25) : 0;
       progSource.setData({
         type: "FeatureCollection",
-        features: extrusionFeaturesRef.current.slice(0, Math.min(idx, extrusionFeaturesRef.current.length)),
+        features: extrusionFeaturesRef.current.slice(startIdx, endIdx),
       });
     }
 
