@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw, Crosshair, Route, Gauge, ArrowUp, ArrowDown } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair, Route, Gauge, ArrowUp, ArrowDown, Mountain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function haversineDistance(p1: TrackPoint, p2: TrackPoint): number {
@@ -119,6 +119,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
   const [trailMode, setTrailMode] = useState(false);
   const [animSpeed, setAnimSpeed] = useState<number | null>(null);
   const [animVario, setAnimVario] = useState<number | null>(null);
+  const [animAlt, setAnimAlt] = useState<number | null>(null);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
@@ -406,6 +407,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       onAnimIndexRef.current?.(null);
       setAnimSpeed(null);
       setAnimVario(null);
+      setAnimAlt(null);
       return;
     }
 
@@ -434,10 +436,11 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
         setAnimSpeed(Math.round((dist / dtSec) * 3.6));
         setAnimVario(Math.round(((pp1.altitude - pp0.altitude) / dtSec) * 10) / 10);
       } else {
-        // Fallback: show altitude only
         setAnimSpeed(0);
         setAnimVario(0);
       }
+      const curP = renderPoints[Math.min(idx, renderPoints.length - 1)];
+      setAnimAlt(Math.round(curP.altitude));
     }
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
@@ -579,7 +582,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       />
 
       {mapReady && playing && animSpeed != null && (
-        <div className="absolute top-4 right-4 flex flex-col gap-1 bg-background/80 backdrop-blur rounded-lg p-2 shadow-lg border border-border min-w-[90px]">
+        <div className="absolute top-4 left-4 flex flex-col gap-1 bg-background/80 backdrop-blur rounded-lg p-2 shadow-lg border border-border min-w-[90px]">
           <div className="flex items-center gap-1.5 text-xs font-mono">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-foreground font-semibold">{animSpeed}</span>
@@ -594,6 +597,11 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
               {(animVario ?? 0) > 0 ? "+" : ""}{animVario}
             </span>
             <span className="text-muted-foreground">m/s</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-mono">
+            <Mountain className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-foreground font-semibold">{animAlt ?? 0}</span>
+            <span className="text-muted-foreground">m</span>
           </div>
         </div>
       )}
