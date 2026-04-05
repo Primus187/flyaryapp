@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw, Crosshair } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TrackPoint {
@@ -107,12 +107,14 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
   const [animProgress, setAnimProgress] = useState(0);
   const [speedIdx, setSpeedIdx] = useState(0);
   const [following, setFollowing] = useState(false);
+  const [trailMode, setTrailMode] = useState(false);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
   const frameCountRef = useRef(0);
   const speedRef = useRef(SPEED_STEPS[0].value);
   const followRef = useRef(false);
+  const trailModeRef = useRef(false);
   const followPausedUntilRef = useRef(0);
   const programmaticMoveRef = useRef(false);
   const extrusionFeaturesRef = useRef<GeoJSON.Feature[]>([]);
@@ -447,9 +449,11 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     // Progressive track build-up
     const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
     if (progSource && extrusionFeaturesRef.current.length > 0) {
+      const endIdx = Math.min(idx, extrusionFeaturesRef.current.length);
+      const startIdx = trailModeRef.current ? Math.max(0, endIdx - 25) : 0;
       progSource.setData({
         type: "FeatureCollection",
-        features: extrusionFeaturesRef.current.slice(0, Math.min(idx, extrusionFeaturesRef.current.length)),
+        features: extrusionFeaturesRef.current.slice(startIdx, endIdx),
       });
     }
 
@@ -564,7 +568,22 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
             className="h-8 w-8"
             onClick={handleFollow}
           >
-            <Crosshair className="h-4 w-4" />
+          <Crosshair className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant={trailMode ? "default" : "ghost"}
+            className="h-8 w-8"
+            onClick={() => {
+              setTrailMode(prev => {
+                const next = !prev;
+                trailModeRef.current = next;
+                return next;
+              });
+            }}
+            title="Trail Mode"
+          >
+            <Route className="h-4 w-4" />
           </Button>
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
