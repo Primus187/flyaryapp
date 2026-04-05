@@ -425,13 +425,17 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       const i1 = Math.min(renderPoints.length - 1, idx + window);
       const pp0 = renderPoints[i0];
       const pp1 = renderPoints[i1];
-      const t0 = new Date(pp0.time).getTime();
-      const t1 = new Date(pp1.time).getTime();
+      const t0 = pp0.time ? new Date(pp0.time).getTime() : NaN;
+      const t1 = pp1.time ? new Date(pp1.time).getTime() : NaN;
       const dtSec = (t1 - t0) / 1000;
-      if (dtSec > 0) {
+      if (dtSec > 0 && isFinite(dtSec)) {
         const dist = haversineDistance(pp0, pp1);
         setAnimSpeed(Math.round((dist / dtSec) * 3.6));
         setAnimVario(Math.round(((pp1.altitude - pp0.altitude) / dtSec) * 10) / 10);
+      } else {
+        // Fallback: show altitude only
+        setAnimSpeed(0);
+        setAnimVario(0);
       }
     }
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
