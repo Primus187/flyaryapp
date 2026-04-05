@@ -118,6 +118,8 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
   const followPausedUntilRef = useRef(0);
   const programmaticMoveRef = useRef(false);
   const extrusionFeaturesRef = useRef<GeoJSON.Feature[]>([]);
+  const onAnimIndexRef = useRef(onAnimIndex);
+  onAnimIndexRef.current = onAnimIndex;
 
   const renderPoints = useMemo(() => downsample(points, 800), [points]);
 
