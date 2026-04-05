@@ -356,6 +356,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     mapRef.current = map;
 
     return () => {
+      cancelAnimationFrame(animFrameRef.current);
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
