@@ -99,6 +99,14 @@ export default function FlightAltitudeProfile({ points, onHoverIndex, animIndex 
             dot={false}
             activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
           />
+          {animDataIndex != null && data[animDataIndex] && (
+            <ReferenceLine
+              x={data[animDataIndex].time}
+              stroke="#ffffff"
+              strokeWidth={1.5}
+              ifOverflow="extendDomain"
+            />
+          )}
         </AreaChart>
       </ResponsiveContainer>
     </div>
