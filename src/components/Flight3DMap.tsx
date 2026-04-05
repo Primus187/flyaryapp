@@ -117,6 +117,8 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
   const [speedIdx, setSpeedIdx] = useState(0);
   const [following, setFollowing] = useState(false);
   const [trailMode, setTrailMode] = useState(false);
+  const [animSpeed, setAnimSpeed] = useState<number | null>(null);
+  const [animVario, setAnimVario] = useState<number | null>(null);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
