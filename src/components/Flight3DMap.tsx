@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw, Crosshair, Route } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair, Route, Gauge, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+function haversineDistance(p1: TrackPoint, p2: TrackPoint): number {
+  const R = 6371000;
+  const toRad = (d: number) => d * Math.PI / 180;
+  const dLat = toRad(p2.lat - p1.lat);
+  const dLng = toRad(p2.lng - p1.lng);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(p1.lat)) * Math.cos(toRad(p2.lat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 interface TrackPoint {
   lat: number;
@@ -108,6 +117,8 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
   const [speedIdx, setSpeedIdx] = useState(0);
   const [following, setFollowing] = useState(false);
   const [trailMode, setTrailMode] = useState(false);
+  const [animSpeed, setAnimSpeed] = useState<number | null>(null);
+  const [animVario, setAnimVario] = useState<number | null>(null);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
@@ -393,6 +404,8 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
       if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
       onAnimIndexRef.current?.(null);
+      setAnimSpeed(null);
+      setAnimVario(null);
       return;
     }
 
@@ -405,6 +418,21 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     if (frameCountRef.current % 10 === 0) {
       const originalIdx = Math.round(idx / (renderPoints.length - 1) * (points.length - 1));
       onAnimIndexRef.current?.(originalIdx);
+
+      // Calculate speed & vario from surrounding points
+      const window = 3;
+      const i0 = Math.max(0, idx - window);
+      const i1 = Math.min(renderPoints.length - 1, idx + window);
+      const pp0 = renderPoints[i0];
+      const pp1 = renderPoints[i1];
+      const t0 = new Date(pp0.time).getTime();
+      const t1 = new Date(pp1.time).getTime();
+      const dtSec = (t1 - t0) / 1000;
+      if (dtSec > 0) {
+        const dist = haversineDistance(pp0, pp1);
+        setAnimSpeed(Math.round((dist / dtSec) * 3.6));
+        setAnimVario(Math.round(((pp1.altitude - pp0.altitude) / dtSec) * 10) / 10);
+      }
     }
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
@@ -475,7 +503,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
-  }, [renderPoints]);
+  }, [renderPoints, points.length]);
 
   const handlePlay = useCallback(() => {
     if (playing) {
@@ -508,6 +536,8 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     progressRef.current = 0;
     setAnimProgress(0);
     onAnimIndexRef.current?.(null);
+    setAnimSpeed(null);
+    setAnimVario(null);
     const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
@@ -543,6 +573,25 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
         style={{ height: "55vh", minHeight: 300 }}
       />
 
+      {mapReady && playing && animSpeed != null && (
+        <div className="absolute top-4 right-4 flex flex-col gap-1 bg-background/80 backdrop-blur rounded-lg p-2 shadow-lg border border-border min-w-[90px]">
+          <div className="flex items-center gap-1.5 text-xs font-mono">
+            <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-foreground font-semibold">{animSpeed}</span>
+            <span className="text-muted-foreground">km/h</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-mono">
+            {(animVario ?? 0) >= 0
+              ? <ArrowUp className="h-3.5 w-3.5 text-green-500" />
+              : <ArrowDown className="h-3.5 w-3.5 text-red-500" />
+            }
+            <span className={`font-semibold ${(animVario ?? 0) >= 0 ? "text-green-500" : "text-red-500"}`}>
+              {(animVario ?? 0) > 0 ? "+" : ""}{animVario}
+            </span>
+            <span className="text-muted-foreground">m/s</span>
+          </div>
+        </div>
+      )}
       {mapReady && (
         <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur rounded-lg p-1.5 shadow-lg border border-border">
           <Button
