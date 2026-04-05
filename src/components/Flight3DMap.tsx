@@ -407,6 +407,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       onAnimIndexRef.current?.(null);
       setAnimSpeed(null);
       setAnimVario(null);
+      setAnimAlt(null);
       return;
     }
 
