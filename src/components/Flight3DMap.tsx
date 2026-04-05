@@ -418,6 +418,21 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     if (frameCountRef.current % 10 === 0) {
       const originalIdx = Math.round(idx / (renderPoints.length - 1) * (points.length - 1));
       onAnimIndexRef.current?.(originalIdx);
+
+      // Calculate speed & vario from surrounding points
+      const window = 3;
+      const i0 = Math.max(0, idx - window);
+      const i1 = Math.min(renderPoints.length - 1, idx + window);
+      const pp0 = renderPoints[i0];
+      const pp1 = renderPoints[i1];
+      const t0 = new Date(pp0.time).getTime();
+      const t1 = new Date(pp1.time).getTime();
+      const dtSec = (t1 - t0) / 1000;
+      if (dtSec > 0) {
+        const dist = haversineDistance(pp0, pp1);
+        setAnimSpeed(Math.round((dist / dtSec) * 3.6));
+        setAnimVario(Math.round(((pp1.altitude - pp0.altitude) / dtSec) * 10) / 10);
+      }
     }
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
