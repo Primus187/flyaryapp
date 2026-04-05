@@ -503,7 +503,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     setPlaying(false);
     progressRef.current = 0;
     setAnimProgress(0);
-    onAnimIndex?.(null);
+    onAnimIndexRef.current?.(null);
     const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
