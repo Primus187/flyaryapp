@@ -512,7 +512,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
     // Show full track again
     mapRef.current?.setLayoutProperty("track-3d", "visibility", "visible");
-  }, [onAnimIndex]);
+  }, []);
 
   const handleSpeed = useCallback(() => {
     setSpeedIdx(prev => {
