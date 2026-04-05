@@ -467,7 +467,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
-  }, [renderPoints]);
+  }, [renderPoints, onAnimIndex]);
 
   const handlePlay = useCallback(() => {
     if (playing) {
