@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw, Crosshair, Route } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair, Route, Gauge, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+function haversineDistance(p1: TrackPoint, p2: TrackPoint): number {
+  const R = 6371000;
+  const toRad = (d: number) => d * Math.PI / 180;
+  const dLat = toRad(p2.lat - p1.lat);
+  const dLng = toRad(p2.lng - p1.lng);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(p1.lat)) * Math.cos(toRad(p2.lat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 interface TrackPoint {
   lat: number;
