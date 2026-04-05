@@ -582,7 +582,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       />
 
       {mapReady && playing && animSpeed != null && (
-        <div className="absolute top-4 right-4 flex flex-col gap-1 bg-background/80 backdrop-blur rounded-lg p-2 shadow-lg border border-border min-w-[90px]">
+        <div className="absolute top-4 left-4 flex flex-col gap-1 bg-background/80 backdrop-blur rounded-lg p-2 shadow-lg border border-border min-w-[90px]">
           <div className="flex items-center gap-1.5 text-xs font-mono">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-foreground font-semibold">{animSpeed}</span>
@@ -597,6 +597,11 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
               {(animVario ?? 0) > 0 ? "+" : ""}{animVario}
             </span>
             <span className="text-muted-foreground">m/s</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-mono">
+            <Mountain className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-foreground font-semibold">{animAlt ?? 0}</span>
+            <span className="text-muted-foreground">m</span>
           </div>
         </div>
       )}
