@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw, Crosshair, Route, Gauge, ArrowUp, ArrowDown } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair, Route, Gauge, ArrowUp, ArrowDown, Mountain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function haversineDistance(p1: TrackPoint, p2: TrackPoint): number {
