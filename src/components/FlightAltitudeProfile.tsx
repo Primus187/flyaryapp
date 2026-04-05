@@ -11,9 +11,10 @@ interface TrackPoint {
 interface Props {
   points: TrackPoint[];
   onHoverIndex?: (index: number | null) => void;
+  animIndex?: number | null;
 }
 
-export default function FlightAltitudeProfile({ points, onHoverIndex }: Props) {
+export default function FlightAltitudeProfile({ points, onHoverIndex, animIndex }: Props) {
   const data = useMemo(() => {
     // Downsample for chart performance
     const step = Math.max(1, Math.floor(points.length / 300));
@@ -25,6 +26,14 @@ export default function FlightAltitudeProfile({ points, onHoverIndex }: Props) {
         altitude: p.altitude,
       }));
   }, [points]);
+
+  // Map animIndex (original points index) to downsampled data index
+  const animDataIndex = useMemo(() => {
+    if (animIndex == null || data.length === 0) return null;
+    const step = Math.max(1, Math.floor(points.length / 300));
+    const mapped = Math.round(animIndex / step);
+    return Math.min(mapped, data.length - 1);
+  }, [animIndex, data, points.length]);
 
   if (data.length < 2) return null;
 
@@ -90,6 +99,14 @@ export default function FlightAltitudeProfile({ points, onHoverIndex }: Props) {
             dot={false}
             activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
           />
+          {animDataIndex != null && data[animDataIndex] && (
+            <ReferenceLine
+              x={data[animDataIndex].time}
+              stroke="#ffffff"
+              strokeWidth={1.5}
+              ifOverflow="extendDomain"
+            />
+          )}
         </AreaChart>
       </ResponsiveContainer>
     </div>

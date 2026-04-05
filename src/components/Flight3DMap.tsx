@@ -14,6 +14,7 @@ interface TrackPoint {
 interface Props {
   points: TrackPoint[];
   highlightIndex?: number | null;
+  onAnimIndex?: (index: number | null) => void;
 }
 
 function getColor(alt: number, min: number, max: number): string {
@@ -96,7 +97,7 @@ const FOLLOW_SMOOTHING = 0.12;
 const FOLLOW_PAUSE_MS = 400;
 
 
-export default function Flight3DMap({ points, highlightIndex }: Props) {
+export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -386,6 +387,7 @@ export default function Flight3DMap({ points, highlightIndex }: Props) {
       mapRef.current.setLayoutProperty("track-3d", "visibility", "visible");
       const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
       if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
+      onAnimIndex?.(null);
       return;
     }
 
@@ -395,6 +397,9 @@ export default function Flight3DMap({ points, highlightIndex }: Props) {
     }
 
     const idx = Math.floor(progressRef.current * (renderPoints.length - 1));
+    if (frameCountRef.current % 10 === 0) {
+      onAnimIndex?.(idx);
+    }
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
 
@@ -462,7 +467,7 @@ export default function Flight3DMap({ points, highlightIndex }: Props) {
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
-  }, [renderPoints]);
+  }, [renderPoints, onAnimIndex]);
 
   const handlePlay = useCallback(() => {
     if (playing) {
@@ -492,6 +497,7 @@ export default function Flight3DMap({ points, highlightIndex }: Props) {
     setPlaying(false);
     progressRef.current = 0;
     setAnimProgress(0);
+    onAnimIndex?.(null);
     const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
@@ -500,7 +506,7 @@ export default function Flight3DMap({ points, highlightIndex }: Props) {
     if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
     // Show full track again
     mapRef.current?.setLayoutProperty("track-3d", "visibility", "visible");
-  }, []);
+  }, [onAnimIndex]);
 
   const handleSpeed = useCallback(() => {
     setSpeedIdx(prev => {

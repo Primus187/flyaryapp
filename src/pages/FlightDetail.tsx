@@ -40,6 +40,7 @@ export default function FlightDetail() {
   const [pilotProfile, setPilotProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
   const [show3D, setShow3D] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [animIdx, setAnimIdx] = useState<number | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
@@ -199,10 +200,12 @@ export default function FlightDetail() {
           <Flight3DMap
             points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
             highlightIndex={hoverIdx}
+            onAnimIndex={setAnimIdx}
           />
           <FlightAltitudeProfile
             points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
             onHoverIndex={setHoverIdx}
+            animIndex={animIdx}
           />
         </Suspense>
       ) : (
