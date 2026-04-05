@@ -11,6 +11,7 @@ interface TrackPoint {
 interface Props {
   points: TrackPoint[];
   onHoverIndex?: (index: number | null) => void;
+  animIndex?: number | null;
 }
 
 export default function FlightAltitudeProfile({ points, onHoverIndex }: Props) {

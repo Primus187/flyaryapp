@@ -14,6 +14,7 @@ interface TrackPoint {
 interface Props {
   points: TrackPoint[];
   highlightIndex?: number | null;
+  onAnimIndex?: (index: number | null) => void;
 }
 
 function getColor(alt: number, min: number, max: number): string {

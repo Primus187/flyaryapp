@@ -40,6 +40,7 @@ export default function FlightDetail() {
   const [pilotProfile, setPilotProfile] = useState<{ pilot_name: string; avatar_url: string }>({ pilot_name: "", avatar_url: "" });
   const [show3D, setShow3D] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [animIdx, setAnimIdx] = useState<number | null>(null);
   const igcInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
