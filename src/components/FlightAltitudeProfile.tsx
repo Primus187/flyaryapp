@@ -27,6 +27,14 @@ export default function FlightAltitudeProfile({ points, onHoverIndex, animIndex 
       }));
   }, [points]);
 
+  // Map animIndex (original points index) to downsampled data index
+  const animDataIndex = useMemo(() => {
+    if (animIndex == null || data.length === 0) return null;
+    const step = Math.max(1, Math.floor(points.length / 300));
+    const mapped = Math.round(animIndex / step);
+    return Math.min(mapped, data.length - 1);
+  }, [animIndex, data, points.length]);
+
   if (data.length < 2) return null;
 
   let minAlt = Infinity, maxAlt = -Infinity;

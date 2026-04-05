@@ -496,6 +496,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     setPlaying(false);
     progressRef.current = 0;
     setAnimProgress(0);
+    onAnimIndex?.(null);
     const source = mapRef.current?.getSource("track-animated") as maplibregl.GeoJSONSource;
     if (source) source.setData({ type: "FeatureCollection", features: [] });
     const posSource = mapRef.current?.getSource("track-pos-marker") as maplibregl.GeoJSONSource;
@@ -504,7 +505,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
     // Show full track again
     mapRef.current?.setLayoutProperty("track-3d", "visibility", "visible");
-  }, []);
+  }, [onAnimIndex]);
 
   const handleSpeed = useCallback(() => {
     setSpeedIdx(prev => {
