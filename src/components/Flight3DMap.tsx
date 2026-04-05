@@ -568,7 +568,22 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
             className="h-8 w-8"
             onClick={handleFollow}
           >
-            <Crosshair className="h-4 w-4" />
+          <Crosshair className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant={trailMode ? "default" : "ghost"}
+            className="h-8 w-8"
+            onClick={() => {
+              setTrailMode(prev => {
+                const next = !prev;
+                trailModeRef.current = next;
+                return next;
+              });
+            }}
+            title="Trail Mode"
+          >
+            <Route className="h-4 w-4" />
           </Button>
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
