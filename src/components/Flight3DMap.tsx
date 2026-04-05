@@ -435,10 +435,11 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
         setAnimSpeed(Math.round((dist / dtSec) * 3.6));
         setAnimVario(Math.round(((pp1.altitude - pp0.altitude) / dtSec) * 10) / 10);
       } else {
-        // Fallback: show altitude only
         setAnimSpeed(0);
         setAnimVario(0);
       }
+      const curP = renderPoints[Math.min(idx, renderPoints.length - 1)];
+      setAnimAlt(Math.round(curP.altitude));
     }
     const p = renderPoints[Math.min(idx, renderPoints.length - 1)];
     const baseline = calcBaseline(renderPoints, Math.min(idx, renderPoints.length - 1));
