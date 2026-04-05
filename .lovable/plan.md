@@ -1,31 +1,29 @@
 
 
-# Fix: IGC-Datei erneut hochladen hängt
+# Fix: HUD zeigt immer 0 bei Geschwindigkeit und Vario
 
 ## Problem
-Beim erneuten Hochladen einer IGC-Datei bleibt die App im Ladezustand hängen.
+Die Zeitstempel in `renderPoints` haben das Format `"HH:MM:SS"` (z.B. `"12:34:56"` aus dem IGC-Parser). Der Code auf Zeile 428-429 macht `new Date("12:34:56")`, was `Invalid Date` ergibt. Dadurch ist `dtSec` immer `NaN`, und der Fallback setzt Speed und Vario auf 0.
 
-## Ursache
-Die Storage-Bucket-Policy für `igc-files` hat keine **UPDATE**-Policy. Beim erneuten Upload mit `upsert: true` versucht Supabase, die bestehende Datei zu überschreiben, braucht dafür aber UPDATE-Rechte. Ohne diese Policy schlägt der Upload fehl. Zusätzlich prüft der Code auf Zeile 133 nicht, ob der `delete`-Aufruf fehlschlägt — Fehler werden verschluckt.
+## Lösung
 
-## Änderungen
+### Änderung in `src/components/Flight3DMap.tsx` (Zeilen 428-430)
 
-### 1. Migration: UPDATE-Policy für igc-files Storage hinzufügen
-```sql
-CREATE POLICY "Users can update own igc files"
-ON storage.objects FOR UPDATE TO authenticated
-USING (bucket_id = 'igc-files' AND auth.uid()::text = (storage.foldername(name))[1]);
-```
+Statt `new Date(pp0.time).getTime()` die `"HH:MM:SS"`-Strings direkt in Sekunden parsen:
 
-### 2. `src/pages/FlightDetail.tsx` — Fehlerbehandlung verbessern
-- Zeile 133: Fehler beim Löschen des alten Tracks abfangen und loggen
-- Zusätzlich: den `track` in `FlightForm.tsx` beim Erstellen ebenfalls mit `stats` speichern (Zeile 156), damit nach dem ersten Upload bereits Zeitstempel vorhanden sind
-
-### 3. `src/pages/FlightForm.tsx` — Stats beim Erstellen mitspeichern
-Zeile 156: `track_data` um `stats` erweitern, analog zu FlightDetail:
 ```typescript
-track_data: limitedPoints ? { points: limitedPoints, stats: igcStats } as any : null
+function timeToSeconds(t: string): number {
+  const [h, m, s] = t.split(":").map(Number);
+  return h * 3600 + m * 60 + s;
+}
 ```
 
-Drei Dateien, eine Migration.
+Dann:
+```typescript
+const t0 = pp0.time ? timeToSeconds(pp0.time) : NaN;
+const t1 = pp1.time ? timeToSeconds(pp1.time) : NaN;
+const dtSec = t1 - t0;
+```
+
+Eine Datei, eine kleine Hilfsfunktion, drei Zeilen Änderung.
 
