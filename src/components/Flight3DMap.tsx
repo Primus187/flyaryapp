@@ -107,12 +107,14 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
   const [animProgress, setAnimProgress] = useState(0);
   const [speedIdx, setSpeedIdx] = useState(0);
   const [following, setFollowing] = useState(false);
+  const [trailMode, setTrailMode] = useState(false);
   const animFrameRef = useRef<number>(0);
   const playingRef = useRef(false);
   const progressRef = useRef(0);
   const frameCountRef = useRef(0);
   const speedRef = useRef(SPEED_STEPS[0].value);
   const followRef = useRef(false);
+  const trailModeRef = useRef(false);
   const followPausedUntilRef = useRef(0);
   const programmaticMoveRef = useRef(false);
   const extrusionFeaturesRef = useRef<GeoJSON.Feature[]>([]);
