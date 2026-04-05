@@ -153,7 +153,8 @@ export default function FlightForm() {
           const path = `${user.id}/${flightId}/${igcFile.name}`;
           const { error: storageErr } = await supabase.storage.from("igc-files").upload(path, igcFile, { upsert: true }); if (storageErr) throw storageErr;
           const limitedPoints = igcData ? igcData.points.filter((_, i) => i % Math.max(1, Math.floor(igcData.points.length / 2000)) === 0) : null;
-          const { error: trackErr } = await supabase.from("igc_tracks").insert([{ flight_id: flightId, storage_path: path, track_data: limitedPoints ? { points: limitedPoints } as any : null }]); if (trackErr) throw trackErr;
+          const igcStats = igcData ? { maxAltitude: igcData.maxAltitude, minAltitude: igcData.minAltitude, maxClimbRate: igcData.maxClimbRate, maxSinkRate: igcData.maxSinkRate, avgSpeedKmh: igcData.avgSpeedKmh, totalDistanceKm: igcData.totalDistanceKm, startTime: igcData.startTime, endTime: igcData.endTime, durationMinutes: igcData.durationMinutes } : null;
+          const { error: trackErr } = await supabase.from("igc_tracks").insert([{ flight_id: flightId, storage_path: path, track_data: limitedPoints ? { points: limitedPoints, stats: igcStats } as any : null }]); if (trackErr) throw trackErr;
         } catch (igcErr: any) { console.error("IGC upload failed:", igcErr); toast({ title: t("flights.igcUploadFailed"), description: t("flights.igcUploadFailedDesc"), variant: "destructive" }); }
       }
       for (const photo of photoFiles) {
