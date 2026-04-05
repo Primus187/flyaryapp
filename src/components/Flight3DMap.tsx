@@ -473,7 +473,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
-  }, [renderPoints, onAnimIndex]);
+  }, [renderPoints]);
 
   const handlePlay = useCallback(() => {
     if (playing) {
