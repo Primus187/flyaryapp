@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Play, Pause, RotateCcw, Crosshair } from "lucide-react";
+import { Play, Pause, RotateCcw, Crosshair, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TrackPoint {
