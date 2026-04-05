@@ -1,34 +1,22 @@
 
-Fix: Play startet nicht wegen Re-Render/Remount-Schleife
 
-Ursache
-- `Flight3DMap` meldet während der Animation per `onAnimIndex` laufend den aktuellen Index an `FlightDetail`.
-- `FlightDetail` rendert dadurch neu und erzeugt `points={...map(...)}` bei jedem Render als neues Array.
-- In `Flight3DMap` hängt die Map-Initialisierung an `renderPoints`; durch das neue `points`-Array wird die Karte während der Animation laufend neu aufgebaut.
-- Ergebnis: Beim Klick auf Play startet der Loop kurz, die Map wird aber direkt wieder zurückgesetzt. Die Ref-Warnungen im Console-Log sind separat und nicht der Hauptgrund für das aktuelle Problem.
+# Fix: Synchronisation Flugspur ↔ Höhenprofil
 
-Änderungen
-1. `src/pages/FlightDetail.tsx`
-- Die gemappten Track-Punkte einmal per `useMemo` aus `track.track_data.points` ableiten.
-- Dieselbe stabile `trackPoints`-Referenz an `Flight3DMap` und `FlightAltitudeProfile` weitergeben.
-- So führen `animIdx`/`hoverIdx`-Updates nicht mehr zu einem “neuen Track”.
+## Problem
+`Flight3DMap` downsampelt den Track auf 800 Punkte (`renderPoints`) und meldet den Index `idx` innerhalb dieses 800er-Arrays. `FlightAltitudeProfile` interpretiert diesen Index aber als Index des **Original-Arrays** (volle Länge) und rechnet ihn auf sein eigenes 300er-Downsampling um. Die beiden Indizes zeigen dadurch auf unterschiedliche Stellen im Flug.
 
-2. `src/components/Flight3DMap.tsx`
-- Den Animations-Loop zusätzlich robuster machen:
-  - `cancelAnimationFrame` im Cleanup und beim Reset/Stop
-  - `frameCountRef` beim Start/Reset zurücksetzen
-  - `onAnimIndex(null)` nur bei echtem Stop/Reset/Ende
-- Die Map-Initialisierung bleibt funktional gleich, wird aber nicht mehr unbeabsichtigt durch Parent-Re-Renders getriggert.
+## Lösung
+Den gemeldeten Index in `Flight3DMap` zurück auf die Original-Punkte-Skala umrechnen, bevor er nach aussen gegeben wird.
 
-3. Verifikation
-- 3D-Ansicht öffnen, Play klicken, prüfen:
-  - Progress-Bar läuft sichtbar
-  - weisser Positionsmarker bewegt sich
-  - Drop-Fläche wandert mit
-  - Höhenprofil-Linie läuft mit
-  - Trail Mode funktioniert weiterhin
+### Änderung in `Flight3DMap.tsx`
+Zeile 406: Statt `onAnimIndexRef.current?.(idx)` den Index auf die Original-Länge hochrechnen:
 
-Technische Details
-- Hauptfix ist kein MapLibre-Problem, sondern React-State-Churn durch instabile Prop-Referenzen.
-- Wahrscheinlich reichen 2 Dateien: `FlightDetail.tsx` und `Flight3DMap.tsx`.
-- Die Ref-Warnungen (`Function components cannot be given refs`) können danach separat aufgeräumt werden, sind aber für den Play-Bug nicht kritisch.
+```typescript
+const originalIdx = Math.round(idx / (renderPoints.length - 1) * (points.length - 1));
+onAnimIndexRef.current?.(originalIdx);
+```
+
+So erhält `FlightAltitudeProfile` einen Index relativ zur Original-Punkteanzahl, was seine bestehende Downsampling-Logik korrekt auflöst.
+
+Eine Datei, eine Zeile.
+
