@@ -573,6 +573,25 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
         style={{ height: "55vh", minHeight: 300 }}
       />
 
+      {mapReady && playing && animSpeed != null && (
+        <div className="absolute top-4 right-4 flex flex-col gap-1 bg-background/80 backdrop-blur rounded-lg p-2 shadow-lg border border-border min-w-[90px]">
+          <div className="flex items-center gap-1.5 text-xs font-mono">
+            <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-foreground font-semibold">{animSpeed}</span>
+            <span className="text-muted-foreground">km/h</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-mono">
+            {(animVario ?? 0) >= 0
+              ? <ArrowUp className="h-3.5 w-3.5 text-green-500" />
+              : <ArrowDown className="h-3.5 w-3.5 text-red-500" />
+            }
+            <span className={`font-semibold ${(animVario ?? 0) >= 0 ? "text-green-500" : "text-red-500"}`}>
+              {(animVario ?? 0) > 0 ? "+" : ""}{animVario}
+            </span>
+            <span className="text-muted-foreground">m/s</span>
+          </div>
+        </div>
+      )}
       {mapReady && (
         <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur rounded-lg p-1.5 shadow-lg border border-border">
           <Button
