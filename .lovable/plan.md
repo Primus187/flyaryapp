@@ -1,16 +1,34 @@
 
+Fix: Play startet nicht wegen Re-Render/Remount-Schleife
 
-# Toggle: Nur letzte 25 Segmente anzeigen
+Ursache
+- `Flight3DMap` meldet während der Animation per `onAnimIndex` laufend den aktuellen Index an `FlightDetail`.
+- `FlightDetail` rendert dadurch neu und erzeugt `points={...map(...)}` bei jedem Render als neues Array.
+- In `Flight3DMap` hängt die Map-Initialisierung an `renderPoints`; durch das neue `points`-Array wird die Karte während der Animation laufend neu aufgebaut.
+- Ergebnis: Beim Klick auf Play startet der Loop kurz, die Map wird aber direkt wieder zurückgesetzt. Die Ref-Warnungen im Console-Log sind separat und nicht der Hauptgrund für das aktuelle Problem.
 
-## Übersicht
-Ein neuer Toggle-Button in der Kontrollleiste, der während der Animation nur die letzten 25 Segmente des Tracks anzeigt statt den gesamten bisherigen Verlauf. Erzeugt einen "Schlangen"-Effekt.
+Änderungen
+1. `src/pages/FlightDetail.tsx`
+- Die gemappten Track-Punkte einmal per `useMemo` aus `track.track_data.points` ableiten.
+- Dieselbe stabile `trackPoints`-Referenz an `Flight3DMap` und `FlightAltitudeProfile` weitergeben.
+- So führen `animIdx`/`hoverIdx`-Updates nicht mehr zu einem “neuen Track”.
 
-## Änderungen in `src/components/Flight3DMap.tsx`
+2. `src/components/Flight3DMap.tsx`
+- Den Animations-Loop zusätzlich robuster machen:
+  - `cancelAnimationFrame` im Cleanup und beim Reset/Stop
+  - `frameCountRef` beim Start/Reset zurücksetzen
+  - `onAnimIndex(null)` nur bei echtem Stop/Reset/Ende
+- Die Map-Initialisierung bleibt funktional gleich, wird aber nicht mehr unbeabsichtigt durch Parent-Re-Renders getriggert.
 
-1. **State + Ref**: `trailMode` Boolean State + `trailModeRef` hinzufügen
-2. **Toggle-Button**: Neuer Button in der Kontrollleiste (z.B. `Orbit`-Icon von Lucide oder ein einfaches Label "Trail") zwischen Crosshair und Fortschrittsbalken
-3. **Progressive Track anpassen** (Zeilen 447-454): Wenn `trailModeRef.current` aktiv, statt `slice(0, idx)` nur `slice(Math.max(0, idx - 25), idx)` verwenden — zeigt nur die letzten 25 Segmente
-4. **Bei Animation-Ende/Reset**: Wenn trailMode aktiv ist, nach Stopp trotzdem den vollen Track wieder anzeigen (bestehendes Verhalten bleibt)
+3. Verifikation
+- 3D-Ansicht öffnen, Play klicken, prüfen:
+  - Progress-Bar läuft sichtbar
+  - weisser Positionsmarker bewegt sich
+  - Drop-Fläche wandert mit
+  - Höhenprofil-Linie läuft mit
+  - Trail Mode funktioniert weiterhin
 
-Nur eine Datei, wenige Zeilen.
-
+Technische Details
+- Hauptfix ist kein MapLibre-Problem, sondern React-State-Churn durch instabile Prop-Referenzen.
+- Wahrscheinlich reichen 2 Dateien: `FlightDetail.tsx` und `Flight3DMap.tsx`.
+- Die Ref-Warnungen (`Function components cannot be given refs`) können danach separat aufgeräumt werden, sind aber für den Play-Bug nicht kritisch.
