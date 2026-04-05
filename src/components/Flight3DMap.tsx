@@ -391,7 +391,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       mapRef.current.setLayoutProperty("track-3d", "visibility", "visible");
       const progSource = mapRef.current.getSource("track-progress") as maplibregl.GeoJSONSource;
       if (progSource) progSource.setData({ type: "FeatureCollection", features: [] });
-      onAnimIndex?.(null);
+      onAnimIndexRef.current?.(null);
       return;
     }
 
