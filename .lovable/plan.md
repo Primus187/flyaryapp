@@ -1,35 +1,31 @@
 
-# Geschwindigkeits- & Variometer-HUD in der 3D-Animation
 
-## Übersicht
-Während der Animation werden oben rechts über der Karte Geschwindigkeit (km/h) und Steig-/Sinkrate (m/s) als kompaktes HUD angezeigt, berechnet aus den Track-Punkten.
+# Fix: IGC-Datei erneut hochladen hängt
+
+## Problem
+Beim erneuten Hochladen einer IGC-Datei bleibt die App im Ladezustand hängen.
+
+## Ursache
+Die Storage-Bucket-Policy für `igc-files` hat keine **UPDATE**-Policy. Beim erneuten Upload mit `upsert: true` versucht Supabase, die bestehende Datei zu überschreiben, braucht dafür aber UPDATE-Rechte. Ohne diese Policy schlägt der Upload fehl. Zusätzlich prüft der Code auf Zeile 133 nicht, ob der `delete`-Aufruf fehlschlägt — Fehler werden verschluckt.
 
 ## Änderungen
 
-### 1. `src/components/Flight3DMap.tsx`
+### 1. Migration: UPDATE-Policy für igc-files Storage hinzufügen
+```sql
+CREATE POLICY "Users can update own igc files"
+ON storage.objects FOR UPDATE TO authenticated
+USING (bucket_id = 'igc-files' AND auth.uid()::text = (storage.foldername(name))[1]);
+```
 
-**Neuer State:**
-- `animSpeed` (number | null) — aktuelle Geschwindigkeit in km/h
-- `animVario` (number | null) — aktuelle Steig-/Sinkrate in m/s
+### 2. `src/pages/FlightDetail.tsx` — Fehlerbehandlung verbessern
+- Zeile 133: Fehler beim Löschen des alten Tracks abfangen und loggen
+- Zusätzlich: den `track` in `FlightForm.tsx` beim Erstellen ebenfalls mit `stats` speichern (Zeile 156), damit nach dem ersten Upload bereits Zeitstempel vorhanden sind
 
-**Im `animate()` Loop** (alle ~10 Frames, zusammen mit dem bestehenden Progress-Update):
-- Aus den Zeitstempeln und Positionen der renderPoints `speed` berechnen: Haversine-Distanz zwischen aktuellem und vorherigem Punkt ÷ Zeitdifferenz → km/h
-- `vario` berechnen: Höhendifferenz ÷ Zeitdifferenz → m/s
-- Beide Werte über einen gleitenden Durchschnitt (3-5 Punkte) glätten, um Rauschen zu vermeiden
+### 3. `src/pages/FlightForm.tsx` — Stats beim Erstellen mitspeichern
+Zeile 156: `track_data` um `stats` erweitern, analog zu FlightDetail:
+```typescript
+track_data: limitedPoints ? { points: limitedPoints, stats: igcStats } as any : null
+```
 
-**Im JSX:**
-- Neues HUD-Overlay oben rechts auf der Karte (nur sichtbar wenn `playing` und Werte vorhanden)
-- Zwei Werte: Geschwindigkeit (km/h) mit Gauge-Icon, Vario (m/s) mit Pfeil hoch/runter
-- Vario-Farbe: grün bei Steigen, rot bei Sinken
-- Kompaktes Design: halbtransparenter Hintergrund, passend zum bestehenden Controls-Stil
+Drei Dateien, eine Migration.
 
-**Bei Reset/Stop:**
-- `animSpeed` und `animVario` auf `null` setzen
-
-### 2. Hilfsfunktion
-- `haversineDistance(p1, p2)` → Meter (einfache Formel, reicht für kurze Abstände)
-- Inline in der Datei, keine externe Abhängigkeit
-
-## Nicht betroffen
-- Keine Änderungen an `FlightDetail.tsx` oder `FlightAltitudeProfile.tsx`
-- Nur eine Datei: `Flight3DMap.tsx`
