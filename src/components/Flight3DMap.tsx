@@ -425,9 +425,10 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
       const i1 = Math.min(renderPoints.length - 1, idx + window);
       const pp0 = renderPoints[i0];
       const pp1 = renderPoints[i1];
-      const t0 = pp0.time ? new Date(pp0.time).getTime() : NaN;
-      const t1 = pp1.time ? new Date(pp1.time).getTime() : NaN;
-      const dtSec = (t1 - t0) / 1000;
+      const timeToSec = (t: string) => { const [h, m, s] = t.split(":").map(Number); return h * 3600 + m * 60 + s; };
+      const t0 = pp0.time ? timeToSec(pp0.time) : NaN;
+      const t1 = pp1.time ? timeToSec(pp1.time) : NaN;
+      const dtSec = t1 - t0;
       if (dtSec > 0 && isFinite(dtSec)) {
         const dist = haversineDistance(pp0, pp1);
         setAnimSpeed(Math.round((dist / dtSec) * 3.6));
