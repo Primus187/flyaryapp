@@ -494,8 +494,10 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
     }
     // Hide full track, show progressive
     mapRef.current?.setLayoutProperty("track-3d", "visibility", "none");
+    frameCountRef.current = 0;
     playingRef.current = true;
     setPlaying(true);
+    cancelAnimationFrame(animFrameRef.current);
     animFrameRef.current = requestAnimationFrame(animate);
   }, [playing, animate]);
 

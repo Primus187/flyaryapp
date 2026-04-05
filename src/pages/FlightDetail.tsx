@@ -204,12 +204,12 @@ export default function FlightDetail() {
       {show3D && track?.track_data ? (
         <Suspense fallback={<div className="h-[55vh] rounded-xl border border-border bg-muted animate-pulse" />}>
           <Flight3DMap
-            points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
+            points={trackPoints3D}
             highlightIndex={hoverIdx}
             onAnimIndex={setAnimIdx}
           />
           <FlightAltitudeProfile
-            points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
+            points={trackPoints3D}
             onHoverIndex={setHoverIdx}
             animIndex={animIdx}
           />
