@@ -14,7 +14,7 @@ interface Props {
   animIndex?: number | null;
 }
 
-export default function FlightAltitudeProfile({ points, onHoverIndex }: Props) {
+export default function FlightAltitudeProfile({ points, onHoverIndex, animIndex }: Props) {
   const data = useMemo(() => {
     // Downsample for chart performance
     const step = Math.max(1, Math.floor(points.length / 300));

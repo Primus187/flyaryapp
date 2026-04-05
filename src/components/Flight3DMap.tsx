@@ -393,6 +393,7 @@ export default function Flight3DMap({ points, highlightIndex }: Props) {
     frameCountRef.current++;
     if (frameCountRef.current % 10 === 0) {
       setAnimProgress(progressRef.current);
+      onAnimIndex?.(idx);
     }
 
     const idx = Math.floor(progressRef.current * (renderPoints.length - 1));

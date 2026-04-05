@@ -200,10 +200,12 @@ export default function FlightDetail() {
           <Flight3DMap
             points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
             highlightIndex={hoverIdx}
+            onAnimIndex={setAnimIdx}
           />
           <FlightAltitudeProfile
             points={((track.track_data as any).points || []).map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }))}
             onHoverIndex={setHoverIdx}
+            animIndex={animIdx}
           />
         </Suspense>
       ) : (
