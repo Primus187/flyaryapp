@@ -185,14 +185,38 @@ export default function FlightDetail() {
         </div>
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" onClick={async () => {
-            const shareToken = (flight as any).share_token;
-            if (!shareToken) { toast({ title: "Share-Token fehlt", variant: "destructive" }); return; }
-            const url = `${window.location.origin}/shared/flights/${shareToken}`;
-            if (navigator.share) {
-              try { await navigator.share({ title: flight.takeoff?.name || "Flug", url }); } catch {}
-            } else {
-              await navigator.clipboard.writeText(url);
-              toast({ title: "Link kopiert!" });
+            try {
+              let shareToken = (flight as any).share_token;
+              if (!shareToken) {
+                const { data: updated, error } = await supabase
+                  .from("flights")
+                  .update({ share_token: crypto.randomUUID() } as any)
+                  .eq("id", id)
+                  .select("share_token")
+                  .single();
+                if (error || !updated) {
+                  toast({ title: "Fehler beim Erstellen des Share-Links", variant: "destructive" });
+                  return;
+                }
+                shareToken = (updated as any).share_token;
+                setFlight({ ...flight, share_token: shareToken } as any);
+              }
+              const url = `${window.location.origin}/shared/flights/${shareToken}`;
+              if (navigator.share) {
+                await navigator.share({ title: flight.takeoff?.name || "Flug", text: "Schau dir diesen Flug an!", url });
+              } else {
+                await navigator.clipboard.writeText(url);
+                toast({ title: "Link kopiert!" });
+              }
+            } catch (e: any) {
+              if (e?.name !== "AbortError") {
+                const token = (flight as any).share_token;
+                if (token) {
+                  const url = `${window.location.origin}/shared/flights/${token}`;
+                  await navigator.clipboard.writeText(url);
+                  toast({ title: "Link kopiert!" });
+                }
+              }
             }
           }}><Share2 className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" onClick={() => navigate(`/flights/${id}/edit`)}><Edit className="h-4 w-4" /></Button>
