@@ -1,45 +1,62 @@
 
 
-# Flug per Link teilen (öffentliche Detailseite)
+# Fix: Share-Button funktioniert nicht
 
-## Übersicht
-Eine neue öffentliche Route `/shared/flights/:id` zeigt eine reduzierte, read-only Flugdetailseite — ohne Navigation, ohne Login, ohne andere App-Funktionen. Der Empfänger sieht nur den einzelnen Flug. Ein Share-Button auf der normalen Flugdetailseite kopiert den Link in die Zwischenablage.
+## Problem
+1. Auf Mobile mit `navigator.share` wird der Fehler still verschluckt (`catch {}`) — kein Feedback
+2. Wahrscheinlich fehlt `share_token` im Flight-Objekt, weil der Typ es nicht kennt und/oder die Migration für bestehende Flüge nicht gegriffen hat
+3. Der `navigator.share()`-Aufruf braucht neben `url` auch `text` für bessere Kompatibilität
 
-## Änderungen
+## Lösung in `src/pages/FlightDetail.tsx` (Zeilen 187-197)
 
-### 1. Datenbank: Neues Feld `share_token` auf `flights`
-- Migration: `ALTER TABLE flights ADD COLUMN share_token uuid DEFAULT gen_random_uuid();`
-- Neuer Index auf `share_token` für schnelle Lookups
-- RLS-Policy: `SELECT` für `anon`-Rolle wenn `share_token` übereinstimmt (öffentlich lesbar nur über Token)
-- Gleiche Logik für `flight_photos`, `flight_videos`, `igc_tracks`, `locations` — ein `SELECT`-Policy für `anon` basierend auf dem Flight-Share-Token (via Security-Definer-Funktion)
+1. **Fehler loggen statt verschlucken**: Im `catch`-Block einen Toast mit Fehlermeldung zeigen, und als Fallback den Link in die Zwischenablage kopieren
+2. **Share-Aufruf verbessern**: `text`-Parameter hinzufügen für bessere WhatsApp-Darstellung
+3. **Fallback bei fehlendem Token**: Falls `share_token` null ist, zuerst per Supabase-Update einen generieren (`gen_random_uuid()`) und dann verwenden
+4. **Toast nach erfolgreichem Share**: Auch nach `navigator.share()` eine Bestätigung zeigen
 
-### 2. Edge Function: `get-shared-flight`
-- Nimmt `token` als Parameter
-- Validiert Token, lädt Flug + Fotos + Track + Videos + Pilotname
-- Erstellt signierte URLs für Fotos (da Storage-Buckets privat sind)
-- Gibt alle Daten als JSON zurück
-- Kein Auth erforderlich
+```typescript
+<Button variant="ghost" size="icon" onClick={async () => {
+  try {
+    let shareToken = (flight as any).share_token;
+    if (!shareToken) {
+      // Generate token on-the-fly for old flights
+      const { data: updated, error } = await supabase
+        .from("flights")
+        .update({ share_token: crypto.randomUUID() } as any)
+        .eq("id", id)
+        .select("share_token")
+        .single();
+      if (error || !updated) {
+        toast({ title: "Fehler beim Erstellen des Share-Links", variant: "destructive" });
+        return;
+      }
+      shareToken = (updated as any).share_token;
+      setFlight({ ...flight, share_token: shareToken } as any);
+    }
+    const url = `${window.location.origin}/shared/flights/${shareToken}`;
+    if (navigator.share) {
+      await navigator.share({
+        title: flight.takeoff?.name || "Flug",
+        text: `Schau dir diesen Flug an!`,
+        url,
+      });
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link kopiert!" });
+    }
+  } catch (e: any) {
+    if (e?.name !== "AbortError") {
+      // Fallback: copy to clipboard
+      const token = (flight as any).share_token;
+      if (token) {
+        const url = `${window.location.origin}/shared/flights/${token}`;
+        await navigator.clipboard.writeText(url);
+        toast({ title: "Link kopiert!" });
+      }
+    }
+  }
+}}>
+```
 
-### 3. Neue Seite: `src/pages/SharedFlightDetail.tsx`
-- Reduzierte Version von `FlightDetail` — nur Anzeige, kein Edit/Delete/Publish
-- Zeigt: Datum, Glider, Takeoff/Landing, Dauer, Höhe, Distanz, Kommentare, Fotos, Videos, Karte, Track
-- Kein `AppLayout`, keine Navigation, kein BottomNav
-- Branding/Logo oben, "Powered by FlyAry"-Footer mit Link zur App
-- Lädt Daten über die Edge Function
-
-### 4. Route in `App.tsx`
-- Neue öffentliche Route: `<Route path="/shared/flights/:token" element={<SharedFlightDetail />} />`
-- Ausserhalb von `ProtectedRoute`, kein Login nötig
-
-### 5. Share-Button in `FlightDetail.tsx`
-- Neuer Button (Share2-Icon) in der Toolbar
-- Kopiert `https://flyaryapp.lovable.app/shared/flights/{share_token}` in die Zwischenablage
-- Toast: "Link kopiert"
-- Nutzt `navigator.share()` API falls verfügbar (native Share-Sheet auf Mobile → WhatsApp, etc.)
-
-## Technische Details
-- `share_token` als UUID statt der Flight-ID verhindert URL-Guessing
-- Edge Function mit Service-Role-Key kann auf private Buckets zugreifen und signierte URLs generieren
-- Keine Änderung an bestehenden RLS-Policies nötig — alles läuft über die Edge Function
-- 5 Dateien: 1 Migration, 1 Edge Function, 1 neue Page, 2 bestehende Dateien (App.tsx, FlightDetail.tsx)
+Eine Datei, ein Block.
 
