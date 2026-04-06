@@ -184,6 +184,17 @@ export default function FlightDetail() {
           </div>
         </div>
         <div className="flex gap-1">
+          <Button variant="ghost" size="icon" onClick={async () => {
+            const shareToken = (flight as any).share_token;
+            if (!shareToken) { toast({ title: "Share-Token fehlt", variant: "destructive" }); return; }
+            const url = `${window.location.origin}/shared/flights/${shareToken}`;
+            if (navigator.share) {
+              try { await navigator.share({ title: flight.takeoff?.name || "Flug", url }); } catch {}
+            } else {
+              await navigator.clipboard.writeText(url);
+              toast({ title: "Link kopiert!" });
+            }
+          }}><Share2 className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" onClick={() => navigate(`/flights/${id}/edit`)}><Edit className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" onClick={handleDuplicate}><Copy className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" onClick={handleDelete}><Trash2 className="h-4 w-4 text-destructive" /></Button>

@@ -121,6 +121,7 @@ const App = () => {
                     <Route path="/school" element={<SchoolDashboard />} />
                   </Route>
                   <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
+                  <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
