@@ -1,29 +1,45 @@
 
 
-# Fix: HUD zeigt immer 0 bei Geschwindigkeit und Vario
+# Flug per Link teilen (öffentliche Detailseite)
 
-## Problem
-Die Zeitstempel in `renderPoints` haben das Format `"HH:MM:SS"` (z.B. `"12:34:56"` aus dem IGC-Parser). Der Code auf Zeile 428-429 macht `new Date("12:34:56")`, was `Invalid Date` ergibt. Dadurch ist `dtSec` immer `NaN`, und der Fallback setzt Speed und Vario auf 0.
+## Übersicht
+Eine neue öffentliche Route `/shared/flights/:id` zeigt eine reduzierte, read-only Flugdetailseite — ohne Navigation, ohne Login, ohne andere App-Funktionen. Der Empfänger sieht nur den einzelnen Flug. Ein Share-Button auf der normalen Flugdetailseite kopiert den Link in die Zwischenablage.
 
-## Lösung
+## Änderungen
 
-### Änderung in `src/components/Flight3DMap.tsx` (Zeilen 428-430)
+### 1. Datenbank: Neues Feld `share_token` auf `flights`
+- Migration: `ALTER TABLE flights ADD COLUMN share_token uuid DEFAULT gen_random_uuid();`
+- Neuer Index auf `share_token` für schnelle Lookups
+- RLS-Policy: `SELECT` für `anon`-Rolle wenn `share_token` übereinstimmt (öffentlich lesbar nur über Token)
+- Gleiche Logik für `flight_photos`, `flight_videos`, `igc_tracks`, `locations` — ein `SELECT`-Policy für `anon` basierend auf dem Flight-Share-Token (via Security-Definer-Funktion)
 
-Statt `new Date(pp0.time).getTime()` die `"HH:MM:SS"`-Strings direkt in Sekunden parsen:
+### 2. Edge Function: `get-shared-flight`
+- Nimmt `token` als Parameter
+- Validiert Token, lädt Flug + Fotos + Track + Videos + Pilotname
+- Erstellt signierte URLs für Fotos (da Storage-Buckets privat sind)
+- Gibt alle Daten als JSON zurück
+- Kein Auth erforderlich
 
-```typescript
-function timeToSeconds(t: string): number {
-  const [h, m, s] = t.split(":").map(Number);
-  return h * 3600 + m * 60 + s;
-}
-```
+### 3. Neue Seite: `src/pages/SharedFlightDetail.tsx`
+- Reduzierte Version von `FlightDetail` — nur Anzeige, kein Edit/Delete/Publish
+- Zeigt: Datum, Glider, Takeoff/Landing, Dauer, Höhe, Distanz, Kommentare, Fotos, Videos, Karte, Track
+- Kein `AppLayout`, keine Navigation, kein BottomNav
+- Branding/Logo oben, "Powered by FlyAry"-Footer mit Link zur App
+- Lädt Daten über die Edge Function
 
-Dann:
-```typescript
-const t0 = pp0.time ? timeToSeconds(pp0.time) : NaN;
-const t1 = pp1.time ? timeToSeconds(pp1.time) : NaN;
-const dtSec = t1 - t0;
-```
+### 4. Route in `App.tsx`
+- Neue öffentliche Route: `<Route path="/shared/flights/:token" element={<SharedFlightDetail />} />`
+- Ausserhalb von `ProtectedRoute`, kein Login nötig
 
-Eine Datei, eine kleine Hilfsfunktion, drei Zeilen Änderung.
+### 5. Share-Button in `FlightDetail.tsx`
+- Neuer Button (Share2-Icon) in der Toolbar
+- Kopiert `https://flyaryapp.lovable.app/shared/flights/{share_token}` in die Zwischenablage
+- Toast: "Link kopiert"
+- Nutzt `navigator.share()` API falls verfügbar (native Share-Sheet auf Mobile → WhatsApp, etc.)
+
+## Technische Details
+- `share_token` als UUID statt der Flight-ID verhindert URL-Guessing
+- Edge Function mit Service-Role-Key kann auf private Buckets zugreifen und signierte URLs generieren
+- Keine Änderung an bestehenden RLS-Policies nötig — alles läuft über die Edge Function
+- 5 Dateien: 1 Migration, 1 Edge Function, 1 neue Page, 2 bestehende Dateien (App.tsx, FlightDetail.tsx)
 
