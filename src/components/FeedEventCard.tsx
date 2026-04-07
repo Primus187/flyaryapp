@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Users, Clock, ChevronRight, Heart, MessageCircle, Bookmark } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, ChevronRight, MessageCircle, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MentionCommentInput from "@/components/MentionCommentInput";
+import ReactionPicker, { ReactionBadges, type ReactionType } from "@/components/ReactionPicker";
 
 export interface FeedEvent {
   id: string;
@@ -29,7 +30,7 @@ export interface FeedEvent {
   avatar_url: string;
   created_by: string;
   photos: { id: string; url: string }[];
-  likes: { user_id: string }[];
+  likes: { user_id: string; reaction_type: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string }[];
   isBookmarked?: boolean;
 }
@@ -37,7 +38,7 @@ export interface FeedEvent {
 interface FeedEventCardProps {
   event: FeedEvent;
   onSignup?: (eventId: string) => void;
-  onLikeToggle: (eventId: string) => void;
+  onReact: (eventId: string, reactionType: ReactionType) => void;
   onComment: (eventId: string, message: string) => void;
   onBookmarkToggle?: (eventId: string) => void;
   onCommentLike?: (commentId: string) => void;
@@ -55,19 +56,17 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedEventCardProps) {
+export default function FeedEventCard({ event, onSignup, onReact, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedEventCardProps) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
-  const [likeAnimating, setLikeAnimating] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   const eventDate = new Date(event.event_date);
   const isPast = eventDate < new Date();
   const isCancelled = event.status === "cancelled";
-  const isLiked = event.likes.some(l => l.user_id === user?.id);
   const initials = event.pilot_name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
 
   const statusColor = isCancelled
@@ -82,21 +81,12 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
     ? t("events.statusConfirmed")
     : t("events.statusAnnounced");
 
-  const handleLike = useCallback(() => {
-    if (!isLiked) {
-      setLikeAnimating(true);
-      setTimeout(() => setLikeAnimating(false), 400);
-    }
-    onLikeToggle(event.id);
-  }, [isLiked, onLikeToggle, event.id]);
-
   const handleSubmitComment = (msg: string) => {
     onComment(event.id, msg);
   };
 
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      {/* Instagram-style header */}
       <div className="flex items-center gap-3 p-3 pb-2">
         <button onClick={() => navigate(`/pilot/${event.created_by}`)} className="shrink-0">
           <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
@@ -117,7 +107,6 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
         <Badge className={`${statusColor} border-0 shrink-0 text-[10px]`}>{statusLabel}</Badge>
       </div>
 
-      {/* Photo gallery */}
       {event.photos.length > 0 && (
         <div className="relative aspect-square w-full overflow-hidden bg-muted">
           <img src={event.photos[photoIndex]?.url} alt="" className="w-full h-full object-cover" />
@@ -141,29 +130,16 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
         </div>
       )}
 
-      {/* Event info */}
       <div className="relative px-4 py-3 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
         <h3 className="text-base font-bold truncate">{event.title}</h3>
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" />
-            {eventDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            {eventDate.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
-          </span>
-          {event.meeting_point && (
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              {event.meeting_point}
-            </span>
-          )}
+          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{eventDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}</span>
+          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{eventDate.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}</span>
+          {event.meeting_point && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.meeting_point}</span>}
         </div>
       </div>
 
       <CardContent className="p-3 space-y-2">
-        {/* Signup + details row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
@@ -171,23 +147,23 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
           </div>
           <div className="flex items-center gap-2">
             {!isPast && !isCancelled && onSignup && (
-              <Button size="sm" variant={event.user_signed_up ? "secondary" : "default"}
-                className="h-7 text-xs rounded-full px-3" onClick={() => onSignup(event.id)}>
+              <Button size="sm" variant={event.user_signed_up ? "secondary" : "default"} className="h-7 text-xs rounded-full px-3" onClick={() => onSignup(event.id)}>
                 {event.user_signed_up ? t("events.signedUpLabel") : t("events.signUp")}
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="h-7 text-xs px-2"
-              onClick={() => navigate(`/events/${event.id}`)}>
+            <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => navigate(`/events/${event.id}`)}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Social interactions */}
         <div className="flex items-center gap-3 pt-1 border-t border-border/50">
-          <button onClick={handleLike} className="active:scale-90 transition-transform">
-            <Heart className={cn("h-5 w-5 transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
-          </button>
+          <ReactionPicker
+            reactions={event.likes}
+            currentUserId={user?.id}
+            onReact={(type) => onReact(event.id, type)}
+            size="sm"
+          />
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-5 w-5" />
           </button>
@@ -199,11 +175,8 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
           )}
         </div>
 
-        {event.likes.length > 0 && (
-          <p className="text-sm font-semibold">{event.likes.length} {event.likes.length === 1 ? "Like" : "Likes"}</p>
-        )}
+        <ReactionBadges reactions={event.likes} />
 
-        {/* Feed description (Instagram-style) */}
         {event.feed_description && (
           <p className="text-sm">
             <span className="font-semibold mr-1">{event.pilot_name}</span>
@@ -225,7 +198,7 @@ export default function FeedEventCard({ event, onSignup, onLikeToggle, onComment
                 </p>
                 {onCommentLike && (
                   <button onClick={() => onCommentLike(c.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90">
-                    <Heart className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                    <span className="text-xs text-muted-foreground hover:text-red-500">❤️</span>
                   </button>
                 )}
               </div>
