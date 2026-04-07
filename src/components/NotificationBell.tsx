@@ -133,6 +133,7 @@ export default function NotificationBell() {
   const getNotificationText = (n: Notification) => {
     if (n.type === "like") return t("notifications.liked");
     if (n.type === "comment") return t("notifications.commented");
+    if (n.type === "follow") return t("notifications.followed");
     return "";
   };
 

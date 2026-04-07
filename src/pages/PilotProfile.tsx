@@ -182,6 +182,22 @@ export default function PilotProfile() {
         <p className="text-sm text-muted-foreground">
           Lv.{level} · {LEVEL_NAMES[level - 1]}
         </p>
+        <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+          <span><strong className="text-foreground">{followerCount}</strong> Follower</span>
+          <span><strong className="text-foreground">{followingCount}</strong> Following</span>
+        </div>
+        {user && userId && user.id !== userId && (
+          <Button
+            variant={isFollowing ? "outline" : "default"}
+            size="sm"
+            className="mt-2 gap-1.5"
+            disabled={followLoading}
+            onClick={toggleFollow}
+          >
+            {isFollowing ? <UserMinus className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+            {isFollowing ? t("follows.unfollow") : t("follows.follow")}
+          </Button>
+        )}
         {profile.bio && (
           <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mt-2">{profile.bio}</p>
         )}
