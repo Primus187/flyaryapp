@@ -82,7 +82,10 @@ export default function Feed() {
       }
 
       gIds = memberships.map(m => m.group_id);
-      setGroupIds(gIds);
+      if (JSON.stringify(gIds) !== JSON.stringify(groupIdsRef.current)) {
+        setGroupIds(gIds);
+        groupIdsRef.current = gIds;
+      }
 
       // Load group members for @mentions
       const { data: members } = await supabase
