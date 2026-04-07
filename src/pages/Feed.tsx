@@ -618,7 +618,7 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
     photos: photoMap[e.id] || [],
     signup_count: (signups || []).filter(s => s.event_id === e.id).length,
     user_signed_up: (signups || []).some(s => s.event_id === e.id && s.user_id === userId),
-    likes: (likes || []).filter(l => l.event_id === e.id).map(l => ({ user_id: l.user_id })),
+    likes: (likes || []).filter(l => l.event_id === e.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.event_id === e.id).map(c => ({
       id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
