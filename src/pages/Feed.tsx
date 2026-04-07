@@ -745,3 +745,124 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     })),
   }));
 }
+
+async function fetchFollowedFlights(userId: string, followedIds: string[], cursor?: string): Promise<FeedFlight[]> {
+  let query = supabase
+    .from("flights")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .in("user_id", followedIds)
+    .eq("published_to_feed", true)
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(PAGE_SIZE);
+
+  if (cursor) {
+    query = query.lt("published_at", cursor);
+  }
+
+  const { data: flights } = await query;
+  if (!flights || flights.length === 0) return [];
+
+  const pilotIds = [...new Set(flights.map(f => f.user_id))];
+  const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", pilotIds);
+
+  const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
+  if (profiles) {
+    const avatarPaths = profiles.filter(p => p.avatar_url && !p.avatar_url.startsWith("http")).map(p => p.avatar_url!);
+    const avatarSignedMap: Record<string, string> = {};
+    if (avatarPaths.length > 0) {
+      const { data: signedAvatars } = await supabase.storage.from("flight-photos").createSignedUrls(avatarPaths, 3600);
+      signedAvatars?.forEach(s => { if (s.signedUrl) avatarSignedMap[s.path] = s.signedUrl; });
+    }
+    for (const p of profiles) {
+      let avatarUrl = "";
+      if (p.avatar_url) {
+        avatarUrl = p.avatar_url.startsWith("http") ? p.avatar_url : (avatarSignedMap[p.avatar_url] || "");
+      }
+      profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: avatarUrl };
+    }
+  }
+
+  const flightIds = flights.map(f => f.id);
+  const feedPhotoIdsMap: Record<string, string[] | null> = {};
+  for (const f of flights as any[]) {
+    feedPhotoIdsMap[f.id] = Array.isArray(f.feed_photo_ids) ? f.feed_photo_ids : null;
+  }
+
+  const [photosRes, likesRes, commentsRes, tracksRes, videosRes] = await Promise.all([
+    supabase.from("flight_photos").select("id, flight_id, storage_path").in("flight_id", flightIds),
+    supabase.from("feed_likes").select("flight_id, user_id, reaction_type").in("flight_id", flightIds),
+    supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true }),
+    supabase.from("igc_tracks").select("flight_id").in("flight_id", flightIds),
+    supabase.from("flight_videos").select("flight_id, youtube_url").in("flight_id", flightIds),
+  ]);
+
+  const photos = photosRes.data;
+  const likes = likesRes.data;
+  const comments = commentsRes.data;
+  const tracks = tracksRes.data;
+  const videoData = videosRes.data;
+
+  const videoMap: Record<string, string[]> = {};
+  if (videoData) {
+    for (const v of videoData) {
+      if (!videoMap[v.flight_id]) videoMap[v.flight_id] = [];
+      videoMap[v.flight_id].push(v.youtube_url);
+    }
+  }
+
+  const photoMap: Record<string, string[]> = {};
+  if (photos && photos.length > 0) {
+    const filteredPhotos = photos.filter(p => {
+      const allowed = feedPhotoIdsMap[p.flight_id];
+      return !allowed || allowed.includes(p.id);
+    });
+    const paths = [...new Set(filteredPhotos.map(p => p.storage_path))];
+    const signedMap: Record<string, string> = {};
+    if (paths.length > 0) {
+      const { data: signedPhotos } = await supabase.storage.from("flight-photos").createSignedUrls(paths, 3600);
+      signedPhotos?.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl; });
+    }
+    filteredPhotos.forEach(p => {
+      if (!photoMap[p.flight_id]) photoMap[p.flight_id] = [];
+      if (signedMap[p.storage_path]) photoMap[p.flight_id].push(signedMap[p.storage_path]);
+    });
+  }
+
+  const hasTrackMap = new Set<string>();
+  if (tracks) tracks.forEach(t => hasTrackMap.add(t.flight_id));
+
+  const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
+  if (commenterIds.length > 0) {
+    const { data: cp } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", commenterIds);
+    cp?.forEach(p => { profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: "" }; });
+  }
+
+  return flights.map((f: any) => ({
+    id: f.id,
+    date: f.date,
+    created_at: f.created_at,
+    published_at: f.published_at,
+    feedDescription: f.comments || null,
+    glider: f.glider,
+    duration_minutes: f.duration_minutes,
+    altitude_gain: f.altitude_gain,
+    distance_km: f.distance_km,
+    takeoff_name: f.locations?.name || null,
+    landing_name: f.land?.name || null,
+    user_id: f.user_id,
+    pilot_name: profileMap[f.user_id]?.pilot_name || "Pilot",
+    avatar_url: profileMap[f.user_id]?.avatar_url || "",
+    group_name: "",
+    photoUrls: photoMap[f.id] || [],
+    videoUrls: videoMap[f.id] || [],
+    hasTrack: hasTrackMap.has(f.id),
+    takeoff: f.locations?.latitude ? { latitude: f.locations.latitude, longitude: f.locations.longitude, name: f.locations.name } : null,
+    landing: f.land?.latitude ? { latitude: f.land.latitude, longitude: f.land.longitude, name: f.land.name } : null,
+    likes: (likes || []).filter(l => l.flight_id === f.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
+    comments: (comments || []).filter(c => c.flight_id === f.id).map(c => ({
+      ...c,
+      pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
+    })),
+  }));
+}
