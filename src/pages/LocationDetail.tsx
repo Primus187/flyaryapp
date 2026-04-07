@@ -97,7 +97,7 @@ export default function LocationDetail() {
           </Card>
           <div className="flex gap-3 mt-1">
             <a
-              href="https://www.burnair.ch/meteo/map.php"
+              href={`https://www.burnair.ch/meteo/map.php#${location.latitude.toFixed(4)},${location.longitude.toFixed(4)},13`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-primary hover:underline"
