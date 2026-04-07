@@ -241,7 +241,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
 
 export function useDashboardData() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  
   const [signups, setSignups] = useState<SignupRow[]>([]);
 
   const { data, isLoading, error, refetch } = useQuery({
