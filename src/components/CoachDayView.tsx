@@ -48,13 +48,26 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const fetchData = useCallback(async () => {
     if (!user) return;
 
+    // Get signed-up students for this event
+    const { data: signupData } = await supabase
+      .from("event_signups")
+      .select("user_id")
+      .eq("event_id", eventId)
+      .eq("signed_up", true);
+
+    const signedUpIds = (signupData || []).map(s => s.user_id);
+
     const { data: members } = await supabase
       .from("group_members")
       .select("user_id, role")
       .eq("group_id", groupId);
     if (!members || members.length === 0) { setLoading(false); return; }
 
-    const studentIds = members.filter(m => m.role === "member").map(m => m.user_id);
+    // Only show students (members) who are signed up for this event
+    const allStudentIds = members.filter(m => m.role === "member").map(m => m.user_id);
+    const studentIds = signedUpIds.length > 0
+      ? allStudentIds.filter(id => signedUpIds.includes(id))
+      : allStudentIds; // fallback: show all if no signups exist
     if (studentIds.length === 0) { setLoading(false); return; }
 
     const dateStr = new Date(eventDate).toISOString().split("T")[0];
