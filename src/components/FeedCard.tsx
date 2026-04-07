@@ -265,6 +265,21 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // History-based lightbox closing for back gesture support
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    window.history.pushState({ lightbox: true }, "");
+    const handlePop = () => setLightboxOpen(false);
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, [lightboxOpen]);
+
+  const closeLightbox = useCallback(() => {
+    if (lightboxOpen) {
+      window.history.back();
+    }
+  }, [lightboxOpen]);
+
   const initials = flight.pilot_name ? flight.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
 
   const hasPhotos = flight.photoUrls.length > 0;
@@ -410,11 +425,14 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
       </Card>
 
       {/* Fullscreen Photo Lightbox */}
-      <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+      <Dialog open={lightboxOpen} onOpenChange={(open) => { if (!open) closeLightbox(); }}>
         <DialogContent className="max-w-none w-screen h-screen p-0 border-0 bg-black/95 flex items-center justify-center [&>button]:hidden">
+          {/* Tap background to close */}
+          <div className="absolute inset-0 z-0" onClick={closeLightbox} />
+          {/* Close button */}
           <button
-            onClick={() => setLightboxOpen(false)}
-            className="absolute top-4 right-4 z-50 text-white/80 hover:text-white"
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 z-50 bg-black/50 rounded-full p-2 text-white/90 hover:text-white hover:bg-black/70 transition-colors"
           >
             <X className="h-7 w-7" />
           </button>
@@ -428,7 +446,7 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
 }
 
 function LightboxCarousel({ urls, startIndex }: { urls: string[]; startIndex: number }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, startIndex });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, startIndex, dragFree: false });
   const [selected, setSelected] = useState(startIndex);
 
   useEffect(() => {
@@ -439,22 +457,43 @@ function LightboxCarousel({ urls, startIndex }: { urls: string[]; startIndex: nu
   }, [emblaApi]);
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative z-10" style={{ touchAction: "manipulation" }}>
       <div className="overflow-hidden h-full" ref={emblaRef}>
         <div className="flex h-full">
           {urls.map((url, i) => (
-            <div key={i} className="flex-[0_0_100%] min-w-0 h-full flex items-center justify-center">
-              <img src={url} alt="" className="max-w-full max-h-full object-contain" />
+            <div key={i} className="flex-[0_0_100%] min-w-0 h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <img src={url} alt="" className="max-w-full max-h-full object-contain select-none" draggable={false} />
             </div>
           ))}
         </div>
       </div>
+      {/* Desktop arrow buttons */}
       {urls.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5">
-          {urls.map((_, i) => (
-            <div key={i} className={cn("w-2 h-2 rounded-full transition-colors", i === selected ? "bg-white" : "bg-white/40")} />
-          ))}
-        </div>
+        <>
+          {selected > 0 && (
+            <button onClick={() => emblaApi?.scrollPrev()} className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/50 rounded-full p-2 text-white/90 hover:bg-black/70 transition-colors hidden sm:block">
+              ‹
+            </button>
+          )}
+          {selected < urls.length - 1 && (
+            <button onClick={() => emblaApi?.scrollNext()} className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/50 rounded-full p-2 text-white/90 hover:bg-black/70 transition-colors hidden sm:block">
+              ›
+            </button>
+          )}
+        </>
+      )}
+      {/* Counter + dots */}
+      {urls.length > 1 && (
+        <>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm font-medium px-3 py-1 rounded-full z-20">
+            {selected + 1}/{urls.length}
+          </div>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+            {urls.map((_, i) => (
+              <div key={i} className={cn("w-2 h-2 rounded-full transition-colors", i === selected ? "bg-white" : "bg-white/40")} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
