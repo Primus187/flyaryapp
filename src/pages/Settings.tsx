@@ -182,6 +182,18 @@ export default function Settings() {
 
       <TrainingLevelCard />
 
+      {pushSupported && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Bell className="h-4 w-4" /> {t("settings.pushNotifications")}</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t("settings.pushDesc")}</span>
+              <Switch checked={pushEnabled} onCheckedChange={togglePush} disabled={pushLoading} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
