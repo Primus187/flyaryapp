@@ -119,6 +119,10 @@ export default function NotificationBell() {
 
   const handleNotificationClick = (n: Notification) => {
     setOpen(false);
+    if (n.type === "follow" && n.actor_id) {
+      navigate(`/pilot/${n.actor_id}`);
+      return;
+    }
     if (n.reference_id && n.reference_type) {
       if (n.reference_type === "flight") navigate(`/flights/${n.reference_id}`);
       else if (n.reference_type === "event") navigate(`/events/${n.reference_id}`);
@@ -129,6 +133,7 @@ export default function NotificationBell() {
   const getNotificationText = (n: Notification) => {
     if (n.type === "like") return t("notifications.liked");
     if (n.type === "comment") return t("notifications.commented");
+    if (n.type === "follow") return t("notifications.followed");
     return "";
   };
 

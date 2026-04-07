@@ -5,14 +5,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import EmptyState from "@/components/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
+import GoalCard from "@/components/GoalCard";
+import GoalFormDialog from "@/components/GoalFormDialog";
 import { useXcontestAutoSync } from "@/hooks/use-xcontest-auto-sync";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
+import { usePilotGoals } from "@/hooks/use-pilot-goals";
 
 function DashboardSkeleton() {
   return (
@@ -36,6 +39,8 @@ export default function Dashboard() {
   useXcontestAutoSync();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { goals, addGoal, deleteGoal } = usePilotGoals();
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const {
     stats, yearComparison, recent, events, signups, challenges, loading, error,
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
@@ -255,7 +260,33 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* Recent flights */}
+      {/* Season Goals */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("goals.myGoals")}</h2>
+          <Button variant="ghost" size="sm" className="h-6 text-xs gap-1" onClick={() => setGoalDialogOpen(true)}>
+            <Plus className="h-3 w-3" /> {t("goals.addGoal")}
+          </Button>
+        </div>
+        {goals.length > 0 ? (
+          <div className="space-y-2">
+            {goals.map((g) => (
+              <GoalCard key={g.id} goal={g} onDelete={deleteGoal} />
+            ))}
+          </div>
+        ) : (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 text-center">
+              <Target className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">{t("goals.noGoals")}</p>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      <GoalFormDialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen} onSubmit={addGoal} />
+
+
       <section>
         <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>
         {recent.length === 0 ? (

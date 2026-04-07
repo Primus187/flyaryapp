@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 function TrainingLevelCard() {
   const { t } = useTranslation();
@@ -66,7 +68,7 @@ export default function Settings() {
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [includeNoGroup, setIncludeNoGroup] = useState(true);
-
+  const { isSupported: pushSupported, isSubscribed: pushEnabled, toggle: togglePush, loading: pushLoading } = usePushNotifications();
   useEffect(() => {
     if (!user) return;
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
@@ -179,6 +181,18 @@ export default function Settings() {
       </Card>
 
       <TrainingLevelCard />
+
+      {pushSupported && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Bell className="h-4 w-4" /> {t("settings.pushNotifications")}</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t("settings.pushDesc")}</span>
+              <Switch checked={pushEnabled} onCheckedChange={togglePush} disabled={pushLoading} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>
