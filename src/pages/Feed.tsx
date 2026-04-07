@@ -76,34 +76,27 @@ export default function Feed() {
         .select("group_id")
         .eq("user_id", user.id);
 
-      if (!memberships || memberships.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      gIds = memberships.map(m => m.group_id);
+      gIds = memberships?.map(m => m.group_id) || [];
       if (JSON.stringify(gIds) !== JSON.stringify(groupIdsRef.current)) {
         setGroupIds(gIds);
         groupIdsRef.current = gIds;
       }
 
-      // Load group members for @mentions
-      const { data: members } = await supabase
-        .from("group_members")
-        .select("user_id")
-        .in("group_id", gIds);
-      if (members) {
-        const memberIds = [...new Set(members.map(m => m.user_id))];
-        const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
-        setGroupMembers((profs || []).map(p => ({ user_id: p.user_id, pilot_name: p.pilot_name || "Pilot" })));
+      if (gIds.length > 0) {
+        // Load group members for @mentions
+        const { data: members } = await supabase
+          .from("group_members")
+          .select("user_id")
+          .in("group_id", gIds);
+        if (members) {
+          const memberIds = [...new Set(members.map(m => m.user_id))];
+          const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
+          setGroupMembers((profs || []).map(p => ({ user_id: p.user_id, pilot_name: p.pilot_name || "Pilot" })));
+        }
       }
+    }
 
-      const { data: groups } = await supabase
-        .from("groups")
-        .select("id, name")
-        .in("id", gIds);
-      groups?.forEach(g => { groupMap[g.id] = g.name; });
-    } else {
+    if (gIds.length > 0) {
       const { data: groups } = await supabase
         .from("groups")
         .select("id, name")
@@ -111,11 +104,24 @@ export default function Feed() {
       groups?.forEach(g => { groupMap[g.id] = g.name; });
     }
 
-    const [flightsRes, eventsRes, achievementsRes] = await Promise.all([
-      fetchFlights(user.id, gIds, groupMap, cursor),
-      !cursor ? fetchEvents(user.id, gIds, groupMap) : Promise.resolve([]),
-      fetchAchievements(user.id, gIds, groupMap, cursor),
+    // Also fetch followed user IDs
+    const { data: followsData } = await supabase
+      .from("follows" as any)
+      .select("following_id")
+      .eq("follower_id", user.id);
+    const followedIds: string[] = (followsData || []).map((f: any) => f.following_id);
+
+    const [flightsRes, followedFlightsRes, eventsRes, achievementsRes] = await Promise.all([
+      gIds.length > 0 ? fetchFlights(user.id, gIds, groupMap, cursor) : Promise.resolve([]),
+      followedIds.length > 0 ? fetchFollowedFlights(user.id, followedIds, cursor) : Promise.resolve([]),
+      !cursor && gIds.length > 0 ? fetchEvents(user.id, gIds, groupMap) : Promise.resolve([]),
+      gIds.length > 0 ? fetchAchievements(user.id, gIds, groupMap, cursor) : Promise.resolve([]),
     ]);
+
+    const allFlights = [...flightsRes, ...followedFlightsRes];
+    // Deduplicate by id
+    const seenIds = new Set<string>();
+    const dedupedFlights = allFlights.filter(f => { if (seenIds.has(f.id)) return false; seenIds.add(f.id); return true; });
 
     // Load bookmarks for current user
     const allFlightIds = flightsRes.map(f => f.id);
