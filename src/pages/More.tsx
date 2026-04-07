@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search } from "lucide-react";
+import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search, CloudSun } from "lucide-react";
 
 const baseTiles = [
   { path: "/search", icon: Search, labelKey: "more.search" },
