@@ -161,6 +161,12 @@ async function generateMapImage(rawPoints: any[]): Promise<Uint8Array> {
     drawThickLine(img, pixelPts[i - 1].x, pixelPts[i - 1].y, pixelPts[i].x, pixelPts[i].y, 2, 0xFF3300FF);
   }
 
+  // Draw start (green) and landing (red) markers
+  const startPt = pixelPts[0];
+  const endPt = pixelPts[pixelPts.length - 1];
+  drawCircle(img, startPt.x, startPt.y, 6, 0x22CC44FF, 0xFFFFFFFF, 2);
+  drawCircle(img, endPt.x, endPt.y, 6, 0xDD2222FF, 0xFFFFFFFF, 2);
+
   return await img.encode();
 }
 
