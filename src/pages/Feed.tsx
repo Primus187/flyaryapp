@@ -56,16 +56,18 @@ export default function Feed() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [groupIds, setGroupIds] = useState<string[]>([]);
+  const groupIdsRef = useRef<string[]>([]);
   const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const stableGroupIds = React.useMemo(() => groupIds, [groupIds.join(",")]);
 
   const fetchFeed = useCallback(async (cursor?: string) => {
     if (!user) return;
 
-    let gIds = groupIds;
+    let gIds = groupIdsRef.current;
     let groupMap: Record<string, string> = {};
 
     if (!cursor || gIds.length === 0) {
@@ -80,7 +82,10 @@ export default function Feed() {
       }
 
       gIds = memberships.map(m => m.group_id);
-      setGroupIds(gIds);
+      if (JSON.stringify(gIds) !== JSON.stringify(groupIdsRef.current)) {
+        setGroupIds(gIds);
+        groupIdsRef.current = gIds;
+      }
 
       // Load group members for @mentions
       const { data: members } = await supabase
@@ -144,7 +149,7 @@ export default function Feed() {
     setHasMore(flightsRes.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
     setLoading(false);
     setLoadingMore(false);
-  }, [user, groupIds]);
+  }, [user]);
 
   useEffect(() => { fetchFeed(); }, [fetchFeed]);
 
@@ -348,8 +353,8 @@ export default function Feed() {
       </div>
 
       {/* Story bar — active pilots */}
-      {user && groupIds.length > 0 && (
-        <FeedStoryBar userId={user.id} groupIds={groupIds} />
+      {user && stableGroupIds.length > 0 && (
+        <FeedStoryBar userId={user.id} groupIds={stableGroupIds} />
       )}
 
       {items.length === 0 ? (
