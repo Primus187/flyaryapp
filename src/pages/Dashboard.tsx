@@ -37,7 +37,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const {
-    stats, recent, events, signups, challenges, loading, error,
+    stats, yearComparison, recent, events, signups, challenges, loading, error,
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
 
@@ -86,7 +86,7 @@ export default function Dashboard() {
       <div className="px-4 pt-6 pb-4 max-w-lg mx-auto flex flex-col items-center gap-4 text-center">
         <AlertTriangle className="h-10 w-10 text-destructive" />
         <p className="text-sm text-muted-foreground">{error}</p>
-        <Button onClick={refetch} variant="outline" className="gap-2">
+        <Button onClick={() => refetch()} variant="outline" className="gap-2">
           <RefreshCw className="h-4 w-4" /> {t("common.retry", "Retry")}
         </Button>
       </div>
@@ -150,6 +150,37 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+
+      {/* Year comparison */}
+      {yearComparison && yearComparison.current.totalFlights > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{yearComparison.currentYear} vs {yearComparison.currentYear - 1}</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: t("dashboard.flights"), current: yearComparison.current.totalFlights, prev: yearComparison.previous.totalFlights },
+              { label: t("dashboard.flightTime"), current: yearComparison.current.totalMinutes, prev: yearComparison.previous.totalMinutes, isTime: true },
+            ].map(({ label, current, prev, isTime }) => {
+              const diff = prev > 0 ? Math.round(((current - prev) / prev) * 100) : current > 0 ? 100 : 0;
+              const formatted = isTime ? `${Math.floor(current / 60)}h ${current % 60}m` : current.toString();
+              return (
+                <Card key={label} className="border-0 shadow-sm">
+                  <CardContent className="p-3">
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-lg font-semibold tabular-nums">{formatted}</p>
+                      {diff !== 0 && (
+                        <span className={`text-xs font-medium ${diff > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                          {diff > 0 ? "+" : ""}{diff}%
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Maintenance warnings */}
       {overdueGliders.length > 0 && (

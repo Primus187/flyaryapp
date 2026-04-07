@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, MapPin, Bookmark } from "lucide-react";
+import { MessageCircle, MapPin, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MentionCommentInput from "@/components/MentionCommentInput";
 import useEmblaCarousel from "embla-carousel-react";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
+import ReactionPicker, { ReactionBadges, type ReactionType } from "@/components/ReactionPicker";
+import { supabase } from "@/integrations/supabase/client";
 
 const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
 
@@ -31,17 +32,17 @@ export interface FeedFlight {
   group_name: string;
   photoUrls: string[];
   videoUrls: string[];
-  trackPoints: [number, number][];
+  hasTrack: boolean;
   takeoff: { latitude: number; longitude: number; name?: string } | null;
   landing: { latitude: number; longitude: number; name?: string } | null;
-  likes: { user_id: string }[];
+  likes: { user_id: string; reaction_type: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string; like_count?: number }[];
   isBookmarked?: boolean;
 }
 
 interface FeedCardProps {
   flight: FeedFlight;
-  onLikeToggle: (flightId: string) => void;
+  onReact: (flightId: string, reactionType: ReactionType) => void;
   onComment: (flightId: string, message: string) => void;
   onBookmarkToggle?: (flightId: string) => void;
   onCommentLike?: (commentId: string) => void;
@@ -125,39 +126,85 @@ function PhotoCarousel({ urls }: { urls: string[] }) {
   );
 }
 
-export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedCardProps) {
+/** Lazy-loads track data for a flight only when visible */
+function LazyTrackMap({ flightId, takeoff, landing }: {
+  flightId: string;
+  takeoff: FeedFlight["takeoff"];
+  landing: FeedFlight["landing"];
+}) {
+  const [trackPoints, setTrackPoints] = useState<[number, number][] | null>(null);
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { rootMargin: "200px" }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    supabase.from("igc_tracks").select("track_data").eq("flight_id", flightId).limit(1).single()
+      .then(({ data }) => {
+        if (data?.track_data) {
+          const raw = data.track_data as any;
+          const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
+          if (arr && Array.isArray(arr)) {
+            setTrackPoints(arr.slice(0, 500).map((p: any) =>
+              (Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]) as [number, number]
+            ));
+          }
+        }
+      });
+  }, [visible, flightId]);
+
+  return (
+    <div ref={ref}>
+      {visible && trackPoints !== null ? (
+        <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
+          <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none" style={{ height: 150, overflow: "hidden" }}>
+            <FlightDetailMap takeoff={takeoff} landing={landing} trackPoints={trackPoints} />
+          </div>
+        </Suspense>
+      ) : visible ? (
+        <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
+          <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none" style={{ height: 150, overflow: "hidden" }}>
+            <FlightDetailMap takeoff={takeoff} landing={landing} trackPoints={[]} />
+          </div>
+        </Suspense>
+      ) : (
+        <div className="h-[150px] bg-muted animate-pulse" />
+      )}
+    </div>
+  );
+}
+
+export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
-  const [likeAnimating, setLikeAnimating] = useState(false);
 
-  const isLiked = flight.likes.some(l => l.user_id === user?.id);
   const initials = flight.pilot_name ? flight.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
-  const hasTrack = flight.trackPoints.length > 0;
   const hasPhotos = flight.photoUrls.length > 0;
   const hasVideos = flight.videoUrls && flight.videoUrls.length > 0;
+  const showMap = flight.hasTrack || flight.takeoff || flight.landing;
 
   const formatDuration = (min: number) => {
     const h = Math.floor(min / 60); const m = min % 60;
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
-  const handleLike = useCallback(() => {
-    if (!isLiked) {
-      setLikeAnimating(true);
-      setTimeout(() => setLikeAnimating(false), 400);
-    }
-    onLikeToggle(flight.id);
-  }, [isLiked, onLikeToggle, flight.id]);
-
   const handleDoubleTapLike = useCallback(() => {
+    const isLiked = flight.likes.some(l => l.user_id === user?.id);
     if (!isLiked) {
-      onLikeToggle(flight.id);
+      onReact(flight.id, "heart");
     }
-    setLikeAnimating(true);
-    setTimeout(() => setLikeAnimating(false), 400);
-  }, [isLiked, onLikeToggle, flight.id]);
+  }, [flight.likes, user?.id, onReact, flight.id]);
 
   const handleSubmitComment = (msg: string) => {
     onComment(flight.id, msg);
@@ -191,13 +238,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
               const embedUrl = getYoutubeEmbedUrl(url);
               return embedUrl ? (
                 <div key={i} className="relative w-full aspect-video bg-muted">
-                  <iframe
-                    src={embedUrl}
-                    title="YouTube video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full"
-                  />
+                  <iframe src={embedUrl} title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 w-full h-full" />
                 </div>
               ) : null;
             })}
@@ -205,22 +246,26 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
         </DoubleTapHeart>
       )}
 
-      {/* Photos with double-tap like */}
+      {/* Photos */}
       {hasPhotos && (
         <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
           <PhotoCarousel urls={flight.photoUrls} />
         </DoubleTapHeart>
       )}
 
-      {/* Mini Map */}
-      {(hasTrack || flight.takeoff || flight.landing) && (
+      {/* Mini Map — lazy loaded */}
+      {showMap && (
         <DoubleTapHeart onDoubleTap={handleDoubleTapLike}>
           <div className="relative cursor-pointer" onClick={() => navigate(`/flights/${flight.id}`)}>
-            <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
-              <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none" style={{ height: 150, overflow: "hidden" }}>
-                <FlightDetailMap takeoff={flight.takeoff} landing={flight.landing} trackPoints={flight.trackPoints} />
-              </div>
-            </Suspense>
+            {flight.hasTrack ? (
+              <LazyTrackMap flightId={flight.id} takeoff={flight.takeoff} landing={flight.landing} />
+            ) : (
+              <Suspense fallback={<div className="h-[150px] bg-muted animate-pulse" />}>
+                <div className="[&_.leaflet-container]:!h-[150px] [&>div]:!h-[150px] pointer-events-none" style={{ height: 150, overflow: "hidden" }}>
+                  <FlightDetailMap takeoff={flight.takeoff} landing={flight.landing} trackPoints={[]} />
+                </div>
+              </Suspense>
+            )}
             <div className="absolute bottom-2 left-2 flex gap-1.5 z-10">
               {flight.duration_minutes && (
                 <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
@@ -240,9 +285,11 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
       {/* Actions */}
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center gap-3">
-          <button onClick={handleLike} className="active:scale-90 transition-transform">
-            <Heart className={cn("h-6 w-6 transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
-          </button>
+          <ReactionPicker
+            reactions={flight.likes}
+            currentUserId={user?.id}
+            onReact={(type) => onReact(flight.id, type)}
+          />
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-6 w-6" />
           </button>
@@ -254,9 +301,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
           )}
         </div>
 
-        {flight.likes.length > 0 && (
-          <p className="text-sm font-semibold">{flight.likes.length} {flight.likes.length === 1 ? "Like" : "Likes"}</p>
-        )}
+        <ReactionBadges reactions={flight.likes} />
 
         {flight.feedDescription && (
           <p className="text-sm">
@@ -292,7 +337,7 @@ export default function FeedCard({ flight, onLikeToggle, onComment, onBookmarkTo
                     onClick={() => onCommentLike(c.id)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90"
                   >
-                    <Heart className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                    <span className="text-xs text-muted-foreground hover:text-red-500">❤️</span>
                   </button>
                 )}
               </div>

@@ -7,10 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, Heart, MessageCircle, ChevronRight, Bookmark } from "lucide-react";
+import { Trophy, Target, MessageCircle, ChevronRight, Bookmark } from "lucide-react";
 import MentionCommentInput from "@/components/MentionCommentInput";
 import { cn } from "@/lib/utils";
 import DoubleTapHeart from "@/components/DoubleTapHeart";
+import ReactionPicker, { ReactionBadges, type ReactionType } from "@/components/ReactionPicker";
 
 export interface FeedAchievement {
   id: string;
@@ -26,14 +27,14 @@ export interface FeedAchievement {
   group_name: string;
   total_goals: number;
   completed_goals: number;
-  likes: { user_id: string }[];
+  likes: { user_id: string; reaction_type: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string }[];
   isBookmarked?: boolean;
 }
 
 interface Props {
   achievement: FeedAchievement;
-  onLikeToggle: (id: string) => void;
+  onReact: (id: string, reactionType: ReactionType) => void;
   onComment: (id: string, message: string) => void;
   onBookmarkToggle?: (id: string) => void;
   onCommentLike?: (commentId: string) => void;
@@ -51,35 +52,24 @@ function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): 
   return t("feed.daysAgo", { count: days });
 }
 
-export default function FeedAchievementCard({ achievement, onLikeToggle, onComment, onBookmarkToggle, onCommentLike, groupMembers }: Props) {
+export default function FeedAchievementCard({ achievement, onReact, onComment, onBookmarkToggle, onCommentLike, groupMembers }: Props) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
-  const [likeAnimating, setLikeAnimating] = useState(false);
 
-  const isLiked = achievement.likes.some(l => l.user_id === user?.id);
   const isComplete = achievement.achievement_type === "challenge_completed";
   const initials = achievement.pilot_name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
   const progress = achievement.total_goals > 0
     ? Math.round((achievement.completed_goals / achievement.total_goals) * 100)
     : 0;
 
-  const handleLike = useCallback(() => {
-    if (!isLiked) {
-      setLikeAnimating(true);
-      setTimeout(() => setLikeAnimating(false), 400);
-    }
-    onLikeToggle(achievement.id);
-  }, [isLiked, onLikeToggle, achievement.id]);
-
   const handleDoubleTapLike = useCallback(() => {
+    const isLiked = achievement.likes.some(l => l.user_id === user?.id);
     if (!isLiked) {
-      onLikeToggle(achievement.id);
+      onReact(achievement.id, "heart");
     }
-    setLikeAnimating(true);
-    setTimeout(() => setLikeAnimating(false), 400);
-  }, [isLiked, onLikeToggle, achievement.id]);
+  }, [achievement.likes, user?.id, onReact, achievement.id]);
 
   const handleSubmitComment = (msg: string) => {
     onComment(achievement.id, msg);
@@ -137,9 +127,11 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
 
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center gap-3">
-          <button onClick={handleLike} className="active:scale-90 transition-transform">
-            <Heart className={cn("h-6 w-6 transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
-          </button>
+          <ReactionPicker
+            reactions={achievement.likes}
+            currentUserId={user?.id}
+            onReact={(type) => onReact(achievement.id, type)}
+          />
           <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
             <MessageCircle className="h-6 w-6" />
           </button>
@@ -155,9 +147,7 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
           </Button>
         </div>
 
-        {achievement.likes.length > 0 && (
-          <p className="text-sm font-semibold">{achievement.likes.length} {achievement.likes.length === 1 ? "Like" : "Likes"}</p>
-        )}
+        <ReactionBadges reactions={achievement.likes} />
 
         {(showComments || achievement.comments.length > 0) && (
           <div className="space-y-1.5 pt-1">
@@ -173,7 +163,7 @@ export default function FeedAchievementCard({ achievement, onLikeToggle, onComme
                 </p>
                 {onCommentLike && (
                   <button onClick={() => onCommentLike(c.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90">
-                    <Heart className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                    <span className="text-xs text-muted-foreground hover:text-red-500">❤️</span>
                   </button>
                 )}
               </div>

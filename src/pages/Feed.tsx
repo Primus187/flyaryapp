@@ -199,7 +199,7 @@ export default function Feed() {
   }, [pullDistance, refreshing, handleRefresh]);
 
   
-  const handleLikeToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
+  const handleReaction = async (itemType: "flight" | "event" | "achievement", itemId: string, reactionType: string = "heart") => {
     if (!user) return;
 
     const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
@@ -208,22 +208,27 @@ export default function Feed() {
     if (!item) return;
 
     const likes = (item.data as any).likes || [];
-    const isLiked = likes.some((l: any) => l.user_id === user.id);
+    const existingReaction = likes.find((l: any) => l.user_id === user.id && l.reaction_type === reactionType);
 
-    if (isLiked) {
-      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id);
+    if (existingReaction) {
+      // Remove this reaction
+      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id).eq("reaction_type", reactionType);
+      setItems(prev => prev.map(i => {
+        if (i.data.id !== itemId) return i;
+        const currentLikes = (i.data as any).likes || [];
+        return { ...i, data: { ...i.data, likes: currentLikes.filter((l: any) => !(l.user_id === user.id && l.reaction_type === reactionType)) } } as FeedItem;
+      }));
     } else {
-      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id } as any);
+      // Remove any existing reaction from this user first, then add new one
+      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id);
+      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id, reaction_type: reactionType } as any);
+      setItems(prev => prev.map(i => {
+        if (i.data.id !== itemId) return i;
+        const currentLikes = (i.data as any).likes || [];
+        const withoutMine = currentLikes.filter((l: any) => l.user_id !== user.id);
+        return { ...i, data: { ...i.data, likes: [...withoutMine, { user_id: user.id, reaction_type: reactionType }] } } as FeedItem;
+      }));
     }
-
-    setItems(prev => prev.map(i => {
-      if (i.data.id !== itemId) return i;
-      const currentLikes = (i.data as any).likes || [];
-      const newLikes = isLiked
-        ? currentLikes.filter((l: any) => l.user_id !== user.id)
-        : [...currentLikes, { user_id: user.id }];
-      return { ...i, data: { ...i.data, likes: newLikes } } as FeedItem;
-    }));
   };
 
   // ── Generic comment ──
@@ -360,7 +365,7 @@ export default function Feed() {
           {items.map(item => {
             if (item.type === "flight") {
               return <FeedCard key={`f-${item.data.id}`} flight={item.data}
-                onLikeToggle={(id) => handleLikeToggle("flight", id)}
+                onReact={(id, type) => handleReaction("flight", id, type)}
                 onComment={(id, msg) => handleComment("flight", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("flight", id)}
                 onCommentLike={handleCommentLikeToggle}
@@ -369,7 +374,7 @@ export default function Feed() {
             if (item.type === "event") {
               return <FeedEventCard key={`e-${item.data.id}`} event={item.data}
                 onSignup={handleEventSignup}
-                onLikeToggle={(id) => handleLikeToggle("event", id)}
+                onReact={(id, type) => handleReaction("event", id, type)}
                 onComment={(id, msg) => handleComment("event", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("event", id)}
                 onCommentLike={handleCommentLikeToggle}
@@ -377,7 +382,7 @@ export default function Feed() {
             }
             if (item.type === "achievement") {
               return <FeedAchievementCard key={`a-${item.data.id}`} achievement={item.data}
-                onLikeToggle={(id) => handleLikeToggle("achievement", id)}
+                onReact={(id, type) => handleReaction("achievement", id, type)}
                 onComment={(id, msg) => handleComment("achievement", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("achievement", id)}
                 onCommentLike={handleCommentLikeToggle}
@@ -449,9 +454,9 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const [photosRes, likesRes, commentsRes, tracksRes, videosRes] = await Promise.all([
     supabase.from("flight_photos").select("id, flight_id, storage_path").in("flight_id", flightIds),
-    supabase.from("feed_likes").select("flight_id, user_id").in("flight_id", flightIds),
+    supabase.from("feed_likes").select("flight_id, user_id, reaction_type").in("flight_id", flightIds),
     supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true }),
-    supabase.from("igc_tracks").select("flight_id, track_data").in("flight_id", flightIds),
+    supabase.from("igc_tracks").select("flight_id").in("flight_id", flightIds),
     supabase.from("flight_videos").select("flight_id, youtube_url").in("flight_id", flightIds),
   ]);
 
@@ -471,7 +476,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const photoMap: Record<string, string[]> = {};
   if (photos && photos.length > 0) {
-    // Filter photos by feed_photo_ids if set
     const filteredPhotos = photos.filter(p => {
       const allowed = feedPhotoIdsMap[p.flight_id];
       return !allowed || allowed.includes(p.id);
@@ -488,19 +492,10 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     });
   }
 
-  const trackMap: Record<string, [number, number][]> = {};
+  // Track existence map (no track_data loaded — lazy loaded in FeedCard)
+  const hasTrackMap = new Set<string>();
   if (tracks) {
-    for (const t of tracks) {
-      if (t.track_data) {
-        const raw = t.track_data as any;
-        const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
-        if (arr && Array.isArray(arr)) {
-          trackMap[t.flight_id] = arr.slice(0, 500).map((p: any) =>
-            (Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]) as [number, number]
-          );
-        }
-      }
-    }
+    tracks.forEach(t => hasTrackMap.add(t.flight_id));
   }
 
   const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
@@ -527,10 +522,10 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     group_name: groupMap[f.group_id] || "",
     photoUrls: photoMap[f.id] || [],
     videoUrls: videoMap[f.id] || [],
-    trackPoints: trackMap[f.id] || [],
+    hasTrack: hasTrackMap.has(f.id),
     takeoff: f.locations?.latitude ? { latitude: f.locations.latitude, longitude: f.locations.longitude, name: f.locations.name } : null,
     landing: f.land?.latitude ? { latitude: f.land.latitude, longitude: f.land.longitude, name: f.land.name } : null,
-    likes: (likes || []).filter(l => l.flight_id === f.id),
+    likes: (likes || []).filter(l => l.flight_id === f.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.flight_id === f.id).map(c => ({
       ...c,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
@@ -554,7 +549,7 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
 
   const [signupsRes, likesRes, commentsRes, photosRes, profilesRes] = await Promise.all([
     supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds).eq("signed_up", true),
-    supabase.from("feed_likes").select("event_id, user_id").in("event_id", eventIds),
+    supabase.from("feed_likes").select("event_id, user_id, reaction_type").in("event_id", eventIds),
     supabase.from("feed_comments").select("id, event_id, user_id, message, created_at").in("event_id", eventIds).order("created_at", { ascending: true }),
     supabase.from("event_photos").select("id, event_id, storage_path").in("event_id", eventIds),
     supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", creatorIds),
@@ -623,7 +618,7 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
     photos: photoMap[e.id] || [],
     signup_count: (signups || []).filter(s => s.event_id === e.id).length,
     user_signed_up: (signups || []).some(s => s.event_id === e.id && s.user_id === userId),
-    likes: (likes || []).filter(l => l.event_id === e.id).map(l => ({ user_id: l.user_id })),
+    likes: (likes || []).filter(l => l.event_id === e.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.event_id === e.id).map(c => ({
       id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
@@ -705,7 +700,7 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
 
   const achIds = validAchievements.map(a => a.id);
   const [likesRes, commentsRes] = await Promise.all([
-    supabase.from("feed_likes").select("achievement_id, user_id").in("achievement_id", achIds),
+    supabase.from("feed_likes").select("achievement_id, user_id, reaction_type").in("achievement_id", achIds),
     supabase.from("feed_comments").select("id, achievement_id, user_id, message, created_at").in("achievement_id", achIds).order("created_at", { ascending: true }),
   ]);
 
@@ -732,7 +727,7 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     group_name: groupMap[challengeMap[a.challenge_id]?.group_id] || "",
     total_goals: progressMap[a.challenge_id]?.total || 0,
     completed_goals: progressMap[a.challenge_id]?.completed || 0,
-    likes: (likes || []).filter(l => l.achievement_id === a.id).map(l => ({ user_id: l.user_id })),
+    likes: (likes || []).filter(l => l.achievement_id === a.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.achievement_id === a.id).map(c => ({
       id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
