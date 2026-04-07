@@ -199,7 +199,7 @@ export default function Feed() {
   }, [pullDistance, refreshing, handleRefresh]);
 
   
-  const handleLikeToggle = async (itemType: "flight" | "event" | "achievement", itemId: string) => {
+  const handleReaction = async (itemType: "flight" | "event" | "achievement", itemId: string, reactionType: string = "heart") => {
     if (!user) return;
 
     const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
@@ -208,22 +208,27 @@ export default function Feed() {
     if (!item) return;
 
     const likes = (item.data as any).likes || [];
-    const isLiked = likes.some((l: any) => l.user_id === user.id);
+    const existingReaction = likes.find((l: any) => l.user_id === user.id && l.reaction_type === reactionType);
 
-    if (isLiked) {
-      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id);
+    if (existingReaction) {
+      // Remove this reaction
+      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id).eq("reaction_type", reactionType);
+      setItems(prev => prev.map(i => {
+        if (i.data.id !== itemId) return i;
+        const currentLikes = (i.data as any).likes || [];
+        return { ...i, data: { ...i.data, likes: currentLikes.filter((l: any) => !(l.user_id === user.id && l.reaction_type === reactionType)) } } as FeedItem;
+      }));
     } else {
-      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id } as any);
+      // Remove any existing reaction from this user first, then add new one
+      await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id);
+      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id, reaction_type: reactionType } as any);
+      setItems(prev => prev.map(i => {
+        if (i.data.id !== itemId) return i;
+        const currentLikes = (i.data as any).likes || [];
+        const withoutMine = currentLikes.filter((l: any) => l.user_id !== user.id);
+        return { ...i, data: { ...i.data, likes: [...withoutMine, { user_id: user.id, reaction_type: reactionType }] } } as FeedItem;
+      }));
     }
-
-    setItems(prev => prev.map(i => {
-      if (i.data.id !== itemId) return i;
-      const currentLikes = (i.data as any).likes || [];
-      const newLikes = isLiked
-        ? currentLikes.filter((l: any) => l.user_id !== user.id)
-        : [...currentLikes, { user_id: user.id }];
-      return { ...i, data: { ...i.data, likes: newLikes } } as FeedItem;
-    }));
   };
 
   // ── Generic comment ──
