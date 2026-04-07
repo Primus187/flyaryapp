@@ -70,6 +70,22 @@ function drawThickLine(img: Image, x0: number, y0: number, x1: number, y1: numbe
   }
 }
 
+function drawCircle(img: Image, cx: number, cy: number, radius: number, fillColor: number, borderColor: number, borderWidth: number) {
+  for (let oy = -(radius + borderWidth); oy <= radius + borderWidth; oy++) {
+    for (let ox = -(radius + borderWidth); ox <= radius + borderWidth; ox++) {
+      const dist = Math.sqrt(ox * ox + oy * oy);
+      const px = cx + ox;
+      const py = cy + oy;
+      if (px < 1 || px > img.width || py < 1 || py > img.height) continue;
+      if (dist <= radius) {
+        img.setPixelAt(px, py, fillColor);
+      } else if (dist <= radius + borderWidth) {
+        img.setPixelAt(px, py, borderColor);
+      }
+    }
+  }
+}
+
 async function generateMapImage(rawPoints: any[]): Promise<Uint8Array> {
   // Extract coordinates
   const coords = rawPoints
@@ -144,6 +160,12 @@ async function generateMapImage(rawPoints: any[]): Promise<Uint8Array> {
   for (let i = 1; i < pixelPts.length; i++) {
     drawThickLine(img, pixelPts[i - 1].x, pixelPts[i - 1].y, pixelPts[i].x, pixelPts[i].y, 2, 0xFF3300FF);
   }
+
+  // Draw start (green) and landing (red) markers
+  const startPt = pixelPts[0];
+  const endPt = pixelPts[pixelPts.length - 1];
+  drawCircle(img, startPt.x, startPt.y, 6, 0x22CC44FF, 0xFFFFFFFF, 2);
+  drawCircle(img, endPt.x, endPt.y, 6, 0xDD2222FF, 0xFFFFFFFF, 2);
 
   return await img.encode();
 }
