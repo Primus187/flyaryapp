@@ -178,7 +178,22 @@ export default function EventDetail() {
         <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{groupName}</p></div>
         <Badge className={statusColor}>{statusLabel}</Badge>
         {isAdmin && (
-          <><Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}><Pencil className="h-4 w-4" /></Button></>
+          <>
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}><Pencil className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={async () => {
+              if (!confirm(t("events.deleteEventConfirm"))) return;
+              await supabase.from("event_signups").delete().eq("event_id", id!);
+              await supabase.from("event_briefing_tasks").delete().eq("event_id", id!);
+              await supabase.from("event_maneuvers").delete().eq("event_id", id!);
+              await supabase.from("event_messages").delete().eq("event_id", id!);
+              await supabase.from("student_day_notes").delete().eq("event_id", id!);
+              await supabase.from("event_photos").delete().eq("event_id", id!);
+              await supabase.from("flight_events").delete().eq("id", id!);
+              toast({ title: t("events.eventDeleted") });
+              navigate("/events");
+            }}><Trash2 className="h-4 w-4" /></Button>
+          </>
         )}
       </div>
 
