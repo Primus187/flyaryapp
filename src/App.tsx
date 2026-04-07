@@ -43,6 +43,7 @@ const ChallengeDetail = lazy(() => import("@/pages/ChallengeDetail"));
 const PilotProfile = lazy(() => import("@/pages/PilotProfile"));
 const SearchPage = lazy(() => import("@/pages/Search"));
 const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
+const Weather = lazy(() => import("@/pages/Weather"));
 const SharedFlightDetail = lazy(() => import("@/pages/SharedFlightDetail"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -126,6 +127,7 @@ const App = () => {
                     <Route path="/challenges/:id" element={<ChallengeDetail />} />
                     <Route path="/pilot/:userId" element={<PilotProfile />} />
                     <Route path="/school" element={<SchoolDashboard />} />
+                    <Route path="/weather" element={<Weather />} />
                   </Route>
                   <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                   <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />

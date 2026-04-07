@@ -95,16 +95,26 @@ export default function LocationDetail() {
               />
             </CardContent>
           </Card>
-          {location.country_code === "CH" && (
+          <div className="flex gap-3 mt-1">
             <a
-              href={`https://www.meteoschweiz.admin.ch/#tab=forecast-map`}
+              href="https://www.burnair.ch/meteo/map.php"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline mt-1 inline-block"
+              className="text-xs text-primary hover:underline"
             >
-              MeteoSchweiz →
+              burnair Meteo →
             </a>
-          )}
+            {location.country_code === "CH" && (
+              <a
+                href="https://www.meteoschweiz.admin.ch/#tab=forecast-map"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary hover:underline"
+              >
+                MeteoSchweiz →
+              </a>
+            )}
+          </div>
         </div>
       )}
       <div>
