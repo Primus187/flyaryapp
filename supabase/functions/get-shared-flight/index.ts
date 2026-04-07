@@ -299,13 +299,13 @@ Deno.serve(async (req) => {
 <meta property="og:title" content="${escapeHtml(ogTitle)}">
 <meta property="og:description" content="${escapeHtml(ogDescription)}">
 <meta property="og:url" content="${spaUrl}">
-${ogImage ? `<meta property="og:image" content="${escapeHtml(ogImage)}">
+${ogImage ? `<meta property="og:image" content="${ogImage}">
 <meta property="og:image:width" content="600">
 <meta property="og:image:height" content="400">` : ""}
 <meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">
 <meta name="twitter:title" content="${escapeHtml(ogTitle)}">
 <meta name="twitter:description" content="${escapeHtml(ogDescription)}">
-${ogImage ? `<meta name="twitter:image" content="${escapeHtml(ogImage)}">` : ""}
+${ogImage ? `<meta name="twitter:image" content="${ogImage}">` : ""}
 <meta http-equiv="refresh" content="0;url=${spaUrl}">
 </head>
 <body>Weiterleitung…</body>
