@@ -6,10 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import BadgeGrid from "@/components/BadgeGrid";
 import HexBadge from "@/components/HexBadge";
 import { BADGES } from "@/lib/badges";
-import { ChevronLeft, Trophy, Clock, Mountain, MapPin, Wind } from "lucide-react";
+import { ChevronLeft, Trophy, Clock, Mountain, MapPin, Wind, UserPlus, UserMinus } from "lucide-react";
+import { useFollows } from "@/hooks/use-follows";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
 const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
