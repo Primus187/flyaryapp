@@ -67,7 +67,7 @@ export default function Feed() {
   const fetchFeed = useCallback(async (cursor?: string) => {
     if (!user) return;
 
-    let gIds = groupIds;
+    let gIds = groupIdsRef.current;
     let groupMap: Record<string, string> = {};
 
     if (!cursor || gIds.length === 0) {
