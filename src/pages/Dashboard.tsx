@@ -39,6 +39,9 @@ export default function Dashboard() {
   useXcontestAutoSync();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { goals, addGoal, deleteGoal } = usePilotGoals();
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const { t, i18n } = useTranslation();
   const {
     stats, yearComparison, recent, events, signups, challenges, loading, error,
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
