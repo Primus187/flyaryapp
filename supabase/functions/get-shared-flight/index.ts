@@ -158,7 +158,7 @@ async function generateMapImage(rawPoints: any[]): Promise<Uint8Array> {
     drawThickLine(img, pixelPts[i - 1].x, pixelPts[i - 1].y, pixelPts[i].x, pixelPts[i].y, 4, 0xFFFFFFCC);
   }
   for (let i = 1; i < pixelPts.length; i++) {
-    drawThickLine(img, pixelPts[i - 1].x, pixelPts[i - 1].y, pixelPts[i].x, pixelPts[i].y, 2, 0xFF3300FF);
+    drawThickLine(img, pixelPts[i - 1].x, pixelPts[i - 1].y, pixelPts[i].x, pixelPts[i].y, 2, 0x2266FFFF);
   }
 
   // Draw start (green) and landing (red) markers
