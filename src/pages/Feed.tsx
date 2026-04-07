@@ -152,7 +152,7 @@ export default function Feed() {
       setItems(allItems);
     }
 
-    setHasMore(flightsRes.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
+    setHasMore(dedupedFlights.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
     setLoading(false);
     setLoadingMore(false);
   }, [user]);
