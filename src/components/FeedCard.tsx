@@ -139,7 +139,7 @@ function UnifiedMediaCarousel({
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selected, setSelected] = useState(0);
   const [mapVisible, setMapVisible] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
+  
 
   useEffect(() => {
     if (!emblaApi) return;
