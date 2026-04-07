@@ -546,7 +546,8 @@
     "signOut": "Sign out",
     "legal": "Legal",
     "leaderboard": "Leaderboard",
-    "school": "Flight School"
+    "school": "Flight School",
+    "weather": "Meteo Map"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",

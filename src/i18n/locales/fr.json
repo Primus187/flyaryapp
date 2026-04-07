@@ -546,7 +546,8 @@
     "signOut": "Se déconnecter",
     "legal": "Mentions légales",
     "leaderboard": "Classement",
-    "school": "École de vol"
+    "school": "École de vol",
+    "weather": "Carte Météo"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
