@@ -615,6 +615,7 @@
     "noFlightsDesc": "When group members log flights with a group, they'll show up here.",
     "addComment": "Add a comment...",
     "viewAllComments": "View all {{count}} comments",
+    "likedBy": "Liked by {{count}} people",
     "participants": "participants",
     "viewDetails": "Details",
     "justNow": "just now",

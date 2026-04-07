@@ -615,6 +615,7 @@
     "noFlightsDesc": "Quand les membres du groupe enregistrent des vols avec un groupe, ils apparaîtront ici.",
     "addComment": "Ajouter un commentaire...",
     "viewAllComments": "Voir les {{count}} commentaires",
+    "likedBy": "Aimé par {{count}} personnes",
     "participants": "participants",
     "viewDetails": "Détails",
     "justNow": "à l'instant",
