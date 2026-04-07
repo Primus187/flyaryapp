@@ -639,6 +639,7 @@
     "noFlightsDesc": "Sobald Gruppenmitglieder Flüge mit Gruppenzuordnung erfassen, erscheinen sie hier.",
     "addComment": "Kommentar...",
     "viewAllComments": "Alle {{count}} Kommentare anzeigen",
+    "likedBy": "Gefällt {{count}} Personen",
     "participants": "Teilnehmer",
     "viewDetails": "Details",
     "justNow": "gerade eben",
