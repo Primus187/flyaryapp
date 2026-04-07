@@ -799,5 +799,24 @@
     "noResults": "Keine Ergebnisse gefunden",
     "hint": "Gib einen Suchbegriff ein, um Flüge, Orte, Termine und Piloten zu finden.",
     "pilots": "Piloten"
+  },
+  "goals": {
+    "myGoals": "Meine Saisonziele",
+    "addGoal": "Ziel hinzufügen",
+    "noGoals": "Setze dir Ziele für diese Saison",
+    "goalType": "Ziel-Typ",
+    "title": "Bezeichnung",
+    "targetValue": "Zielwert"
+  },
+  "follows": {
+    "follow": "Folgen",
+    "unfollow": "Entfolgen"
+  },
+  "settings": {
+    "pushNotifications": "Push-Benachrichtigungen",
+    "pushDesc": "Benachrichtigungen bei Likes und Kommentaren"
+  },
+  "notifications": {
+    "followed": "folgt dir jetzt"
   }
 }
