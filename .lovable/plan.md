@@ -1,30 +1,82 @@
 
 
-# burnair Meteo-Karte einbinden
+# Instagram-Style Feed & Shared Flight Redesign
 
-## Analyse
-Die burnair Map (`burnair.ch/meteo/map.php`) ist eine eigenständige Leaflet-Web-App mit Live-Wetterdaten, Windstationen und Thermik-Infos. Sie kann per `iframe` eingebettet werden. Beim ersten Laden erscheint ein Nutzungsbedingungen-Dialog, den der User einmalig akzeptieren muss.
+## Analyse: Was fehlt zum Instagram-Look
+
+### FeedCard (aktuell)
+- Fotos, Videos und Map werden **separat untereinander** dargestellt statt in einem einheitlichen Medien-Carousel
+- Map ist nur 150px hoch und non-interactive — wirkt klein und technisch
+- Fotos sind aspect-square, Videos aspect-video — kein einheitliches Format
+- Kein Fullscreen-Lightbox bei Tap auf ein Foto
+- Keine Swipe-Dots für Videos im Carousel
+
+### SharedFlightDetail (aktuell)
+- Fotos als kleine horizontal scrollende Thumbnails (h-32) — nicht immersiv
+- Videos separat unten — kein zusammenhängendes Medien-Erlebnis
+- Layout ist "Daten-zentriert" (Cards mit Stats) statt "Medien-zentriert"
+- Kein Gradient-Ring am Avatar wie im Feed
+
+---
 
 ## Umsetzung
 
-### Zwei Integrationspunkte:
+### 1. Unified Media Carousel im FeedCard
 
-1. **LocationDetail-Seite**: Neben dem bestehenden Windy-Widget einen Link/Button zur burnair Map hinzufügen, der die Karte direkt auf die Koordinaten des Standorts zentriert (`?lat=...&lon=...&zoom=12` falls unterstützt, sonst Basis-URL)
+Alle Medien (Videos, Fotos, Map-Preview) in **einem einzigen Embla-Carousel** zusammenführen:
 
-2. **Eigene "Wetter"-Seite oder Sektion im "Mehr"-Menü**: Vollbild-iframe der burnair Map, damit Piloten die komplette interaktive Karte nutzen können — mit allen Layern, Windstationen etc.
+```text
+Slide-Reihenfolge:
+[YouTube Video(s)] → [Fotos] → [Map-Preview (wenn Track/Takeoff vorhanden)]
+```
 
-### Empfehlung
-Da die burnair Map am nützlichsten in Vollbild ist (viele Layer, Interaktion nötig), schlage ich eine **neue Route `/weather`** vor, erreichbar über das "Mehr"-Menü. Zusätzlich ein direkter Link auf der LocationDetail-Seite neben dem MeteoSchweiz-Link.
+- Einheitliches `aspect-[4/5]` Format (Instagram-Proportionen) statt mix aus square und video
+- Pagination-Dots zeigen alle Slides an
+- "1/5" Counter oben rechts (wie Instagram)
+- Map-Slide wird grösser (aspect-[4/5] statt 150px) und bekommt einen Gradient-Overlay mit Stats-Badges
+- DoubleTapHeart wraps das gesamte Carousel (statt jeden Abschnitt einzeln)
 
-### Änderungen
-- **`src/pages/Weather.tsx`** (neu): Vollbild-iframe mit `https://www.burnair.ch/meteo/map.php`
-- **`src/App.tsx`**: Neue Route `/weather`
-- **`src/pages/More.tsx`**: Neuer Menüpunkt "burnair Meteo Map"
-- **`src/pages/LocationDetail.tsx`**: Link zur burnair Map (analog MeteoSchweiz-Link)
-- **`src/i18n/locales/de.json`**: Übersetzung für "Meteo Map" etc.
+**Datei:** `src/components/FeedCard.tsx`
 
-### Technisch
-- Einfacher iframe-Embed, keine API-Keys nötig
-- `allow="geolocation"` auf dem iframe, damit die Karte den eigenen Standort nutzen kann
-- Auf der LocationDetail-Seite wird der Link als `target="_blank"` geöffnet (besser als eingebetteter iframe, da die Karte viel Platz braucht)
+### 2. Fullscreen Photo Lightbox im Feed
+
+- Tap auf ein Foto-Slide öffnet eine Fullscreen-Lightbox (Dialog)
+- Swipe zwischen Fotos in der Lightbox
+- Pinch-to-zoom optional (CSS `touch-action`)
+
+**Datei:** `src/components/FeedCard.tsx` (inline Dialog)
+
+### 3. SharedFlightDetail Instagram-Redesign
+
+Komplett-Umbau der SharedFlightDetail-Seite:
+
+- **Hero-Carousel** ganz oben: Videos + Fotos + Map in einem Carousel (gleiche Logik wie FeedCard)
+- **Avatar-Header** mit Gradient-Ring (wie Feed) über dem Carousel als Overlay
+- **Stats als Overlay-Badges** auf der Map (nicht als separate Cards)
+- **Kompakte Info-Section** unter dem Carousel: Pilot-Name, Datum, Route (Takeoff → Landing), Beschreibung
+- **Stats-Grid** kompakter: nur die relevanten Werte, inline statt in eigenen Cards
+- 2D/3D Toggle bleibt, aber nur sichtbar wenn Track vorhanden
+
+**Datei:** `src/pages/SharedFlightDetail.tsx`
+
+### 4. FeedCard: Kommentare Instagram-Style
+
+- Kommentar-Input bekommt einen Avatar des aktuellen Users
+- "Gefällt X Personen" Text statt nur Emoji-Badges
+- Timestamp unter jedem Kommentar
+- "Antworten" Option (visuell, keine Sub-Threading-Logik)
+
+**Datei:** `src/components/FeedCard.tsx`
+
+---
+
+## Zusammenfassung der Änderungen
+
+| Datei | Änderung |
+|-------|----------|
+| `src/components/FeedCard.tsx` | Unified Media Carousel, Lightbox, Kommentar-Styling |
+| `src/pages/SharedFlightDetail.tsx` | Hero-Carousel, Instagram-Layout |
+| `tailwind.config.ts` | ggf. `aspect-[4/5]` falls nicht default |
+
+Keine DB-Migrationen nötig. Rein Frontend-Änderungen.
 
