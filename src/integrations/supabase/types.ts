@@ -504,6 +504,7 @@ export type Database = {
           event_id: string | null
           flight_id: string | null
           id: string
+          reaction_type: string
           user_id: string
         }
         Insert: {
@@ -512,6 +513,7 @@ export type Database = {
           event_id?: string | null
           flight_id?: string | null
           id?: string
+          reaction_type?: string
           user_id: string
         }
         Update: {
@@ -520,6 +522,7 @@ export type Database = {
           event_id?: string | null
           flight_id?: string | null
           id?: string
+          reaction_type?: string
           user_id?: string
         }
         Relationships: [
@@ -1445,6 +1448,17 @@ export type Database = {
       check_and_award_badges_for_user: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      get_pilot_stats: {
+        Args: { _user_id: string; _year?: number }
+        Returns: {
+          total_altitude: number
+          total_distance: number
+          total_flights: number
+          total_minutes: number
+          unique_landings: number
+          unique_takeoffs: number
+        }[]
       }
       has_role: {
         Args: {
