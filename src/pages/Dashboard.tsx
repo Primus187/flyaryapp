@@ -86,7 +86,7 @@ export default function Dashboard() {
       <div className="px-4 pt-6 pb-4 max-w-lg mx-auto flex flex-col items-center gap-4 text-center">
         <AlertTriangle className="h-10 w-10 text-destructive" />
         <p className="text-sm text-muted-foreground">{error}</p>
-        <Button onClick={refetch} variant="outline" className="gap-2">
+        <Button onClick={() => refetch()} variant="outline" className="gap-2">
           <RefreshCw className="h-4 w-4" /> {t("common.retry", "Retry")}
         </Button>
       </div>

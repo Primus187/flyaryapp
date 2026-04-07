@@ -727,7 +727,7 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     group_name: groupMap[challengeMap[a.challenge_id]?.group_id] || "",
     total_goals: progressMap[a.challenge_id]?.total || 0,
     completed_goals: progressMap[a.challenge_id]?.completed || 0,
-    likes: (likes || []).filter(l => l.achievement_id === a.id).map(l => ({ user_id: l.user_id })),
+    likes: (likes || []).filter(l => l.achievement_id === a.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.achievement_id === a.id).map(c => ({
       id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
