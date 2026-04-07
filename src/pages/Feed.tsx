@@ -353,8 +353,8 @@ export default function Feed() {
       </div>
 
       {/* Story bar — active pilots */}
-      {user && groupIds.length > 0 && (
-        <FeedStoryBar userId={user.id} groupIds={groupIds} />
+      {user && stableGroupIds.length > 0 && (
+        <FeedStoryBar userId={user.id} groupIds={stableGroupIds} />
       )}
 
       {items.length === 0 ? (
