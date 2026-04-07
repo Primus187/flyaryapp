@@ -522,10 +522,10 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     group_name: groupMap[f.group_id] || "",
     photoUrls: photoMap[f.id] || [],
     videoUrls: videoMap[f.id] || [],
-    trackPoints: trackMap[f.id] || [],
+    hasTrack: hasTrackMap.has(f.id),
     takeoff: f.locations?.latitude ? { latitude: f.locations.latitude, longitude: f.locations.longitude, name: f.locations.name } : null,
     landing: f.land?.latitude ? { latitude: f.land.latitude, longitude: f.land.longitude, name: f.land.name } : null,
-    likes: (likes || []).filter(l => l.flight_id === f.id),
+    likes: (likes || []).filter(l => l.flight_id === f.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.flight_id === f.id).map(c => ({
       ...c,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
