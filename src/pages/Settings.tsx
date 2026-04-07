@@ -68,7 +68,7 @@ export default function Settings() {
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [includeNoGroup, setIncludeNoGroup] = useState(true);
-
+  const { isSupported: pushSupported, isSubscribed: pushEnabled, toggle: togglePush, loading: pushLoading } = usePushNotifications();
   useEffect(() => {
     if (!user) return;
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
