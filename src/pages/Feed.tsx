@@ -149,7 +149,7 @@ export default function Feed() {
     setHasMore(flightsRes.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
     setLoading(false);
     setLoadingMore(false);
-  }, [user, groupIds]);
+  }, [user]);
 
   useEffect(() => { fetchFeed(); }, [fetchFeed]);
 
