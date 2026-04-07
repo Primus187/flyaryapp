@@ -700,7 +700,7 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
 
   const achIds = validAchievements.map(a => a.id);
   const [likesRes, commentsRes] = await Promise.all([
-    supabase.from("feed_likes").select("achievement_id, user_id").in("achievement_id", achIds),
+    supabase.from("feed_likes").select("achievement_id, user_id, reaction_type").in("achievement_id", achIds),
     supabase.from("feed_comments").select("id, achievement_id, user_id, message, created_at").in("achievement_id", achIds).order("created_at", { ascending: true }),
   ]);
 
