@@ -260,7 +260,33 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* Recent flights */}
+      {/* Season Goals */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("goals.myGoals")}</h2>
+          <Button variant="ghost" size="sm" className="h-6 text-xs gap-1" onClick={() => setGoalDialogOpen(true)}>
+            <Plus className="h-3 w-3" /> {t("goals.addGoal")}
+          </Button>
+        </div>
+        {goals.length > 0 ? (
+          <div className="space-y-2">
+            {goals.map((g) => (
+              <GoalCard key={g.id} goal={g} onDelete={deleteGoal} />
+            ))}
+          </div>
+        ) : (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 text-center">
+              <Target className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">{t("goals.noGoals")}</p>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      <GoalFormDialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen} onSubmit={addGoal} />
+
+
       <section>
         <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>
         {recent.length === 0 ? (
