@@ -5,14 +5,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import EmptyState from "@/components/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
+import GoalCard from "@/components/GoalCard";
+import GoalFormDialog from "@/components/GoalFormDialog";
 import { useXcontestAutoSync } from "@/hooks/use-xcontest-auto-sync";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
+import { usePilotGoals } from "@/hooks/use-pilot-goals";
 
 function DashboardSkeleton() {
   return (
