@@ -35,6 +35,7 @@ interface GliderData {
 export default function PilotProfile() {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
+  const { isFollowing, followerCount, followingCount, loading: followLoading, toggleFollow } = useFollows(userId);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
