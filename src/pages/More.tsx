@@ -8,6 +8,7 @@ import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, MapPin, Scal
 const baseTiles = [
   { path: "/search", icon: Search, labelKey: "more.search" },
   { path: "/profile", icon: User, labelKey: "more.profile" },
+  { path: "/weather", icon: CloudSun, labelKey: "more.weather" },
   { path: "/training", icon: GraduationCap, labelKey: "more.training" },
   { path: "/map", icon: Map, labelKey: "more.map" },
   { path: "/groups", icon: Users, labelKey: "more.groups" },

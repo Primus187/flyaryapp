@@ -610,7 +610,8 @@
     "signOut": "Abmelden",
     "legal": "Rechtliches",
     "leaderboard": "Rangliste",
-    "school": "Flugschule"
+    "school": "Flugschule",
+    "weather": "Meteo Map"
   },
   "school": {
     "title": "Flugschule",
