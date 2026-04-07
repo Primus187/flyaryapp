@@ -549,7 +549,7 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
 
   const [signupsRes, likesRes, commentsRes, photosRes, profilesRes] = await Promise.all([
     supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds).eq("signed_up", true),
-    supabase.from("feed_likes").select("event_id, user_id").in("event_id", eventIds),
+    supabase.from("feed_likes").select("event_id, user_id, reaction_type").in("event_id", eventIds),
     supabase.from("feed_comments").select("id, event_id, user_id, message, created_at").in("event_id", eventIds).order("created_at", { ascending: true }),
     supabase.from("event_photos").select("id, event_id, storage_path").in("event_id", eventIds),
     supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", creatorIds),
