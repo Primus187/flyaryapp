@@ -365,7 +365,7 @@ export default function Feed() {
           {items.map(item => {
             if (item.type === "flight") {
               return <FeedCard key={`f-${item.data.id}`} flight={item.data}
-                onLikeToggle={(id) => handleLikeToggle("flight", id)}
+                onReact={(id, type) => handleReaction("flight", id, type)}
                 onComment={(id, msg) => handleComment("flight", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("flight", id)}
                 onCommentLike={handleCommentLikeToggle}
@@ -374,7 +374,7 @@ export default function Feed() {
             if (item.type === "event") {
               return <FeedEventCard key={`e-${item.data.id}`} event={item.data}
                 onSignup={handleEventSignup}
-                onLikeToggle={(id) => handleLikeToggle("event", id)}
+                onReact={(id, type) => handleReaction("event", id, type)}
                 onComment={(id, msg) => handleComment("event", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("event", id)}
                 onCommentLike={handleCommentLikeToggle}
@@ -382,7 +382,7 @@ export default function Feed() {
             }
             if (item.type === "achievement") {
               return <FeedAchievementCard key={`a-${item.data.id}`} achievement={item.data}
-                onLikeToggle={(id) => handleLikeToggle("achievement", id)}
+                onReact={(id, type) => handleReaction("achievement", id, type)}
                 onComment={(id, msg) => handleComment("achievement", id, msg)}
                 onBookmarkToggle={(id) => handleBookmarkToggle("achievement", id)}
                 onCommentLike={handleCommentLikeToggle}
