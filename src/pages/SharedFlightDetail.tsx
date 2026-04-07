@@ -48,7 +48,9 @@ export default function SharedFlightDetail() {
   useEffect(() => {
     if (!token) return;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    fetch(`${supabaseUrl}/functions/v1/get-shared-flight?token=${token}`)
+    fetch(`${supabaseUrl}/functions/v1/get-shared-flight?token=${token}`, {
+      headers: { Accept: "application/json" },
+    })
       .then((r) => {
         if (!r.ok) throw new Error("Not found");
         return r.json();
