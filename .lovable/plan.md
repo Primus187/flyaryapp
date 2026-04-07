@@ -1,73 +1,46 @@
 
 
-# Open-Graph Meta-Tags für geteilte Flüge
+# OG-Vorschau mit Flugkarten-Bild
 
 ## Problem
-WhatsApp/Telegram lesen OG-Tags aus dem HTML-Quellcode **bevor** JavaScript ausgeführt wird. Da die App eine SPA ist, sehen Crawler nur die statischen Tags aus `index.html` — nie die flugspezifischen Daten.
+Die OG-Vorschau zeigt aktuell nur Text (Titel, Statistiken) und ggf. ein Flugfoto. Eine 2D-Karte mit dem Flugtrack wäre viel aussagekräftiger.
 
-## Lösung
-Die Edge Function `get-shared-flight` erkennt Crawler (WhatsApp, Telegram, etc.) am User-Agent und liefert statt JSON eine **HTML-Seite mit dynamischen OG-Tags** zurück. Normale Browser bekommen weiterhin JSON.
+## Herausforderung
+OG-Images müssen statische Bilder (PNG/JPEG) sein, die über eine URL abrufbar sind. Die App ist eine SPA — Karten werden nur im Browser gerendert. Wir brauchen einen serverseitigen Weg, ein Kartenbild zu erzeugen.
 
-### Neuer Ansatz: Crawler-Erkennung in der Edge Function
+## Lösung: Mapbox Static Images API
 
-**Änderung in `supabase/functions/get-shared-flight/index.ts`:**
-
-1. User-Agent prüfen auf bekannte Crawler-Patterns (`WhatsApp`, `TelegramBot`, `facebookexternalhit`, `Twitterbot`, `LinkedInBot`, `bot`, `crawler`)
-2. Wenn Crawler → HTML mit OG-Tags zurückgeben:
-   - `og:title`: Pilotname + Startplatz + Datum
-   - `og:description`: Dauer, Höhenmeter, Distanz, Gleitschirm
-   - `og:image`: Erstes Flugfoto (signierte URL) oder ein Default-Bild
-   - `og:url`: `https://flyaryapp.lovable.app/shared/flights/{token}`
-   - `og:type`: `article`
-   - Twitter-Card-Tags
-3. Wenn kein Crawler → bisheriges JSON-Verhalten beibehalten
-
-```text
-Crawler-Request:
-  GET /functions/v1/get-shared-flight?token=abc
-  User-Agent: WhatsApp/2.x
-  → Returns HTML with OG meta tags + redirect to SPA
-
-Normal browser:
-  GET /functions/v1/get-shared-flight?token=abc
-  → Returns JSON (wie bisher)
-```
-
-### Problem: URL-Routing
-
-WhatsApp/Telegram rufen aber `/shared/flights/:token` auf, nicht die Edge Function. Lösung:
-
-**Neue Edge Function `og-flight-preview`** die als eigenständiger Endpunkt dient, ODER besser:
-
-**SharedFlightDetail.tsx anpassen**: Im `<head>` dynamisch OG-Tags setzen via `document.title` etc. — das funktioniert aber **nicht** für Crawler.
-
-**Beste Lösung**: Eine zweite, schlanke Edge Function `og-flight-preview` erstellen, die WhatsApp als Link-Preview-URL dient. Der Share-Link wird angepasst auf die Edge Function URL mit Redirect:
-
-Eigentlich einfachste Lösung: **Die SharedFlightDetail-Route bleibt**, aber wir fügen einen `_redirects`-Eintrag oder einen Workaround hinzu.
-
-Da Lovable kein SSR hat, ist der pragmatischste Weg:
-
-### Finaler Ansatz
-
-1. **Share-URL ändern**: Statt `flyaryapp.lovable.app/shared/flights/{token}` wird `{SUPABASE_URL}/functions/v1/get-shared-flight?token={token}` als Share-URL verwendet
-2. **Edge Function erweitert**: 
-   - Crawler → HTML mit OG-Tags + `<meta http-equiv="refresh">` Redirect zur SPA
-   - Normale Browser → `302 Redirect` zur SPA-Route `/shared/flights/{token}`
-   - API-Calls (mit `Accept: application/json`) → JSON wie bisher
+Mapbox bietet eine URL-basierte API, die eine Karte mit Polyline als PNG zurückgibt — perfekt für OG-Images. Kostenlos bis 50.000 Aufrufe/Monat.
 
 ### Änderungen
 
-**`supabase/functions/get-shared-flight/index.ts`:**
-- Crawler-Detection via User-Agent
-- HTML-Response mit OG-Tags für Crawler (inkl. meta-refresh zur SPA)
-- 302-Redirect für normale Browser
-- JSON für API-Calls (bestehend)
+**1. Neues Secret: `MAPBOX_ACCESS_TOKEN`**
+- Ein Mapbox-Account (kostenlos) wird benötigt
+- Der Token wird als Secret in Lovable Cloud hinterlegt
 
-**`src/pages/FlightDetail.tsx`:**
-- Share-URL auf Edge-Function-URL umstellen: `${supabaseUrl}/functions/v1/get-shared-flight?token=${shareToken}`
+**2. `supabase/functions/get-shared-flight/index.ts`**
+- Track-Daten (aus `igc_tracks.track_data`) laden (bereits vorhanden)
+- Punkte auf ca. 100 reduzieren (Mapbox URL-Längen-Limit)
+- Punkte als [GeoJSON Polyline-Overlay](https://docs.mapbox.com/api/maps/static-images/#overlay-options) in die Mapbox Static Image URL kodieren
+- URL-Format: `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/static/geojson({...})/auto/600x400@2x?access_token=TOKEN`
+- Diese URL als `og:image` verwenden (Priorität vor Flugfotos, wenn Track vorhanden)
+- Fallback: Flugfoto oder kein Bild
 
-**`src/pages/SharedFlightDetail.tsx`:**
-- Keine Änderung nötig, bleibt als SPA-Ansicht
+```text
+Ablauf bei Crawler-Request:
+1. Track-Daten laden (schon implementiert)
+2. Punkte samplen (jeder N-te Punkt, max ~100)
+3. GeoJSON-LineString erstellen
+4. Mapbox Static Image URL bauen
+5. Als og:image in HTML einfügen
+```
 
-Zwei Dateien.
+### Technische Details
+- GeoJSON wird URL-encoded in die Mapbox-URL eingebettet
+- `auto` als Bounds → Mapbox zentriert und zoomt automatisch auf den Track
+- `600x400@2x` → 1200x800px Retina-Bild, ideal für OG-Vorschau
+- Track-Linie: rot, 3px breit
+- Kein zusätzlicher Storage nötig — das Bild wird on-the-fly von Mapbox generiert
+
+Eine Datei, ein neues Secret.
 
