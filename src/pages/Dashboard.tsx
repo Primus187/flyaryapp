@@ -37,7 +37,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const {
-    stats, recent, events, signups, challenges, loading, error,
+    stats, yearComparison, recent, events, signups, challenges, loading, error,
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
 
