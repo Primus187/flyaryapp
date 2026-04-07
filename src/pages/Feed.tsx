@@ -454,9 +454,9 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const [photosRes, likesRes, commentsRes, tracksRes, videosRes] = await Promise.all([
     supabase.from("flight_photos").select("id, flight_id, storage_path").in("flight_id", flightIds),
-    supabase.from("feed_likes").select("flight_id, user_id").in("flight_id", flightIds),
+    supabase.from("feed_likes").select("flight_id, user_id, reaction_type").in("flight_id", flightIds),
     supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true }),
-    supabase.from("igc_tracks").select("flight_id, track_data").in("flight_id", flightIds),
+    supabase.from("igc_tracks").select("flight_id").in("flight_id", flightIds),
     supabase.from("flight_videos").select("flight_id, youtube_url").in("flight_id", flightIds),
   ]);
 
@@ -476,7 +476,6 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
 
   const photoMap: Record<string, string[]> = {};
   if (photos && photos.length > 0) {
-    // Filter photos by feed_photo_ids if set
     const filteredPhotos = photos.filter(p => {
       const allowed = feedPhotoIdsMap[p.flight_id];
       return !allowed || allowed.includes(p.id);
@@ -493,19 +492,10 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
     });
   }
 
-  const trackMap: Record<string, [number, number][]> = {};
+  // Track existence map (no track_data loaded — lazy loaded in FeedCard)
+  const hasTrackMap = new Set<string>();
   if (tracks) {
-    for (const t of tracks) {
-      if (t.track_data) {
-        const raw = t.track_data as any;
-        const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
-        if (arr && Array.isArray(arr)) {
-          trackMap[t.flight_id] = arr.slice(0, 500).map((p: any) =>
-            (Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]) as [number, number]
-          );
-        }
-      }
-    }
+    tracks.forEach(t => hasTrackMap.add(t.flight_id));
   }
 
   const commenterIds = [...new Set((comments || []).map(c => c.user_id).filter(id => !profileMap[id]))];
