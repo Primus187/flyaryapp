@@ -10,7 +10,6 @@ interface GoalCardProps {
 
 export default function GoalCard({ goal, onDelete }: GoalCardProps) {
   const isComplete = goal.progress >= 100;
-  const remaining = Math.max(0, goal.target_value - goal.currentValue);
 
   return (
     <div className={`rounded-xl p-3 ${isComplete ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800" : "bg-card border border-border/30"}`}>
