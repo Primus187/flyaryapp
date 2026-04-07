@@ -124,7 +124,7 @@ export default function Feed() {
     const dedupedFlights = allFlights.filter(f => { if (seenIds.has(f.id)) return false; seenIds.add(f.id); return true; });
 
     // Load bookmarks for current user
-    const allFlightIds = flightsRes.map(f => f.id);
+    const allFlightIds = dedupedFlights.map(f => f.id);
     const allEventIds = eventsRes.map(e => e.id);
     const allAchIds = achievementsRes.map(a => a.id);
 
