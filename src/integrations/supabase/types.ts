@@ -888,6 +888,27 @@ export type Database = {
           },
         ]
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string
@@ -1117,6 +1138,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pilot_goals: {
+        Row: {
+          created_at: string
+          goal_type: string
+          id: string
+          season_year: number
+          target_value: number
+          title: string
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal_type?: string
+          id?: string
+          season_year?: number
+          target_value?: number
+          title: string
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal_type?: string
+          id?: string
+          season_year?: number
+          target_value?: number
+          title?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pilot_xp: {
         Row: {
           id: string
@@ -1237,6 +1294,33 @@ export type Database = {
           user_id?: string
           xcontest_password_encrypted?: string | null
           xcontest_username?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          keys_auth: string
+          keys_p256dh: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          keys_auth: string
+          keys_p256dh: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          keys_auth?: string
+          keys_p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
