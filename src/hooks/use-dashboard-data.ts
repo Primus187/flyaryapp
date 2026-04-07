@@ -109,9 +109,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
 
   // Year comparison: fetch current year stats (already have) + prev year
   const currentYearRow = prevStatsRes.data?.[0];
-  const [prevYearRes] = await Promise.all([
-    supabase.rpc("get_pilot_stats", { _user_id: userId, _year: prevYear }),
-  ]);
+  const prevYearRes = await supabase.rpc("get_pilot_stats", { _user_id: userId, _year: prevYear });
   const prevYearRow = prevYearRes.data?.[0];
 
   const yearComparison: YearComparison = {
