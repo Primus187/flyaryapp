@@ -201,7 +201,8 @@ export default function FlightDetail() {
                 shareToken = (updated as any).share_token;
                 setFlight({ ...flight, share_token: shareToken } as any);
               }
-              const url = `${window.location.origin}/shared/flights/${shareToken}`;
+              const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+              const url = `${supabaseUrl}/functions/v1/get-shared-flight?token=${shareToken}`;
               if (navigator.share) {
                 await navigator.share({ title: flight.takeoff?.name || "Flug", text: "Schau dir diesen Flug an!", url });
               } else {
@@ -212,7 +213,8 @@ export default function FlightDetail() {
               if (e?.name !== "AbortError") {
                 const token = (flight as any).share_token;
                 if (token) {
-                  const url = `${window.location.origin}/shared/flights/${token}`;
+                  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                  const url = `${supabaseUrl}/functions/v1/get-shared-flight?token=${token}`;
                   await navigator.clipboard.writeText(url);
                   toast({ title: "Link kopiert!" });
                 }
