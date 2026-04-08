@@ -42,7 +42,7 @@ export default function SplashScreen({ onFinished }: { onFinished: () => void })
 
         {/* Tagline */}
         <p
-          className={`mt-2 text-sm text-white/80 tracking-widest uppercase drop-shadow transition-all duration-700 delay-300 ease-out ${
+          className={`mt-3 text-base text-white/80 tracking-widest uppercase drop-shadow transition-all duration-700 delay-300 ease-out ${
             phase === "enter"
               ? "opacity-0 translate-y-4"
               : "opacity-100 translate-y-0"
