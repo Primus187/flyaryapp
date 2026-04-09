@@ -154,7 +154,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   const groupNames: Record<string, string> = {};
   memberships?.forEach((m: any) => { groupNames[m.group_id] = m.groups?.name || ""; });
 
-  const batch2Promises: Promise<any>[] = [
+  const batch2Promises: PromiseLike<any>[] = [
     // 0: avatar signed URL
     prof?.avatar_url ? getSignedUrl("flight-photos", prof.avatar_url) : Promise.resolve(""),
     // 1: flight photos
