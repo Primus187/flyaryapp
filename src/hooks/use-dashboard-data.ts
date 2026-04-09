@@ -159,7 +159,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     prof?.avatar_url ? getSignedUrl("flight-photos", prof.avatar_url) : Promise.resolve(""),
     // 1: flight photos
     flightIds.length > 0
-      ? supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds)
+      ? supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds).then(r => r)
       : Promise.resolve({ data: null }),
     // 2: events
     groupIds.length > 0
@@ -167,11 +167,11 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           .in("group_id", groupIds)
           .gte("event_date", new Date().toISOString())
           .order("event_date", { ascending: true })
-          .limit(3)
+          .limit(3).then(r => r)
       : Promise.resolve({ data: null }),
     // 3: challenges
     groupIds.length > 0
-      ? supabase.from("challenges").select("*").in("group_id", groupIds)
+      ? supabase.from("challenges").select("*").in("group_id", groupIds).then(r => r)
       : Promise.resolve({ data: null }),
   ];
 
