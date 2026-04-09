@@ -80,14 +80,26 @@ interface DashboardData {
   overdueGliders: GliderWarning[];
 }
 
+function parseStatsRow(row: any): DashboardStats & { totalAltitude: number; totalDistance: number } {
+  return {
+    totalFlights: Number(row?.total_flights || 0),
+    totalMinutes: Number(row?.total_minutes || 0),
+    uniqueTakeoffs: Number(row?.unique_takeoffs || 0),
+    uniqueLandings: Number(row?.unique_landings || 0),
+    totalAltitude: Number(row?.total_altitude || 0),
+    totalDistance: Number(row?.total_distance || 0),
+  };
+}
+
 async function fetchDashboardData(userId: string): Promise<DashboardData> {
   const currentYear = new Date().getFullYear();
   const prevYear = currentYear - 1;
 
-  // Parallel: stats (current + prev year), profile, recent flights, memberships, gliders
-  const [statsRes, prevStatsRes, profileRes, recentRes, membershipsRes, glidersRes] = await Promise.all([
+  // === BATCH 1: Everything that doesn't depend on other results ===
+  const [statsRes, currentYearRes, prevYearRes, profileRes, recentRes, membershipsRes, glidersRes] = await Promise.all([
     supabase.rpc("get_pilot_stats", { _user_id: userId }),
     supabase.rpc("get_pilot_stats", { _user_id: userId, _year: currentYear }),
+    supabase.rpc("get_pilot_stats", { _user_id: userId, _year: prevYear }),
     supabase.from("profiles").select("pilot_name, avatar_url").eq("user_id", userId).single(),
     supabase.from("flights")
       .select("id, date, glider, duration_minutes, altitude_gain, distance_km, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name)")
@@ -98,7 +110,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     supabase.from("pilot_gliders").select("manufacturer, model, next_check_date, reserve_repack_date").eq("user_id", userId),
   ]);
 
-  // Stats from RPC
+  // Parse stats
   const statsRow = statsRes.data?.[0];
   const stats: DashboardStats = {
     totalFlights: Number(statsRow?.total_flights || 0),
@@ -107,59 +119,22 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     uniqueLandings: Number(statsRow?.unique_landings || 0),
   };
 
-  // Year comparison: fetch current year stats (already have) + prev year
-  const currentYearRow = prevStatsRes.data?.[0];
-  const prevYearRes = await supabase.rpc("get_pilot_stats", { _user_id: userId, _year: prevYear });
-  const prevYearRow = prevYearRes.data?.[0];
-
   const yearComparison: YearComparison = {
     currentYear,
-    current: {
-      totalFlights: Number(currentYearRow?.total_flights || 0),
-      totalMinutes: Number(currentYearRow?.total_minutes || 0),
-      uniqueTakeoffs: Number(currentYearRow?.unique_takeoffs || 0),
-      uniqueLandings: Number(currentYearRow?.unique_landings || 0),
-      totalAltitude: Number(currentYearRow?.total_altitude || 0),
-      totalDistance: Number(currentYearRow?.total_distance || 0),
-    },
-    previous: {
-      totalFlights: Number(prevYearRow?.total_flights || 0),
-      totalMinutes: Number(prevYearRow?.total_minutes || 0),
-      uniqueTakeoffs: Number(prevYearRow?.unique_takeoffs || 0),
-      uniqueLandings: Number(prevYearRow?.unique_landings || 0),
-      totalAltitude: Number(prevYearRow?.total_altitude || 0),
-      totalDistance: Number(prevYearRow?.total_distance || 0),
-    },
+    current: parseStatsRow(currentYearRes.data?.[0]),
+    previous: parseStatsRow(prevYearRes.data?.[0]),
   };
 
   // Profile
   const prof = profileRes.data;
-  let avatarSignedUrl = "";
   const profile: DashboardProfile = { pilot_name: prof?.pilot_name || "", avatar_url: prof?.avatar_url || "" };
-  if (prof?.avatar_url) {
-    avatarSignedUrl = await getSignedUrl("flight-photos", prof.avatar_url);
-  }
 
-  // Recent flights with photos
+  // Recent flights
   const recentFlights: RecentFlight[] = (recentRes.data || []).map((f: any) => ({
     ...f,
     takeoff_location: f.locations,
     landing_location: f.land,
   }));
-
-  const flightIds = recentFlights.map(f => f.id);
-  if (flightIds.length > 0) {
-    const { data: photos } = await supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds);
-    if (photos && photos.length > 0) {
-      const firstPhotos: Record<string, string> = {};
-      photos.forEach(p => { if (!firstPhotos[p.flight_id]) firstPhotos[p.flight_id] = p.storage_path; });
-      const signedMap = await getSignedUrls("flight-photos", Object.values(firstPhotos));
-      recentFlights.forEach(f => {
-        const p = firstPhotos[f.id];
-        if (p && signedMap[p]) f.photoUrl = signedMap[p];
-      });
-    }
-  }
 
   // Glider warnings
   const overdueGliders: GliderWarning[] = [];
@@ -172,38 +147,65 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     });
   }
 
-  // Events & challenges (group-dependent)
+  // === BATCH 2: Avatar, flight photos, and group-dependent data — all in parallel ===
+  const flightIds = recentFlights.map(f => f.id);
+  const memberships = membershipsRes.data;
+  const groupIds = memberships?.map(m => m.group_id) || [];
+  const groupNames: Record<string, string> = {};
+  memberships?.forEach((m: any) => { groupNames[m.group_id] = m.groups?.name || ""; });
+
+  const batch2Promises: Promise<any>[] = [
+    // 0: avatar signed URL
+    prof?.avatar_url ? getSignedUrl("flight-photos", prof.avatar_url) : Promise.resolve(""),
+    // 1: flight photos
+    flightIds.length > 0
+      ? supabase.from("flight_photos").select("flight_id, storage_path").in("flight_id", flightIds)
+      : Promise.resolve({ data: null }),
+    // 2: events
+    groupIds.length > 0
+      ? supabase.from("flight_events").select("id, title, event_date, status, meeting_point, group_id, event_type, max_participants")
+          .in("group_id", groupIds)
+          .gte("event_date", new Date().toISOString())
+          .order("event_date", { ascending: true })
+          .limit(3)
+      : Promise.resolve({ data: null }),
+    // 3: challenges
+    groupIds.length > 0
+      ? supabase.from("challenges").select("*").in("group_id", groupIds)
+      : Promise.resolve({ data: null }),
+  ];
+
+  const [avatarSignedUrl, photosRes, eventsRes, challengesRes] = await Promise.all(batch2Promises);
+
+  // Process flight photos
+  if (photosRes.data && photosRes.data.length > 0) {
+    const firstPhotos: Record<string, string> = {};
+    photosRes.data.forEach((p: any) => { if (!firstPhotos[p.flight_id]) firstPhotos[p.flight_id] = p.storage_path; });
+    const signedMap = await getSignedUrls("flight-photos", Object.values(firstPhotos));
+    recentFlights.forEach(f => {
+      const p = firstPhotos[f.id];
+      if (p && signedMap[p]) f.photoUrl = signedMap[p];
+    });
+  }
+
+  // Process events & signups
   let events: UpcomingEvent[] = [];
   let signups: SignupRow[] = [];
+  if (eventsRes.data && eventsRes.data.length > 0) {
+    const eventIds = eventsRes.data.map((e: any) => e.id);
+    const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds);
+    if (sups) signups = sups;
+    events = eventsRes.data.map((e: any) => ({ ...e, group_name: groupNames[e.group_id] || "" }));
+  }
+
+  // Process challenges
   let challenges: ActiveChallenge[] = [];
+  if (challengesRes.data && challengesRes.data.length > 0) {
+    const today = new Date().toISOString().split("T")[0];
+    const activeChallenges = (challengesRes.data as any[]).filter(c => !c.end_date || c.end_date >= today);
+    const challengeIds = activeChallenges.map(c => c.id);
 
-  const memberships = membershipsRes.data;
-  if (memberships && memberships.length > 0) {
-    const groupIds = memberships.map(m => m.group_id);
-    const groupNames: Record<string, string> = {};
-    memberships.forEach((m: any) => { groupNames[m.group_id] = m.groups?.name || ""; });
-
-    const [eventsRes, challengesRes] = await Promise.all([
-      supabase.from("flight_events").select("id, title, event_date, status, meeting_point, group_id, event_type, max_participants")
-        .in("group_id", groupIds)
-        .gte("event_date", new Date().toISOString())
-        .order("event_date", { ascending: true })
-        .limit(3),
-      supabase.from("challenges").select("*").in("group_id", groupIds),
-    ]);
-
-    if (eventsRes.data && eventsRes.data.length > 0) {
-      const eventIds = eventsRes.data.map(e => e.id);
-      const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds);
-      if (sups) signups = sups;
-      events = eventsRes.data.map(e => ({ ...e, group_name: groupNames[e.group_id] || "" }));
-    }
-
-    if (challengesRes.data && challengesRes.data.length > 0) {
-      const today = new Date().toISOString().split("T")[0];
-      const activeChallenges = (challengesRes.data as any[]).filter(c => !c.end_date || c.end_date >= today);
-      const challengeIds = activeChallenges.map(c => c.id);
-
+    if (challengeIds.length > 0) {
       const [goalsRes, myProgressRes, allProgressRes] = await Promise.all([
         supabase.from("challenge_goals").select("id, challenge_id").in("challenge_id", challengeIds),
         supabase.from("challenge_progress").select("challenge_id, goal_id").eq("user_id", userId).in("challenge_id", challengeIds),
@@ -251,7 +253,6 @@ export function useDashboardData() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Sync signups from query data
   useEffect(() => {
     if (data?.signups) setSignups(data.signups);
   }, [data?.signups]);
