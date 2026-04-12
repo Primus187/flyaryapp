@@ -1,64 +1,32 @@
 
 
-# Dashboard-Ladezeit optimieren
+# XC-Strecke aus IGC-Datei berechnen
 
-## Analyse: Wo geht die Zeit verloren?
-
-### 1. Splash Screen blockiert 2.6 Sekunden fix
-Der Splash Screen wartet immer 2.6s — unabhängig davon, ob Daten schon bereit sind. Das ist die grösste wahrgenommene Verzögerung.
-
-### 2. Wasserfall-Kette in `fetchDashboardData`
-Die Daten werden nicht maximal parallelisiert:
-
-```text
-Batch 1:  stats, currentYear, profile, flights, memberships, gliders  (~300ms)
-    ↓ sequentiell
-Batch 2:  prevYear stats RPC                                          (~150ms)
-    ↓ sequentiell  
-Batch 3:  avatar signed URL                                           (~100ms)
-    ↓ sequentiell
-Batch 4:  flight photos + signed URLs                                 (~200ms)
-    ↓ sequentiell (wenn memberships vorhanden)
-Batch 5:  events + challenges                                         (~150ms)
-    ↓ sequentiell (wenn challenges vorhanden)
-Batch 6:  goals + progress                                            (~150ms)
-
-Total: ~1000ms+ sequentiell statt ~300ms parallel
-```
-
-### 3. Auth-Check wartet separat
-`getSession()` + `onAuthStateChange` laufen, dann erst beginnt der Dashboard-Fetch.
-
----
+## Problem
+Beim IGC-Upload wird `distance_km` nicht ins Formular übernommen. Die aktuell berechnete `totalDistanceKm` ist die gesamte Flugspur-Länge — nicht die XC-relevante Strecke (freie Distanz zwischen Start und fernstem Punkt, bzw. optimiertes Dreieck).
 
 ## Lösung
 
-### A. Splash Screen verkürzen (1 Datei)
-**`src/components/SplashScreen.tsx`**
-- Mindestdauer von 2.6s auf 1.2s reduzieren (genug für die Animation)
-- Splash wird also schneller ausgeblendet
+### 1. XC-Distanz-Berechnung hinzufügen (`src/lib/igc-parser.ts`)
+Eine neue Funktion `computeXcDistance` berechnet die **freie Strecke** (maximale Distanz zwischen zwei beliebigen Punkten des Tracks). Das ist die gängige XC-Metrik für Nicht-Dreiecks-Flüge und entspricht dem, was XContest als "Free Distance" anzeigt.
 
-### B. Alle DB-Calls maximal parallelisieren (1 Datei)
-**`src/hooks/use-dashboard-data.ts`**
-- `prevYear` Stats-RPC in den ersten `Promise.all`-Block verschieben (aktuell sequentiell auf Zeile 112)
-- Avatar-Signed-URL parallel zu Flight-Photos holen (aktuell sequentiell)
-- Events, Challenges, Signups und Challenge-Progress in einen einzigen `Promise.all` zusammenfassen statt 3 sequentielle Batches
+**Algorithmus**: Über die gesampelten Track-Punkte wird die maximale Haversine-Distanz zwischen allen Punktpaaren gesucht. Um bei grossen Tracks performant zu bleiben, wird zuerst auf ~500 Punkte heruntergesampelt, dann brute-force die maximale Distanz berechnet (O(n²) mit n=500 → 125k Vergleiche, unkritisch).
 
-Ergebnis: Statt 4-6 sequentielle Netzwerk-Runden nur noch 2 (erste Runde: alles ohne Gruppen-Abhängigkeit, zweite Runde: alles was `groupIds` braucht).
+Neues Feld in `IGCData`: `xcDistanceKm: number`
 
-### C. Auth-Session schneller bereitstellen (1 Datei)
-**`src/contexts/AuthContext.tsx`**
-- `getSession()` zuerst aufrufen, `onAuthStateChange` nur als Listener registrieren — aktuell kann es passieren, dass beide konkurrieren und `setLoading(false)` doppelt feuert
+### 2. Formular automatisch befüllen (`src/pages/FlightForm.tsx`)
+In `handleIGCUpload` (Zeile 101) wird `distance_km` mit `parsed.xcDistanceKm` gesetzt, falls der Wert > 0 ist — analog zu den anderen Feldern.
 
----
+### 3. Anzeige anpassen (`src/pages/FlightDetail.tsx`)
+Falls `distance_km` nicht manuell gesetzt wurde, den XC-Wert aus den IGC-Stats als Fallback anzeigen.
 
-## Zusammenfassung
+## Dateien
 
 | Datei | Änderung |
 |-------|----------|
-| `SplashScreen.tsx` | Mindestdauer 2.6s → 1.2s |
-| `use-dashboard-data.ts` | Wasserfall eliminieren, alles in max. 2 parallele Batches |
-| `AuthContext.tsx` | Session-Init straffen |
+| `src/lib/igc-parser.ts` | `xcDistanceKm` berechnen (max. Distanz zwischen zwei Track-Punkten) |
+| `src/pages/FlightForm.tsx` | `distance_km` aus IGC-Daten ins Formular übernehmen |
+| `src/lib/igc-upload.ts` | `xcDistanceKm` in `trackData.stats` mitspeichern |
 
-Keine DB-Migrationen nötig. Rein Frontend-Optimierungen. Erwartete Verbesserung: Dashboard erscheint ~1.5–2s schneller.
+Keine DB-Migration nötig — `distance_km` existiert bereits in der `flights`-Tabelle.
 
