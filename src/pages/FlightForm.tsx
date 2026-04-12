@@ -86,7 +86,7 @@ export default function FlightForm() {
       try {
         const parsed = parseIGC(locationState.igcContent);
         setIgcData(parsed); setIgcFile(locationState.igcFile);
-        setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, glider: parsed.glider || prev.glider }));
+        setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km, glider: parsed.glider || prev.glider }));
         toast({ title: t("flights.uploadRecording"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
       } catch (err) { console.error("Failed to parse recorded IGC:", err); }
     }
@@ -98,7 +98,7 @@ export default function FlightForm() {
     reader.onload = (ev) => {
       try {
         const content = ev.target?.result as string; const parsed = parseIGC(content); setIgcData(parsed);
-        setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, glider: parsed.glider || prev.glider }));
+        setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km, glider: parsed.glider || prev.glider }));
         toast({ title: t("flights.igcImported"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
       } catch (err: any) { toast({ title: t("flights.igcError"), description: err.message || t("flights.igcReadError"), variant: "destructive" }); setIgcFile(null); }
     };
