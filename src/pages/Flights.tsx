@@ -15,7 +15,6 @@ import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Flight {
   id: string;
