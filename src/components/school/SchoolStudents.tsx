@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface StudentInfo {
   userId: string;
@@ -18,9 +20,46 @@ interface Props {
   students: StudentInfo[];
 }
 
+function csvEscape(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return "";
+  const s = String(value);
+  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
 export default function SchoolStudents({ students }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleExport = () => {
+    if (students.length === 0) return;
+    const headers = [
+      t("school.csv.name"),
+      t("school.csv.level"),
+      t("school.csv.flights"),
+      t("school.csv.examProgress"),
+      t("school.csv.lastSummary"),
+    ];
+    const rows = students.map((s) => [
+      csvEscape(s.pilotName),
+      csvEscape(s.trainingLevel),
+      csvEscape(s.flightCount),
+      csvEscape(`${s.examProgress}%`),
+      csvEscape(s.lastSummary),
+    ].join(","));
+    const csv = "\uFEFF" + [headers.map(csvEscape).join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `students-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: t("school.csv.exported") });
+  };
 
   if (students.length === 0) {
     return (
@@ -32,6 +71,12 @@ export default function SchoolStudents({ students }: Props) {
 
   return (
     <div className="space-y-2">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleExport}>
+          <Download className="h-3.5 w-3.5" />
+          {t("school.csv.export")}
+        </Button>
+      </div>
       {students.map((s) => (
         <Card
           key={s.userId}
