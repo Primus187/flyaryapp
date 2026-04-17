@@ -559,7 +559,13 @@
   },
   "onboarding": {
     "welcome": "Willkommen bei Flyary! 🪂",
-    "intro": "Dein digitales Flugbuch für Gleitschirmpiloten. In drei Schritten bist du startklar.",
+    "intro": "Dein digitales Flugbuch für Gleitschirmpiloten.",
+    "fastTrack": "Hast du schon Flugdaten?",
+    "orStartFresh": "Oder von vorne beginnen",
+    "shortcutXcontestTitle": "XContest verbinden",
+    "shortcutXcontestDesc": "Importiere deine bestehenden Flüge automatisch.",
+    "shortcutXlsxTitle": "Excel-Datei importieren",
+    "shortcutXlsxDesc": "Bring deine Flugbuch-Tabelle mit einem Klick.",
     "step1Title": "Profil ausfüllen",
     "step1Desc": "Hinterlege deinen Namen und deine Schirme.",
     "step2Title": "Ersten Ort anlegen",
@@ -616,8 +622,10 @@
     "recentFlights": "Letzte Flüge",
     "activeChallenges": "Aktive Challenges",
     "noFlights": "Noch keine Flüge erfasst",
-    "noFlightsDesc": "Erfasse deinen ersten Flug und baue dein Flugbuch auf.",
+    "noFlightsDesc": "Starte mit einem neuen Flug, importiere deine bestehende Excel-Tabelle oder verbinde XContest.",
     "firstFlight": "Ersten Flug erfassen",
+    "importExisting": "Excel/IGC importieren",
+    "connectXcontest": "XContest verbinden",
     "maintenanceWarning": "Wartung überfällig!"
   },
   "more": {
