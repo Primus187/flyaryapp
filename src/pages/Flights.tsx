@@ -233,30 +233,40 @@ export default function Flights() {
                 </div>
               </div>
               <div className="space-y-2">
-                {items.map((f) => (
-                  <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
-                    <CardContent className="p-3">
-                      <div className="flex justify-between items-start">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-medium text-sm truncate">{f.takeoff_location?.name || t("common.unknown")}</p>
-                            {f.has_track && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">IGC</span>}
+                {items.map((f) => {
+                  const thumbPoints = tracks[f.id];
+                  return (
+                    <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
+                      <CardContent className="p-3">
+                        <div className="flex gap-3">
+                          {thumbPoints && (
+                            <FlightThumbnailMap points={thumbPoints} size={64} className="shrink-0 rounded-xl" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-medium text-sm truncate">{f.takeoff_location?.name || t("common.unknown")}</p>
+                                  {f.has_track && !thumbPoints && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">IGC</span>}
+                                </div>
+                                {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {f.landing_location.name}</p>}
+                              </div>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short" })}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
+                              {f.duration_minutes && <span>⏱ {formatDuration(f.duration_minutes)}</span>}
+                              {f.altitude_gain && <span>↑ {f.altitude_gain}m</span>}
+                              {f.distance_km && <span>↔ {Number(f.distance_km).toFixed(1)}km</span>}
+                              {f.glider && <span className="truncate max-w-[120px]">🪂 {f.glider}</span>}
+                            </div>
                           </div>
-                          {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {f.landing_location.name}</p>}
                         </div>
-                        <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                          {new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short" })}
-                        </span>
-                      </div>
-                      <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                        {f.duration_minutes && <span>⏱ {formatDuration(f.duration_minutes)}</span>}
-                        {f.altitude_gain && <span>↑ {f.altitude_gain}m</span>}
-                        {f.distance_km && <span>↔ {Number(f.distance_km).toFixed(1)}km</span>}
-                        {f.glider && <span className="truncate">🪂 {f.glider}</span>}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </section>
           ))}
