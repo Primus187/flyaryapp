@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plane, Plus, Filter } from "lucide-react";
+import { Search, Plane, Plus, Filter, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import FlightThumbnailMap from "@/components/FlightThumbnailMap";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 
 interface Flight {
   id: string;
@@ -53,30 +54,33 @@ export default function Flights() {
   const [loading, setLoading] = useState(true);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
-  useEffect(() => {
+  const loadFlights = useCallback(async () => {
     if (!user) return;
-    Promise.all([
+    const [flightsRes, groupsRes] = await Promise.all([
       supabase
         .from("flights")
         .select("id, date, glider, duration_minutes, altitude_gain, distance_km, group_id, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name), igc_tracks(id)")
         .eq("user_id", user.id)
         .order("date", { ascending: false }),
       supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id),
-    ]).then(([flightsRes, groupsRes]) => {
-      if (flightsRes.data) {
-        setFlights(
-          flightsRes.data.map((f: any) => ({
-            ...f,
-            takeoff_location: f.locations,
-            landing_location: f.land,
-            has_track: Array.isArray(f.igc_tracks) && f.igc_tracks.length > 0,
-          })),
-        );
-      }
-      if (groupsRes.data) setGroups(groupsRes.data.map((gm: any) => gm.groups).filter(Boolean));
-      setLoading(false);
-    });
+    ]);
+    if (flightsRes.data) {
+      setFlights(
+        flightsRes.data.map((f: any) => ({
+          ...f,
+          takeoff_location: f.locations,
+          landing_location: f.land,
+          has_track: Array.isArray(f.igc_tracks) && f.igc_tracks.length > 0,
+        })),
+      );
+    }
+    if (groupsRes.data) setGroups(groupsRes.data.map((gm: any) => gm.groups).filter(Boolean));
+    setLoading(false);
   }, [user]);
+
+  useEffect(() => { loadFlights(); }, [loadFlights]);
+
+  const { pullDistance, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(loadFlights);
 
   // Batch-fetch all IGC tracks for thumbnails (heavily downsampled to 40 points each)
   useEffect(() => {
