@@ -54,7 +54,10 @@
     "firstFlight": "Record your first flight",
     "importExisting": "Import Excel/IGC",
     "connectXcontest": "Connect XContest",
-    "maintenanceWarning": "Maintenance overdue!"
+    "maintenanceWarning": "Maintenance overdue!",
+    "streakSuffix": "w",
+    "season": "Season",
+    "allTime": "All time"
   },
   "flights": {
     "title": "Logbook",

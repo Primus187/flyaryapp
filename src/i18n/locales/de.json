@@ -626,7 +626,10 @@
     "firstFlight": "Ersten Flug erfassen",
     "importExisting": "Excel/IGC importieren",
     "connectXcontest": "XContest verbinden",
-    "maintenanceWarning": "Wartung überfällig!"
+    "maintenanceWarning": "Wartung überfällig!",
+    "streakSuffix": "w",
+    "season": "Saison",
+    "allTime": "Total"
   },
   "more": {
     "title": "Mehr",

@@ -54,7 +54,10 @@
     "firstFlight": "Enregistrer un premier vol",
     "importExisting": "Importer Excel/IGC",
     "connectXcontest": "Connecter XContest",
-    "maintenanceWarning": "Maintenance en retard !"
+    "maintenanceWarning": "Maintenance en retard !",
+    "streakSuffix": "s",
+    "season": "Saison",
+    "allTime": "Total"
   },
   "flights": {
     "title": "Carnet de vol",
