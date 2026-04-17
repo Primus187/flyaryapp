@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Plane, Plus, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
+import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 
 interface Flight {
   id: string;
