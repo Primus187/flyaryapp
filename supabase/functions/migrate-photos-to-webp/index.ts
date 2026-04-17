@@ -90,7 +90,9 @@ async function reencodeToWebp(
     throw new Error(`Unsupported extension: ${ext}`);
   }
 
-  return await encodeWebp(rgba, width, height, WEBP_QUALITY);
+  // @jsquash expects ImageData-like { data, width, height } and returns ArrayBuffer
+  const buf = await encodeWebp({ data: rgba, width, height }, { quality: WEBP_QUALITY });
+  return new Uint8Array(buf);
 }
 
 Deno.serve(async (req) => {
