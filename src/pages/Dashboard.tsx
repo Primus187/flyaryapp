@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
@@ -139,53 +139,67 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Compact stats row */}
-      <section aria-label={t("dashboard.flights")}>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: Plane, value: stats.totalFlights.toString(), label: t("dashboard.flights") },
-            { icon: Clock, value: formatDuration(stats.totalMinutes), label: t("dashboard.flightTime") },
-            { icon: MapPin, value: stats.uniqueTakeoffs.toString(), label: t("dashboard.takeoffs") },
-            { icon: MapPin, value: stats.uniqueLandings.toString(), label: t("dashboard.landings") },
-          ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="rounded-xl bg-card p-3 text-center">
-              <p className="text-base font-semibold tabular-nums">{value}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Hero season stat card */}
+      {(() => {
+        const seasonYear = yearComparison?.currentYear ?? new Date().getFullYear();
+        const cur = yearComparison?.current;
+        const prev = yearComparison?.previous;
+        const seasonFlights = cur?.totalFlights ?? 0;
+        const seasonMinutes = cur?.totalMinutes ?? 0;
+        const seasonHours = Math.floor(seasonMinutes / 60);
+        const seasonMins = seasonMinutes % 60;
+        const flightDiff = prev && prev.totalFlights > 0
+          ? Math.round(((seasonFlights - prev.totalFlights) / prev.totalFlights) * 100)
+          : seasonFlights > 0 ? 100 : 0;
+        const distance = cur?.totalDistance ?? 0;
+        const altitude = cur?.totalAltitude ?? 0;
 
-      {/* Year comparison */}
-      {yearComparison && yearComparison.current.totalFlights > 0 && (
-        <section>
-          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{yearComparison.currentYear} vs {yearComparison.currentYear - 1}</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: t("dashboard.flights"), current: yearComparison.current.totalFlights, prev: yearComparison.previous.totalFlights },
-              { label: t("dashboard.flightTime"), current: yearComparison.current.totalMinutes, prev: yearComparison.previous.totalMinutes, isTime: true },
-            ].map(({ label, current, prev, isTime }) => {
-              const diff = prev > 0 ? Math.round(((current - prev) / prev) * 100) : current > 0 ? 100 : 0;
-              const formatted = isTime ? `${Math.floor(current / 60)}h ${current % 60}m` : current.toString();
-              return (
-                <Card key={label} className="border-0 shadow-sm">
-                  <CardContent className="p-3">
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-lg font-semibold tabular-nums">{formatted}</p>
-                      {diff !== 0 && (
-                        <span className={`text-xs font-medium ${diff > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                          {diff > 0 ? "+" : ""}{diff}%
-                        </span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-      )}
+        return (
+          <section aria-label={`${t("dashboard.flights")} ${seasonYear}`}>
+            <Card className="border-0 shadow-sm overflow-hidden bg-gradient-to-br from-primary/10 via-card to-card">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("dashboard.season", "Saison")} {seasonYear}
+                  </p>
+                  {flightDiff !== 0 && seasonFlights > 0 && (
+                    <span className={`flex items-center gap-1 text-xs font-semibold tabular-nums ${flightDiff > 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                      {flightDiff > 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                      {flightDiff > 0 ? "+" : ""}{flightDiff}%
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-end gap-6 mb-4">
+                  <div>
+                    <p className="text-3xl font-bold tabular-nums leading-none">{seasonFlights}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wide">{t("dashboard.flights")}</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold tabular-nums leading-none">
+                      {seasonHours}<span className="text-xl">h</span>
+                      {seasonMins > 0 && <span className="text-xl"> {seasonMins}m</span>}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wide">{t("dashboard.flightTime")}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 text-xs text-muted-foreground border-t border-border/40 pt-3">
+                  <span className="flex items-center gap-1.5"><Route className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{distance.toFixed(0)}</span> km</span>
+                  <span className="flex items-center gap-1.5"><Mountain className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{altitude.toFixed(0)}</span> m</span>
+                  <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{stats.uniqueTakeoffs}</span></span>
+                </div>
+
+                {stats.totalFlights > seasonFlights && (
+                  <p className="text-[10px] text-muted-foreground mt-3 text-right">
+                    {t("dashboard.allTime", "Total")}: <span className="tabular-nums font-medium">{stats.totalFlights}</span> · {formatDuration(stats.totalMinutes)}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        );
+      })()}
 
       {/* Maintenance warnings */}
       {overdueGliders.length > 0 && (
