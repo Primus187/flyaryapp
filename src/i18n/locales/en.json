@@ -50,8 +50,10 @@
     "recentFlights": "Recent flights",
     "activeChallenges": "Active Challenges",
     "noFlights": "No flights recorded yet",
-    "noFlightsDesc": "Record your first flight and start building your logbook.",
+    "noFlightsDesc": "Start with a new flight, import your existing spreadsheet, or connect XContest.",
     "firstFlight": "Record your first flight",
+    "importExisting": "Import Excel/IGC",
+    "connectXcontest": "Connect XContest",
     "maintenanceWarning": "Maintenance overdue!"
   },
   "flights": {
@@ -521,7 +523,21 @@
     "exportFilter": "Export filter",
     "selectGroups": "Select groups",
     "noGroup": "No group",
-    "exportAll": "Export all"
+    "exportAll": "Export all",
+    "exportCsv": "Export as CSV",
+    "exportHint": "Your data is yours — export all flights anytime.",
+    "csvExported": "CSV exported",
+    "csvRows": "flights",
+    "trainingLevel": "Training level",
+    "pushNotifications": "Push notifications",
+    "pushDesc": "Get notified about likes and comments",
+    "dangerZone": "Account",
+    "deleteAccount": "Delete account",
+    "deleteAccountHint": "Permanently removes all your flights, photos and profile data.",
+    "deleteAccountWarning": "This action cannot be undone. All your flights, photos and profile data will be permanently deleted.",
+    "deleteAccountConfirmHint": "Type DELETE in the field to confirm.",
+    "deleteAccountConfirm": "Delete permanently",
+    "accountDeleted": "Account deleted"
   },
   "splash": {
     "loading": "Loading..."
@@ -576,7 +592,13 @@
   },
   "onboarding": {
     "welcome": "Welcome to Flyary! 🪂",
-    "intro": "Your digital logbook for paragliding pilots. Get started in three easy steps.",
+    "intro": "Your digital logbook for paragliding pilots.",
+    "fastTrack": "Already have flight data?",
+    "orStartFresh": "Or start fresh",
+    "shortcutXcontestTitle": "Connect XContest",
+    "shortcutXcontestDesc": "Automatically import your existing flights.",
+    "shortcutXlsxTitle": "Import Excel file",
+    "shortcutXlsxDesc": "Bring your logbook spreadsheet in one click.",
     "step1Title": "Complete your profile",
     "step1Desc": "Add your name and your gliders.",
     "step2Title": "Create your first site",

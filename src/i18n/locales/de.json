@@ -506,7 +506,20 @@
     "selectGroups": "Gruppen auswählen",
     "noGroup": "Ohne Gruppe",
     "exportAll": "Alle exportieren",
-    "trainingLevel": "Ausbildungsstand"
+    "exportCsv": "Als CSV exportieren",
+    "exportHint": "Deine Daten gehören dir — exportiere jederzeit alle Flüge.",
+    "csvExported": "CSV exportiert",
+    "csvRows": "Flüge",
+    "trainingLevel": "Ausbildungsstand",
+    "pushNotifications": "Push-Benachrichtigungen",
+    "pushDesc": "Benachrichtigungen bei Likes und Kommentaren",
+    "dangerZone": "Konto",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountHint": "Entfernt unwiderruflich alle deine Flüge, Fotos und Profildaten.",
+    "deleteAccountWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Flüge, Fotos und Profildaten werden dauerhaft gelöscht.",
+    "deleteAccountConfirmHint": "Tippe DELETE in das Feld, um zu bestätigen.",
+    "deleteAccountConfirm": "Endgültig löschen",
+    "accountDeleted": "Konto gelöscht"
   },
   "splash": {
     "loading": "Laden..."
@@ -546,7 +559,13 @@
   },
   "onboarding": {
     "welcome": "Willkommen bei Flyary! 🪂",
-    "intro": "Dein digitales Flugbuch für Gleitschirmpiloten. In drei Schritten bist du startklar.",
+    "intro": "Dein digitales Flugbuch für Gleitschirmpiloten.",
+    "fastTrack": "Hast du schon Flugdaten?",
+    "orStartFresh": "Oder von vorne beginnen",
+    "shortcutXcontestTitle": "XContest verbinden",
+    "shortcutXcontestDesc": "Importiere deine bestehenden Flüge automatisch.",
+    "shortcutXlsxTitle": "Excel-Datei importieren",
+    "shortcutXlsxDesc": "Bring deine Flugbuch-Tabelle mit einem Klick.",
     "step1Title": "Profil ausfüllen",
     "step1Desc": "Hinterlege deinen Namen und deine Schirme.",
     "step2Title": "Ersten Ort anlegen",
@@ -603,8 +622,10 @@
     "recentFlights": "Letzte Flüge",
     "activeChallenges": "Aktive Challenges",
     "noFlights": "Noch keine Flüge erfasst",
-    "noFlightsDesc": "Erfasse deinen ersten Flug und baue dein Flugbuch auf.",
+    "noFlightsDesc": "Starte mit einem neuen Flug, importiere deine bestehende Excel-Tabelle oder verbinde XContest.",
     "firstFlight": "Ersten Flug erfassen",
+    "importExisting": "Excel/IGC importieren",
+    "connectXcontest": "XContest verbinden",
     "maintenanceWarning": "Wartung überfällig!"
   },
   "more": {
@@ -827,10 +848,6 @@
   "follows": {
     "follow": "Folgen",
     "unfollow": "Entfolgen"
-  },
-  "settings": {
-    "pushNotifications": "Push-Benachrichtigungen",
-    "pushDesc": "Benachrichtigungen bei Likes und Kommentaren"
   },
   "notifications": {
     "followed": "folgt dir jetzt"

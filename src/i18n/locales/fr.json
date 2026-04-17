@@ -50,8 +50,10 @@
     "recentFlights": "Derniers vols",
     "activeChallenges": "Challenges actifs",
     "noFlights": "Aucun vol enregistré",
-    "noFlightsDesc": "Enregistrez votre premier vol et commencez votre carnet.",
+    "noFlightsDesc": "Commencez par un nouveau vol, importez votre fichier Excel ou connectez XContest.",
     "firstFlight": "Enregistrer un premier vol",
+    "importExisting": "Importer Excel/IGC",
+    "connectXcontest": "Connecter XContest",
     "maintenanceWarning": "Maintenance en retard !"
   },
   "flights": {
@@ -521,7 +523,21 @@
     "exportFilter": "Filtre d'export",
     "selectGroups": "Sélectionner les groupes",
     "noGroup": "Sans groupe",
-    "exportAll": "Tout exporter"
+    "exportAll": "Tout exporter",
+    "exportCsv": "Exporter en CSV",
+    "exportHint": "Vos données vous appartiennent — exportez tous vos vols à tout moment.",
+    "csvExported": "CSV exporté",
+    "csvRows": "vols",
+    "trainingLevel": "Niveau de formation",
+    "pushNotifications": "Notifications push",
+    "pushDesc": "Soyez notifié des likes et commentaires",
+    "dangerZone": "Compte",
+    "deleteAccount": "Supprimer le compte",
+    "deleteAccountHint": "Supprime définitivement tous vos vols, photos et données de profil.",
+    "deleteAccountWarning": "Cette action est irréversible. Tous vos vols, photos et données de profil seront définitivement supprimés.",
+    "deleteAccountConfirmHint": "Tapez DELETE dans le champ pour confirmer.",
+    "deleteAccountConfirm": "Supprimer définitivement",
+    "accountDeleted": "Compte supprimé"
   },
   "splash": {
     "loading": "Chargement..."
@@ -576,7 +592,13 @@
   },
   "onboarding": {
     "welcome": "Bienvenue sur Flyary ! 🪂",
-    "intro": "Votre carnet de vol numérique pour pilotes de parapente. Démarrez en trois étapes.",
+    "intro": "Votre carnet de vol numérique pour pilotes de parapente.",
+    "fastTrack": "Vous avez déjà des données de vol ?",
+    "orStartFresh": "Ou commencer de zéro",
+    "shortcutXcontestTitle": "Connecter XContest",
+    "shortcutXcontestDesc": "Importez automatiquement vos vols existants.",
+    "shortcutXlsxTitle": "Importer un fichier Excel",
+    "shortcutXlsxDesc": "Apportez votre tableur de carnet en un clic.",
     "step1Title": "Compléter votre profil",
     "step1Desc": "Ajoutez votre nom et vos voiles.",
     "step2Title": "Créer votre premier site",

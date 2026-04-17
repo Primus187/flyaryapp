@@ -10,11 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap, Bell } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { exportFlightsCsv, downloadBlob } from "@/lib/csv-export";
 
 function TrainingLevelCard() {
   const { t } = useTranslation();
@@ -64,10 +66,14 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportingCsv, setExportingCsv] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [includeNoGroup, setIncludeNoGroup] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const { isSupported: pushSupported, isSubscribed: pushEnabled, toggle: togglePush, loading: pushLoading } = usePushNotifications();
   useEffect(() => {
     if (!user) return;
@@ -112,6 +118,43 @@ export default function Settings() {
 
   const toggleGroup = (id: string) => {
     setSelectedGroupIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
+  const handleExportCsv = async () => {
+    if (!user) return;
+    setExportingCsv(true);
+    try {
+      const { rows, blob } = await exportFlightsCsv(user.id);
+      downloadBlob(blob, `flyary-flights-${new Date().toISOString().slice(0, 10)}.csv`);
+      toast({ title: t("settings.csvExported"), description: `${rows} ${t("settings.csvRows")}` });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setExportingCsv(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error(t("profile.notLoggedIn"));
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Failed");
+      }
+      await supabase.auth.signOut();
+      localStorage.clear();
+      toast({ title: t("settings.accountDeleted") });
+      navigate("/auth", { replace: true });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      setDeleting(false);
+    }
   };
 
   const themes = [
@@ -197,11 +240,62 @@ export default function Settings() {
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          <Button variant="outline" className="w-full gap-2" onClick={() => groups.length > 0 ? setExportDialogOpen(true) : handleExportPdf()} disabled={exporting}>
+          <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => groups.length > 0 ? setExportDialogOpen(true) : handleExportPdf()} disabled={exporting}>
             <FileDown className="h-4 w-4" /> {exporting ? t("profile.exporting") : t("profile.exportPdf")}
           </Button>
+          <Button variant="outline" className="w-full gap-2 justify-start" onClick={handleExportCsv} disabled={exportingCsv}>
+            <FileSpreadsheet className="h-4 w-4" /> {exportingCsv ? t("profile.exporting") : t("settings.exportCsv")}
+          </Button>
+          <p className="text-[11px] text-muted-foreground pt-1">{t("settings.exportHint")}</p>
         </CardContent>
       </Card>
+
+      <Card className="border border-destructive/30 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2 text-destructive">
+            <ShieldAlert className="h-4 w-4" /> {t("settings.dangerZone")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button variant="destructive" className="w-full gap-2" onClick={() => { setDeleteConfirm(""); setDeleteOpen(true); }}>
+            <Trash2 className="h-4 w-4" /> {t("settings.deleteAccount")}
+          </Button>
+          <p className="text-[11px] text-muted-foreground mt-2">{t("settings.deleteAccountHint")}</p>
+        </CardContent>
+      </Card>
+
+      <Dialog open={deleteOpen} onOpenChange={(v) => !deleting && setDeleteOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" /> {t("settings.deleteAccount")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{t("settings.deleteAccountWarning")}</p>
+            <p className="text-muted-foreground">{t("settings.deleteAccountConfirmHint")}</p>
+            <Input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button
+              variant="destructive"
+              className="w-full"
+              disabled={deleting || deleteConfirm !== "DELETE"}
+              onClick={handleDeleteAccount}
+            >
+              {deleting ? t("common.loading") : t("settings.deleteAccountConfirm")}
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+              {t("common.cancel")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
         <DialogContent className="max-w-sm">
