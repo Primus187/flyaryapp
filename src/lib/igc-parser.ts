@@ -277,7 +277,8 @@ export function parseIGC(content: string): IGCData {
 
   const avgSpeedKmh = durationMinutes > 0 ? totalDistanceKm / (durationMinutes / 60) : 0;
 
-  const xcDistanceKm = computeXcDistance(points);
+  const xcOptimization = computeXcOptimization(points);
+  const xcDistanceKm = xcOptimization?.scoreKm ?? 0;
 
-  return { points, date, pilot, glider, maxAltitude, minAltitude, startTime, endTime, durationMinutes, maxClimbRate: Math.round(maxClimbRate * 10) / 10, maxSinkRate: Math.round(maxSinkRate * 10) / 10, avgSpeedKmh: Math.round(avgSpeedKmh * 10) / 10, totalDistanceKm: Math.round(totalDistanceKm * 100) / 100, xcDistanceKm };
+  return { points, date, pilot, glider, maxAltitude, minAltitude, startTime, endTime, durationMinutes, maxClimbRate: Math.round(maxClimbRate * 10) / 10, maxSinkRate: Math.round(maxSinkRate * 10) / 10, avgSpeedKmh: Math.round(avgSpeedKmh * 10) / 10, totalDistanceKm: Math.round(totalDistanceKm * 100) / 100, xcDistanceKm, xcOptimization };
 }
