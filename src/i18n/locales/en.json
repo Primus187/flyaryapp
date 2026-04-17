@@ -665,7 +665,11 @@
     "challengeCompleted": "Challenge completed!",
     "signUp": "Sign up",
     "you": "You",
-    "loadingMore": "Loading more..."
+    "loadingMore": "Loading more...",
+    "suggestedPilots": "Pilots to follow",
+    "sharedGroups_one": "{{count}} shared group",
+    "sharedGroups_other": "{{count}} shared groups",
+    "following": "Following"
   },
   "notifications": {
     "title": "Notifications",
