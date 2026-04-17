@@ -60,9 +60,12 @@ export default function FlightDetailMap({ takeoff, landing, trackPoints = [] }: 
     ? boundsPoints[Math.floor(boundsPoints.length / 2)]
     : [46.8, 8.2];
 
+  // Stable key prevents Leaflet "Map container is already initialized" when React reuses the DOM node
+  const mapKey = `${center[0].toFixed(3)}-${center[1].toFixed(3)}-${boundsPoints.length}`;
+
   return (
     <div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 250 }}>
-      <MapContainer center={center} zoom={12} className="h-full w-full" zoomControl={false}>
+      <MapContainer key={mapKey} center={center} zoom={12} className="h-full w-full" zoomControl={false}>
         <TileLayer
           url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
           attribution="OpenTopoMap"
