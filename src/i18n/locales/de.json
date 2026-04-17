@@ -558,7 +558,13 @@
     "instructorFeedback": "Fluglehrer-Feedback",
     "addFeedback": "Feedback geben",
     "feedbackSaved": "Feedback gespeichert",
-    "notePlaceholder": "Bemerkung zum Manöver..."
+    "notePlaceholder": "Bemerkung zum Manöver...",
+    "privateNote": "Lehrer-Notiz",
+    "privateNotePlaceholder": "Beobachtungen, To-dos, nächste Schritte...",
+    "noNoteYet": "Noch keine Notiz erfasst.",
+    "noteSaved": "Notiz gespeichert",
+    "visibleToStudent": "Für Schüler sichtbar",
+    "privateOnly": "Nur intern"
   },
   "onboarding": {
     "welcome": "Willkommen bei Flyary! 🪂",
