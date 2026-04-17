@@ -513,6 +513,9 @@ export default function Profile() {
           const reserveSoon = !reserveOverdue && isExpiringSoon(g.reserve_repack_date);
           const hasWarning = checkOverdue || reserveOverdue;
           const hasCaution = checkSoon || reserveSoon;
+          const usage = wingStats.find(w => w.id === g.id);
+          const usageHours = usage ? Math.floor(usage.totalMinutes / 60) : 0;
+          const usageMins = usage ? usage.totalMinutes % 60 : 0;
 
           return (
             <div key={g.id} className={`p-3 rounded-lg space-y-2 ${hasWarning ? 'bg-destructive/10 border border-destructive/30' : hasCaution ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800' : 'bg-muted/50'}`}>
@@ -523,6 +526,12 @@ export default function Profile() {
                   <div>
                     <p className="text-sm font-medium">{g.manufacturer} {g.model}</p>
                     {g.size && <p className="text-xs text-muted-foreground">{t("profile.size")}: {g.size}</p>}
+                    {usage && usage.flightCount > 0 && (
+                      <p className="text-[11px] text-muted-foreground tabular-nums mt-0.5">
+                        <Plane className="h-2.5 w-2.5 inline mr-1" />
+                        {usage.flightCount} {t("dashboard.flights")} · {usageHours > 0 ? `${usageHours}h ${usageMins}m` : `${usageMins}m`}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-1">
