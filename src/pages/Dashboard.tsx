@@ -190,6 +190,11 @@ export default function Dashboard() {
                   <span className="flex items-center gap-1.5"><Route className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{distance.toFixed(0)}</span> km</span>
                   <span className="flex items-center gap-1.5"><Mountain className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{altitude.toFixed(0)}</span> m</span>
                   <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{stats.uniqueTakeoffs}</span></span>
+                  {streak > 0 && (
+                    <span className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-400 font-semibold tabular-nums">
+                      <Flame className="h-3.5 w-3.5" />{streak}{t("dashboard.streakSuffix", "w")}
+                    </span>
+                  )}
                 </div>
 
                 {stats.totalFlights > seasonFlights && (
