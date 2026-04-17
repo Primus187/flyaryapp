@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useWingStats } from "@/hooks/use-wing-stats";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
 const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
@@ -28,6 +29,7 @@ export default function Profile() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { stats: wingStats } = useWingStats(user?.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
