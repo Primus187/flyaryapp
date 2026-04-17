@@ -1,61 +1,39 @@
 
 
-# Splash-Screen als Lade-Brücke nutzen
+# Fix: BottomNav-Klicks gehen ins Leere
 
-## Problem
-Aktuell läuft der Splash-Screen unabhängig vom Daten-Fetch ab (1.2s fix). Danach wird das Dashboard mit Skeleton angezeigt, während die Daten erst danach geladen werden. Der User sieht: Splash → Skeleton → Inhalt.
+## Diagnose
 
-Besser: Splash → (Daten werden im Hintergrund geladen, Splash bleibt sichtbar mit Fortschrittsbalken) → fertig geladenes Dashboard erscheint sofort.
+Aus dem Session-Replay: Alle Klicks (auf verschiedene Tabs der Bottom-Nav) landen auf demselben DOM-Element. Das ist ein klassisches Symptom für ein **unsichtbares Vollbild-Overlay**, das Pointer-Events abfängt.
+
+Verdächtige Stelle: `src/components/SplashScreen.tsx`
+- Container: `fixed inset-0 z-[9999]`
+- Beim Beenden wird `phase` auf `"exit"` gesetzt → nur `opacity-0`, **kein** `pointer-events-none`
+- Während der 400ms-Exit-Animation und in Edge-Cases (z. B. wenn `onFinished` nicht zuverlässig feuert oder `ready`/`minElapsed` nie zusammenkommen) bleibt der Splash über allem liegen und schluckt alle Klicks. Die Bottom-Nav (`z-50`) ist weit darunter und reagiert nicht.
+
+Zusätzlich: In `SplashGate` (`src/App.tsx`) hängt das Setzen von `dataReady` daran, dass `prefetchDashboard` zumindest in den `.finally()`-Block läuft. Falls die Prefetch-Promise aus irgendeinem Grund früh resolved, aber `setDataReady(true)` durch eine Race-Condition (z. B. AuthContext liefert `user` mehrfach) zurückgesetzt würde, bliebe der Splash hängen.
 
 ## Lösung
 
-### A. Daten-Prefetch parallel zum Splash starten
-**`src/App.tsx`**
-- Auth-Session und Dashboard-Daten **schon während des Splash** mit React Query `prefetchQuery` vorladen.
-- Der Splash bleibt sichtbar bis **beide Bedingungen** erfüllt sind:
-  1. Mindest-Anzeigezeit (für Animation, ~800ms)
-  2. Dashboard-Daten sind geladen (oder Fehler / kein User)
+### 1. `SplashScreen.tsx` — Pointer-Events sauber abschalten
+- In der Exit-Phase zusätzlich `pointer-events-none` setzen, damit Klicks sofort nach Animationsstart durchgereicht werden.
+- Für noch mehr Sicherheit: Ist `phase === "exit"`, soll der Splash nichts mehr blocken.
 
-### B. Splash mit Fortschrittsbalken
-**`src/components/SplashScreen.tsx`**
-- Neue Props: `progress: number` (0-100), `ready: boolean`
-- Zeigt unter den drei Punkten einen schmalen Fortschrittsbalken (Tailwind, weiss/transparent über Splash-Hintergrund).
-- Schritt-Tracking:
-  - 20%: Auth-Session geladen
-  - 60%: Dashboard Batch 1 (Stats, Profil, Flüge) geladen
-  - 100%: Batch 2 (Avatar, Fotos, Events, Challenges) geladen
-- Splash blendet erst aus, wenn `ready=true` UND Mindestzeit erreicht.
+### 2. `SplashGate` in `src/App.tsx` — Splash-State stabilisieren
+- `dataReady` einmal auf `true` setzen und nicht mehr zurücksetzen (ist heute schon so, aber sicherstellen, dass der Effect bei mehrfachem Auth-Event nicht erneut `setDataReady(false)` ausführt — derzeit gibt es keinen Reset, gut).
+- **Safety-Timeout**: Nach max. 4 Sekunden hart `dataReady = true` setzen, damit der Splash niemals dauerhaft blockieren kann, selbst wenn ein Netzwerk-Call hängt.
 
-### C. Fetch-Funktion für Fortschritts-Callbacks erweitern
-**`src/hooks/use-dashboard-data.ts`**
-- `fetchDashboardData` bekommt optionalen Parameter `onProgress?: (pct: number) => void`.
-- Nach Batch 1 → `onProgress(60)`, nach Batch 2 → `onProgress(100)`.
-- Neuer exportierter Helper `prefetchDashboard(userId, queryClient, onProgress)` für den Splash-Flow.
-
-### D. Auth-Loading mit Splash koppeln
-**`src/contexts/AuthContext.tsx`**
-- Bereits okay – `loading` wird nach `getSession()` auf false gesetzt. Dieser Übergang triggert den Daten-Prefetch im App-Wrapper.
-
-## Ablauf neu
-
-```text
-t=0     Splash erscheint, Auth-Check startet                   [  0% ]
-t=200ms Auth-Session da → Dashboard-Prefetch startet            [ 20% ]
-t=600ms Batch 1 fertig (Stats, Profil, Flüge)                   [ 60% ]
-t=900ms Batch 2 fertig (Fotos, Events, Challenges)              [100% ]
-t=900ms Splash blendet aus → Dashboard sofort gefüllt sichtbar
-```
-
-Falls Daten schneller fertig sind als 800ms-Mindestanzeige: Splash bleibt bis 800ms.
-Falls Daten langsamer sind: Splash bleibt sichtbar mit Balken bis 100%.
+### 3. `BottomNav.tsx` — Defensive Verbesserung
+- `type="button"` an die `<button>` setzen (Best Practice, verhindert Form-Submit-Edge-Cases).
+- Sonst keine Logikänderung — das ursprüngliche Verhalten ist korrekt.
 
 ## Dateien
 
 | Datei | Änderung |
 |-------|----------|
-| `src/components/SplashScreen.tsx` | Fortschrittsbalken + `progress`/`ready` Props |
-| `src/App.tsx` | Auth-Wartung + Dashboard-Prefetch im Splash-Block koordinieren |
-| `src/hooks/use-dashboard-data.ts` | `onProgress`-Callback + `prefetchDashboard` Helper |
+| `src/components/SplashScreen.tsx` | `pointer-events-none` in Exit-Phase |
+| `src/App.tsx` | Safety-Timeout (4s) für `dataReady` in `SplashGate` |
+| `src/components/BottomNav.tsx` | `type="button"` ergänzen |
 
-Keine DB-Änderungen, keine API-Calls hinzugefügt – nur Reihenfolge und UX.
+Keine DB-Änderungen, rein Frontend.
 
