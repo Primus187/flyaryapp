@@ -99,7 +99,10 @@ export default function FlightForm() {
       try {
         const content = ev.target?.result as string; const parsed = parseIGC(content); setIgcData(parsed);
         setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km, glider: parsed.glider || prev.glider }));
-        toast({ title: t("flights.igcImported"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
+        const shapeLabel = parsed.xcOptimization
+          ? ({ fai_triangle: "FAI ▲", flat_triangle: "Flach ▲", free_3tp: "3-TP", free: "Frei" } as Record<string, string>)[parsed.xcOptimization.shape]
+          : null;
+        toast({ title: t("flights.igcImported"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}${shapeLabel ? ` · ${shapeLabel} ${parsed.xcDistanceKm} km` : ""}` });
       } catch (err: any) { toast({ title: t("flights.igcError"), description: err.message || t("flights.igcReadError"), variant: "destructive" }); setIgcFile(null); }
     };
     reader.readAsText(file);

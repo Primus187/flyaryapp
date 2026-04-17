@@ -26,6 +26,7 @@ function buildTrackData(igcData: IGCData | null) {
       avgSpeedKmh: igcData.avgSpeedKmh,
       totalDistanceKm: igcData.totalDistanceKm,
       xcDistanceKm: igcData.xcDistanceKm,
+      xcOptimization: igcData.xcOptimization,
       startTime: igcData.startTime,
       endTime: igcData.endTime,
       durationMinutes: igcData.durationMinutes,
