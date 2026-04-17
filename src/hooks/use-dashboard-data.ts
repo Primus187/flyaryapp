@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSignedUrl, getSignedUrls } from "@/lib/signed-url-cache";
@@ -91,7 +91,7 @@ function parseStatsRow(row: any): DashboardStats & { totalAltitude: number; tota
   };
 }
 
-async function fetchDashboardData(userId: string): Promise<DashboardData> {
+async function fetchDashboardData(userId: string, onProgress?: (pct: number) => void): Promise<DashboardData> {
   const currentYear = new Date().getFullYear();
   const prevYear = currentYear - 1;
 
@@ -146,6 +146,8 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       if (g.reserve_repack_date && new Date(g.reserve_repack_date) < now) overdueGliders.push({ name, type: "reserve" });
     });
   }
+
+  onProgress?.(60);
 
   // === BATCH 2: Avatar, flight photos, and group-dependent data — all in parallel ===
   const flightIds = recentFlights.map(f => f.id);
@@ -238,7 +240,16 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     }
   }
 
+  onProgress?.(100);
   return { stats, yearComparison, recent: recentFlights, events, signups, challenges, profile, avatarSignedUrl, overdueGliders };
+}
+
+export function prefetchDashboard(userId: string, queryClient: QueryClient, onProgress?: (pct: number) => void) {
+  return queryClient.prefetchQuery({
+    queryKey: ["dashboard", userId],
+    queryFn: () => fetchDashboardData(userId, onProgress),
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 export function useDashboardData() {
