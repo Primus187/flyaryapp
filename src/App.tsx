@@ -18,7 +18,8 @@ import Dashboard from "@/pages/Dashboard";
 
 // Lazy loaded
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
-const Feed = lazy(() => import("@/pages/Feed"));
+const feedImport = () => import("@/pages/Feed");
+const Feed = lazy(feedImport);
 const Stats = lazy(() => import("@/pages/Stats"));
 const Flights = lazy(() => import("@/pages/Flights"));
 const FlightForm = lazy(() => import("@/pages/FlightForm"));
