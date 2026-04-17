@@ -121,13 +121,6 @@ function SplashGate({ children }: { children: React.ReactNode }) {
       });
     // Warm the Feed chunk in the background so the Feed tab opens instantly
     feedImport().catch(() => {});
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) {
-          setProgress(100);
-          setDataReady(true);
-        }
-      });
     return () => { cancelled = true; clearTimeout(safety); };
   }, [user, authLoading]);
 
