@@ -841,10 +841,6 @@
     "follow": "Folgen",
     "unfollow": "Entfolgen"
   },
-  "settings": {
-    "pushNotifications": "Push-Benachrichtigungen",
-    "pushDesc": "Benachrichtigungen bei Likes und Kommentaren"
-  },
   "notifications": {
     "followed": "folgt dir jetzt"
   }
