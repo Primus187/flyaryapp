@@ -43,10 +43,30 @@ function FlightsSkeleton() {
   );
 }
 
+function SwipeableFlightCard({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
+  const { offset, onTouchStart, onTouchMove, onTouchEnd } = useSwipeAction({ onSwipeLeft: onDelete });
+  return (
+    <div className="relative overflow-hidden rounded-lg">
+      <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-destructive text-destructive-foreground px-4">
+        <Trash2 className="h-5 w-5" />
+      </div>
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ transform: `translateX(${offset}px)`, transition: offset === 0 ? "transform 0.2s" : "none" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Flights() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [flights, setFlights] = useState<Flight[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [tracks, setTracks] = useState<Record<string, [number, number][]>>({});
@@ -81,6 +101,19 @@ export default function Flights() {
   }, [user]);
 
   useEffect(() => { loadFlights(); }, [loadFlights]);
+
+  const handleDeleteFlight = useCallback(async (flightId: string) => {
+    if (!confirm(t("flights.deleteFlight"))) return;
+    const prev = flights;
+    setFlights(p => p.filter(f => f.id !== flightId));
+    const { error } = await supabase.from("flights").delete().eq("id", flightId);
+    if (error) {
+      setFlights(prev);
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: t("flights.flightDeleted") });
+    }
+  }, [flights, t, toast]);
 
   const { pullDistance, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(loadFlights);
 
