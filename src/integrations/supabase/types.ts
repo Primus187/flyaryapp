@@ -549,6 +549,44 @@ export type Database = {
           },
         ]
       }
+      flight_coach_notes: {
+        Row: {
+          coach_id: string
+          created_at: string
+          flight_id: string
+          id: string
+          note: string
+          updated_at: string
+          visible_to_student: boolean
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          flight_id: string
+          id?: string
+          note?: string
+          updated_at?: string
+          visible_to_student?: boolean
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          flight_id?: string
+          id?: string
+          note?: string
+          updated_at?: string
+          visible_to_student?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_coach_notes_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_events: {
         Row: {
           chat_link: string | null
