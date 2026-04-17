@@ -304,13 +304,30 @@ export default function Dashboard() {
       <section>
         <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.recentFlights")}</h2>
         {recent.length === 0 ? (
-          <EmptyState
-            icon={Plane}
-            title={t("dashboard.noFlights")}
-            description={t("dashboard.noFlightsDesc")}
-            actionLabel={t("dashboard.firstFlight")}
-            onAction={() => navigate("/flights/new")}
-          />
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Plane className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">{t("dashboard.noFlights")}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.noFlightsDesc")}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                <Button onClick={() => navigate("/flights/new")} className="gap-2 justify-start">
+                  <Plus className="h-4 w-4" /> {t("dashboard.firstFlight")}
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/import")} className="gap-2 justify-start">
+                  <Plane className="h-4 w-4" /> {t("dashboard.importExisting")}
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/profile")} className="gap-2 justify-start">
+                  <RefreshCw className="h-4 w-4" /> {t("dashboard.connectXcontest")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-4">
             {recent.map((f) => (
