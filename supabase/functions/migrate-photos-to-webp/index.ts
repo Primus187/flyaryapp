@@ -16,7 +16,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { decode as decodeJpeg } from "https://esm.sh/jpeg-js@0.4.4";
 import { decode as decodePng } from "https://deno.land/x/pngs@0.1.1/mod.ts";
-import { encode as encodeWebp } from "https://deno.land/x/wasm_webp@v0.0.4/mod.ts";
+import encodeWebp from "npm:@jsquash/webp@1.4.0/encode.js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
