@@ -66,10 +66,14 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportingCsv, setExportingCsv] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [includeNoGroup, setIncludeNoGroup] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const { isSupported: pushSupported, isSubscribed: pushEnabled, toggle: togglePush, loading: pushLoading } = usePushNotifications();
   useEffect(() => {
     if (!user) return;
