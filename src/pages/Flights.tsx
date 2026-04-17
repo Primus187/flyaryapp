@@ -286,7 +286,8 @@ export default function Flights() {
                 {items.map((f) => {
                   const thumbPoints = tracks[f.id];
                   return (
-                    <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
+                    <SwipeableFlightCard key={f.id} onDelete={() => handleDeleteFlight(f.id)}>
+                    <Card className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
                       <CardContent className="p-3">
                         <div className="flex gap-3">
                           {thumbPoints && (
