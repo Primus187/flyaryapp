@@ -688,7 +688,11 @@
     "challengeCompleted": "Challenge geschafft!",
     "signUp": "Anmelden",
     "you": "Du",
-    "loadingMore": "Mehr laden..."
+    "loadingMore": "Mehr laden...",
+    "suggestedPilots": "Piloten zum Folgen",
+    "sharedGroups_one": "{{count}} gemeinsame Gruppe",
+    "sharedGroups_other": "{{count}} gemeinsame Gruppen",
+    "following": "Folge ich"
   },
   "notifications": {
     "title": "Benachrichtigungen",

@@ -129,7 +129,7 @@ export default function PilotSuggestions() {
                   onClick={() => !isFollowing && handleFollow(s.user_id)}
                   disabled={isFollowing}
                 >
-                  {isFollowing ? <><Check className="h-3.5 w-3.5" /> {t("pilot.following")}</> : <><UserPlus className="h-3.5 w-3.5" /> {t("pilot.follow")}</>}
+                  {isFollowing ? <><Check className="h-3.5 w-3.5" /> {t("feed.following")}</> : <><UserPlus className="h-3.5 w-3.5" /> {t("follows.follow")}</>}
                 </Button>
               </div>
             );
