@@ -240,7 +240,16 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
     }
   }
 
+  onProgress?.(100);
   return { stats, yearComparison, recent: recentFlights, events, signups, challenges, profile, avatarSignedUrl, overdueGliders };
+}
+
+export function prefetchDashboard(userId: string, queryClient: QueryClient, onProgress?: (pct: number) => void) {
+  return queryClient.prefetchQuery({
+    queryKey: ["dashboard", userId],
+    queryFn: () => fetchDashboardData(userId, onProgress),
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 export function useDashboardData() {
