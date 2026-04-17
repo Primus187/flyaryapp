@@ -153,7 +153,9 @@
     "templateSaved": "Template saved",
     "templateDeleted": "Template deleted",
     "saveAsTemplate": "Save as template",
-    "templateNamePlaceholder": "Template name..."
+    "templateNamePlaceholder": "Template name...",
+    "tags": "Tags",
+    "tagsPlaceholder": "#thermal, #evening..."
   },
   "events": {
     "title": "Events",
@@ -472,9 +474,43 @@
     "distanceTrendYear": "Distance per year (km)",
     "gliderDistribution": "Glider distribution",
     "weekdayDistribution": "Flight days (weekday)",
-    "weekdaysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-    "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    "weekdaysShort": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ]
   },
   "import": {
     "importFlights": "Import flights",
@@ -652,7 +688,23 @@
     "rightsTitle": "Your rights",
     "rightsText": "You have the right to access, correct, and delete your personal data at any time. Contact us through the app.",
     "contactTitle": "Contact",
-    "contactText": "For privacy-related questions, please contact the app operator."
+    "contactText": "For privacy-related questions, please contact the app operator.",
+    "termsTitle": "Terms of Service",
+    "licensesTitle": "Licenses",
+    "termsIntro": "These terms govern the use of Flyary, operated by Tobias Bolliger as a private individual.",
+    "termsScopeTitle": "Scope",
+    "termsScopeText": "Flyary is a digital flight log for paragliding pilots. Use is voluntary and at your own risk.",
+    "termsAccountTitle": "User account",
+    "termsAccountText": "You are responsible for the security of your account and the accuracy of the data you enter.",
+    "termsLiabilityTitle": "Liability",
+    "termsLiabilityText": "Flyary is NOT a navigation or safety system. Flight planning, weather assessment and safety decisions are solely the pilot's responsibility. We accept no liability for damages arising from use of the app, displayed weather data or maps.",
+    "termsContentTitle": "User content",
+    "termsContentText": "You retain all rights to your uploaded content (photos, tracks, comments). You grant Flyary the right to store and display them within the app's features.",
+    "termsTerminationTitle": "Termination",
+    "termsTerminationText": "You can delete your account at any time via settings. All your data will then be permanently removed.",
+    "termsLawTitle": "Applicable law",
+    "termsLawText": "Swiss law applies. Place of jurisdiction is the operator's residence.",
+    "licensesIntro": "Flyary uses numerous open-source libraries. We thank the maintainers for their work."
   },
   "feed": {
     "title": "Feed",
@@ -675,7 +727,9 @@
     "suggestedPilots": "Pilots to follow",
     "sharedGroups_one": "{{count}} shared group",
     "sharedGroups_other": "{{count}} shared groups",
-    "following": "Following"
+    "following": "Following",
+    "filteringByTag": "Filter: #{{tag}}",
+    "noFlightsForTag": "No flights for this tag"
   },
   "notifications": {
     "title": "Notifications",
