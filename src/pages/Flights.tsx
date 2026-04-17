@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plane, Plus, Filter, Loader2 } from "lucide-react";
+import { Search, Plane, Plus, Filter, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { useSwipeAction } from "@/hooks/use-swipe-action";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Flight {
   id: string;
