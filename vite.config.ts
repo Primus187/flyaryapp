@@ -70,7 +70,7 @@ export default defineConfig(({ mode }) => ({
           maplibre: ["maplibre-gl"],
           leaflet: ["leaflet", "react-leaflet", "@react-leaflet/core"],
           recharts: ["recharts"],
-          pdf: ["jspdf", "jspdf-autotable"],
+          
         },
       },
     },
