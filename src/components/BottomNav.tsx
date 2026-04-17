@@ -27,6 +27,7 @@ export default function BottomNav() {
           return (
             <button
               key={tab.path}
+              type="button"
               onClick={() => navigate(tab.path)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 py-2 px-3 transition-colors active:scale-95",

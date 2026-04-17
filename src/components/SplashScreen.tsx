@@ -35,8 +35,9 @@ export default function SplashScreen({
   return (
     <div
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-400 ${
-        phase === "exit" ? "opacity-0" : "opacity-100"
+        phase === "exit" ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
+      aria-hidden={phase === "exit"}
     >
       <img
         src="/splash-bg.png"
