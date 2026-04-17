@@ -316,6 +316,7 @@ export default function Flights() {
                         </div>
                       </CardContent>
                     </Card>
+                    </SwipeableFlightCard>
                   );
                 })}
               </div>
