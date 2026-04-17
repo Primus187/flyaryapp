@@ -1567,12 +1567,66 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          cover_photo_url: string | null
+          created_at: string | null
+          flight_school: string | null
+          glider_info: string | null
+          pilot_name: string | null
+          training_level: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          cover_photo_url?: string | null
+          created_at?: string | null
+          flight_school?: string | null
+          glider_info?: string | null
+          pilot_name?: string | null
+          training_level?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          cover_photo_url?: string | null
+          created_at?: string | null
+          flight_school?: string | null
+          glider_info?: string | null
+          pilot_name?: string | null
+          training_level?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_and_award_badges_for_user: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      get_own_profile_private: {
+        Args: never
+        Returns: {
+          allergies: string
+          blood_type: string
+          emergency_contact_name: string
+          emergency_contact_phone: string
+          exam_practical_date: string
+          exam_theory_date: string
+          health_data_consent_at: string
+          medical_notes: string
+          shv_number: string
+          xcontest_password_encrypted: string
+          xcontest_username: string
+        }[]
       }
       get_pilot_stats: {
         Args: { _user_id: string; _year?: number }
@@ -1583,6 +1637,19 @@ export type Database = {
           total_minutes: number
           unique_landings: number
           unique_takeoffs: number
+        }[]
+      }
+      get_public_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          cover_photo_url: string
+          flight_school: string
+          glider_info: string
+          pilot_name: string
+          training_level: string
+          user_id: string
         }[]
       }
       has_role: {
@@ -1601,6 +1668,14 @@ export type Database = {
         Returns: boolean
       }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
+      join_group_by_invite_code: {
+        Args: { _invite_code: string }
+        Returns: {
+          already_member: boolean
+          id: string
+          name: string
+        }[]
+      }
       send_push_notification: {
         Args: { _body: string; _title: string; _url?: string; _user_id: string }
         Returns: undefined
