@@ -131,15 +131,20 @@ export default function Feed() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [items, setItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  // Seed initial state from React Query cache (prefetched during splash)
+  const cached = user ? queryClient.getQueryData<FeedPageResult>(FEED_QUERY_KEY(user.id)) : undefined;
+
+  const [items, setItems] = useState<FeedItem[]>(cached?.items || []);
+  const [loading, setLoading] = useState(!cached);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(cached?.hasMore ?? true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [groupIds, setGroupIds] = useState<string[]>([]);
-  const groupIdsRef = useRef<string[]>([]);
-  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
+  const [groupIds, setGroupIds] = useState<string[]>(cached?.groupIds || []);
+  const groupIdsRef = useRef<string[]>(cached?.groupIds || []);
+  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>(cached?.groupMembers || []);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
