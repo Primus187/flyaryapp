@@ -10,11 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap, Bell } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { exportFlightsCsv, downloadBlob } from "@/lib/csv-export";
 
 function TrainingLevelCard() {
   const { t } = useTranslation();
