@@ -42,19 +42,6 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function computeXcDistance(points: IGCPoint[]): number {
-  // Downsample to ~500 points for O(n²) brute-force
-  const step = Math.max(1, Math.floor(points.length / 500));
-  const sampled = points.filter((_, i) => i % step === 0);
-  let maxDist = 0;
-  for (let i = 0; i < sampled.length; i++) {
-    for (let j = i + 1; j < sampled.length; j++) {
-      const d = haversineKm(sampled[i].lat, sampled[i].lng, sampled[j].lat, sampled[j].lng);
-      if (d > maxDist) maxDist = d;
-    }
-  }
-  return Math.round(maxDist * 100) / 100;
-}
 
 function downsample<T>(arr: T[], target: number): { sampled: T[]; indices: number[] } {
   const step = Math.max(1, Math.floor(arr.length / target));
