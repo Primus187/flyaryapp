@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Plane, Plus, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
+import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 
 interface Flight {
   id: string;
@@ -45,6 +46,7 @@ export default function Flights() {
   const { t, i18n } = useTranslation();
   const [flights, setFlights] = useState<Flight[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [tracks, setTracks] = useState<Record<string, [number, number][]>>({});
   const [search, setSearch] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
@@ -75,6 +77,38 @@ export default function Flights() {
       setLoading(false);
     });
   }, [user]);
+
+  // Batch-fetch all IGC tracks for thumbnails (heavily downsampled to 40 points each)
+  useEffect(() => {
+    const trackedFlightIds = flights.filter(f => f.has_track).map(f => f.id);
+    if (trackedFlightIds.length === 0) return;
+    let cancelled = false;
+    supabase
+      .from("igc_tracks")
+      .select("flight_id, track_data")
+      .in("flight_id", trackedFlightIds)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const map: Record<string, [number, number][]> = {};
+        for (const row of data as any[]) {
+          const raw = row.track_data;
+          const arr: any[] | null = Array.isArray(raw) ? raw : (raw?.points && Array.isArray(raw.points) ? raw.points : null);
+          if (!arr || arr.length < 2) continue;
+          // Downsample to ~40 points for tiny thumbnail
+          const step = Math.max(1, Math.floor(arr.length / 40));
+          const points: [number, number][] = [];
+          for (let i = 0; i < arr.length; i += step) {
+            const p = arr[i];
+            const lat = Array.isArray(p) ? p[0] : p.lat;
+            const lng = Array.isArray(p) ? p[1] : p.lng;
+            if (typeof lat === "number" && typeof lng === "number") points.push([lat, lng]);
+          }
+          if (points.length >= 2) map[row.flight_id] = points;
+        }
+        setTracks(map);
+      });
+    return () => { cancelled = true; };
+  }, [flights]);
 
   const currentYear = new Date().getFullYear();
 
@@ -199,30 +233,40 @@ export default function Flights() {
                 </div>
               </div>
               <div className="space-y-2">
-                {items.map((f) => (
-                  <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
-                    <CardContent className="p-3">
-                      <div className="flex justify-between items-start">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-medium text-sm truncate">{f.takeoff_location?.name || t("common.unknown")}</p>
-                            {f.has_track && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">IGC</span>}
+                {items.map((f) => {
+                  const thumbPoints = tracks[f.id];
+                  return (
+                    <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
+                      <CardContent className="p-3">
+                        <div className="flex gap-3">
+                          {thumbPoints && (
+                            <FlightThumbnailMap points={thumbPoints} size={64} className="shrink-0 rounded-xl" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-medium text-sm truncate">{f.takeoff_location?.name || t("common.unknown")}</p>
+                                  {f.has_track && !thumbPoints && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">IGC</span>}
+                                </div>
+                                {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {f.landing_location.name}</p>}
+                              </div>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short" })}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
+                              {f.duration_minutes && <span>⏱ {formatDuration(f.duration_minutes)}</span>}
+                              {f.altitude_gain && <span>↑ {f.altitude_gain}m</span>}
+                              {f.distance_km && <span>↔ {Number(f.distance_km).toFixed(1)}km</span>}
+                              {f.glider && <span className="truncate max-w-[120px]">🪂 {f.glider}</span>}
+                            </div>
                           </div>
-                          {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {f.landing_location.name}</p>}
                         </div>
-                        <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                          {new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short" })}
-                        </span>
-                      </div>
-                      <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                        {f.duration_minutes && <span>⏱ {formatDuration(f.duration_minutes)}</span>}
-                        {f.altitude_gain && <span>↑ {f.altitude_gain}m</span>}
-                        {f.distance_km && <span>↔ {Number(f.distance_km).toFixed(1)}km</span>}
-                        {f.glider && <span className="truncate">🪂 {f.glider}</span>}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </section>
           ))}
