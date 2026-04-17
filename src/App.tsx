@@ -101,6 +101,13 @@ function SplashGate({ children }: { children: React.ReactNode }) {
       return;
     }
     let cancelled = false;
+    // Safety: never let the splash block the UI for more than 4s
+    const safety = setTimeout(() => {
+      if (!cancelled) {
+        setProgress(100);
+        setDataReady(true);
+      }
+    }, 4000);
     prefetchDashboard(user.id, queryClient, (pct) => {
       if (!cancelled) setProgress(p => Math.max(p, pct));
     })
@@ -111,7 +118,7 @@ function SplashGate({ children }: { children: React.ReactNode }) {
           setDataReady(true);
         }
       });
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(safety); };
   }, [user, authLoading]);
 
   const handleSplashFinished = useCallback(() => setShowSplash(false), []);
