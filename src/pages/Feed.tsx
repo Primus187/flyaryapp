@@ -11,8 +11,8 @@ import FeedStoryBar from "@/components/FeedStoryBar";
 import NotificationBell from "@/components/NotificationBell";
 import EmptyState from "@/components/EmptyState";
 import PilotSuggestions from "@/components/PilotSuggestions";
-import { Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Users, X } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const PAGE_SIZE = 10;
@@ -133,6 +133,8 @@ export default function Feed() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tagFilter = searchParams.get("tag");
 
   // Seed initial state from React Query cache (prefetched during splash)
   const cached = user ? queryClient.getQueryData<FeedPageResult>(FEED_QUERY_KEY(user.id)) : undefined;
@@ -516,7 +518,7 @@ export default function Feed() {
 async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedFlight[]> {
   let query = supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, tags, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
     .not("published_at", "is", null)
@@ -638,6 +640,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
       ...c,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
     })),
+    tags: Array.isArray((f as any).tags) ? (f as any).tags : null,
   }));
 }
 
