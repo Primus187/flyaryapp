@@ -1,83 +1,110 @@
 
 
-# UI/UX-Verbesserungen — Pilot-fokussiert & professionell
+# Was fehlt für den produktiven Erfolg
 
-Basierend auf Analyse von Dashboard, Flüge, More, BottomNav und im Vergleich zu erfolgreichen Apps (Strava, Instagram, Apple Fitness, Komoot).
+Die App hat bereits eine starke Feature-Basis (IGC, Social, Gamification, PWA, Offline). Für echten produktiven Erfolg fehlen aber **Vertrauen, Onboarding und Performance unter realen Bedingungen**. Hier meine ehrliche Analyse — sortiert nach Wirkung.
 
-## Diagnose — was heute schwächer ist
+## 1. Onboarding & First-Run-Erlebnis (kritisch)
 
-1. **Dashboard wirkt überladen**: 7 Sektionen untereinander (Header, Stats, Jahresvergleich, Wartung, Events, Challenges, Ziele, Flüge). Keine visuelle Hierarchie — alles gleich wichtig.
-2. **Stats-Kacheln sind klein und stumm**: 4 winzige Boxen mit „87 / 142h / 12 / 9" — keine emotionale Wirkung, kein Highlight (z. B. „dieses Jahr").
-3. **Bottom-Nav ohne Labels**: Nur Icons + Active-Dot. Erfolgreiche Apps (Instagram, Strava, Komoot) zeigen entweder Labels ODER haben einen prominenten zentralen Action-Button.
-4. **Kein zentraler "Quick Add" FAB**: Flug erfassen ist die Kern-Aktion — versteckt als kleiner `+`-Button im Header.
-5. **More-Seite = 11 gleichförmige Tiles**: Keine Gruppierung (Tools / Verwaltung / Rechtliches), Sign-Out wirkt deplatziert.
-6. **Flüge-Liste = Textwüste**: Keine visuelle Differenzierung (Karten ohne Bild/Map-Thumb), keine Gruppierung nach Monat/Jahr, keine schnellen Filter (z. B. „Diese Saison", „Top 10 km").
-7. **Kein „Heute"-Kontext**: Wetter, nächster Termin, aktuelle Saison-Progress-Ring fehlen auf Dashboard-Höhe.
-8. **Tab-Bar-Reihenfolge nicht konsistent**: Bottom-Nav-Reihenfolge ≠ Wichtigkeit (Locations vor More — aber Locations selten genutzt).
+Heute: Neuer User landet auf leerem Dashboard, sieht „Keine Flüge", weiss nicht wo anfangen.
 
-## Verbesserungsvorschläge (priorisiert)
+**Was fehlt:**
+- **Geführter First-Run** (3–4 Schritte): Profil → erster Flug (IGC oder XLSX-Import als Shortcut) → optional Gruppe beitreten
+- **Sample-Daten / Demo-Modus**: Ein Demo-Flug zum Erkunden, bevor man eigene erfasst
+- **Empty-States mit Coach-Tipps**: Statt „Keine Flüge" → „So importierst du deine ersten Flüge: [Button: XLSX hochladen]"
+- **XContest-Sync prominent im Onboarding** anbieten — viele Piloten haben dort schon Jahre an Daten
 
-### Priorität 1 — Sofortwirkung, geringes Risiko
+## 2. Vertrauen & Verlässlichkeit
 
-**A. Hero-Stat-Karte statt 4 Mini-Tiles**
-Eine grosse Karte oben („Saison 2026") mit:
-- Zentral: aktuelles Jahr Flüge + Stunden gross (`text-3xl`, tabular-nums)
-- Daneben: Trend-Pfeil + % vs. Vorjahr (heute schon berechnet, nur visualisiert)
-- Sekundärzeile klein: Distanz · Höhenmeter · Startplätze
-→ Inspiration: Strava-Wochenübersicht, Apple Fitness-Ringe
+Piloten investieren ihr Flugbuch nur, wenn sie sicher sind, dass nichts verloren geht.
 
-**B. Bottom-Nav mit Labels + zentralem FAB**
-- 5 Tabs (statt 6): Home · Feed · **[+ Flug]** · Flüge · More
-- Zentraler runder Action-Button (primär gefärbt) → öffnet `/flights/new`
-- Mini-Labels unter den Icons (`text-[10px]`) — Standard in iOS/Android
-- Events & Locations wandern in Dashboard-Quick-Links bzw. More
+**Was fehlt:**
+- **Daten-Export** als CSV/XLSX direkt im Settings (nicht nur PDF) — „Meine Daten gehören mir"
+- **Backup-Hinweis** im Profil: „Letzter Sync: vor 2 Min · 142 Flüge gespeichert"
+- **Account löschen** UI (DSGVO-Pflicht, ist das implementiert?)
+- **Versions-Historie / Soft-Delete** für Flüge — versehentliches Löschen rückgängig machen
+- **Status-Page-Link** im More: „App-Status" zeigt Backend-Health
 
-**C. More-Seite gruppieren**
-- Sektion „Pilot": Profil, Suche, Leaderboard
-- Sektion „Tools": Wetter, Karte, Training, Gruppen
-- Sektion „Verwaltung": Import Flüge / Standorte, Einstellungen
-- Sektion „Rechtliches": Legal · Sign-Out
-→ Reduziert kognitive Last, wirkt wie native iOS-Settings
+## 3. Performance & Wahrnehmung
 
-### Priorität 2 — Mehr Politur
+**Was fehlt / zu prüfen:**
+- **Bundle-Size-Audit**: Sind alle grossen Libs (MapLibre, Leaflet, recharts) wirklich lazy?
+- **Image-Optimization**: Werden Avatare/Cover/Flugfotos in WebP + responsive sizes ausgeliefert?
+- **Skeleton-Konsistenz**: Match zu finalem Layout auf allen Seiten (heute teils generisch)
+- **Optimistic Updates** für Likes, Kommentare, Goal-Updates — sofortiges Feedback
+- **Service-Worker-Strategie** prüfen: Funktioniert die App nach Flugtag im Tal mit schwachem Netz wirklich?
 
-**D. Dashboard Information-Density reduzieren**
-- Stats-Karte (A) + Hero-Bild des letzten Flugs prominent
-- Events/Challenges/Ziele in **horizontalen Carousels** statt Stacks (Embla, schon im Stack vorhanden)
-- „Letzte Flüge" auf 3 begrenzen + „Alle ansehen" → /flights
+## 4. Mobile-Native-Feeling
 
-**E. Flüge-Liste aufwerten**
-- Gruppierung nach Monat (Sticky-Header, wie iOS Fotos)
-- Optional: Map-Thumbnail links (kleiner Marker auf Mini-Map) wenn Track vorhanden
-- Quick-Filter-Chips über Suchleiste: „Diese Saison" · „Mit Track" · „Wettkampf"
+Die App ist PWA + Capacitor, fühlt sich aber noch nicht 100% native an.
 
-**F. Mikro-Interaktionen**
-- Haptic-Feedback bei Tab-Wechsel (`navigator.vibrate(10)`) — fühlt sich nativ an
-- Skeleton-Karten matchen exakt das finale Layout (kein Layout-Shift)
-- Pull-to-refresh-Spinner durch animierten Paraglider-Icon ersetzen (Detail-Liebe)
+**Was fehlt:**
+- **Pull-to-refresh** überall (heute nur Dashboard?)
+- **Swipe-to-delete** in Listen (Flüge, Termine)
+- **Safe-Area-Insets** für iPhone-Notch/Dynamic-Island sauber prüfen
+- **Share-Sheet-Integration** (`navigator.share`) für Flüge/Profil
+- **Deep-Links** für geteilte Flüge öffnen direkt in App (Capacitor)
 
-### Priorität 3 — Wow-Faktor
+## 5. Engagement & Retention
 
-**G. „Heute"-Bar oben am Dashboard**
-Schmale glasige Bar zwischen Header und Stats: Wetter aktueller Standort + nächster bestätigter Termin („Morgen 09:00 Niederbauen"). Tap → Wetter / Event-Detail.
+Damit Piloten täglich öffnen, nicht nur nach dem Flug.
 
-**H. Onboarding-Empty-States humanisieren**
-Statt nur „Keine Flüge" — ein freundlicher Coach-Tipp („Erfasse deinen ersten Flug — IGC genügt, Rest erledigen wir.") mit illustrativem Icon statt generischem Plane-Icon.
+**Was fehlt:**
+- **Push-Notifications aktiv nutzen**: „Morgen Flugwetter in deiner Region", „Neuer Flug deines Followers", „Gruppen-Termin morgen"
+- **Wochen-Wrap-up**: Sonntag-Push „Deine Woche: 3 Flüge, 8h, neuer Höhenrekord"
+- **Streaks**: „5 Wochen in Folge geflogen" — Gamification-Hook
+- **Wetter-Widget mit Lieblingsstandorten** auf Dashboard (heute separater Tab)
 
-## Vorgeschlagener Umfang für 1. Iteration
+## 6. Social-Discovery
 
-Empfehlung: **A + B + C** in einem Schritt umsetzen — das verändert den Gesamteindruck am stärksten und bleibt überschaubar.
+**Was fehlt:**
+- **Vorschläge „Piloten in deiner Region folgen"** im Feed-Empty-State
+- **Trending-Flüge** der Woche aus eigenen Gruppen
+- **Hashtags / Tags** für Flüge (#bisestable, #thermik, #abendflug)
+- **Kommentare auf eigene Flüge** in Push-Notifications einbinden
 
-| Datei | Änderung |
-|-------|----------|
-| `src/pages/Dashboard.tsx` | Hero-Stat-Karte ersetzt 4-Tile-Grid |
-| `src/components/BottomNav.tsx` | 5 Tabs + Labels + zentraler FAB |
-| `src/pages/More.tsx` | Tiles in 4 Sektionen gruppieren |
-| `src/i18n/locales/*.json` | Neue Labels für Bottom-Nav + More-Sektionen |
+## 7. Pilot-spezifische Profi-Features
 
-Keine DB-Änderungen, keine neuen Abhängigkeiten.
+Was Piloten von Strava abheben würde:
 
-## Offene Frage
+**Was fehlt:**
+- **Wing-Stats**: Stunden/Flüge pro Schirm — wann ist Check fällig?
+- **Standort-Insights**: „Dein bester Flug vom Niederbauen: 47 km am 12.05." auf Location-Detail
+- **Flugbuch-Suche mit Volltext** (heute Search-Page — aber durchsucht sie alles?)
+- **Multi-Pilot-Tag** auf Flügen („Mit @anna geflogen") — verlinkt beide Logbücher
 
-Bevor ich loslege: Soll ich **A+B+C** (mein Vorschlag) machen, oder willst du eine andere Kombination? Wenn du nur eines wählen müsstest, würde ich **B (BottomNav mit FAB)** empfehlen — höchste tägliche Sichtbarkeit.
+## 8. Admin & Flugschul-Tools
+
+Wenn Schulen wirklich onboarden sollen:
+
+**Was fehlt:**
+- **Lehrer-Notizen pro Flug** des Schülers (privat sichtbar)
+- **Kursverwaltung**: Schüler-Kohorten / Klassen
+- **Schul-Branding** (Logo) im Schul-Dashboard
+- **Bulk-Aktionen**: Schüler-Liste exportieren, Massen-Einladungen
+
+## 9. Rechtlich & Trust
+
+**Was zu prüfen:**
+- **Cookie/Tracking-Consent** falls Analytics aktiv
+- **Nutzungsbedingungen (AGB)** zusätzlich zu Datenschutz/Impressum
+- **Altersbeschränkung** + Eltern-Consent unter 16
+- **Lizenzhinweise** für genutzte OSS (Leaflet, MapLibre, Icons)
+
+## 10. Quality-Checks
+
+- **Lighthouse-Score** prüfen (PWA, Performance, A11y)
+- **Real-Device-Testing** auf iPhone SE (klein) und Android-Mid-Range (langsam)
+- **Crash-Reporting** (Sentry o.ä.) — heute nicht ersichtlich
+- **Analytics-Funnel** (z. B. PostHog): Wo brechen User ab?
+
+## Meine Top-3-Empfehlung für nächste Iteration
+
+Wenn du nur 3 Dinge angehst, dann:
+
+1. **Onboarding-Flow** (Punkt 1) — entscheidet über 80% der Conversion
+2. **Daten-Export + Account-Löschen** (Punkt 2) — Vertrauen + DSGVO-Pflicht
+3. **Push-Notifications aktiv nutzen** (Punkt 5) — bringt User zurück
+
+Welchen Bereich soll ich als nächstes angehen? Oder soll ich aus 1+2+3 ein konkretes Implementierungs-Paket schnüren?
 
