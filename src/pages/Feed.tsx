@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,10 +16,91 @@ import { useToast } from "@/hooks/use-toast";
 
 const PAGE_SIZE = 10;
 
-type FeedItem =
+export type FeedItem =
   | { type: "flight"; date: string; data: FeedFlight }
   | { type: "event"; date: string; data: FeedEvent }
   | { type: "achievement"; date: string; data: FeedAchievement };
+
+export interface FeedPageResult {
+  items: FeedItem[];
+  groupIds: string[];
+  groupMembers: { user_id: string; pilot_name: string }[];
+  hasMore: boolean;
+}
+
+export const FEED_QUERY_KEY = (userId: string) => ["feed-initial", userId] as const;
+
+export async function fetchInitialFeedPage(userId: string): Promise<FeedPageResult> {
+  const { data: memberships } = await supabase
+    .from("group_members")
+    .select("group_id")
+    .eq("user_id", userId);
+  const gIds = memberships?.map(m => m.group_id) || [];
+
+  let groupMembers: { user_id: string; pilot_name: string }[] = [];
+  if (gIds.length > 0) {
+    const { data: members } = await supabase
+      .from("group_members")
+      .select("user_id")
+      .in("group_id", gIds);
+    if (members) {
+      const memberIds = [...new Set(members.map(m => m.user_id))];
+      const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
+      groupMembers = (profs || []).map(p => ({ user_id: p.user_id, pilot_name: p.pilot_name || "Pilot" }));
+    }
+  }
+
+  const groupMap: Record<string, string> = {};
+  if (gIds.length > 0) {
+    const { data: groups } = await supabase.from("groups").select("id, name").in("id", gIds);
+    groups?.forEach(g => { groupMap[g.id] = g.name; });
+  }
+
+  const { data: followsData } = await supabase
+    .from("follows" as any)
+    .select("following_id")
+    .eq("follower_id", userId);
+  const followedIds: string[] = (followsData || []).map((f: any) => f.following_id);
+
+  const [flightsRes, followedFlightsRes, eventsRes, achievementsRes] = await Promise.all([
+    gIds.length > 0 ? fetchFlights(userId, gIds, groupMap) : Promise.resolve([]),
+    followedIds.length > 0 ? fetchFollowedFlights(userId, followedIds) : Promise.resolve([]),
+    gIds.length > 0 ? fetchEvents(userId, gIds, groupMap) : Promise.resolve([]),
+    gIds.length > 0 ? fetchAchievements(userId, gIds, groupMap) : Promise.resolve([]),
+  ]);
+
+  const allFlights = [...flightsRes, ...followedFlightsRes];
+  const seenIds = new Set<string>();
+  const dedupedFlights = allFlights.filter(f => { if (seenIds.has(f.id)) return false; seenIds.add(f.id); return true; });
+
+  const allFlightIds = dedupedFlights.map(f => f.id);
+  const allEventIds = eventsRes.map(e => e.id);
+  const allAchIds = achievementsRes.map(a => a.id);
+
+  const bookmarkQueries = await Promise.all([
+    allFlightIds.length > 0 ? supabase.from("bookmarks").select("flight_id").eq("user_id", userId).in("flight_id", allFlightIds) : { data: [] },
+    allEventIds.length > 0 ? supabase.from("bookmarks").select("event_id").eq("user_id", userId).in("event_id", allEventIds) : { data: [] },
+    allAchIds.length > 0 ? supabase.from("bookmarks").select("achievement_id").eq("user_id", userId).in("achievement_id", allAchIds) : { data: [] },
+  ]);
+
+  const bookmarkedFlights = new Set((bookmarkQueries[0].data || []).map((b: any) => b.flight_id));
+  const bookmarkedEvents = new Set((bookmarkQueries[1].data || []).map((b: any) => b.event_id));
+  const bookmarkedAchs = new Set((bookmarkQueries[2].data || []).map((b: any) => b.achievement_id));
+
+  const items: FeedItem[] = [
+    ...dedupedFlights.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: { ...f, isBookmarked: bookmarkedFlights.has(f.id) } })),
+    ...eventsRes.map(e => ({ type: "event" as const, date: e.published_at || e.created_at || e.event_date, data: { ...e, isBookmarked: bookmarkedEvents.has(e.id) } })),
+    ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: { ...a, isBookmarked: bookmarkedAchs.has(a.id) } })),
+  ];
+  items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return {
+    items,
+    groupIds: gIds,
+    groupMembers,
+    hasMore: dedupedFlights.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE,
+  };
+}
 
 function FeedSkeleton() {
   return (
@@ -49,15 +131,20 @@ export default function Feed() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [items, setItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  // Seed initial state from React Query cache (prefetched during splash)
+  const cached = user ? queryClient.getQueryData<FeedPageResult>(FEED_QUERY_KEY(user.id)) : undefined;
+
+  const [items, setItems] = useState<FeedItem[]>(cached?.items || []);
+  const [loading, setLoading] = useState(!cached);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(cached?.hasMore ?? true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [groupIds, setGroupIds] = useState<string[]>([]);
-  const groupIdsRef = useRef<string[]>([]);
-  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
+  const [groupIds, setGroupIds] = useState<string[]>(cached?.groupIds || []);
+  const groupIdsRef = useRef<string[]>(cached?.groupIds || []);
+  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>(cached?.groupMembers || []);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
@@ -157,7 +244,13 @@ export default function Feed() {
     setLoadingMore(false);
   }, [user]);
 
-  useEffect(() => { fetchFeed(); }, [fetchFeed]);
+  // Skip initial fetch if we already have prefetched data; otherwise fetch now
+  const didInitialFetch = useRef(!!cached);
+  useEffect(() => {
+    if (didInitialFetch.current) return;
+    didInitialFetch.current = true;
+    fetchFeed();
+  }, [fetchFeed]);
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
