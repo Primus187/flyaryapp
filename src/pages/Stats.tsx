@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,11 +7,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import StatsBarChart from "@/components/stats/StatsBarChart";
-import YearComparisonChart from "@/components/stats/YearComparisonChart";
-import CumulativeHoursChart from "@/components/stats/CumulativeHoursChart";
+import { Skeleton } from "@/components/ui/skeleton";
 import RankedList from "@/components/stats/RankedList";
 import ActivityHeatmap from "@/components/stats/ActivityHeatmap";
+
+// Lazy-load Recharts-based charts (recharts is ~150 KB gzipped)
+const StatsBarChart = lazy(() => import("@/components/stats/StatsBarChart"));
+const YearComparisonChart = lazy(() => import("@/components/stats/YearComparisonChart"));
+const CumulativeHoursChart = lazy(() => import("@/components/stats/CumulativeHoursChart"));
+
+const ChartFallback = () => <Skeleton className="h-64 w-full rounded-2xl" />;
 
 interface Flight {
   id: string;
