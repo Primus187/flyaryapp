@@ -100,6 +100,22 @@ export default function More() {
           </button>
           <button
             type="button"
+            onClick={() => navigate("/legal/terms")}
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.99] transition-all"
+          >
+            <Scale className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">{t("legal.termsTitle")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/legal/licenses")}
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.99] transition-all"
+          >
+            <Scale className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">{t("legal.licensesTitle")}</span>
+          </button>
+          <button
+            type="button"
             onClick={signOut}
             className="w-full flex items-center gap-3 p-3 rounded-xl text-destructive hover:bg-destructive/10 active:scale-[0.99] transition-all"
           >
