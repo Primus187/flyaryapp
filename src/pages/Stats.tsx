@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,11 +7,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import StatsBarChart from "@/components/stats/StatsBarChart";
-import YearComparisonChart from "@/components/stats/YearComparisonChart";
-import CumulativeHoursChart from "@/components/stats/CumulativeHoursChart";
+import { Skeleton } from "@/components/ui/skeleton";
 import RankedList from "@/components/stats/RankedList";
 import ActivityHeatmap from "@/components/stats/ActivityHeatmap";
+
+// Lazy-load Recharts-based charts (recharts is ~150 KB gzipped)
+const StatsBarChart = lazy(() => import("@/components/stats/StatsBarChart"));
+const YearComparisonChart = lazy(() => import("@/components/stats/YearComparisonChart"));
+const CumulativeHoursChart = lazy(() => import("@/components/stats/CumulativeHoursChart"));
+
+const ChartFallback = () => <Skeleton className="h-64 w-full rounded-2xl" />;
 
 interface Flight {
   id: string;
@@ -225,37 +230,39 @@ export default function Stats() {
         </Card>
       )}
 
-      {/* Charts */}
-      {chartData.length > 0 && (
-        <>
-          <StatsBarChart title={mode === "all" ? t("stats.flightsPerYear") : t("stats.flightsPerMonth")} data={chartData} dataKey="flights" config={chartConfig} xInterval={mode === "all" ? 0 : 1} />
-          <StatsBarChart title={mode === "all" ? t("stats.flightTimePerYear") : t("stats.flightTimePerMonth")} data={chartData} dataKey="minutes" config={chartConfig} xInterval={mode === "all" ? 0 : 1} />
-        </>
-      )}
+      {/* Charts (lazy-loaded recharts bundle) */}
+      <Suspense fallback={<ChartFallback />}>
+        {chartData.length > 0 && (
+          <>
+            <StatsBarChart title={mode === "all" ? t("stats.flightsPerYear") : t("stats.flightsPerMonth")} data={chartData} dataKey="flights" config={chartConfig} xInterval={mode === "all" ? 0 : 1} />
+            <StatsBarChart title={mode === "all" ? t("stats.flightTimePerYear") : t("stats.flightTimePerMonth")} data={chartData} dataKey="minutes" config={chartConfig} xInterval={mode === "all" ? 0 : 1} />
+          </>
+        )}
 
-      {mode === "year" && yearCompareData.length > 0 && (
-        <YearComparisonChart title={t("stats.yearComparison")} data={yearCompareData} currentLabel={`${selectedYear}`} previousLabel={`${selectedYear - 1}`} />
-      )}
+        {mode === "year" && yearCompareData.length > 0 && (
+          <YearComparisonChart title={t("stats.yearComparison")} data={yearCompareData} currentLabel={`${selectedYear}`} previousLabel={`${selectedYear - 1}`} />
+        )}
 
-      {cumulativeData.length > 1 && mode === "all" && (
-        <CumulativeHoursChart title={t("stats.cumulativeHours")} data={cumulativeData} tooltipLabel={t("stats.totalFlightTime")} />
-      )}
+        {cumulativeData.length > 1 && mode === "all" && (
+          <CumulativeHoursChart title={t("stats.cumulativeHours")} data={cumulativeData} tooltipLabel={t("stats.totalFlightTime")} />
+        )}
 
-      <RankedList title={t("stats.topTakeoffs")} items={topTakeoffs} />
+        <RankedList title={t("stats.topTakeoffs")} items={topTakeoffs} />
 
-      {mode !== "all" && altitudeTrend.some(d => d.avgAltitude > 0) && (
-        <StatsBarChart title={t("stats.altitudeTrend")} data={altitudeTrend} dataKey="avgAltitude" config={{ avgAltitude: { label: t("stats.altitudeGain"), color: "hsl(var(--primary) / 0.7)" } }} />
-      )}
+        {mode !== "all" && altitudeTrend.some(d => d.avgAltitude > 0) && (
+          <StatsBarChart title={t("stats.altitudeTrend")} data={altitudeTrend} dataKey="avgAltitude" config={{ avgAltitude: { label: t("stats.altitudeGain"), color: "hsl(var(--primary) / 0.7)" } }} />
+        )}
 
-      {distanceTrend.some(d => d.km > 0) && (
-        <StatsBarChart title={mode === "all" ? t("stats.distanceTrendYear") : t("stats.distanceTrend")} data={distanceTrend} dataKey="km" config={{ km: { label: "km", color: "hsl(var(--primary) / 0.5)" } }} xInterval={mode === "all" ? 0 : 1} />
-      )}
+        {distanceTrend.some(d => d.km > 0) && (
+          <StatsBarChart title={mode === "all" ? t("stats.distanceTrendYear") : t("stats.distanceTrend")} data={distanceTrend} dataKey="km" config={{ km: { label: "km", color: "hsl(var(--primary) / 0.5)" } }} xInterval={mode === "all" ? 0 : 1} />
+        )}
 
-      <RankedList title={t("stats.gliderDistribution")} items={gliderDistribution} />
+        <RankedList title={t("stats.gliderDistribution")} items={gliderDistribution} />
 
-      {weekdayDistribution.some(d => d.flights > 0) && (
-        <StatsBarChart title={t("stats.weekdayDistribution")} data={weekdayDistribution} dataKey="flights" config={{ flights: { label: t("stats.flights"), color: "hsl(var(--primary) / 0.6)" } }} xInterval={0} />
-      )}
+        {weekdayDistribution.some(d => d.flights > 0) && (
+          <StatsBarChart title={t("stats.weekdayDistribution")} data={weekdayDistribution} dataKey="flights" config={{ flights: { label: t("stats.flights"), color: "hsl(var(--primary) / 0.6)" } }} xInterval={0} />
+        )}
+      </Suspense>
 
       {(mode === "year" || mode === "all") && Object.keys(heatmapData.days).length > 0 && (
         <ActivityHeatmap title={`${t("stats.activityHeatmap")} ${heatmapData.year}`} year={heatmapData.year} days={heatmapData.days} />

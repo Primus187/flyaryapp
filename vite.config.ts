@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -46,6 +47,14 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
+    // Bundle-Audit: nach `npm run build` öffne dist/stats.html für die Treemap
+    mode !== "development" && visualizer({
+      filename: "dist/stats.html",
+      template: "treemap",
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -53,5 +62,17 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Separate große Libs in eigene Chunks → bessere HTTP-Cache-Trefferquote
+        manualChunks: {
+          maplibre: ["maplibre-gl"],
+          leaflet: ["leaflet", "react-leaflet", "@react-leaflet/core"],
+          recharts: ["recharts"],
+          
+        },
+      },
+    },
+  },
 }));
-

@@ -1,13 +1,48 @@
 /**
  * Compress and resize an image file before upload.
- * Returns a new File with reduced dimensions and JPEG compression.
+ *
+ * Outputs WebP by default (smaller than JPEG at equivalent quality, supported
+ * by all modern browsers). Falls back to JPEG if the browser cannot encode WebP
+ * (extremely rare — only ancient browsers).
+ *
+ * The returned File keeps the original base name but with a `.webp` (or `.jpg`)
+ * extension, and the correct MIME type so Supabase Storage serves it properly.
  */
+
+let webpSupportCache: boolean | null = null;
+
+function canEncodeWebP(): Promise<boolean> {
+  if (webpSupportCache !== null) return Promise.resolve(webpSupportCache);
+  return new Promise((resolve) => {
+    try {
+      const c = document.createElement("canvas");
+      c.width = 1;
+      c.height = 1;
+      c.toBlob(
+        (b) => {
+          webpSupportCache = !!b && b.type === "image/webp";
+          resolve(webpSupportCache);
+        },
+        "image/webp",
+        0.8
+      );
+    } catch {
+      webpSupportCache = false;
+      resolve(false);
+    }
+  });
+}
+
 export async function compressImage(
   file: File,
   maxWidth = 1600,
   maxHeight = 1600,
-  quality = 0.8
+  quality = 0.82
 ): Promise<File> {
+  const supportsWebP = await canEncodeWebP();
+  const targetType = supportsWebP ? "image/webp" : "image/jpeg";
+  const targetExt = supportsWebP ? ".webp" : ".jpg";
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -42,18 +77,17 @@ export async function compressImage(
             reject(new Error("Compression failed"));
             return;
           }
-          // Keep original name but ensure .jpg extension
-          const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-          resolve(new File([blob], name, { type: "image/jpeg" }));
+          const baseName = file.name.replace(/\.[^.]+$/, "");
+          resolve(new File([blob], baseName + targetExt, { type: targetType }));
         },
-        "image/jpeg",
+        targetType,
         quality
       );
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      // If compression fails, return original file
+      // If decoding fails, return original file
       resolve(file);
     };
 

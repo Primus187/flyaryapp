@@ -119,9 +119,22 @@ export default function AvatarCropDialog({ file, open, onClose, onCrop }: Avatar
     ctx.clip();
     ctx.drawImage(img, x * ratio, y * ratio, w * ratio, h * ratio);
 
-    canvas.toBlob(blob => {
-      if (blob) onCrop(blob);
-    }, "image/jpeg", 0.9);
+    // Try WebP first (smaller), fall back to JPEG if unsupported
+    canvas.toBlob(
+      (blob) => {
+        if (blob && blob.type === "image/webp") {
+          onCrop(blob);
+        } else {
+          canvas.toBlob(
+            (jpgBlob) => { if (jpgBlob) onCrop(jpgBlob); },
+            "image/jpeg",
+            0.9
+          );
+        }
+      },
+      "image/webp",
+      0.88
+    );
   };
 
   return (
