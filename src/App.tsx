@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import SplashScreen from "@/components/SplashScreen";
@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
+import { prefetchDashboard } from "@/hooks/use-dashboard-data";
 
 // Eagerly loaded (critical path)
 import Auth from "@/pages/Auth";
