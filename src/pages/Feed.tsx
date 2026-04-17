@@ -244,7 +244,13 @@ export default function Feed() {
     setLoadingMore(false);
   }, [user]);
 
-  useEffect(() => { fetchFeed(); }, [fetchFeed]);
+  // Skip initial fetch if we already have prefetched data; otherwise fetch now
+  const didInitialFetch = useRef(!!cached);
+  useEffect(() => {
+    if (didInitialFetch.current) return;
+    didInitialFetch.current = true;
+    fetchFeed();
+  }, [fetchFeed]);
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
