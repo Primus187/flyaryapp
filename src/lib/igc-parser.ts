@@ -6,6 +6,16 @@ export interface IGCPoint {
   time: string;
 }
 
+export type XcShape = "free" | "free_3tp" | "fai_triangle" | "flat_triangle";
+
+export interface XcOptimization {
+  shape: XcShape;
+  distanceKm: number;       // Best optimized distance
+  scoreKm: number;          // Distance with shape multiplier (FAI=1.4, flat=1.2, free=1.0)
+  turnpoints: { lat: number; lng: number; index: number }[]; // start, tp1, tp2, tp3, end
+  isFai: boolean;
+}
+
 export interface IGCData {
   points: IGCPoint[];
   date: string | null;
@@ -20,7 +30,8 @@ export interface IGCData {
   maxSinkRate: number;     // m/s (negative)
   avgSpeedKmh: number;
   totalDistanceKm: number;
-  xcDistanceKm: number;    // Free distance (max distance between any two points)
+  xcDistanceKm: number;    // Best optimized XC distance (km)
+  xcOptimization: XcOptimization | null;
 }
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
