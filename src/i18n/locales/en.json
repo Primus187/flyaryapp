@@ -838,7 +838,16 @@
     "flights": "flights",
     "noStudents": "No students in this group yet.",
     "noFlightDays": "No flight days recorded yet.",
-    "notes": "notes"
+    "notes": "notes",
+    "csv": {
+      "export": "Export list",
+      "exported": "CSV downloaded",
+      "name": "Name",
+      "level": "Level",
+      "flights": "Flights",
+      "examProgress": "Exam progress",
+      "lastSummary": "Last summary"
+    }
   },
   "search": {
     "title": "Search",
