@@ -594,7 +594,13 @@
     "instructorFeedback": "Instructor feedback",
     "addFeedback": "Add feedback",
     "feedbackSaved": "Feedback saved",
-    "notePlaceholder": "Note about this maneuver..."
+    "notePlaceholder": "Note about this maneuver...",
+    "privateNote": "Coach note",
+    "privateNotePlaceholder": "Observations, to-dos, next steps...",
+    "noNoteYet": "No note yet.",
+    "noteSaved": "Note saved",
+    "visibleToStudent": "Visible to student",
+    "privateOnly": "Internal only"
   },
   "onboarding": {
     "welcome": "Welcome to Flyary! 🪂",
