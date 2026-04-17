@@ -454,25 +454,48 @@ export default function Feed() {
         <NotificationBell />
       </div>
 
+      {tagFilter && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+          <p className="text-sm font-medium text-primary">
+            {t("feed.filteringByTag", { tag: tagFilter, defaultValue: `Filter: #${tagFilter}` })}
+          </p>
+          <button
+            type="button"
+            onClick={() => { searchParams.delete("tag"); setSearchParams(searchParams); }}
+            className="text-primary active:scale-90 transition-transform"
+            aria-label={t("common.remove")}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Story bar — active pilots */}
       {user && stableGroupIds.length > 0 && (
         <FeedStoryBar userId={user.id} groupIds={stableGroupIds} />
       )}
 
-      {items.length === 0 ? (
-        <div className="space-y-4">
-          <EmptyState
-            icon={Users}
-            title={t("feed.noFlights")}
-            description={t("feed.noFlightsDesc")}
-            actionLabel={t("groups.joinGroup")}
-            onAction={() => navigate("/groups")}
-          />
-          <PilotSuggestions />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {items.map(item => {
+      {(() => {
+        const visible = tagFilter
+          ? items.filter(i => i.type === "flight" && Array.isArray((i.data as any).tags) && (i.data as any).tags.includes(tagFilter))
+          : items;
+        if (visible.length === 0) {
+          return (
+            <div className="space-y-4">
+              <EmptyState
+                icon={Users}
+                title={tagFilter ? t("feed.noFlightsForTag", { defaultValue: "Keine Flüge für diesen Tag" }) : t("feed.noFlights")}
+                description={tagFilter ? "" : t("feed.noFlightsDesc")}
+                actionLabel={tagFilter ? undefined : t("groups.joinGroup")}
+                onAction={tagFilter ? undefined : () => navigate("/groups")}
+              />
+              {!tagFilter && <PilotSuggestions />}
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-4">
+            {visible.map(item => {
             if (item.type === "flight") {
               return <FeedCard key={`f-${item.data.id}`} flight={item.data}
                 onReact={(id, type) => handleReaction("flight", id, type)}
