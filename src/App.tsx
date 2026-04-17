@@ -81,60 +81,107 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const App = () => {
+function SplashGate({ children }: { children: React.ReactNode }) {
+  const { user, loading: authLoading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
+  const [progress, setProgress] = useState(5);
+  const [dataReady, setDataReady] = useState(false);
+
+  // Bump progress when auth resolves
+  useEffect(() => {
+    if (!authLoading) setProgress(p => Math.max(p, 20));
+  }, [authLoading]);
+
+  // Prefetch dashboard once we know who the user is (or that there is none)
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setProgress(100);
+      setDataReady(true);
+      return;
+    }
+    let cancelled = false;
+    prefetchDashboard(user.id, queryClient, (pct) => {
+      if (!cancelled) setProgress(p => Math.max(p, pct));
+    })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) {
+          setProgress(100);
+          setDataReady(true);
+        }
+      });
+    return () => { cancelled = true; };
+  }, [user, authLoading]);
+
   const handleSplashFinished = useCallback(() => setShowSplash(false), []);
 
+  return (
+    <>
+      {showSplash && (
+        <SplashScreen
+          onFinished={handleSplashFinished}
+          progress={progress}
+          ready={dataReady}
+        />
+      )}
+      {children}
+    </>
+  );
+}
+
+const App = () => {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
           <BrowserRouter>
             <ScrollToTop />
             <AuthProvider>
-              <Suspense fallback={<PageFallback />}>
-                <Routes>
-                  <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/feed" element={<Feed />} />
-                    <Route path="/flights" element={<Flights />} />
-                    <Route path="/flights/new" element={<FlightForm />} />
-                    <Route path="/flights/:id" element={<FlightDetail />} />
-                    <Route path="/flights/:id/edit" element={<FlightForm />} />
-                    <Route path="/locations" element={<Locations />} />
-                    <Route path="/locations/:id" element={<LocationDetail />} />
-                    <Route path="/events" element={<Events />} />
-                    <Route path="/events/new" element={<EventForm />} />
-                    <Route path="/events/:id" element={<EventDetail />} />
-                    <Route path="/events/:id/edit" element={<EventForm />} />
-                    <Route path="/groups" element={<Groups />} />
-                    <Route path="/groups/:id" element={<GroupDetail />} />
-                    <Route path="/training" element={<Training />} />
-                    <Route path="/training/:itemId" element={<TrainingItemDetail />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/more" element={<More />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/stats" element={<Stats />} />
-                    <Route path="/search" element={<SearchPage />} />
-                    <Route path="/import" element={<ImportFlights />} />
-                    <Route path="/import-locations" element={<ImportLocations />} />
-                    <Route path="/legal" element={<Legal />} />
-                    <Route path="/leaderboard" element={<Leaderboard />} />
-                    <Route path="/challenges/:id" element={<ChallengeDetail />} />
-                    <Route path="/pilot/:userId" element={<PilotProfile />} />
-                    <Route path="/school" element={<SchoolDashboard />} />
-                    <Route path="/weather" element={<Weather />} />
-                  </Route>
-                  <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
-                  <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+              <SplashGate>
+                <Suspense fallback={<PageFallback />}>
+                  <Routes>
+                    <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/feed" element={<Feed />} />
+                      <Route path="/flights" element={<Flights />} />
+                      <Route path="/flights/new" element={<FlightForm />} />
+                      <Route path="/flights/:id" element={<FlightDetail />} />
+                      <Route path="/flights/:id/edit" element={<FlightForm />} />
+                      <Route path="/locations" element={<Locations />} />
+                      <Route path="/locations/:id" element={<LocationDetail />} />
+                      <Route path="/events" element={<Events />} />
+                      <Route path="/events/new" element={<EventForm />} />
+                      <Route path="/events/:id" element={<EventDetail />} />
+                      <Route path="/events/:id/edit" element={<EventForm />} />
+                      <Route path="/groups" element={<Groups />} />
+                      <Route path="/groups/:id" element={<GroupDetail />} />
+                      <Route path="/training" element={<Training />} />
+                      <Route path="/training/:itemId" element={<TrainingItemDetail />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/more" element={<More />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/stats" element={<Stats />} />
+                      <Route path="/search" element={<SearchPage />} />
+                      <Route path="/import" element={<ImportFlights />} />
+                      <Route path="/import-locations" element={<ImportLocations />} />
+                      <Route path="/legal" element={<Legal />} />
+                      <Route path="/leaderboard" element={<Leaderboard />} />
+                      <Route path="/challenges/:id" element={<ChallengeDetail />} />
+                      <Route path="/pilot/:userId" element={<PilotProfile />} />
+                      <Route path="/school" element={<SchoolDashboard />} />
+                      <Route path="/weather" element={<Weather />} />
+                    </Route>
+                    <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
+                    <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </SplashGate>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
