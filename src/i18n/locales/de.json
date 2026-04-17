@@ -1,7 +1,9 @@
 {
   "nav": {
     "dashboard": "Dashboard",
-    "logbook": "Flugbuch",
+    "home": "Home",
+    "feed": "Feed",
+    "logbook": "Flüge",
     "training": "Training",
     "events": "Termine",
     "locations": "Orte",
@@ -614,7 +616,11 @@
     "legal": "Rechtliches",
     "leaderboard": "Rangliste",
     "school": "Flugschule",
-    "weather": "Meteo Map"
+    "weather": "Meteo Map",
+    "sectionPilot": "Pilot",
+    "sectionTools": "Tools",
+    "sectionAdmin": "Verwaltung",
+    "sectionLegal": "Rechtliches"
   },
   "school": {
     "title": "Flugschule",
