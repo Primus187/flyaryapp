@@ -120,6 +120,43 @@ export default function Settings() {
     setSelectedGroupIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   };
 
+  const handleExportCsv = async () => {
+    if (!user) return;
+    setExportingCsv(true);
+    try {
+      const { rows, blob } = await exportFlightsCsv(user.id);
+      downloadBlob(blob, `flyary-flights-${new Date().toISOString().slice(0, 10)}.csv`);
+      toast({ title: t("settings.csvExported"), description: `${rows} ${t("settings.csvRows")}` });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setExportingCsv(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error(t("profile.notLoggedIn"));
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Failed");
+      }
+      await supabase.auth.signOut();
+      localStorage.clear();
+      toast({ title: t("settings.accountDeleted") });
+      navigate("/auth", { replace: true });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      setDeleting(false);
+    }
+  };
+
   const themes = [
     { value: "light" as const, label: t("settings.light"), icon: Sun },
     { value: "dark" as const, label: t("settings.dark"), icon: Moon },
