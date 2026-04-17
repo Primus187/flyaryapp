@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -117,6 +117,42 @@ export default function LocationDetail() {
           </div>
         </div>
       )}
+      {/* Insights: best flight from/to here */}
+      {flights.length > 0 && (() => {
+        const longest = [...flights].sort((a, b) => (b.distance_km || 0) - (a.distance_km || 0))[0];
+        const longestDur = [...flights].sort((a, b) => (b.duration_minutes || 0) - (a.duration_minutes || 0))[0];
+        const fmtDur = (min: number | null) => { if (!min) return ""; const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}min` : `${m}min`; };
+        const hasInsight = (longest && (longest.distance_km || 0) > 0) || (longestDur && (longestDur.duration_minutes || 0) > 0);
+        if (!hasInsight) return null;
+        return (
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-primary/5 via-card to-card">
+            <CardContent className="p-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <Trophy className="h-3 w-3" /> {t("locations.insights", "Highlights")}
+              </div>
+              {longest && (longest.distance_km || 0) > 0 && (
+                <button onClick={() => navigate(`/flights/${longest.id}`)} className="w-full text-left flex items-center justify-between gap-2 hover:bg-muted/50 -mx-1 px-1 py-1 rounded">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Route className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-muted-foreground">{t("locations.longestFlight", "Längste Strecke")}</span>
+                  </div>
+                  <span className="text-xs font-semibold tabular-nums">{Number(longest.distance_km).toFixed(1)} km · {new Date(longest.date).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "2-digit" })}</span>
+                </button>
+              )}
+              {longestDur && (longestDur.duration_minutes || 0) > 0 && longestDur.id !== longest?.id && (
+                <button onClick={() => navigate(`/flights/${longestDur.id}`)} className="w-full text-left flex items-center justify-between gap-2 hover:bg-muted/50 -mx-1 px-1 py-1 rounded">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Clock className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-muted-foreground">{t("locations.longestDuration", "Längster Flug")}</span>
+                  </div>
+                  <span className="text-xs font-semibold tabular-nums">{fmtDur(longestDur.duration_minutes)} · {new Date(longestDur.date).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "2-digit" })}</span>
+                </button>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground mb-2">{t("locations.flightsAtLocation")}</h2>
         {flights.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">{t("locations.noFlightsHere")}</p> : (
