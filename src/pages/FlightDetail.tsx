@@ -15,6 +15,7 @@ import { compressImage } from "@/lib/image-compress";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
+import FlightCoachNote from "@/components/FlightCoachNote";
 
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
 const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
@@ -294,6 +295,7 @@ export default function FlightDetail() {
       )}
       {/* Coach/Instructor Feedback */}
       <CoachFeedback flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
+      <FlightCoachNote flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-sm">{t("flights.photos")}</CardTitle>
