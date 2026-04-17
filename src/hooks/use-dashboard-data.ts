@@ -91,7 +91,7 @@ function parseStatsRow(row: any): DashboardStats & { totalAltitude: number; tota
   };
 }
 
-async function fetchDashboardData(userId: string): Promise<DashboardData> {
+async function fetchDashboardData(userId: string, onProgress?: (pct: number) => void): Promise<DashboardData> {
   const currentYear = new Date().getFullYear();
   const prevYear = currentYear - 1;
 
