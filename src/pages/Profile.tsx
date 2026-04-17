@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PasswordInput } from "@/components/PasswordInput";
-import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench, Plane } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWingStats } from "@/hooks/use-wing-stats";
 
