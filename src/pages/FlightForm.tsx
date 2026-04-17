@@ -464,6 +464,12 @@ export default function FlightForm() {
             <div className="space-y-1.5"><Label className="text-xs">{t("flights.comments")}</Label><Textarea value={form.comments} onChange={set("comments")} placeholder={t("flights.commentsPlaceholder")} rows={3} /></div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.tags")}</CardTitle></CardHeader>
+          <CardContent>
+            <TagsInput value={tags} onChange={setTags} suggestions={tagSuggestions} placeholder={t("flights.tagsPlaceholder")} />
+          </CardContent>
+        </Card>
         {trainingItems.length > 0 && (
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
