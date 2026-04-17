@@ -56,6 +56,144 @@ function computeXcDistance(points: IGCPoint[]): number {
   return Math.round(maxDist * 100) / 100;
 }
 
+function downsample<T>(arr: T[], target: number): { sampled: T[]; indices: number[] } {
+  const step = Math.max(1, Math.floor(arr.length / target));
+  const sampled: T[] = [];
+  const indices: number[] = [];
+  for (let i = 0; i < arr.length; i += step) {
+    sampled.push(arr[i]);
+    indices.push(i);
+  }
+  return { sampled, indices };
+}
+
+/**
+ * Compute optimized XC distance per FAI/XContest-style scoring:
+ *  - Free flight (start → tp1 → tp2 → tp3 → end), 5 points, ×1.0
+ *  - Flat triangle (closed, tp1→tp2→tp3→tp1), ×1.2
+ *  - FAI triangle (closed + each leg ≥ 28% of total), ×1.4
+ * Closing tolerance: closing leg ≤ 20% of triangle perimeter (XContest rule).
+ * Returns the highest-scoring shape.
+ */
+function computeXcOptimization(points: IGCPoint[]): XcOptimization | null {
+  if (points.length < 2) return null;
+
+  const { sampled, indices } = downsample(points, 120);
+  const n = sampled.length;
+  if (n < 2) return null;
+
+  // Pairwise distances (km)
+  const dist: number[][] = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const d = haversineKm(sampled[i].lat, sampled[i].lng, sampled[j].lat, sampled[j].lng);
+      dist[i][j] = d;
+      dist[j][i] = d;
+    }
+  }
+
+  // Best free distance with up to 3 turnpoints: maximize d(s,a)+d(a,b)+d(b,c)+d(c,e)
+  // O(n^4) on n=120 ≈ 200M — too slow. Use a relaxed approach:
+  // For every (a,b,c) with a<b<c, pick best s≤a (max d(s,a)) and best e≥c (max d(c,e)).
+  // Precompute: bestStart[a] = argmax over s≤a of dist[s][a]; bestEnd[c] = argmax over e≥c of dist[c][e].
+  const bestStartIdx = new Array(n).fill(0);
+  const bestStartDist = new Array(n).fill(0);
+  for (let a = 0; a < n; a++) {
+    let best = 0, bestI = a;
+    for (let s = 0; s <= a; s++) {
+      if (dist[s][a] > best) { best = dist[s][a]; bestI = s; }
+    }
+    bestStartDist[a] = best;
+    bestStartIdx[a] = bestI;
+  }
+  const bestEndIdx = new Array(n).fill(0);
+  const bestEndDist = new Array(n).fill(0);
+  for (let c = 0; c < n; c++) {
+    let best = 0, bestI = c;
+    for (let e = c; e < n; e++) {
+      if (dist[c][e] > best) { best = dist[c][e]; bestI = e; }
+    }
+    bestEndDist[c] = best;
+    bestEndIdx[c] = bestI;
+  }
+
+  let bestShape: XcShape = "free";
+  let bestScore = 0;
+  let bestDist = 0;
+  let bestTps: number[] = [];
+  let bestIsFai = false;
+
+  // Also track simple free distance (2-point) as fallback
+  let freeMax = 0, freeI = 0, freeJ = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (dist[i][j] > freeMax) { freeMax = dist[i][j]; freeI = i; freeJ = j; }
+    }
+  }
+  bestShape = "free";
+  bestDist = freeMax;
+  bestScore = freeMax;
+  bestTps = [freeI, freeI, freeJ, freeJ, freeJ];
+
+  // Iterate triangle/3-tp candidates
+  for (let a = 0; a < n - 2; a++) {
+    for (let b = a + 1; b < n - 1; b++) {
+      const dab = dist[a][b];
+      if (dab < 1) continue;
+      for (let c = b + 1; c < n; c++) {
+        const dbc = dist[b][c];
+        const dca = dist[c][a];
+        const triPerim = dab + dbc + dca;
+        if (triPerim < bestScore) continue; // optimistic prune
+
+        // 3-turnpoint free distance
+        const free3 = bestStartDist[a] + dab + dbc + bestEndDist[c];
+        if (free3 > bestScore) {
+          bestScore = free3;
+          bestDist = free3;
+          bestShape = "free_3tp";
+          bestTps = [bestStartIdx[a], a, b, c, bestEndIdx[c]];
+          bestIsFai = false;
+        }
+
+        // Triangle: closing leg = distance between start and end (must be small)
+        // Use start = bestStartIdx[a], end = bestEndIdx[c], measure d(start,end)
+        const sIdx = bestStartIdx[a];
+        const eIdx = bestEndIdx[c];
+        const closing = dist[sIdx][eIdx];
+        if (closing <= 0.2 * triPerim) {
+          // Valid closed triangle
+          const minLeg = Math.min(dab, dbc, dca);
+          const isFai = minLeg >= 0.28 * triPerim;
+          const mult = isFai ? 1.4 : 1.2;
+          const score = triPerim * mult;
+          if (score > bestScore) {
+            bestScore = score;
+            bestDist = triPerim;
+            bestShape = isFai ? "fai_triangle" : "flat_triangle";
+            bestTps = [sIdx, a, b, c, eIdx];
+            bestIsFai = isFai;
+          }
+        }
+      }
+    }
+  }
+
+  const turnpoints = bestTps.map((i) => ({
+    lat: sampled[i].lat,
+    lng: sampled[i].lng,
+    index: indices[i] ?? 0,
+  }));
+
+  return {
+    shape: bestShape,
+    distanceKm: Math.round(bestDist * 100) / 100,
+    scoreKm: Math.round(bestScore * 100) / 100,
+    turnpoints,
+    isFai: bestIsFai,
+  };
+}
+
 function parseLatitude(raw: string): number {
   const deg = parseInt(raw.slice(0, 2));
   const min = parseInt(raw.slice(2, 7)) / 1000;
