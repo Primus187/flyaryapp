@@ -1,7 +1,9 @@
 {
   "nav": {
     "dashboard": "Dashboard",
-    "logbook": "Logbook",
+    "home": "Home",
+    "feed": "Feed",
+    "logbook": "Flights",
     "training": "Training",
     "events": "Events",
     "locations": "Sites",
@@ -550,7 +552,11 @@
     "legal": "Legal",
     "leaderboard": "Leaderboard",
     "school": "Flight School",
-    "weather": "Meteo Map"
+    "weather": "Meteo Map",
+    "sectionPilot": "Pilot",
+    "sectionTools": "Tools",
+    "sectionAdmin": "Management",
+    "sectionLegal": "Legal"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",

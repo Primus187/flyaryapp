@@ -3,20 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search, CloudSun } from "lucide-react";
+import { User, Users, Upload, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search, CloudSun, Calendar } from "lucide-react";
 
-const baseTiles = [
-  { path: "/search", icon: Search, labelKey: "more.search" },
+type Tile = { path: string; icon: any; labelKey: string };
+
+const pilotTiles: Tile[] = [
   { path: "/profile", icon: User, labelKey: "more.profile" },
-  { path: "/weather", icon: CloudSun, labelKey: "more.weather" },
-  { path: "/training", icon: GraduationCap, labelKey: "more.training" },
-  { path: "/map", icon: Map, labelKey: "more.map" },
-  { path: "/groups", icon: Users, labelKey: "more.groups" },
+  { path: "/search", icon: Search, labelKey: "more.search" },
   { path: "/leaderboard", icon: Trophy, labelKey: "more.leaderboard" },
+];
+
+const toolsTiles: Tile[] = [
+  { path: "/events", icon: Calendar, labelKey: "nav.events" },
+  { path: "/locations", icon: MapPin, labelKey: "nav.locations" },
+  { path: "/weather", icon: CloudSun, labelKey: "more.weather" },
+  { path: "/map", icon: Map, labelKey: "more.map" },
+  { path: "/training", icon: GraduationCap, labelKey: "more.training" },
+  { path: "/groups", icon: Users, labelKey: "more.groups" },
+];
+
+const adminTiles: Tile[] = [
   { path: "/import", icon: Upload, labelKey: "more.importFlights" },
   { path: "/import-locations", icon: MapPin, labelKey: "more.importLocations" },
   { path: "/settings", icon: Settings, labelKey: "more.settings" },
-  { path: "/legal", icon: Scale, labelKey: "more.legal" },
 ];
 
 export default function More() {
@@ -45,18 +54,18 @@ export default function More() {
     check();
   }, [user]);
 
-  const tiles = isSchoolAdmin
-    ? [{ path: "/school", icon: GraduationCap, labelKey: "more.school" }, ...baseTiles]
-    : baseTiles;
+  const pilotSection = isSchoolAdmin
+    ? [{ path: "/school", icon: GraduationCap, labelKey: "more.school" }, ...pilotTiles]
+    : pilotTiles;
 
-  return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">{t("more.title")}</h1>
-
+  const renderSection = (title: string, tiles: Tile[]) => (
+    <section>
+      <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider px-1">{title}</h2>
       <div className="grid grid-cols-3 gap-3">
         {tiles.map(({ path, icon: Icon, labelKey }) => (
           <button
             key={path}
+            type="button"
             onClick={() => navigate(path)}
             className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.97] transition-all"
           >
@@ -65,14 +74,40 @@ export default function More() {
           </button>
         ))}
       </div>
+    </section>
+  );
 
-      <button
-        onClick={signOut}
-        className="w-full flex items-center justify-center gap-2 p-3 rounded-xl text-destructive hover:bg-destructive/10 active:scale-[0.97] transition-all"
-      >
-        <LogOut className="h-4 w-4" />
-        <span className="text-sm font-medium">{t("more.signOut")}</span>
-      </button>
+  return (
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+      <h1 className="text-2xl font-bold tracking-tight">{t("more.title")}</h1>
+
+      {renderSection(t("more.sectionPilot", "Pilot"), pilotSection)}
+      {renderSection(t("more.sectionTools", "Tools"), toolsTiles)}
+      {renderSection(t("more.sectionAdmin", "Verwaltung"), adminTiles)}
+
+      <section>
+        <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider px-1">
+          {t("more.sectionLegal", "Rechtliches")}
+        </h2>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => navigate("/legal")}
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.99] transition-all"
+          >
+            <Scale className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">{t("more.legal")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={signOut}
+            className="w-full flex items-center gap-3 p-3 rounded-xl text-destructive hover:bg-destructive/10 active:scale-[0.99] transition-all"
+          >
+            <LogOut className="h-5 w-5" />
+            <span className="text-sm font-medium">{t("more.signOut")}</span>
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

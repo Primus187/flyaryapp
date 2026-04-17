@@ -1,7 +1,9 @@
 {
   "nav": {
     "dashboard": "Tableau de bord",
-    "logbook": "Carnet de vol",
+    "home": "Accueil",
+    "feed": "Fil",
+    "logbook": "Vols",
     "training": "Formation",
     "events": "Événements",
     "locations": "Sites",
@@ -550,7 +552,11 @@
     "legal": "Mentions légales",
     "leaderboard": "Classement",
     "school": "École de vol",
-    "weather": "Carte Météo"
+    "weather": "Carte Météo",
+    "sectionPilot": "Pilote",
+    "sectionTools": "Outils",
+    "sectionAdmin": "Administration",
+    "sectionLegal": "Mentions légales"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
