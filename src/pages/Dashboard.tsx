@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame } from "lucide-react";
+import { usePilotStreak } from "@/hooks/use-pilot-streak";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
@@ -45,6 +46,7 @@ export default function Dashboard() {
     stats, yearComparison, recent, events, signups, challenges, loading, error,
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
+  const { streak } = usePilotStreak(user?.id);
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
