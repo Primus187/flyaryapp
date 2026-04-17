@@ -119,8 +119,17 @@ function SplashGate({ children }: { children: React.ReactNode }) {
           setDataReady(true);
         }
       });
-    // Warm the Feed chunk in the background so the Feed tab opens instantly
-    feedImport().catch(() => {});
+    // Warm the Feed chunk + prefetch its data so the Feed tab opens instantly
+    feedImport()
+      .then(mod => {
+        if (cancelled) return;
+        return queryClient.prefetchQuery({
+          queryKey: mod.FEED_QUERY_KEY(user.id),
+          queryFn: () => mod.fetchInitialFeedPage(user.id),
+          staleTime: 2 * 60 * 1000,
+        });
+      })
+      .catch(() => {});
     return () => { cancelled = true; clearTimeout(safety); };
   }, [user, authLoading]);
 
