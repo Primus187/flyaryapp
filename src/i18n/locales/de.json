@@ -675,7 +675,16 @@
     "flights": "Flüge",
     "noStudents": "Noch keine Schüler in dieser Gruppe.",
     "noFlightDays": "Noch keine Flugtage erfasst.",
-    "notes": "Notizen"
+    "notes": "Notizen",
+    "csv": {
+      "export": "Liste exportieren",
+      "exported": "CSV heruntergeladen",
+      "name": "Name",
+      "level": "Stufe",
+      "flights": "Flüge",
+      "examProgress": "Prüfungsfortschritt",
+      "lastSummary": "Letzte Zusammenfassung"
+    }
   },
   "feed": {
     "title": "Feed",
