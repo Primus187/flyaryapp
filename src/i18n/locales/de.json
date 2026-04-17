@@ -506,7 +506,20 @@
     "selectGroups": "Gruppen auswählen",
     "noGroup": "Ohne Gruppe",
     "exportAll": "Alle exportieren",
-    "trainingLevel": "Ausbildungsstand"
+    "exportCsv": "Als CSV exportieren",
+    "exportHint": "Deine Daten gehören dir — exportiere jederzeit alle Flüge.",
+    "csvExported": "CSV exportiert",
+    "csvRows": "Flüge",
+    "trainingLevel": "Ausbildungsstand",
+    "pushNotifications": "Push-Benachrichtigungen",
+    "pushDesc": "Benachrichtigungen bei Likes und Kommentaren",
+    "dangerZone": "Konto",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountHint": "Entfernt unwiderruflich alle deine Flüge, Fotos und Profildaten.",
+    "deleteAccountWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Flüge, Fotos und Profildaten werden dauerhaft gelöscht.",
+    "deleteAccountConfirmHint": "Tippe DELETE in das Feld, um zu bestätigen.",
+    "deleteAccountConfirm": "Endgültig löschen",
+    "accountDeleted": "Konto gelöscht"
   },
   "splash": {
     "loading": "Laden..."
