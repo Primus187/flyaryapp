@@ -10,6 +10,7 @@ import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchi
 import FeedStoryBar from "@/components/FeedStoryBar";
 import NotificationBell from "@/components/NotificationBell";
 import EmptyState from "@/components/EmptyState";
+import PilotSuggestions from "@/components/PilotSuggestions";
 import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -457,13 +458,16 @@ export default function Feed() {
       )}
 
       {items.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title={t("feed.noFlights")}
-          description={t("feed.noFlightsDesc")}
-          actionLabel={t("groups.joinGroup")}
-          onAction={() => navigate("/groups")}
-        />
+        <div className="space-y-4">
+          <EmptyState
+            icon={Users}
+            title={t("feed.noFlights")}
+            description={t("feed.noFlightsDesc")}
+            actionLabel={t("groups.joinGroup")}
+            onAction={() => navigate("/groups")}
+          />
+          <PilotSuggestions />
+        </div>
       ) : (
         <div className="space-y-4">
           {items.map(item => {
