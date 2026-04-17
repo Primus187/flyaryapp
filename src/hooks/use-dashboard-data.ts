@@ -147,6 +147,8 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
     });
   }
 
+  onProgress?.(60);
+
   // === BATCH 2: Avatar, flight photos, and group-dependent data — all in parallel ===
   const flightIds = recentFlights.map(f => f.id);
   const memberships = membershipsRes.data;
