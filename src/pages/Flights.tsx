@@ -165,7 +165,18 @@ export default function Flights() {
   const chipIdle = "bg-card text-foreground border-border/60 hover:bg-muted/50";
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div
+      className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4 relative"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{ transform: pullDistance ? `translateY(${pullDistance}px)` : undefined, transition: pullDistance ? "none" : "transform 0.2s" }}
+    >
+      {(refreshing || pullDistance > 0) && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-2 flex items-center justify-center pointer-events-none">
+          <Loader2 className={cn("h-5 w-5 text-primary", refreshing && "animate-spin")} style={{ opacity: Math.min(1, pullDistance / 60) || (refreshing ? 1 : 0) }} />
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">{t("flights.title")}</h1>
         <Button size="sm" onClick={() => navigate("/flights/new")}>
