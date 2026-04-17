@@ -153,7 +153,9 @@
     "templateSaved": "Modèle enregistré",
     "templateDeleted": "Modèle supprimé",
     "saveAsTemplate": "Enregistrer comme modèle",
-    "templateNamePlaceholder": "Nom du modèle..."
+    "templateNamePlaceholder": "Nom du modèle...",
+    "tags": "Tags",
+    "tagsPlaceholder": "#thermique, #soir..."
   },
   "events": {
     "title": "Événements",
@@ -472,9 +474,43 @@
     "distanceTrendYear": "Distance par année (km)",
     "gliderDistribution": "Répartition des voiles",
     "weekdayDistribution": "Jours de vol (semaine)",
-    "weekdaysShort": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
-    "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
-    "monthsShort": ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"]
+    "weekdaysShort": [
+      "Lun",
+      "Mar",
+      "Mer",
+      "Jeu",
+      "Ven",
+      "Sam",
+      "Dim"
+    ],
+    "months": [
+      "Janvier",
+      "Février",
+      "Mars",
+      "Avril",
+      "Mai",
+      "Juin",
+      "Juillet",
+      "Août",
+      "Septembre",
+      "Octobre",
+      "Novembre",
+      "Décembre"
+    ],
+    "monthsShort": [
+      "Jan",
+      "Fév",
+      "Mar",
+      "Avr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aoû",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Déc"
+    ]
   },
   "import": {
     "importFlights": "Importer des vols",
@@ -652,7 +688,23 @@
     "rightsTitle": "Vos droits",
     "rightsText": "Vous avez le droit d'accéder, de rectifier et de supprimer vos données personnelles à tout moment. Contactez-nous via l'application.",
     "contactTitle": "Contact",
-    "contactText": "Pour toute question relative à la protection des données, veuillez contacter l'exploitant de l'application."
+    "contactText": "Pour toute question relative à la protection des données, veuillez contacter l'exploitant de l'application.",
+    "termsTitle": "Conditions d'utilisation",
+    "licensesTitle": "Licences",
+    "termsIntro": "Ces conditions régissent l'utilisation de Flyary, exploitée par Tobias Bolliger en tant que particulier.",
+    "termsScopeTitle": "Champ d'application",
+    "termsScopeText": "Flyary est un carnet de vol numérique pour parapentistes. L'utilisation est volontaire et à vos risques.",
+    "termsAccountTitle": "Compte utilisateur",
+    "termsAccountText": "Vous êtes responsable de la sécurité de votre compte et de l'exactitude des données saisies.",
+    "termsLiabilityTitle": "Responsabilité",
+    "termsLiabilityText": "Flyary n'est PAS un système de navigation ou de sécurité. La planification du vol, l'évaluation météo et les décisions de sécurité relèvent exclusivement du pilote. Aucune responsabilité n'est acceptée pour les dommages résultant de l'utilisation de l'app, des données météo ou des cartes affichées.",
+    "termsContentTitle": "Contenu utilisateur",
+    "termsContentText": "Vous conservez tous les droits sur le contenu téléchargé (photos, traces, commentaires). Vous accordez à Flyary le droit de les stocker et de les afficher dans le cadre des fonctionnalités de l'app.",
+    "termsTerminationTitle": "Résiliation",
+    "termsTerminationText": "Vous pouvez supprimer votre compte à tout moment via les réglages. Toutes vos données seront alors définitivement supprimées.",
+    "termsLawTitle": "Droit applicable",
+    "termsLawText": "Le droit suisse s'applique. Le for juridique est le domicile de l'exploitant.",
+    "licensesIntro": "Flyary utilise de nombreuses bibliothèques open-source. Merci aux mainteneurs pour leur travail."
   },
   "feed": {
     "title": "Fil",
@@ -675,7 +727,9 @@
     "suggestedPilots": "Pilotes à suivre",
     "sharedGroups_one": "{{count}} groupe en commun",
     "sharedGroups_other": "{{count}} groupes en commun",
-    "following": "Suivi"
+    "following": "Suivi",
+    "filteringByTag": "Filtre : #{{tag}}",
+    "noFlightsForTag": "Aucun vol pour ce tag"
   },
   "notifications": {
     "title": "Notifications",

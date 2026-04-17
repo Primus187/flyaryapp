@@ -37,7 +37,6 @@
     "noPosition": "Keine Position",
     "retry": "Erneut versuchen"
   },
-  
   "flights": {
     "title": "Flugbuch",
     "searchPlaceholder": "Suche nach Ort, Schirm, Datum...",
@@ -132,7 +131,9 @@
     "templateSaved": "Vorlage gespeichert",
     "templateDeleted": "Vorlage gelöscht",
     "saveAsTemplate": "Als Vorlage speichern",
-    "templateNamePlaceholder": "Name der Vorlage..."
+    "templateNamePlaceholder": "Name der Vorlage...",
+    "tags": "Tags",
+    "tagsPlaceholder": "#thermik, #abendflug..."
   },
   "events": {
     "title": "Termine",
@@ -451,9 +452,43 @@
     "distanceTrendYear": "Strecke pro Jahr (km)",
     "gliderDistribution": "Schirmverteilung",
     "weekdayDistribution": "Flugtage (Wochentag)",
-    "weekdaysShort": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
-    "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-    "monthsShort": ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    "weekdaysShort": [
+      "Mo",
+      "Di",
+      "Mi",
+      "Do",
+      "Fr",
+      "Sa",
+      "So"
+    ],
+    "months": [
+      "Januar",
+      "Februar",
+      "März",
+      "April",
+      "Mai",
+      "Juni",
+      "Juli",
+      "August",
+      "September",
+      "Oktober",
+      "November",
+      "Dezember"
+    ],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mär",
+      "Apr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Dez"
+    ]
   },
   "import": {
     "importFlights": "Flüge importieren",
@@ -548,7 +583,6 @@
     "siku": "SiKu",
     "pilot": "Pilot"
   },
-  
   "flights_training": {
     "trainedManeuvers": "Trainierte Manöver",
     "selectManeuvers": "Manöver auswählen...",
@@ -616,7 +650,23 @@
     "rightsTitle": "Deine Rechte",
     "rightsText": "Du hast jederzeit das Recht auf Auskunft, Berichtigung und Löschung deiner personenbezogenen Daten. Kontaktiere uns über die App.",
     "contactTitle": "Kontakt",
-    "contactText": "Bei Fragen zum Datenschutz wende dich bitte an den Betreiber der App."
+    "contactText": "Bei Fragen zum Datenschutz wende dich bitte an den Betreiber der App.",
+    "termsTitle": "Nutzungsbedingungen",
+    "licensesTitle": "Lizenzen",
+    "termsIntro": "Diese Nutzungsbedingungen regeln die Nutzung der App Flyary, betrieben von Tobias Bolliger als Privatperson.",
+    "termsScopeTitle": "Geltungsbereich",
+    "termsScopeText": "Flyary ist ein digitales Flugbuch für Gleitschirmpiloten. Die Nutzung erfolgt freiwillig und auf eigene Verantwortung.",
+    "termsAccountTitle": "Nutzerkonto",
+    "termsAccountText": "Du bist für die Sicherheit deines Kontos sowie für die Richtigkeit der von dir eingegebenen Daten verantwortlich.",
+    "termsLiabilityTitle": "Haftungsausschluss",
+    "termsLiabilityText": "Flyary ist KEIN Navigations- oder Sicherheitssystem. Flugplanung, Wetterbeurteilung und Sicherheitsentscheidungen liegen ausschliesslich beim Piloten. Für Schäden aus der Nutzung der App, der angezeigten Wetterdaten oder Karten wird keine Haftung übernommen.",
+    "termsContentTitle": "Nutzerinhalte",
+    "termsContentText": "Du behältst alle Rechte an deinen hochgeladenen Inhalten (Fotos, Tracks, Kommentare). Du gewährst Flyary das Recht, diese im Rahmen der App-Funktionen zu speichern und anzuzeigen.",
+    "termsTerminationTitle": "Kündigung",
+    "termsTerminationText": "Du kannst dein Konto jederzeit über die Einstellungen löschen. Alle deine Daten werden dann unwiderruflich entfernt.",
+    "termsLawTitle": "Anwendbares Recht",
+    "termsLawText": "Es gilt Schweizer Recht. Gerichtsstand ist der Wohnsitz des Betreibers.",
+    "licensesIntro": "Flyary nutzt zahlreiche Open-Source-Bibliotheken. Wir danken den Maintainern für ihre Arbeit."
   },
   "dashboard": {
     "title": "Flyary",
@@ -707,16 +757,12 @@
     "suggestedPilots": "Piloten zum Folgen",
     "sharedGroups_one": "{{count}} gemeinsame Gruppe",
     "sharedGroups_other": "{{count}} gemeinsame Gruppen",
-    "following": "Folge ich"
+    "following": "Folge ich",
+    "filteringByTag": "Filter: #{{tag}}",
+    "noFlightsForTag": "Keine Flüge für diesen Tag"
   },
   "notifications": {
-    "title": "Benachrichtigungen",
-    "empty": "Keine Benachrichtigungen",
-    "liked": "hat geliked",
-    "commented": "hat kommentiert",
-    "yourFlight": "deinen Flug",
-    "yourEvent": "deinen Termin",
-    "yourAchievement": "deine Errungenschaft"
+    "followed": "folgt dir jetzt"
   },
   "leaderboard": {
     "title": "Rangliste",
@@ -873,8 +919,5 @@
   "follows": {
     "follow": "Folgen",
     "unfollow": "Entfolgen"
-  },
-  "notifications": {
-    "followed": "folgt dir jetzt"
   }
 }

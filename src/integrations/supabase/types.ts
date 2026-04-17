@@ -840,6 +840,7 @@ export type Database = {
           published_at: string | null
           published_to_feed: boolean
           share_token: string | null
+          tags: string[] | null
           takeoff_location_id: string | null
           thermals: string | null
           updated_at: string
@@ -864,6 +865,7 @@ export type Database = {
           published_at?: string | null
           published_to_feed?: boolean
           share_token?: string | null
+          tags?: string[] | null
           takeoff_location_id?: string | null
           thermals?: string | null
           updated_at?: string
@@ -888,6 +890,7 @@ export type Database = {
           published_at?: string | null
           published_to_feed?: boolean
           share_token?: string | null
+          tags?: string[] | null
           takeoff_location_id?: string | null
           thermals?: string | null
           updated_at?: string

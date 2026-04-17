@@ -280,6 +280,20 @@ export default function FlightDetail() {
         })()}
       </div>
       {flight.comments && (<Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
+      {Array.isArray((flight as any).tags) && (flight as any).tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {((flight as any).tags as string[]).map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => navigate(`/feed?tag=${encodeURIComponent(tag)}`)}
+              className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors active:scale-95"
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
       {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
       {trainedManeuvers.length > 0 && (
         <Card className="border-0 shadow-sm">

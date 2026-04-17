@@ -11,8 +11,8 @@ import FeedStoryBar from "@/components/FeedStoryBar";
 import NotificationBell from "@/components/NotificationBell";
 import EmptyState from "@/components/EmptyState";
 import PilotSuggestions from "@/components/PilotSuggestions";
-import { Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Users, X } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const PAGE_SIZE = 10;
@@ -133,6 +133,8 @@ export default function Feed() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tagFilter = searchParams.get("tag");
 
   // Seed initial state from React Query cache (prefetched during splash)
   const cached = user ? queryClient.getQueryData<FeedPageResult>(FEED_QUERY_KEY(user.id)) : undefined;
@@ -452,25 +454,48 @@ export default function Feed() {
         <NotificationBell />
       </div>
 
+      {tagFilter && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+          <p className="text-sm font-medium text-primary">
+            {t("feed.filteringByTag", { tag: tagFilter, defaultValue: `Filter: #${tagFilter}` })}
+          </p>
+          <button
+            type="button"
+            onClick={() => { searchParams.delete("tag"); setSearchParams(searchParams); }}
+            className="text-primary active:scale-90 transition-transform"
+            aria-label={t("common.remove")}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Story bar — active pilots */}
       {user && stableGroupIds.length > 0 && (
         <FeedStoryBar userId={user.id} groupIds={stableGroupIds} />
       )}
 
-      {items.length === 0 ? (
-        <div className="space-y-4">
-          <EmptyState
-            icon={Users}
-            title={t("feed.noFlights")}
-            description={t("feed.noFlightsDesc")}
-            actionLabel={t("groups.joinGroup")}
-            onAction={() => navigate("/groups")}
-          />
-          <PilotSuggestions />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {items.map(item => {
+      {(() => {
+        const visible = tagFilter
+          ? items.filter(i => i.type === "flight" && Array.isArray((i.data as any).tags) && (i.data as any).tags.includes(tagFilter))
+          : items;
+        if (visible.length === 0) {
+          return (
+            <div className="space-y-4">
+              <EmptyState
+                icon={Users}
+                title={tagFilter ? t("feed.noFlightsForTag", { defaultValue: "Keine Flüge für diesen Tag" }) : t("feed.noFlights")}
+                description={tagFilter ? "" : t("feed.noFlightsDesc")}
+                actionLabel={tagFilter ? undefined : t("groups.joinGroup")}
+                onAction={tagFilter ? undefined : () => navigate("/groups")}
+              />
+              {!tagFilter && <PilotSuggestions />}
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-4">
+            {visible.map(item => {
             if (item.type === "flight") {
               return <FeedCard key={`f-${item.data.id}`} flight={item.data}
                 onReact={(id, type) => handleReaction("flight", id, type)}
@@ -506,7 +531,8 @@ export default function Feed() {
             </div>
           )}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
@@ -516,7 +542,7 @@ export default function Feed() {
 async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedFlight[]> {
   let query = supabase
     .from("flights")
-    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
+    .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, tags, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
     .in("group_id", groupIds)
     .eq("published_to_feed", true)
     .not("published_at", "is", null)
@@ -638,6 +664,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
       ...c,
       pilot_name: profileMap[c.user_id]?.pilot_name || "Pilot",
     })),
+    tags: Array.isArray((f as any).tags) ? (f as any).tags : null,
   }));
 }
 

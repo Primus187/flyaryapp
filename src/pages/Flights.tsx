@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plane, Plus, Filter, Loader2 } from "lucide-react";
+import { Search, Plane, Plus, Filter, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { useSwipeAction } from "@/hooks/use-swipe-action";
+import { useToast } from "@/hooks/use-toast";
 
 interface Flight {
   id: string;
@@ -41,10 +43,30 @@ function FlightsSkeleton() {
   );
 }
 
+function SwipeableFlightCard({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
+  const { offset, onTouchStart, onTouchMove, onTouchEnd } = useSwipeAction({ onSwipeLeft: onDelete });
+  return (
+    <div className="relative overflow-hidden rounded-lg">
+      <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-destructive text-destructive-foreground px-4">
+        <Trash2 className="h-5 w-5" />
+      </div>
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ transform: `translateX(${offset}px)`, transition: offset === 0 ? "transform 0.2s" : "none" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Flights() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [flights, setFlights] = useState<Flight[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [tracks, setTracks] = useState<Record<string, [number, number][]>>({});
@@ -79,6 +101,19 @@ export default function Flights() {
   }, [user]);
 
   useEffect(() => { loadFlights(); }, [loadFlights]);
+
+  const handleDeleteFlight = useCallback(async (flightId: string) => {
+    if (!confirm(t("flights.deleteFlight"))) return;
+    const prev = flights;
+    setFlights(p => p.filter(f => f.id !== flightId));
+    const { error } = await supabase.from("flights").delete().eq("id", flightId);
+    if (error) {
+      setFlights(prev);
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: t("flights.flightDeleted") });
+    }
+  }, [flights, t, toast]);
 
   const { pullDistance, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(loadFlights);
 
@@ -251,7 +286,8 @@ export default function Flights() {
                 {items.map((f) => {
                   const thumbPoints = tracks[f.id];
                   return (
-                    <Card key={f.id} className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
+                    <SwipeableFlightCard key={f.id} onDelete={() => handleDeleteFlight(f.id)}>
+                    <Card className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
                       <CardContent className="p-3">
                         <div className="flex gap-3">
                           {thumbPoints && (
@@ -280,6 +316,7 @@ export default function Flights() {
                         </div>
                       </CardContent>
                     </Card>
+                    </SwipeableFlightCard>
                   );
                 })}
               </div>

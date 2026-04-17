@@ -49,6 +49,13 @@ export default function Auth() {
           <div className="mt-4 text-center space-y-2">
             {!resetMode && <button onClick={() => setResetMode(true)} className="text-xs text-muted-foreground hover:text-primary transition-colors">{t("auth.forgotPassword")}</button>}
             <div><button onClick={() => { setIsLogin(!isLogin); setResetMode(false); }} className="text-sm text-primary font-medium hover:underline">{isLogin ? t("auth.createAccount") : t("auth.alreadyRegistered")}</button></div>
+            <div className="flex justify-center gap-3 text-[10px] text-muted-foreground pt-2">
+              <button onClick={() => navigate("/legal/terms")} className="hover:text-primary transition-colors">{t("legal.termsTitle")}</button>
+              <span>·</span>
+              <button onClick={() => navigate("/legal")} className="hover:text-primary transition-colors">{t("legal.privacyTitle")}</button>
+              <span>·</span>
+              <button onClick={() => navigate("/legal/licenses")} className="hover:text-primary transition-colors">{t("legal.licensesTitle")}</button>
+            </div>
           </div>
         </CardContent>
       </Card>

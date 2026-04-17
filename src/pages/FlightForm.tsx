@@ -17,6 +17,7 @@ import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText } from "luci
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import TagsInput from "@/components/TagsInput";
 
 interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
@@ -46,6 +47,8 @@ export default function FlightForm() {
   const [templates, setTemplates] = useState<FlightTemplate[]>([]);
   const [templateName, setTemplateName] = useState("");
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
@@ -77,11 +80,23 @@ export default function FlightForm() {
     });
     if (isEdit) {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
-        if (data) setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv });
+        if (data) {
+          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv });
+          if (Array.isArray((data as any).tags)) setTags((data as any).tags);
+        }
       });
       supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => { if (data) setYoutubeUrls(data.map((v) => v.youtube_url)); });
       supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
     }
+    // Load tag suggestions from user's existing flights
+    supabase.from("flights").select("tags").eq("user_id", user.id).limit(200).then(({ data }) => {
+      if (!data) return;
+      const all = new Set<string>();
+      for (const row of data as any[]) {
+        if (Array.isArray(row.tags)) row.tags.forEach((t: string) => all.add(t));
+      }
+      setTagSuggestions([...all].sort());
+    });
     if (locationState?.igcFile && locationState?.igcContent) {
       try {
         const parsed = parseIGC(locationState.igcContent);
@@ -131,7 +146,7 @@ export default function FlightForm() {
         if (matchingEvent) eventId = matchingEvent.id;
       }
 
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId } as any;
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null } as any;
 
       // Offline save when not connected
       if (!navigator.onLine && !isEdit) {
@@ -447,6 +462,12 @@ export default function FlightForm() {
               </div>
             </div>
             <div className="space-y-1.5"><Label className="text-xs">{t("flights.comments")}</Label><Textarea value={form.comments} onChange={set("comments")} placeholder={t("flights.commentsPlaceholder")} rows={3} /></div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.tags")}</CardTitle></CardHeader>
+          <CardContent>
+            <TagsInput value={tags} onChange={setTags} suggestions={tagSuggestions} placeholder={t("flights.tagsPlaceholder")} />
           </CardContent>
         </Card>
         {trainingItems.length > 0 && (

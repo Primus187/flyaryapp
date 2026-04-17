@@ -39,6 +39,7 @@ export interface FeedFlight {
   likes: { user_id: string; reaction_type: string }[];
   comments: { id: string; user_id: string; message: string; created_at: string; pilot_name: string; like_count?: number }[];
   isBookmarked?: boolean;
+  tags?: string[] | null;
 }
 
 interface FeedCardProps {
@@ -386,6 +387,21 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
               {flight.altitude_gain ? ` · ↑${flight.altitude_gain}m` : ""}
               {flight.landing_name ? ` · → ${flight.landing_name}` : ""}
             </p>
+          )}
+
+          {flight.tags && flight.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {flight.tags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/feed?tag=${encodeURIComponent(tag)}`); }}
+                  className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors active:scale-95"
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
           )}
 
           {/* Comments — Instagram style */}
