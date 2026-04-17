@@ -54,7 +54,10 @@
     "firstFlight": "Record your first flight",
     "importExisting": "Import Excel/IGC",
     "connectXcontest": "Connect XContest",
-    "maintenanceWarning": "Maintenance overdue!"
+    "maintenanceWarning": "Maintenance overdue!",
+    "streakSuffix": "w",
+    "season": "Season",
+    "allTime": "All time"
   },
   "flights": {
     "title": "Logbook",
@@ -277,6 +280,9 @@
     "coordinates": "Coordinates",
     "notSet": "Not set",
     "flightsAtLocation": "Flights at this site",
+    "insights": "Highlights",
+    "longestFlight": "Longest distance",
+    "longestDuration": "Longest flight",
     "noFlightsHere": "No flights yet",
     "typeLabel": "Type",
     "altitudeLabel": "Altitude",

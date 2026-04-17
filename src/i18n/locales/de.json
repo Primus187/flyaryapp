@@ -259,6 +259,9 @@
     "coordinates": "Koordinaten",
     "notSet": "Nicht gesetzt",
     "flightsAtLocation": "Flüge an diesem Ort",
+    "insights": "Highlights",
+    "longestFlight": "Längste Strecke",
+    "longestDuration": "Längster Flug",
     "noFlightsHere": "Noch keine Flüge",
     "typeLabel": "Typ",
     "altitudeLabel": "Höhe",
@@ -626,7 +629,10 @@
     "firstFlight": "Ersten Flug erfassen",
     "importExisting": "Excel/IGC importieren",
     "connectXcontest": "XContest verbinden",
-    "maintenanceWarning": "Wartung überfällig!"
+    "maintenanceWarning": "Wartung überfällig!",
+    "streakSuffix": "w",
+    "season": "Saison",
+    "allTime": "Total"
   },
   "more": {
     "title": "Mehr",

@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame } from "lucide-react";
+import { usePilotStreak } from "@/hooks/use-pilot-streak";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
@@ -45,6 +46,7 @@ export default function Dashboard() {
     stats, yearComparison, recent, events, signups, challenges, loading, error,
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
+  const { streak } = usePilotStreak(user?.id);
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -188,6 +190,11 @@ export default function Dashboard() {
                   <span className="flex items-center gap-1.5"><Route className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{distance.toFixed(0)}</span> km</span>
                   <span className="flex items-center gap-1.5"><Mountain className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{altitude.toFixed(0)}</span> m</span>
                   <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /><span className="tabular-nums font-medium text-foreground">{stats.uniqueTakeoffs}</span></span>
+                  {streak > 0 && (
+                    <span className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-400 font-semibold tabular-nums">
+                      <Flame className="h-3.5 w-3.5" />{streak}{t("dashboard.streakSuffix", "w")}
+                    </span>
+                  )}
                 </div>
 
                 {stats.totalFlights > seasonFlights && (

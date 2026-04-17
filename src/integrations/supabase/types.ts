@@ -1560,6 +1560,10 @@ export type Database = {
         Returns: boolean
       }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
+      send_push_notification: {
+        Args: { _body: string; _title: string; _url?: string; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

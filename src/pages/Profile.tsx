@@ -15,8 +15,9 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PasswordInput } from "@/components/PasswordInput";
-import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench, Plane } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useWingStats } from "@/hooks/use-wing-stats";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
 const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
@@ -28,6 +29,7 @@ export default function Profile() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { stats: wingStats } = useWingStats(user?.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -511,6 +513,9 @@ export default function Profile() {
           const reserveSoon = !reserveOverdue && isExpiringSoon(g.reserve_repack_date);
           const hasWarning = checkOverdue || reserveOverdue;
           const hasCaution = checkSoon || reserveSoon;
+          const usage = wingStats.find(w => w.id === g.id);
+          const usageHours = usage ? Math.floor(usage.totalMinutes / 60) : 0;
+          const usageMins = usage ? usage.totalMinutes % 60 : 0;
 
           return (
             <div key={g.id} className={`p-3 rounded-lg space-y-2 ${hasWarning ? 'bg-destructive/10 border border-destructive/30' : hasCaution ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800' : 'bg-muted/50'}`}>
@@ -521,6 +526,12 @@ export default function Profile() {
                   <div>
                     <p className="text-sm font-medium">{g.manufacturer} {g.model}</p>
                     {g.size && <p className="text-xs text-muted-foreground">{t("profile.size")}: {g.size}</p>}
+                    {usage && usage.flightCount > 0 && (
+                      <p className="text-[11px] text-muted-foreground tabular-nums mt-0.5">
+                        <Plane className="h-2.5 w-2.5 inline mr-1" />
+                        {usage.flightCount} {t("dashboard.flights")} · {usageHours > 0 ? `${usageHours}h ${usageMins}m` : `${usageMins}m`}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-1">
