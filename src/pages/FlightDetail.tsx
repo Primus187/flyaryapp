@@ -376,6 +376,25 @@ export default function FlightDetail() {
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader>
           <CardContent className="pt-0 space-y-3">
             {videos.map((v) => {
+              // Direct uploaded video
+              if (v.storage_path) {
+                const urls = videoUrls[v.id];
+                if (!urls?.video) {
+                  return <div key={v.id} className="w-full aspect-video rounded-lg bg-muted animate-pulse" />;
+                }
+                return (
+                  <video
+                    key={v.id}
+                    src={urls.video}
+                    poster={urls.poster || undefined}
+                    controls
+                    playsInline
+                    preload="none"
+                    className="w-full aspect-video rounded-lg bg-black"
+                  />
+                );
+              }
+              // YouTube link
               const embedUrl = getYoutubeEmbedUrl(v.youtube_url);
               return embedUrl ? (
                 <div key={v.id} className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
