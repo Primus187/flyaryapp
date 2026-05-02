@@ -613,6 +613,40 @@ export default function FlightForm() {
           </CardContent>
         </Card>
         <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Film className="h-4 w-4" /> {t("flights.uploadVideos", { defaultValue: "Video hochladen" })}</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-[11px] text-muted-foreground">
+              {t("flights.uploadVideosHint", { defaultValue: `Kurze Clips direkt vom Handy. Max ${MAX_VIDEO_SECONDS}s, max ${Math.round(MAX_VIDEO_BYTES / 1024 / 1024)} MB.` })}
+            </p>
+            {existingUploadedVideos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {existingUploadedVideos.map((v) => (
+                  <div key={v.id} className="relative aspect-square rounded-md bg-muted overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground"><Video className="h-6 w-6" /></div>
+                    <button type="button" onClick={() => removeExistingUploadedVideo(v.id)} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {pendingVideos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {pendingVideos.map((pv, i) => (
+                  <div key={i} className="relative aspect-square rounded-md bg-muted overflow-hidden">
+                    <img src={pv.previewUrl} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-1 left-1 text-[10px] bg-black/70 text-white px-1 rounded">{Math.round(pv.durationSec)}s</div>
+                    <button type="button" onClick={() => removePendingVideo(i)} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-primary">
+              <Plus className="h-4 w-4" />
+              {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
+              <input type="file" accept="video/*" capture="environment" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
+            </label>
+          </CardContent>
+        </Card>
+        <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.youtubeVideos")}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {youtubeUrls.map((url, i) => (
