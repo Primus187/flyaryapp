@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
 import { compressImage } from "@/lib/image-compress";
+import { getSignedUrls } from "@/lib/signed-url-cache";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
