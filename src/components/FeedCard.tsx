@@ -310,7 +310,10 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
       if (embedUrl) slides.push({ type: "video", embedUrl });
     }
   }
-  if (hasPhotos) {
+  if (flight.uploadedVideos && flight.uploadedVideos.length > 0) {
+    for (const uv of flight.uploadedVideos) {
+      if (uv.videoUrl) slides.push({ type: "uploaded-video", videoUrl: uv.videoUrl, posterUrl: uv.posterUrl });
+    }
     flight.photoUrls.forEach((url, i) => slides.push({ type: "photo", url, index: i }));
   }
   if (showMap) {
