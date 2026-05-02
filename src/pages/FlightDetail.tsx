@@ -460,7 +460,7 @@ export default function FlightDetail() {
         avatarUrl={pilotProfile.avatar_url}
         groupName={groupName || ""}
         photos={photos.map(p => ({ id: p.id, url: photoUrls[p.id] || "" })).filter(p => p.url)}
-        videoUrls={videos.map(v => v.youtube_url)}
+        videoUrls={videos.filter(v => v.youtube_url).map(v => v.youtube_url)}
         trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
         loading={publishLoading}
         onPublish={async (selectedPhotoIds, feedComment) => {
