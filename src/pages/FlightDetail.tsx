@@ -31,6 +31,7 @@ export default function FlightDetail() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [videos, setVideos] = useState<any[]>([]);
+  const [videoUrls, setVideoUrls] = useState<Record<string, { video: string; poster: string }>>({});
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
