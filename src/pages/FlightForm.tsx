@@ -240,9 +240,13 @@ export default function FlightForm() {
         try { const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`; const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo); if (photoErr) throw photoErr; const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path }); if (insertErr) throw insertErr; }
         catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
-      // Save YouTube videos (upsert for edit mode)
+      // Save YouTube videos: only delete YouTube rows on edit (uploaded videos are managed separately).
       if (isEdit) {
-        const { error: deleteVideosError } = await supabase.from("flight_videos").delete().eq("flight_id", flightId);
+        const { error: deleteVideosError } = await supabase
+          .from("flight_videos")
+          .delete()
+          .eq("flight_id", flightId)
+          .not("youtube_url", "is", null);
         if (deleteVideosError) throw deleteVideosError;
       }
       if (pendingYoutubeUrls.length > 0) {
@@ -250,6 +254,31 @@ export default function FlightForm() {
           pendingYoutubeUrls.map((url) => ({ flight_id: flightId, youtube_url: url }))
         );
         if (insertVideosError) throw insertVideosError;
+      }
+      // Upload pending direct videos
+      for (const pv of pendingVideos) {
+        try {
+          const ts = Date.now();
+          const ext = pv.file.name.match(/\.(mp4|mov|webm)$/i)?.[0] || ".mp4";
+          const videoPath = `${user.id}/${flightId}/${ts}${ext}`;
+          const posterPath = `${user.id}/${flightId}/${ts}.jpg`;
+          const { error: vErr } = await supabase.storage.from("flight-videos").upload(videoPath, pv.file, { contentType: pv.file.type || "video/mp4" });
+          if (vErr) throw vErr;
+          const { error: pErr } = await supabase.storage.from("flight-videos").upload(posterPath, pv.poster, { contentType: "image/jpeg" });
+          if (pErr) throw pErr;
+          const { error: insErr } = await supabase.from("flight_videos").insert({
+            flight_id: flightId,
+            youtube_url: null as any,
+            storage_path: videoPath,
+            poster_path: posterPath,
+            duration_seconds: Math.round(pv.durationSec),
+            size_bytes: pv.file.size,
+          } as any);
+          if (insErr) throw insErr;
+        } catch (vErr: any) {
+          console.error("Video upload failed:", vErr);
+          toast({ title: t("flights.videoUploadFailed", { defaultValue: "Video-Upload fehlgeschlagen" }), description: pv.file.name, variant: "destructive" });
+        }
       }
       // Save training items
       if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
