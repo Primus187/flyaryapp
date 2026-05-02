@@ -13,7 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
-import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText } from "lucide-react";
+import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText, Video, Film } from "lucide-react";
+import { validateVideo, extractPoster, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,6 +42,9 @@ export default function FlightForm() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [youtubeUrls, setYoutubeUrls] = useState<string[]>([]);
   const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
+  const [pendingVideos, setPendingVideos] = useState<{ file: File; poster: Blob; durationSec: number; previewUrl: string }[]>([]);
+  const [existingUploadedVideos, setExistingUploadedVideos] = useState<{ id: string; storage_path: string; poster_path: string | null }[]>([]);
+  const [videoProcessing, setVideoProcessing] = useState(false);
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
@@ -85,7 +89,11 @@ export default function FlightForm() {
           if (Array.isArray((data as any).tags)) setTags((data as any).tags);
         }
       });
-      supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => { if (data) setYoutubeUrls(data.map((v) => v.youtube_url)); });
+      supabase.from("flight_videos").select("id, youtube_url, storage_path, poster_path").eq("flight_id", id).then(({ data }) => {
+        if (!data) return;
+        setYoutubeUrls(data.filter((v: any) => v.youtube_url).map((v: any) => v.youtube_url));
+        setExistingUploadedVideos(data.filter((v: any) => v.storage_path).map((v: any) => ({ id: v.id, storage_path: v.storage_path, poster_path: v.poster_path })));
+      });
       supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
     }
     // Load tag suggestions from user's existing flights
@@ -121,6 +129,56 @@ export default function FlightForm() {
       } catch (err: any) { toast({ title: t("flights.igcError"), description: err.message || t("flights.igcReadError"), variant: "destructive" }); setIgcFile(null); }
     };
     reader.readAsText(file);
+  };
+
+  const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setVideoProcessing(true);
+    try {
+      for (const file of files) {
+        const validation = await validateVideo(file);
+        if (!validation.ok) {
+          toast({ title: file.name, description: validation.error, variant: "destructive" });
+          continue;
+        }
+        try {
+          const poster = await extractPoster(file);
+          const previewUrl = URL.createObjectURL(poster);
+          setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
+        } catch (err: any) {
+          toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
+        }
+      }
+    } finally {
+      setVideoProcessing(false);
+    }
+  };
+
+  const removePendingVideo = (idx: number) => {
+    setPendingVideos((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(idx, 1);
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return next;
+    });
+  };
+
+  const removeExistingUploadedVideo = async (videoId: string) => {
+    if (!isEdit) return;
+    const target = existingUploadedVideos.find((v) => v.id === videoId);
+    if (!target) return;
+    const { error } = await supabase.from("flight_videos").delete().eq("id", videoId);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
+    // best-effort delete from storage
+    const paths = [target.storage_path, target.poster_path].filter(Boolean) as string[];
+    if (paths.length) await supabase.storage.from("flight-videos").remove(paths);
+    setExistingUploadedVideos((prev) => prev.filter((v) => v.id !== videoId));
+    toast({ title: t("common.deleted", { defaultValue: "Gelöscht" }) });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,9 +240,13 @@ export default function FlightForm() {
         try { const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`; const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo); if (photoErr) throw photoErr; const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path }); if (insertErr) throw insertErr; }
         catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
-      // Save YouTube videos (upsert for edit mode)
+      // Save YouTube videos: only delete YouTube rows on edit (uploaded videos are managed separately).
       if (isEdit) {
-        const { error: deleteVideosError } = await supabase.from("flight_videos").delete().eq("flight_id", flightId);
+        const { error: deleteVideosError } = await supabase
+          .from("flight_videos")
+          .delete()
+          .eq("flight_id", flightId)
+          .not("youtube_url", "is", null);
         if (deleteVideosError) throw deleteVideosError;
       }
       if (pendingYoutubeUrls.length > 0) {
@@ -192,6 +254,31 @@ export default function FlightForm() {
           pendingYoutubeUrls.map((url) => ({ flight_id: flightId, youtube_url: url }))
         );
         if (insertVideosError) throw insertVideosError;
+      }
+      // Upload pending direct videos
+      for (const pv of pendingVideos) {
+        try {
+          const ts = Date.now();
+          const ext = pv.file.name.match(/\.(mp4|mov|webm)$/i)?.[0] || ".mp4";
+          const videoPath = `${user.id}/${flightId}/${ts}${ext}`;
+          const posterPath = `${user.id}/${flightId}/${ts}.jpg`;
+          const { error: vErr } = await supabase.storage.from("flight-videos").upload(videoPath, pv.file, { contentType: pv.file.type || "video/mp4" });
+          if (vErr) throw vErr;
+          const { error: pErr } = await supabase.storage.from("flight-videos").upload(posterPath, pv.poster, { contentType: "image/jpeg" });
+          if (pErr) throw pErr;
+          const { error: insErr } = await supabase.from("flight_videos").insert({
+            flight_id: flightId,
+            youtube_url: null as any,
+            storage_path: videoPath,
+            poster_path: posterPath,
+            duration_seconds: Math.round(pv.durationSec),
+            size_bytes: pv.file.size,
+          } as any);
+          if (insErr) throw insErr;
+        } catch (vErr: any) {
+          console.error("Video upload failed:", vErr);
+          toast({ title: t("flights.videoUploadFailed", { defaultValue: "Video-Upload fehlgeschlagen" }), description: pv.file.name, variant: "destructive" });
+        }
       }
       // Save training items
       if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
@@ -523,6 +610,40 @@ export default function FlightForm() {
           <CardContent>
             <label className="flex items-center gap-2 cursor-pointer text-sm text-primary"><Plus className="h-4 w-4" /> {t("flights.addPhotos")}<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => setPhotoFiles(Array.from(e.target.files || []))} /></label>
             {photoFiles.length > 0 && <p className="text-xs text-muted-foreground mt-1">{photoFiles.length} {t("flights.photosSelected")}</p>}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Film className="h-4 w-4" /> {t("flights.uploadVideos", { defaultValue: "Video hochladen" })}</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-[11px] text-muted-foreground">
+              {t("flights.uploadVideosHint", { defaultValue: `Kurze Clips direkt vom Handy. Max ${MAX_VIDEO_SECONDS}s, max ${Math.round(MAX_VIDEO_BYTES / 1024 / 1024)} MB.` })}
+            </p>
+            {existingUploadedVideos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {existingUploadedVideos.map((v) => (
+                  <div key={v.id} className="relative aspect-square rounded-md bg-muted overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground"><Video className="h-6 w-6" /></div>
+                    <button type="button" onClick={() => removeExistingUploadedVideo(v.id)} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {pendingVideos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {pendingVideos.map((pv, i) => (
+                  <div key={i} className="relative aspect-square rounded-md bg-muted overflow-hidden">
+                    <img src={pv.previewUrl} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-1 left-1 text-[10px] bg-black/70 text-white px-1 rounded">{Math.round(pv.durationSec)}s</div>
+                    <button type="button" onClick={() => removePendingVideo(i)} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-primary">
+              <Plus className="h-4 w-4" />
+              {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
+              <input type="file" accept="video/*" capture="environment" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
+            </label>
           </CardContent>
         </Card>
         <Card>

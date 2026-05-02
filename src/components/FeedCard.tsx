@@ -33,6 +33,7 @@ export interface FeedFlight {
   group_name: string;
   photoUrls: string[];
   videoUrls: string[];
+  uploadedVideos?: { videoUrl: string; posterUrl: string }[];
   hasTrack: boolean;
   takeoff: { latitude: number; longitude: number; name?: string } | null;
   landing: { latitude: number; longitude: number; name?: string } | null;
@@ -89,6 +90,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
 
 type MediaSlide =
   | { type: "video"; embedUrl: string }
+  | { type: "uploaded-video"; videoUrl: string; posterUrl: string }
   | { type: "photo"; url: string; index: number }
   | { type: "map" };
 
@@ -187,6 +189,18 @@ function UnifiedMediaCarousel({
             className="absolute inset-0 w-full h-full"
           />
         </div>
+      );
+    }
+    if (slide.type === "uploaded-video") {
+      return (
+        <video
+          src={slide.videoUrl}
+          poster={slide.posterUrl || undefined}
+          controls
+          playsInline
+          preload="none"
+          className="w-full h-full object-cover bg-black"
+        />
       );
     }
     if (slide.type === "photo") {
@@ -294,6 +308,11 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
     for (const url of flight.videoUrls) {
       const embedUrl = getYoutubeEmbedUrl(url);
       if (embedUrl) slides.push({ type: "video", embedUrl });
+    }
+  }
+  if (flight.uploadedVideos && flight.uploadedVideos.length > 0) {
+    for (const uv of flight.uploadedVideos) {
+      if (uv.videoUrl) slides.push({ type: "uploaded-video", videoUrl: uv.videoUrl, posterUrl: uv.posterUrl });
     }
   }
   if (hasPhotos) {

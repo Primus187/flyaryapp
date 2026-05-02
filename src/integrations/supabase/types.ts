@@ -796,21 +796,33 @@ export type Database = {
       flight_videos: {
         Row: {
           created_at: string
+          duration_seconds: number | null
           flight_id: string
           id: string
-          youtube_url: string
+          poster_path: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          youtube_url: string | null
         }
         Insert: {
           created_at?: string
+          duration_seconds?: number | null
           flight_id: string
           id?: string
-          youtube_url: string
+          poster_path?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          youtube_url?: string | null
         }
         Update: {
           created_at?: string
+          duration_seconds?: number | null
           flight_id?: string
           id?: string
-          youtube_url?: string
+          poster_path?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {

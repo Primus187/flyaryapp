@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { parseIGC } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
 import { compressImage } from "@/lib/image-compress";
+import { getSignedUrls } from "@/lib/signed-url-cache";
 import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
@@ -30,6 +31,7 @@ export default function FlightDetail() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [videos, setVideos] = useState<any[]>([]);
+  const [videoUrls, setVideoUrls] = useState<Record<string, { video: string; poster: string }>>({});
   const [track, setTrack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -98,6 +100,30 @@ export default function FlightDetail() {
       });
     }
   }, [id]);
+
+  // Sign URLs for uploaded videos
+  useEffect(() => {
+    const uploaded = videos.filter((v) => v.storage_path);
+    if (uploaded.length === 0) { setVideoUrls({}); return; }
+    const paths: string[] = [];
+    for (const v of uploaded) {
+      paths.push(v.storage_path);
+      if (v.poster_path) paths.push(v.poster_path);
+    }
+    let cancelled = false;
+    getSignedUrls("flight-videos", paths).then((map) => {
+      if (cancelled) return;
+      const result: Record<string, { video: string; poster: string }> = {};
+      for (const v of uploaded) {
+        result[v.id] = {
+          video: map[v.storage_path] || "",
+          poster: v.poster_path ? (map[v.poster_path] || "") : "",
+        };
+      }
+      setVideoUrls(result);
+    });
+    return () => { cancelled = true; };
+  }, [videos]);
 
   const handleDelete = async () => { if (!confirm(t("flights.deleteFlight"))) return; await supabase.from("flights").delete().eq("id", id); toast({ title: t("flights.flightDeleted") }); navigate("/flights"); };
 
@@ -350,6 +376,25 @@ export default function FlightDetail() {
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader>
           <CardContent className="pt-0 space-y-3">
             {videos.map((v) => {
+              // Direct uploaded video
+              if (v.storage_path) {
+                const urls = videoUrls[v.id];
+                if (!urls?.video) {
+                  return <div key={v.id} className="w-full aspect-video rounded-lg bg-muted animate-pulse" />;
+                }
+                return (
+                  <video
+                    key={v.id}
+                    src={urls.video}
+                    poster={urls.poster || undefined}
+                    controls
+                    playsInline
+                    preload="none"
+                    className="w-full aspect-video rounded-lg bg-black"
+                  />
+                );
+              }
+              // YouTube link
               const embedUrl = getYoutubeEmbedUrl(v.youtube_url);
               return embedUrl ? (
                 <div key={v.id} className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
@@ -415,7 +460,7 @@ export default function FlightDetail() {
         avatarUrl={pilotProfile.avatar_url}
         groupName={groupName || ""}
         photos={photos.map(p => ({ id: p.id, url: photoUrls[p.id] || "" })).filter(p => p.url)}
-        videoUrls={videos.map(v => v.youtube_url)}
+        videoUrls={videos.filter(v => v.youtube_url).map(v => v.youtube_url)}
         trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
         loading={publishLoading}
         onPublish={async (selectedPhotoIds, feedComment) => {

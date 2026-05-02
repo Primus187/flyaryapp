@@ -1,51 +1,86 @@
+## Ziel
 
+Im Flugformular zusätzlich zur YouTube-URL **kurze Videos direkt vom Handy hochladen** können. Limit: max. 60 Sekunden, max. 50 MB. YouTube-Integration bleibt parallel bestehen. Vorschaubild wird automatisch aus dem ersten Frame extrahiert.
 
-# Nächste Schritte im Plan
+## Was der Nutzer sieht
 
-Bisher umgesetzt: Onboarding (1), Daten-Export & Account-Löschen (2), Push-Triggers + Streak + Wing-Stats (5/7), Mobile-Native Pull-to-Refresh + Social-Discovery (4/6), Coach-Notes + Bulk-Export (8).
+- Im FlightForm: zwei klar getrennte Bereiche
+  - "Video hochladen" (für kurze Clips vom Handy)
+  - "YouTube-Link" (für lange Videos auf YouTube)
+- Beim Upload: Live-Validierung von Dauer & Größe; bei Übergröße/zu lang verständliche Fehlermeldung
+- Im Feed (`FeedCard`) und in der Flugdetail-Seite: native Video-Player mit Posterframe; Player lädt erst beim Antippen (`preload="none"`), damit der Feed flüssig bleibt
+- Videos werden als zusätzliche Slides im bestehenden Karussell angezeigt (vor Fotos)
 
-Offen aus dem ursprünglichen Plan: **3 (Performance), 4 Rest (Share-Sheet, Swipe-Delete), 6 Rest (Hashtags, Multi-Pilot-Tag), 9 (AGB), 10 (Crash-Reporting)**.
+## Technische Umsetzung
 
-## Vorgeschlagenes nächstes Paket — "Polish & Trust"
+### Datenbank (Migration)
 
-Drei zusammengehörige Themen mit hoher Wirkung und überschaubarem Aufwand:
+Tabelle `flight_videos` erweitern:
 
-### A. Optimistic Updates + Share-Sheet (Punkt 3 + 4)
-- **Optimistic Likes/Kommentare** im Feed: sofortiges UI-Feedback via React-Query `onMutate`/`setQueryData`, Rollback bei Fehler
-- **navigator.share()** Integration für Flug-Detail (teilt Public-Share-URL nativ auf iOS/Android), Fallback auf Clipboard
-- **Swipe-to-delete** in Flug-Liste (Touch-Gesten, mit Confirm)
+```sql
+ALTER TABLE flight_videos
+  ALTER COLUMN youtube_url DROP NOT NULL,
+  ADD COLUMN storage_path TEXT NULL,
+  ADD COLUMN poster_path TEXT NULL,
+  ADD COLUMN duration_seconds INT NULL,
+  ADD COLUMN size_bytes BIGINT NULL,
+  ADD CONSTRAINT flight_videos_source_check
+    CHECK (
+      (youtube_url IS NOT NULL AND storage_path IS NULL)
+      OR (youtube_url IS NULL AND storage_path IS NOT NULL)
+    );
+```
 
-### B. Hashtags für Flüge (Punkt 6)
-- Neues Feld `tags text[]` auf `flights` (Migration)
-- Tag-Input im FlightForm (Chips, Autocomplete aus eigenen bisherigen Tags)
-- Anzeige als klickbare Chips im FeedCard und FlightDetail
-- Klick auf Tag → gefilterte Feed-Ansicht (`/feed?tag=thermik`)
+### Storage
 
-### C. AGB + Lizenzhinweise (Punkt 9)
-- Neue Route `/legal/terms` mit Nutzungsbedingungen-Text (Tobias Bolliger, Haftungsausschluss für Flugdaten/Wetter)
-- Neue Route `/legal/licenses` mit OSS-Lizenzliste (Leaflet, MapLibre, Lucide, etc.)
-- Verlinkung in More + Auth-Footer + Settings
+Neuer privater Bucket `flight-videos`, MIME-Whitelist `video/mp4, video/quicktime, video/webm`. RLS-Policies analog zu `flight-photos` (Owner + Group-Member SELECT, Owner INSERT/DELETE). Posterframes (JPEG) leben im selben Bucket unter `posters/...`.
 
-## Betroffene Dateien (grob)
+### Frontend
 
-| Bereich | Datei |
-|---|---|
-| Optimistic | `src/components/FeedCard.tsx`, `src/pages/Feed.tsx` |
-| Share | `src/pages/FlightDetail.tsx`, `src/pages/PilotProfile.tsx` |
-| Swipe | `src/pages/Flights.tsx` (neuer Hook `use-swipe-action.ts`) |
-| Hashtags | Migration `flights.tags`, `FlightForm.tsx`, `FeedCard.tsx`, `Feed.tsx` |
-| Legal | `src/pages/Legal.tsx` erweitern, Routen in `App.tsx`, Links in `More.tsx` + `Auth.tsx` |
-| i18n | `de/en/fr.json` |
+```text
+src/lib/video-utils.ts          (neu)
+  ├─ validateVideo(file)         → { ok, error, durationSec }
+  ├─ extractPoster(file)         → JPEG Blob via <video>+<canvas>
+  └─ MAX_SECONDS=60, MAX_BYTES=50MB
 
-## Quick-Fix nebenbei
+src/pages/FlightForm.tsx        (edit)
+  ├─ neuer State: pendingVideos: { file, poster, duration }[]
+  ├─ Eingabe: <input type="file" accept="video/*" capture="environment" multiple>
+  ├─ Validierung + Posterframe-Generierung im Browser
+  ├─ Upload nach erfolgreichem Flug-Insert (analog zu photos)
+  └─ Insert-Row in flight_videos mit storage_path, poster_path, duration_seconds, size_bytes
 
-Im Runtime-Log: `Map container is already initialized` — ich behebe das im selben Zug (Leaflet-Cleanup in einem Map-Komponenten-`useEffect`).
+src/lib/signed-url-cache.ts     (edit)
+  └─ flight-videos Bucket unterstützen (gleiche Memoization-Pattern)
 
-## Was nicht in diesem Paket ist
+src/components/FeedCard.tsx     (edit)
+  ├─ MediaSlide-Variante "uploaded-video" mit { videoUrl, posterUrl }
+  └─ <video src poster preload="none" controls playsInline>
 
-- **Crash-Reporting (Sentry)** — braucht Account/DSN, separat wenn gewünscht
-- **Bundle-Audit / WebP-Pipeline** — eigenes Performance-Paket
-- **Multi-Pilot-Tagging** — fügt komplexe Verlinkungslogik hinzu, separat sinnvoll
+src/pages/FlightDetail.tsx      (edit)
+  └─ Hochgeladene Videos zwischen YouTube-Embeds & Fotos rendern
 
-Soll ich A+B+C umsetzen, oder nur eines davon?
+src/hooks/use-offline-sync.ts   (edit)
+  └─ Video-Files in IndexedDB-Queue ergänzen (analog photos)
+```
 
+### Edge Functions
+
+Keine neuen Edge Functions nötig. Direkt-Upload via `supabase.storage.from("flight-videos").upload(...)`.
+
+### Performance / UX-Details
+
+- Player im Feed mit `preload="none"` + Posterframe → keine Bandbreite ohne Tap
+- Carousel-Reihenfolge: YouTube-Videos → Direct-Videos → Fotos → Karte
+- Upload zeigt Fortschritt pro Datei; bei Fehler bleibt der Flug erhalten (Media nach Flugdaten speichern, gemäß Memory-Regel)
+- HEVC (.mov vom iPhone): wird akzeptiert; Hinweis-Text "MP4 empfohlen für beste Kompatibilität"
+
+## Außerhalb des Scopes (bewusst)
+
+- Server-seitiges Transcoding (HEVC→H.264, Adaptive Bitrate) — kann später per ffmpeg-wasm Edge Function nachgerüstet werden
+- Video-Trimming im Browser
+- Längere Videos (>60s) — bleiben YouTube vorbehalten
+
+## Migration für bestehende Daten
+
+Keine. Bestehende `flight_videos`-Zeilen haben `youtube_url` gesetzt und `storage_path` NULL — Constraint passt.
