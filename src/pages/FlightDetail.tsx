@@ -101,6 +101,30 @@ export default function FlightDetail() {
     }
   }, [id]);
 
+  // Sign URLs for uploaded videos
+  useEffect(() => {
+    const uploaded = videos.filter((v) => v.storage_path);
+    if (uploaded.length === 0) { setVideoUrls({}); return; }
+    const paths: string[] = [];
+    for (const v of uploaded) {
+      paths.push(v.storage_path);
+      if (v.poster_path) paths.push(v.poster_path);
+    }
+    let cancelled = false;
+    getSignedUrls("flight-videos", paths).then((map) => {
+      if (cancelled) return;
+      const result: Record<string, { video: string; poster: string }> = {};
+      for (const v of uploaded) {
+        result[v.id] = {
+          video: map[v.storage_path] || "",
+          poster: v.poster_path ? (map[v.poster_path] || "") : "",
+        };
+      }
+      setVideoUrls(result);
+    });
+    return () => { cancelled = true; };
+  }, [videos]);
+
   const handleDelete = async () => { if (!confirm(t("flights.deleteFlight"))) return; await supabase.from("flights").delete().eq("id", id); toast({ title: t("flights.flightDeleted") }); navigate("/flights"); };
 
   const handleDuplicate = async () => {
