@@ -191,6 +191,18 @@ function UnifiedMediaCarousel({
         </div>
       );
     }
+    if (slide.type === "uploaded-video") {
+      return (
+        <video
+          src={slide.videoUrl}
+          poster={slide.posterUrl || undefined}
+          controls
+          playsInline
+          preload="none"
+          className="w-full h-full object-cover bg-black"
+        />
+      );
+    }
     if (slide.type === "photo") {
       return (
         <img
