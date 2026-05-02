@@ -939,7 +939,7 @@ async function fetchFollowedFlights(userId: string, followedIds: string[], curso
     supabase.from("feed_likes").select("flight_id, user_id, reaction_type").in("flight_id", flightIds),
     supabase.from("feed_comments").select("id, flight_id, user_id, message, created_at").in("flight_id", flightIds).order("created_at", { ascending: true }),
     supabase.from("igc_tracks").select("flight_id").in("flight_id", flightIds),
-    supabase.from("flight_videos").select("flight_id, youtube_url").in("flight_id", flightIds),
+    supabase.from("flight_videos").select("flight_id, youtube_url, storage_path, poster_path").in("flight_id", flightIds),
   ]);
 
   const photos = photosRes.data;
@@ -949,10 +949,30 @@ async function fetchFollowedFlights(userId: string, followedIds: string[], curso
   const videoData = videosRes.data;
 
   const videoMap: Record<string, string[]> = {};
+  const uploadedVideoMap: Record<string, { videoUrl: string; posterUrl: string }[]> = {};
   if (videoData) {
-    for (const v of videoData) {
-      if (!videoMap[v.flight_id]) videoMap[v.flight_id] = [];
-      videoMap[v.flight_id].push(v.youtube_url);
+    const videoPaths: string[] = [];
+    for (const v of videoData as any[]) {
+      if (v.youtube_url) {
+        if (!videoMap[v.flight_id]) videoMap[v.flight_id] = [];
+        videoMap[v.flight_id].push(v.youtube_url);
+      } else if (v.storage_path) {
+        videoPaths.push(v.storage_path);
+        if (v.poster_path) videoPaths.push(v.poster_path);
+      }
+    }
+    if (videoPaths.length > 0) {
+      const { data: signed } = await supabase.storage.from("flight-videos").createSignedUrls(videoPaths, 3600);
+      const sm: Record<string, string> = {};
+      signed?.forEach(s => { if (s.signedUrl) sm[s.path] = s.signedUrl; });
+      for (const v of videoData as any[]) {
+        if (!v.storage_path) continue;
+        if (!uploadedVideoMap[v.flight_id]) uploadedVideoMap[v.flight_id] = [];
+        uploadedVideoMap[v.flight_id].push({
+          videoUrl: sm[v.storage_path] || "",
+          posterUrl: v.poster_path ? (sm[v.poster_path] || "") : "",
+        });
+      }
     }
   }
 
