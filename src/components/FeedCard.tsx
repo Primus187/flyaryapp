@@ -314,6 +314,8 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
     for (const uv of flight.uploadedVideos) {
       if (uv.videoUrl) slides.push({ type: "uploaded-video", videoUrl: uv.videoUrl, posterUrl: uv.posterUrl });
     }
+  }
+  if (hasPhotos) {
     flight.photoUrls.forEach((url, i) => slides.push({ type: "photo", url, index: i }));
   }
   if (showMap) {
