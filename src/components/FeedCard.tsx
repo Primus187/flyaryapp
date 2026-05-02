@@ -33,6 +33,7 @@ export interface FeedFlight {
   group_name: string;
   photoUrls: string[];
   videoUrls: string[];
+  uploadedVideos?: { videoUrl: string; posterUrl: string }[];
   hasTrack: boolean;
   takeoff: { latitude: number; longitude: number; name?: string } | null;
   landing: { latitude: number; longitude: number; name?: string } | null;
