@@ -89,7 +89,11 @@ export default function FlightForm() {
           if (Array.isArray((data as any).tags)) setTags((data as any).tags);
         }
       });
-      supabase.from("flight_videos").select("youtube_url").eq("flight_id", id).then(({ data }) => { if (data) setYoutubeUrls(data.map((v) => v.youtube_url)); });
+      supabase.from("flight_videos").select("id, youtube_url, storage_path, poster_path").eq("flight_id", id).then(({ data }) => {
+        if (!data) return;
+        setYoutubeUrls(data.filter((v: any) => v.youtube_url).map((v: any) => v.youtube_url));
+        setExistingUploadedVideos(data.filter((v: any) => v.storage_path).map((v: any) => ({ id: v.id, storage_path: v.storage_path, poster_path: v.poster_path })));
+      });
       supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
     }
     // Load tag suggestions from user's existing flights
