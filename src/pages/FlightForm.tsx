@@ -131,6 +131,56 @@ export default function FlightForm() {
     reader.readAsText(file);
   };
 
+  const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setVideoProcessing(true);
+    try {
+      for (const file of files) {
+        const validation = await validateVideo(file);
+        if (!validation.ok) {
+          toast({ title: file.name, description: validation.error, variant: "destructive" });
+          continue;
+        }
+        try {
+          const poster = await extractPoster(file);
+          const previewUrl = URL.createObjectURL(poster);
+          setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
+        } catch (err: any) {
+          toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
+        }
+      }
+    } finally {
+      setVideoProcessing(false);
+    }
+  };
+
+  const removePendingVideo = (idx: number) => {
+    setPendingVideos((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(idx, 1);
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return next;
+    });
+  };
+
+  const removeExistingUploadedVideo = async (videoId: string) => {
+    if (!isEdit) return;
+    const target = existingUploadedVideos.find((v) => v.id === videoId);
+    if (!target) return;
+    const { error } = await supabase.from("flight_videos").delete().eq("id", videoId);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
+    // best-effort delete from storage
+    const paths = [target.storage_path, target.poster_path].filter(Boolean) as string[];
+    if (paths.length) await supabase.storage.from("flight-videos").remove(paths);
+    setExistingUploadedVideos((prev) => prev.filter((v) => v.id !== videoId));
+    toast({ title: t("common.deleted", { defaultValue: "Gelöscht" }) });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!user) return; setLoading(true);
     try {
