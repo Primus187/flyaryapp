@@ -90,6 +90,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
 
 type MediaSlide =
   | { type: "video"; embedUrl: string }
+  | { type: "uploaded-video"; videoUrl: string; posterUrl: string }
   | { type: "photo"; url: string; index: number }
   | { type: "map" };
 
