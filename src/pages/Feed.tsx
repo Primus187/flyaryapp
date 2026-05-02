@@ -1021,6 +1021,7 @@ async function fetchFollowedFlights(userId: string, followedIds: string[], curso
     group_name: "",
     photoUrls: photoMap[f.id] || [],
     videoUrls: videoMap[f.id] || [],
+    uploadedVideos: uploadedVideoMap[f.id] || [],
     hasTrack: hasTrackMap.has(f.id),
     takeoff: f.locations?.latitude ? { latitude: f.locations.latitude, longitude: f.locations.longitude, name: f.locations.name } : null,
     landing: f.land?.latitude ? { latitude: f.land.latitude, longitude: f.land.longitude, name: f.land.name } : null,
