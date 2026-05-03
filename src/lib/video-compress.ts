@@ -39,9 +39,21 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
   const video = document.createElement("video");
   video.src = url;
   video.muted = true; // ensure autoplay allowed
-  video.playsInline = true;
+  (video as any).playsInline = true;
+  video.setAttribute("playsinline", "true");
   video.preload = "auto";
   video.crossOrigin = "anonymous";
+  // Attach to DOM so the browser does not throttle frame production / captureStream.
+  // Position offscreen but keep visibility so the compositor still produces frames.
+  video.style.position = "fixed";
+  video.style.left = "0";
+  video.style.top = "0";
+  video.style.width = "2px";
+  video.style.height = "2px";
+  video.style.opacity = "0.01";
+  video.style.pointerEvents = "none";
+  video.style.zIndex = "-1";
+  document.body.appendChild(video);
 
   await new Promise<void>((res, rej) => {
     video.onloadedmetadata = () => res();
