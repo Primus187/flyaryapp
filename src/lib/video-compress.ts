@@ -102,9 +102,11 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
   await stopped;
   URL.revokeObjectURL(url);
 
-  const blob = new Blob(chunks, { type: mime || "video/webm" });
+  // Strip codec params from MIME so storage bucket MIME validation accepts it
+  const cleanType = (mime || "video/webm").split(";")[0].trim();
+  const blob = new Blob(chunks, { type: cleanType });
   const baseName = file.name.replace(/\.[^.]+$/, "");
-  const out = new File([blob], `${baseName}-compressed.${ext}`, { type: blob.type });
+  const out = new File([blob], `${baseName}-compressed.${ext}`, { type: cleanType });
   opts.onProgress?.(1);
   return out;
 }
