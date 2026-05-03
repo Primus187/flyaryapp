@@ -66,17 +66,29 @@ async function loginToXContest(
   const loginCookies = loginRes.headers.getSetCookie?.() || [];
   await loginRes.text();
 
-  // Merge cookies
-  const allCookies = [...initCookies, ...loginCookies]
-    .map((c: string) => c.split(";")[0])
-    .join("; ");
+  // Merge cookies (login cookies override init cookies for same names)
+  const cookieMap = new Map<string, string>();
+  for (const c of [...initCookies, ...loginCookies]) {
+    const [pair] = c.split(";");
+    const eq = pair.indexOf("=");
+    if (eq > 0) cookieMap.set(pair.substring(0, eq).trim(), pair.substring(eq + 1).trim());
+  }
+  const allCookies = Array.from(cookieMap.entries()).map(([k, v]) => `${k}=${v}`).join("; ");
 
-  // Successful login returns a 302 redirect and sets session cookies
-  const hasSessionCookie = allCookies.toLowerCase().includes("xcontest") || 
-    loginCookies.length > 0 && loginRes.status >= 300 && loginRes.status < 400;
-  
-  if (!hasSessionCookie) {
-    console.log("Login failed. Status:", loginRes.status, "Cookies received:", loginCookies.length);
+  // Verify login by fetching a page that requires auth and looking for username/logout markers
+  const verifyRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
+    headers: { Cookie: allCookies },
+    redirect: "follow",
+  });
+  const verifyHtml = await verifyRes.text();
+  const lowered = verifyHtml.toLowerCase();
+  const looksLoggedIn =
+    lowered.includes("logout") ||
+    lowered.includes("/world/en/users/logout") ||
+    lowered.includes(username.toLowerCase());
+
+  if (!looksLoggedIn) {
+    console.log("Login verification failed. Status:", loginRes.status, "Cookies:", loginCookies.length, "VerifyStatus:", verifyRes.status);
     return null;
   }
   return allCookies;
