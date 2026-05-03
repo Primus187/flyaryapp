@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +47,8 @@ export default function FlightForm() {
   const [existingUploadedVideos, setExistingUploadedVideos] = useState<{ id: string; storage_path: string; poster_path: string | null }[]>([]);
   const [videoProcessing, setVideoProcessing] = useState(false);
   const [trimSource, setTrimSource] = useState<File | null>(null);
+  const videoLibraryInputRef = useRef<HTMLInputElement | null>(null);
+  const videoCameraInputRef = useRef<HTMLInputElement | null>(null);
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
@@ -665,11 +667,52 @@ export default function FlightForm() {
                 ))}
               </div>
             )}
-            <label className="flex items-center gap-2 cursor-pointer text-sm text-primary">
-              <Plus className="h-4 w-4" />
-              {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
-              <input type="file" accept="video/*" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
-            </label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => videoLibraryInputRef.current?.click()}
+                disabled={videoProcessing}
+              >
+                <Plus className="h-4 w-4" />
+                {videoProcessing
+                  ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" })
+                  : t("flights.addVideos", { defaultValue: "Videos aus Mediathek" })}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={() => videoCameraInputRef.current?.click()}
+                disabled={videoProcessing}
+              >
+                <Video className="h-4 w-4" />
+                {t("flights.recordVideo", { defaultValue: "Mit Kamera aufnehmen" })}
+              </Button>
+
+              <input
+                ref={videoLibraryInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm,.m4v"
+                multiple
+                className="hidden"
+                onChange={handleVideoSelect}
+                disabled={videoProcessing}
+              />
+              <input
+                ref={videoCameraInputRef}
+                type="file"
+                accept="video/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleVideoSelect}
+                disabled={videoProcessing}
+              />
+            </div>
             <p className="text-[11px] text-muted-foreground">{t("flights.trimAvailableHint", { defaultValue: "Längere Videos können nach der Auswahl auf 60 s zugeschnitten werden." })}</p>
           </CardContent>
         </Card>
