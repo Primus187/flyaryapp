@@ -15,6 +15,7 @@ import { parseIGC, type IGCData } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
 import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText, Video, Film } from "lucide-react";
 import { validateVideo, extractPoster, getVideoDuration, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
+import { compressVideo, isVideoCompressionSupported } from "@/lib/video-compress";
 import VideoTrimDialog from "@/components/VideoTrimDialog";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -136,13 +137,47 @@ export default function FlightForm() {
   };
 
   const addPendingVideoFromFile = async (file: File): Promise<boolean> => {
-    const validation = await validateVideo(file);
+    let workingFile = file;
+
+    // Auto-compress oversized but short videos
+    if (workingFile.size > MAX_VIDEO_BYTES) {
+      try {
+        const dur = await getVideoDuration(workingFile);
+        if (dur <= MAX_VIDEO_SECONDS + 0.5 && isVideoCompressionSupported()) {
+          toast({
+            title: t("flights.compressing", { defaultValue: "Komprimiere Video…" }),
+            description: t("flights.compressingHint", { defaultValue: "Das kann je nach Länge einen Moment dauern." }),
+          });
+          try {
+            const compressed = await compressVideo(workingFile, { targetBytes: Math.floor(MAX_VIDEO_BYTES * 0.95) });
+            if (compressed.size > MAX_VIDEO_BYTES) {
+              toast({
+                title: file.name,
+                description: t("flights.compressedTooLarge", { defaultValue: "Auch nach Komprimierung > 50 MB. Bitte kürzeres oder kleineres Video wählen." }),
+                variant: "destructive",
+              });
+              return false;
+            }
+            workingFile = compressed;
+          } catch (err: any) {
+            toast({
+              title: file.name,
+              description: err?.message || t("flights.compressFailed", { defaultValue: "Komprimierung fehlgeschlagen. Bitte vorab kürzen oder Qualität reduzieren." }),
+              variant: "destructive",
+            });
+            return false;
+          }
+        }
+      } catch { /* ignore — fall through to validateVideo */ }
+    }
+
+    const validation = await validateVideo(workingFile);
     if (!validation.ok) {
       // If only the duration is the problem, offer trim
       try {
-        const dur = await getVideoDuration(file);
-        if (file.size <= MAX_VIDEO_BYTES && dur > MAX_VIDEO_SECONDS) {
-          setTrimSource(file);
+        const dur = await getVideoDuration(workingFile);
+        if (workingFile.size <= MAX_VIDEO_BYTES && dur > MAX_VIDEO_SECONDS) {
+          setTrimSource(workingFile);
           return false;
         }
       } catch { /* ignore */ }
@@ -150,9 +185,9 @@ export default function FlightForm() {
       return false;
     }
     try {
-      const poster = await extractPoster(file);
+      const poster = await extractPoster(workingFile);
       const previewUrl = URL.createObjectURL(poster);
-      setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
+      setPendingVideos((prev) => [...prev, { file: workingFile, poster, durationSec: validation.durationSec!, previewUrl }]);
       return true;
     } catch (err: any) {
       toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });

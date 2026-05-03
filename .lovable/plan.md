@@ -1,86 +1,71 @@
 ## Ziel
 
-Im Flugformular zusätzlich zur YouTube-URL **kurze Videos direkt vom Handy hochladen** können. Limit: max. 60 Sekunden, max. 50 MB. YouTube-Integration bleibt parallel bestehen. Vorschaubild wird automatisch aus dem ersten Frame extrahiert.
+Videos, die kurz genug sind (≤60s), aber über 50 MB liegen, sollen vor dem Upload automatisch im Browser komprimiert werden, sodass sie unter das 50-MB-Limit passen.
 
 ## Was der Nutzer sieht
 
-- Im FlightForm: zwei klar getrennte Bereiche
-  - "Video hochladen" (für kurze Clips vom Handy)
-  - "YouTube-Link" (für lange Videos auf YouTube)
-- Beim Upload: Live-Validierung von Dauer & Größe; bei Übergröße/zu lang verständliche Fehlermeldung
-- Im Feed (`FeedCard`) und in der Flugdetail-Seite: native Video-Player mit Posterframe; Player lädt erst beim Antippen (`preload="none"`), damit der Feed flüssig bleibt
-- Videos werden als zusätzliche Slides im bestehenden Karussell angezeigt (vor Fotos)
+- Wählt ein Video aus der Galerie
+- Wenn Datei > 50 MB, aber Dauer ≤ 60s → Toast: "Video wird komprimiert…" mit Fortschrittsanzeige
+- Nach erfolgreicher Komprimierung wird das Video normal als Pending-Video hinzugefügt
+- Wenn Komprimierung fehlschlägt oder Endergebnis trotzdem > 50 MB → klare Fehlermeldung mit Empfehlung (z. B. kürzeres Video oder vorab in der Galerie reduzieren)
+- Videos > 60s bleiben wie bisher abgelehnt (oder Vorschlag zum Trimmen via bestehendem `VideoTrimDialog`)
 
 ## Technische Umsetzung
 
-### Datenbank (Migration)
+### Neue Utility: `src/lib/video-compress.ts`
 
-Tabelle `flight_videos` erweitern:
+Nutzt die bereits im Projekt vorhandene Browser-API `MediaRecorder` + `HTMLVideoElement.captureStream()` (gleicher Ansatz wie `VideoTrimDialog.tsx` — bekannt funktionsfähig auf Android Chrome, dem Hauptzielsystem des Users).
 
-```sql
-ALTER TABLE flight_videos
-  ALTER COLUMN youtube_url DROP NOT NULL,
-  ADD COLUMN storage_path TEXT NULL,
-  ADD COLUMN poster_path TEXT NULL,
-  ADD COLUMN duration_seconds INT NULL,
-  ADD COLUMN size_bytes BIGINT NULL,
-  ADD CONSTRAINT flight_videos_source_check
-    CHECK (
-      (youtube_url IS NOT NULL AND storage_path IS NULL)
-      OR (youtube_url IS NULL AND storage_path IS NOT NULL)
-    );
+```ts
+export async function compressVideo(
+  file: File,
+  opts?: { targetBytes?: number; maxBitrate?: number; onProgress?: (pct: number) => void }
+): Promise<File>
 ```
 
-### Storage
+Vorgehen:
+1. Video in unsichtbares `<video>` laden, Dauer ermitteln
+2. Ziel-Bitrate berechnen: `targetBytes * 8 / duration` (mit Sicherheitsfaktor 0.85, Audio-Reserve ~96 kbps)
+3. Optional Skalierung: Wenn Quelle > 1280px breit, auf max. 1280×720 herunterskalieren via `<canvas>` + `canvas.captureStream()` (für noch stärkere Reduktion bei sehr großen Quellen). Erste Iteration: nur Bitrate-Reduktion via `video.captureStream()`, da das einfacher und für 30s-Clips meist ausreicht.
+4. `MediaRecorder` mit MIME-Präferenz `video/mp4;codecs=avc1,mp4a.40.2` → Fallback `video/webm`
+5. Video von Anfang bis Ende abspielen, Chunks sammeln, am Ende als `File` zurückgeben
+6. Falls Resultat immer noch > Ziel → einmal mit halber Bitrate erneut probieren, sonst Fehler
 
-Neuer privater Bucket `flight-videos`, MIME-Whitelist `video/mp4, video/quicktime, video/webm`. RLS-Policies analog zu `flight-photos` (Owner + Group-Member SELECT, Owner INSERT/DELETE). Posterframes (JPEG) leben im selben Bucket unter `posters/...`.
+### Edits in `src/pages/FlightForm.tsx`
 
-### Frontend
+In `handleVideoSelect` (bzw. `addPendingVideoFromFile`):
+- Wenn `file.size > MAX_VIDEO_BYTES` UND `duration ≤ MAX_VIDEO_SECONDS`:
+  - State `videoProcessing` mit Label "Komprimiere Video…" setzen
+  - `compressVideo(file, { targetBytes: MAX_VIDEO_BYTES * 0.95 })` aufrufen
+  - Ergebnis an die bestehende `validateVideo`-Pipeline übergeben
+- Bei Erfolg → ganz normal als Pending-Video aufnehmen
+- Bei Fehler → Toast mit Original-Fehler
 
-```text
-src/lib/video-utils.ts          (neu)
-  ├─ validateVideo(file)         → { ok, error, durationSec }
-  ├─ extractPoster(file)         → JPEG Blob via <video>+<canvas>
-  └─ MAX_SECONDS=60, MAX_BYTES=50MB
+### Edits in `src/lib/video-utils.ts`
 
-src/pages/FlightForm.tsx        (edit)
-  ├─ neuer State: pendingVideos: { file, poster, duration }[]
-  ├─ Eingabe: <input type="file" accept="video/*" capture="environment" multiple>
-  ├─ Validierung + Posterframe-Generierung im Browser
-  ├─ Upload nach erfolgreichem Flug-Insert (analog zu photos)
-  └─ Insert-Row in flight_videos mit storage_path, poster_path, duration_seconds, size_bytes
+- Reihenfolge in `validateVideo` ändern: zuerst Dauer prüfen, **dann** Größe — damit der Aufrufer bei `error === "too large"` + `durationSec ≤ 60` weiß, dass Komprimierung sinnvoll ist. Alternativ neue Hilfs-Konstante `MAX_VIDEO_BYTES` exportieren (existiert bereits) und die Größenprüfung im FlightForm separat vor `validateVideo` machen.
 
-src/lib/signed-url-cache.ts     (edit)
-  └─ flight-videos Bucket unterstützen (gleiche Memoization-Pattern)
+### i18n
 
-src/components/FeedCard.tsx     (edit)
-  ├─ MediaSlide-Variante "uploaded-video" mit { videoUrl, posterUrl }
-  └─ <video src poster preload="none" controls playsInline>
+Neue Strings in `de.json`/`en.json`/`fr.json`:
+- `flights.compressing` — "Komprimiere Video… ({pct}%)"
+- `flights.compressFailed` — "Komprimierung fehlgeschlagen. Bitte vorab kürzen oder Qualität reduzieren."
+- `flights.compressedTooLarge` — "Auch nach Komprimierung > 50 MB. Bitte kürzeres Video wählen."
 
-src/pages/FlightDetail.tsx      (edit)
-  └─ Hochgeladene Videos zwischen YouTube-Embeds & Fotos rendern
+### Browser-Kompatibilität
 
-src/hooks/use-offline-sync.ts   (edit)
-  └─ Video-Files in IndexedDB-Queue ergänzen (analog photos)
-```
+- Android Chrome: voll unterstützt (MP4-Output)
+- Desktop Chrome/Firefox: voll unterstützt (WebM-Output)
+- iOS Safari: `captureStream()` eingeschränkt — Fallback: Originalfehler "Video zu groß" wie bisher anzeigen, mit Hinweis "Auf iPhone bitte vorher in der Fotos-App kürzen oder Qualität reduzieren"
 
-### Edge Functions
+### Außerhalb des Scopes
 
-Keine neuen Edge Functions nötig. Direkt-Upload via `supabase.storage.from("flight-videos").upload(...)`.
+- Server-seitiges Transcoding via ffmpeg-wasm Edge Function (deutlich aufwendiger, kann später nachgerüstet werden falls Browser-Komprimierung in der Praxis zu schwach/inkonsistent)
+- Komprimierung von Videos > 60s (bleibt YouTube vorbehalten oder via bestehendem Trim-Dialog)
 
-### Performance / UX-Details
+## Geänderte Dateien
 
-- Player im Feed mit `preload="none"` + Posterframe → keine Bandbreite ohne Tap
-- Carousel-Reihenfolge: YouTube-Videos → Direct-Videos → Fotos → Karte
-- Upload zeigt Fortschritt pro Datei; bei Fehler bleibt der Flug erhalten (Media nach Flugdaten speichern, gemäß Memory-Regel)
-- HEVC (.mov vom iPhone): wird akzeptiert; Hinweis-Text "MP4 empfohlen für beste Kompatibilität"
-
-## Außerhalb des Scopes (bewusst)
-
-- Server-seitiges Transcoding (HEVC→H.264, Adaptive Bitrate) — kann später per ffmpeg-wasm Edge Function nachgerüstet werden
-- Video-Trimming im Browser
-- Längere Videos (>60s) — bleiben YouTube vorbehalten
-
-## Migration für bestehende Daten
-
-Keine. Bestehende `flight_videos`-Zeilen haben `youtube_url` gesetzt und `storage_path` NULL — Constraint passt.
+- `src/lib/video-compress.ts` (neu)
+- `src/pages/FlightForm.tsx`
+- `src/lib/video-utils.ts` (kleine Anpassung Reihenfolge)
+- `src/i18n/locales/{de,en,fr}.json`
