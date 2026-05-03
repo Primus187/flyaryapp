@@ -669,9 +669,20 @@ export default function FlightForm() {
               <Plus className="h-4 w-4" />
               {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
               <input type="file" accept="video/*" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-primary">
+              <Plus className="h-4 w-4" />
+              {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
+              <input type="file" accept="video/*" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
             </label>
+            <p className="text-[11px] text-muted-foreground">{t("flights.trimAvailableHint", { defaultValue: "Längere Videos können nach der Auswahl auf 60 s zugeschnitten werden." })}</p>
           </CardContent>
         </Card>
+        <VideoTrimDialog
+          file={trimSource}
+          open={!!trimSource}
+          onClose={() => setTrimSource(null)}
+          onTrimmed={handleTrimmed}
+        />
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.youtubeVideos")}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
