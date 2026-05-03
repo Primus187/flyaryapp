@@ -14,7 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
 import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText, Video, Film } from "lucide-react";
-import { validateVideo, extractPoster, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
+import { validateVideo, extractPoster, getVideoDuration, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
+import VideoTrimDialog from "@/components/VideoTrimDialog";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,6 +46,7 @@ export default function FlightForm() {
   const [pendingVideos, setPendingVideos] = useState<{ file: File; poster: Blob; durationSec: number; previewUrl: string }[]>([]);
   const [existingUploadedVideos, setExistingUploadedVideos] = useState<{ id: string; storage_path: string; poster_path: string | null }[]>([]);
   const [videoProcessing, setVideoProcessing] = useState(false);
+  const [trimSource, setTrimSource] = useState<File | null>(null);
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
@@ -131,6 +133,31 @@ export default function FlightForm() {
     reader.readAsText(file);
   };
 
+  const addPendingVideoFromFile = async (file: File): Promise<boolean> => {
+    const validation = await validateVideo(file);
+    if (!validation.ok) {
+      // If only the duration is the problem, offer trim
+      try {
+        const dur = await getVideoDuration(file);
+        if (file.size <= MAX_VIDEO_BYTES && dur > MAX_VIDEO_SECONDS) {
+          setTrimSource(file);
+          return false;
+        }
+      } catch { /* ignore */ }
+      toast({ title: file.name, description: validation.error, variant: "destructive" });
+      return false;
+    }
+    try {
+      const poster = await extractPoster(file);
+      const previewUrl = URL.createObjectURL(poster);
+      setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
+      return true;
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
+      return false;
+    }
+  };
+
   const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
@@ -138,19 +165,18 @@ export default function FlightForm() {
     setVideoProcessing(true);
     try {
       for (const file of files) {
-        const validation = await validateVideo(file);
-        if (!validation.ok) {
-          toast({ title: file.name, description: validation.error, variant: "destructive" });
-          continue;
-        }
-        try {
-          const poster = await extractPoster(file);
-          const previewUrl = URL.createObjectURL(poster);
-          setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
-        } catch (err: any) {
-          toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
-        }
+        await addPendingVideoFromFile(file);
       }
+    } finally {
+      setVideoProcessing(false);
+    }
+  };
+
+  const handleTrimmed = async (trimmed: File) => {
+    setTrimSource(null);
+    setVideoProcessing(true);
+    try {
+      await addPendingVideoFromFile(trimmed);
     } finally {
       setVideoProcessing(false);
     }
@@ -644,8 +670,15 @@ export default function FlightForm() {
               {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
               <input type="file" accept="video/*" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
             </label>
+            <p className="text-[11px] text-muted-foreground">{t("flights.trimAvailableHint", { defaultValue: "Längere Videos können nach der Auswahl auf 60 s zugeschnitten werden." })}</p>
           </CardContent>
         </Card>
+        <VideoTrimDialog
+          file={trimSource}
+          open={!!trimSource}
+          onClose={() => setTrimSource(null)}
+          onTrimmed={handleTrimmed}
+        />
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.youtubeVideos")}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
