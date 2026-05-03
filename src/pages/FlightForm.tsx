@@ -642,7 +642,7 @@ export default function FlightForm() {
             <label className="flex items-center gap-2 cursor-pointer text-sm text-primary">
               <Plus className="h-4 w-4" />
               {videoProcessing ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" }) : t("flights.addVideos", { defaultValue: "Videos hinzufügen" })}
-              <input type="file" accept="video/*" capture="environment" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
+              <input type="file" accept="video/*" multiple className="hidden" onChange={handleVideoSelect} disabled={videoProcessing} />
             </label>
           </CardContent>
         </Card>
