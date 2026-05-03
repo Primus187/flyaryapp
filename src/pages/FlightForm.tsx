@@ -133,6 +133,31 @@ export default function FlightForm() {
     reader.readAsText(file);
   };
 
+  const addPendingVideoFromFile = async (file: File): Promise<boolean> => {
+    const validation = await validateVideo(file);
+    if (!validation.ok) {
+      // If only the duration is the problem, offer trim
+      try {
+        const dur = await getVideoDuration(file);
+        if (file.size <= MAX_VIDEO_BYTES && dur > MAX_VIDEO_SECONDS) {
+          setTrimSource(file);
+          return false;
+        }
+      } catch { /* ignore */ }
+      toast({ title: file.name, description: validation.error, variant: "destructive" });
+      return false;
+    }
+    try {
+      const poster = await extractPoster(file);
+      const previewUrl = URL.createObjectURL(poster);
+      setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
+      return true;
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
+      return false;
+    }
+  };
+
   const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
@@ -140,19 +165,18 @@ export default function FlightForm() {
     setVideoProcessing(true);
     try {
       for (const file of files) {
-        const validation = await validateVideo(file);
-        if (!validation.ok) {
-          toast({ title: file.name, description: validation.error, variant: "destructive" });
-          continue;
-        }
-        try {
-          const poster = await extractPoster(file);
-          const previewUrl = URL.createObjectURL(poster);
-          setPendingVideos((prev) => [...prev, { file, poster, durationSec: validation.durationSec!, previewUrl }]);
-        } catch (err: any) {
-          toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
-        }
+        await addPendingVideoFromFile(file);
       }
+    } finally {
+      setVideoProcessing(false);
+    }
+  };
+
+  const handleTrimmed = async (trimmed: File) => {
+    setTrimSource(null);
+    setVideoProcessing(true);
+    try {
+      await addPendingVideoFromFile(trimmed);
     } finally {
       setVideoProcessing(false);
     }
