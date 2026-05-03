@@ -39,9 +39,21 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
   const video = document.createElement("video");
   video.src = url;
   video.muted = true; // ensure autoplay allowed
-  video.playsInline = true;
+  (video as any).playsInline = true;
+  video.setAttribute("playsinline", "true");
   video.preload = "auto";
   video.crossOrigin = "anonymous";
+  // Attach to DOM so the browser does not throttle frame production / captureStream.
+  // Position offscreen but keep visibility so the compositor still produces frames.
+  video.style.position = "fixed";
+  video.style.left = "0";
+  video.style.top = "0";
+  video.style.width = "2px";
+  video.style.height = "2px";
+  video.style.opacity = "0.01";
+  video.style.pointerEvents = "none";
+  video.style.zIndex = "-1";
+  document.body.appendChild(video);
 
   await new Promise<void>((res, rej) => {
     video.onloadedmetadata = () => res();
@@ -56,7 +68,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
 
   const anyV = video as any;
   const stream: MediaStream | undefined =
-    anyV.captureStream?.() || anyV.mozCaptureStream?.();
+    anyV.captureStream?.(30) || anyV.captureStream?.() || anyV.mozCaptureStream?.();
   if (!stream) {
     URL.revokeObjectURL(url);
     throw new Error("Browser unterstützt keine Video-Komprimierung");
@@ -101,6 +113,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
 
   await stopped;
   URL.revokeObjectURL(url);
+  try { video.remove(); } catch { /* ignore */ }
 
   // Strip codec params from MIME so storage bucket MIME validation accepts it
   const cleanType = (mime || "video/webm").split(";")[0].trim();

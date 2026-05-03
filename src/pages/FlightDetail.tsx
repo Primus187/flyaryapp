@@ -376,6 +376,20 @@ export default function FlightDetail() {
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader>
           <CardContent className="pt-0 space-y-3">
             {videos.map((v) => {
+              const isOwner = flight.user_id === user?.id;
+              const handleDeleteVideo = async () => {
+                if (!isOwner) return;
+                if (!confirm(t("flights.deleteVideoConfirm", { defaultValue: "Video wirklich löschen?" }))) return;
+                const { error } = await supabase.from("flight_videos").delete().eq("id", v.id);
+                if (error) {
+                  toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+                  return;
+                }
+                const paths = [v.storage_path, v.poster_path].filter(Boolean) as string[];
+                if (paths.length) await supabase.storage.from("flight-videos").remove(paths);
+                setVideos((prev) => prev.filter((x) => x.id !== v.id));
+                toast({ title: t("common.deleted", { defaultValue: "Gelöscht" }) });
+              };
               // Direct uploaded video
               if (v.storage_path) {
                 const urls = videoUrls[v.id];
@@ -383,15 +397,26 @@ export default function FlightDetail() {
                   return <div key={v.id} className="w-full aspect-video rounded-lg bg-muted animate-pulse" />;
                 }
                 return (
-                  <video
-                    key={v.id}
-                    src={urls.video}
-                    poster={urls.poster || undefined}
-                    controls
-                    playsInline
-                    preload="none"
-                    className="w-full aspect-video rounded-lg bg-black"
-                  />
+                  <div key={v.id} className="relative">
+                    <video
+                      src={urls.video}
+                      poster={urls.poster || undefined}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="w-full aspect-video rounded-lg bg-black"
+                    />
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteVideo}
+                        aria-label={t("common.delete", { defaultValue: "Löschen" })}
+                        className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 rounded-full p-1.5 text-white"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 );
               }
               // YouTube link
@@ -405,11 +430,28 @@ export default function FlightDetail() {
                     allowFullScreen
                     className="absolute inset-0 w-full h-full"
                   />
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteVideo}
+                      aria-label={t("common.delete", { defaultValue: "Löschen" })}
+                      className="absolute top-2 right-2 z-10 bg-black/70 hover:bg-black/90 rounded-full p-1.5 text-white"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               ) : (
-                <a key={v.id} href={v.youtube_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  <Youtube className="h-4 w-4" /> {t("flights.watchVideo")}
-                </a>
+                <div key={v.id} className="flex items-center justify-between gap-2">
+                  <a href={v.youtube_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                    <Youtube className="h-4 w-4" /> {t("flights.watchVideo")}
+                  </a>
+                  {isOwner && (
+                    <button type="button" onClick={handleDeleteVideo} className="text-muted-foreground hover:text-destructive p-1">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </CardContent>
