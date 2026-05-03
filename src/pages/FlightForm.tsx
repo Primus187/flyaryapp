@@ -325,7 +325,16 @@ export default function FlightForm() {
           const ext = pv.file.name.match(/\.(mp4|mov|webm)$/i)?.[0] || ".mp4";
           const videoPath = `${user.id}/${flightId}/${ts}${ext}`;
           const posterPath = `${user.id}/${flightId}/${ts}.jpg`;
-          const { error: vErr } = await supabase.storage.from("flight-videos").upload(videoPath, pv.file, { contentType: pv.file.type || "video/mp4" });
+          // Normalize content type: bucket only allows exact MIME (no codec params)
+          const rawType = (pv.file.type || "").split(";")[0].trim().toLowerCase();
+          const allowed = ["video/mp4", "video/quicktime", "video/webm"];
+          let contentType = allowed.includes(rawType) ? rawType : "";
+          if (!contentType) {
+            if (/\.webm$/i.test(pv.file.name)) contentType = "video/webm";
+            else if (/\.mov$/i.test(pv.file.name)) contentType = "video/quicktime";
+            else contentType = "video/mp4";
+          }
+          const { error: vErr } = await supabase.storage.from("flight-videos").upload(videoPath, pv.file, { contentType });
           if (vErr) throw vErr;
           const { error: pErr } = await supabase.storage.from("flight-videos").upload(posterPath, pv.poster, { contentType: "image/jpeg" });
           if (pErr) throw pErr;
@@ -340,7 +349,7 @@ export default function FlightForm() {
           if (insErr) throw insErr;
         } catch (vErr: any) {
           console.error("Video upload failed:", vErr);
-          toast({ title: t("flights.videoUploadFailed", { defaultValue: "Video-Upload fehlgeschlagen" }), description: pv.file.name, variant: "destructive" });
+          toast({ title: t("flights.videoUploadFailed", { defaultValue: "Video-Upload fehlgeschlagen" }), description: `${pv.file.name}: ${vErr?.message || vErr}`, variant: "destructive" });
         }
       }
       // Save training items
