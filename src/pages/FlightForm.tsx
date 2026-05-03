@@ -697,7 +697,7 @@ export default function FlightForm() {
               <input
                 ref={videoLibraryInputRef}
                 type="file"
-                accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm,.m4v,video/*"
+                accept=".mp4,.mov,.webm,.m4v,video/mp4,video/quicktime,video/webm"
                 multiple
                 className="hidden"
                 onChange={handleVideoSelect}
