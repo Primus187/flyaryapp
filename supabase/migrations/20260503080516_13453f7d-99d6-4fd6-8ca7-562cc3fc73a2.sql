@@ -1,0 +1,1 @@
+UPDATE storage.buckets SET allowed_mime_types = ARRAY['video/mp4','video/quicktime','video/webm','image/jpeg','image/webp','image/png'] WHERE id = 'flight-videos';
