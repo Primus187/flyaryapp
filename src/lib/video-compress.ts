@@ -113,6 +113,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
 
   await stopped;
   URL.revokeObjectURL(url);
+  try { video.remove(); } catch { /* ignore */ }
 
   // Strip codec params from MIME so storage bucket MIME validation accepts it
   const cleanType = (mime || "video/webm").split(";")[0].trim();
