@@ -673,13 +673,13 @@ export default function FlightForm() {
                 variant="outline"
                 size="sm"
                 className="gap-2"
-                onClick={() => videoLibraryInputRef.current?.click()}
+                onClick={() => videoLibraryInputRef.current?.showPicker?.() ?? videoLibraryInputRef.current?.click()}
                 disabled={videoProcessing}
               >
                 <Plus className="h-4 w-4" />
                 {videoProcessing
                   ? t("flights.processingVideo", { defaultValue: "Verarbeite Video…" })
-                  : t("flights.addVideos", { defaultValue: "Videos aus Mediathek" })}
+                  : t("flights.addVideos", { defaultValue: "Video vom Gerät auswählen" })}
               </Button>
 
               <Button
@@ -697,7 +697,7 @@ export default function FlightForm() {
               <input
                 ref={videoLibraryInputRef}
                 type="file"
-                accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm,.m4v"
+                accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm,.m4v,video/*"
                 multiple
                 className="hidden"
                 onChange={handleVideoSelect}
