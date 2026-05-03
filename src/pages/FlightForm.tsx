@@ -15,6 +15,7 @@ import { parseIGC, type IGCData } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
 import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText, Video, Film } from "lucide-react";
 import { validateVideo, extractPoster, getVideoDuration, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
+import { compressVideo, isVideoCompressionSupported } from "@/lib/video-compress";
 import VideoTrimDialog from "@/components/VideoTrimDialog";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
