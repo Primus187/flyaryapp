@@ -46,6 +46,7 @@ export default function FlightForm() {
   const [pendingVideos, setPendingVideos] = useState<{ file: File; poster: Blob; durationSec: number; previewUrl: string }[]>([]);
   const [existingUploadedVideos, setExistingUploadedVideos] = useState<{ id: string; storage_path: string; poster_path: string | null }[]>([]);
   const [videoProcessing, setVideoProcessing] = useState(false);
+  const [trimSource, setTrimSource] = useState<File | null>(null);
   const [trainingItems, setTrainingItems] = useState<TrainingItem[]>([]);
   const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
