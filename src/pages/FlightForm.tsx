@@ -673,7 +673,7 @@ export default function FlightForm() {
                 variant="outline"
                 size="sm"
                 className="gap-2"
-                onClick={() => videoLibraryInputRef.current?.showPicker?.() ?? videoLibraryInputRef.current?.click()}
+                onClick={() => videoLibraryInputRef.current?.click()}
                 disabled={videoProcessing}
               >
                 <Plus className="h-4 w-4" />
