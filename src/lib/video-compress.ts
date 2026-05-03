@@ -68,7 +68,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
 
   const anyV = video as any;
   const stream: MediaStream | undefined =
-    anyV.captureStream?.() || anyV.mozCaptureStream?.();
+    anyV.captureStream?.(30) || anyV.captureStream?.() || anyV.mozCaptureStream?.();
   if (!stream) {
     URL.revokeObjectURL(url);
     throw new Error("Browser unterstützt keine Video-Komprimierung");
