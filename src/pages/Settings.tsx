@@ -323,11 +323,18 @@ export default function Settings() {
             <ShieldAlert className="h-4 w-4" /> {t("settings.dangerZone")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
+          <Button variant="outline" className="w-full gap-2 justify-start border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => { setDeleteFlightsConfirm(""); setDeleteFlightsOpen(true); }}>
+            <Trash2 className="h-4 w-4" /> {t("settings.deleteAllFlights", "Alle Flüge löschen")}
+          </Button>
+          <Button variant="outline" className="w-full gap-2 justify-start border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => { setDeleteLocationsConfirm(""); setDeleteLocationsOpen(true); }}>
+            <Trash2 className="h-4 w-4" /> {t("settings.deleteAllLocations", "Alle Orte löschen")}
+          </Button>
           <Button variant="destructive" className="w-full gap-2" onClick={() => { setDeleteConfirm(""); setDeleteOpen(true); }}>
             <Trash2 className="h-4 w-4" /> {t("settings.deleteAccount")}
           </Button>
           <p className="text-[11px] text-muted-foreground mt-2">{t("settings.deleteAccountHint")}</p>
+
         </CardContent>
       </Card>
 
