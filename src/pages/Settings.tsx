@@ -74,6 +74,12 @@ export default function Settings() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [deleteFlightsOpen, setDeleteFlightsOpen] = useState(false);
+  const [deleteFlightsConfirm, setDeleteFlightsConfirm] = useState("");
+  const [deletingFlights, setDeletingFlights] = useState(false);
+  const [deleteLocationsOpen, setDeleteLocationsOpen] = useState(false);
+  const [deleteLocationsConfirm, setDeleteLocationsConfirm] = useState("");
+  const [deletingLocations, setDeletingLocations] = useState(false);
   const { isSupported: pushSupported, isSubscribed: pushEnabled, toggle: togglePush, loading: pushLoading } = usePushNotifications();
   useEffect(() => {
     if (!user) return;
@@ -154,6 +160,67 @@ export default function Settings() {
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
       setDeleting(false);
+    }
+  };
+
+  const clearBucketFolder = async (bucket: string) => {
+    if (!user) return;
+    try {
+      const { data } = await supabase.storage.from(bucket).list(user.id, { limit: 1000 });
+      if (!data || data.length === 0) return;
+      const paths: string[] = [];
+      for (const entry of data) {
+        if (entry.name) {
+          // recurse one level for sub-folders (e.g. flight_id folders)
+          const { data: sub } = await supabase.storage.from(bucket).list(`${user.id}/${entry.name}`, { limit: 1000 });
+          if (sub && sub.length > 0) {
+            for (const s of sub) paths.push(`${user.id}/${entry.name}/${s.name}`);
+          } else {
+            paths.push(`${user.id}/${entry.name}`);
+          }
+        }
+      }
+      if (paths.length > 0) await supabase.storage.from(bucket).remove(paths);
+    } catch { /* ignore */ }
+  };
+
+  const handleDeleteAllFlights = async () => {
+    if (!user) return;
+    setDeletingFlights(true);
+    try {
+      const { error } = await supabase.from("flights").delete().eq("user_id", user.id);
+      if (error) throw error;
+      await Promise.all([
+        clearBucketFolder("flight-photos"),
+        clearBucketFolder("flight-videos"),
+        clearBucketFolder("igc-files"),
+      ]);
+      toast({ title: t("settings.allFlightsDeleted", "Alle Flüge gelöscht") });
+      setDeleteFlightsOpen(false);
+      setDeleteFlightsConfirm("");
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setDeletingFlights(false);
+    }
+  };
+
+  const handleDeleteAllLocations = async () => {
+    if (!user) return;
+    setDeletingLocations(true);
+    try {
+      // Detach from flights first to avoid FK issues
+      await supabase.from("flights").update({ takeoff_location_id: null } as any).eq("user_id", user.id);
+      await supabase.from("flights").update({ landing_location_id: null } as any).eq("user_id", user.id);
+      const { error } = await supabase.from("locations").delete().eq("user_id", user.id);
+      if (error) throw error;
+      toast({ title: t("settings.allLocationsDeleted", "Alle Orte gelöscht") });
+      setDeleteLocationsOpen(false);
+      setDeleteLocationsConfirm("");
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setDeletingLocations(false);
     }
   };
 
@@ -256,13 +323,63 @@ export default function Settings() {
             <ShieldAlert className="h-4 w-4" /> {t("settings.dangerZone")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
+          <Button variant="outline" className="w-full gap-2 justify-start border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => { setDeleteFlightsConfirm(""); setDeleteFlightsOpen(true); }}>
+            <Trash2 className="h-4 w-4" /> {t("settings.deleteAllFlights", "Alle Flüge löschen")}
+          </Button>
+          <Button variant="outline" className="w-full gap-2 justify-start border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => { setDeleteLocationsConfirm(""); setDeleteLocationsOpen(true); }}>
+            <Trash2 className="h-4 w-4" /> {t("settings.deleteAllLocations", "Alle Orte löschen")}
+          </Button>
           <Button variant="destructive" className="w-full gap-2" onClick={() => { setDeleteConfirm(""); setDeleteOpen(true); }}>
             <Trash2 className="h-4 w-4" /> {t("settings.deleteAccount")}
           </Button>
           <p className="text-[11px] text-muted-foreground mt-2">{t("settings.deleteAccountHint")}</p>
+
         </CardContent>
       </Card>
+
+      <Dialog open={deleteFlightsOpen} onOpenChange={(v) => !deletingFlights && setDeleteFlightsOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" /> {t("settings.deleteAllFlights", "Alle Flüge löschen")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{t("settings.deleteAllFlightsWarning", "Alle deine Flüge, Fotos, Videos und IGC-Tracks werden unwiderruflich gelöscht.")}</p>
+            <p className="text-muted-foreground">{t("settings.typeDeleteToConfirm", "Tippe DELETE zum Bestätigen.")}</p>
+            <Input value={deleteFlightsConfirm} onChange={(e) => setDeleteFlightsConfirm(e.target.value)} placeholder="DELETE" autoFocus />
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button variant="destructive" className="w-full" disabled={deletingFlights || deleteFlightsConfirm !== "DELETE"} onClick={handleDeleteAllFlights}>
+              {deletingFlights ? t("common.loading") : t("settings.deleteAllFlights", "Alle Flüge löschen")}
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setDeleteFlightsOpen(false)} disabled={deletingFlights}>{t("common.cancel")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteLocationsOpen} onOpenChange={(v) => !deletingLocations && setDeleteLocationsOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" /> {t("settings.deleteAllLocations", "Alle Orte löschen")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{t("settings.deleteAllLocationsWarning", "Alle deine Start- und Landeplätze werden gelöscht. Bestehende Flüge bleiben erhalten, verlieren aber die Ortsverknüpfung.")}</p>
+            <p className="text-muted-foreground">{t("settings.typeDeleteToConfirm", "Tippe DELETE zum Bestätigen.")}</p>
+            <Input value={deleteLocationsConfirm} onChange={(e) => setDeleteLocationsConfirm(e.target.value)} placeholder="DELETE" autoFocus />
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button variant="destructive" className="w-full" disabled={deletingLocations || deleteLocationsConfirm !== "DELETE"} onClick={handleDeleteAllLocations}>
+              {deletingLocations ? t("common.loading") : t("settings.deleteAllLocations", "Alle Orte löschen")}
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setDeleteLocationsOpen(false)} disabled={deletingLocations}>{t("common.cancel")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={deleteOpen} onOpenChange={(v) => !deleting && setDeleteOpen(v)}>
         <DialogContent className="max-w-sm">
