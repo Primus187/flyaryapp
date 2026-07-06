@@ -74,6 +74,12 @@ export default function Settings() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [deleteFlightsOpen, setDeleteFlightsOpen] = useState(false);
+  const [deleteFlightsConfirm, setDeleteFlightsConfirm] = useState("");
+  const [deletingFlights, setDeletingFlights] = useState(false);
+  const [deleteLocationsOpen, setDeleteLocationsOpen] = useState(false);
+  const [deleteLocationsConfirm, setDeleteLocationsConfirm] = useState("");
+  const [deletingLocations, setDeletingLocations] = useState(false);
   const { isSupported: pushSupported, isSubscribed: pushEnabled, toggle: togglePush, loading: pushLoading } = usePushNotifications();
   useEffect(() => {
     if (!user) return;
