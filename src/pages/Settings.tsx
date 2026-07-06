@@ -163,6 +163,67 @@ export default function Settings() {
     }
   };
 
+  const clearBucketFolder = async (bucket: string) => {
+    if (!user) return;
+    try {
+      const { data } = await supabase.storage.from(bucket).list(user.id, { limit: 1000 });
+      if (!data || data.length === 0) return;
+      const paths: string[] = [];
+      for (const entry of data) {
+        if (entry.name) {
+          // recurse one level for sub-folders (e.g. flight_id folders)
+          const { data: sub } = await supabase.storage.from(bucket).list(`${user.id}/${entry.name}`, { limit: 1000 });
+          if (sub && sub.length > 0) {
+            for (const s of sub) paths.push(`${user.id}/${entry.name}/${s.name}`);
+          } else {
+            paths.push(`${user.id}/${entry.name}`);
+          }
+        }
+      }
+      if (paths.length > 0) await supabase.storage.from(bucket).remove(paths);
+    } catch { /* ignore */ }
+  };
+
+  const handleDeleteAllFlights = async () => {
+    if (!user) return;
+    setDeletingFlights(true);
+    try {
+      const { error } = await supabase.from("flights").delete().eq("user_id", user.id);
+      if (error) throw error;
+      await Promise.all([
+        clearBucketFolder("flight-photos"),
+        clearBucketFolder("flight-videos"),
+        clearBucketFolder("igc-files"),
+      ]);
+      toast({ title: t("settings.allFlightsDeleted", "Alle Flüge gelöscht") });
+      setDeleteFlightsOpen(false);
+      setDeleteFlightsConfirm("");
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setDeletingFlights(false);
+    }
+  };
+
+  const handleDeleteAllLocations = async () => {
+    if (!user) return;
+    setDeletingLocations(true);
+    try {
+      // Detach from flights first to avoid FK issues
+      await supabase.from("flights").update({ takeoff_location_id: null } as any).eq("user_id", user.id);
+      await supabase.from("flights").update({ landing_location_id: null } as any).eq("user_id", user.id);
+      const { error } = await supabase.from("locations").delete().eq("user_id", user.id);
+      if (error) throw error;
+      toast({ title: t("settings.allLocationsDeleted", "Alle Orte gelöscht") });
+      setDeleteLocationsOpen(false);
+      setDeleteLocationsConfirm("");
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setDeletingLocations(false);
+    }
+  };
+
   const themes = [
     { value: "light" as const, label: t("settings.light"), icon: Sun },
     { value: "dark" as const, label: t("settings.dark"), icon: Moon },
