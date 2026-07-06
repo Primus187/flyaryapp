@@ -338,6 +338,49 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      <Dialog open={deleteFlightsOpen} onOpenChange={(v) => !deletingFlights && setDeleteFlightsOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" /> {t("settings.deleteAllFlights", "Alle Flüge löschen")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{t("settings.deleteAllFlightsWarning", "Alle deine Flüge, Fotos, Videos und IGC-Tracks werden unwiderruflich gelöscht.")}</p>
+            <p className="text-muted-foreground">{t("settings.typeDeleteToConfirm", "Tippe DELETE zum Bestätigen.")}</p>
+            <Input value={deleteFlightsConfirm} onChange={(e) => setDeleteFlightsConfirm(e.target.value)} placeholder="DELETE" autoFocus />
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button variant="destructive" className="w-full" disabled={deletingFlights || deleteFlightsConfirm !== "DELETE"} onClick={handleDeleteAllFlights}>
+              {deletingFlights ? t("common.loading") : t("settings.deleteAllFlights", "Alle Flüge löschen")}
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setDeleteFlightsOpen(false)} disabled={deletingFlights}>{t("common.cancel")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteLocationsOpen} onOpenChange={(v) => !deletingLocations && setDeleteLocationsOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" /> {t("settings.deleteAllLocations", "Alle Orte löschen")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{t("settings.deleteAllLocationsWarning", "Alle deine Start- und Landeplätze werden gelöscht. Bestehende Flüge bleiben erhalten, verlieren aber die Ortsverknüpfung.")}</p>
+            <p className="text-muted-foreground">{t("settings.typeDeleteToConfirm", "Tippe DELETE zum Bestätigen.")}</p>
+            <Input value={deleteLocationsConfirm} onChange={(e) => setDeleteLocationsConfirm(e.target.value)} placeholder="DELETE" autoFocus />
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button variant="destructive" className="w-full" disabled={deletingLocations || deleteLocationsConfirm !== "DELETE"} onClick={handleDeleteAllLocations}>
+              {deletingLocations ? t("common.loading") : t("settings.deleteAllLocations", "Alle Orte löschen")}
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setDeleteLocationsOpen(false)} disabled={deletingLocations}>{t("common.cancel")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={deleteOpen} onOpenChange={(v) => !deleting && setDeleteOpen(v)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
