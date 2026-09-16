@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.push_on_group_announcement() FROM PUBLIC, anon, authenticated;
