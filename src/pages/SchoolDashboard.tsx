@@ -8,7 +8,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
-import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ChevronLeft } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
