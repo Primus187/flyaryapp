@@ -1,12 +1,13 @@
 import { useCallback, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame, GraduationCap } from "lucide-react";
-import { useSchoolAccess } from "@/hooks/use-school-access";
+import { useRoleMode } from "@/contexts/RoleModeContext";
+import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { usePilotStreak } from "@/hooks/use-pilot-streak";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,7 +49,7 @@ export default function Dashboard() {
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
   const { streak } = usePilotStreak(user?.id);
-  const { hasSchoolAccess } = useSchoolAccess();
+  const { mode } = useRoleMode();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -87,6 +88,8 @@ export default function Dashboard() {
   const statusLabel: Record<string, string> = { announced: t("events.statusAnnounced"), confirmed: t("events.statusConfirmed"), cancelled: t("events.statusCancelled") };
   const statusColor = (s: string) => s === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : s === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
   const initials = profile.pilot_name ? profile.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : user?.email?.[0]?.toUpperCase() || "?";
+
+  if (mode === "school") return <Navigate to="/school" replace />;
 
   if (loading) return <DashboardSkeleton />;
 
@@ -143,15 +146,48 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {hasSchoolAccess && (
-        <button
-          type="button"
-          onClick={() => navigate("/school")}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/10 border border-primary/25 active:scale-[0.99] transition-transform text-left"
-        >
-          <GraduationCap className="h-5 w-5 text-primary shrink-0" />
-          <span className="text-sm font-medium flex-1">{t("more.schoolOpen")}</span>
-        </button>
+      <RoleModeSwitcher />
+
+      {/* Events */}
+      {events.length > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.upcomingEvents")}</h2>
+          <div className="space-y-2">
+            {events.map((e) => {
+              const mySignup = signups.find(s => s.event_id === e.id && s.user_id === user?.id);
+              const isSignedUp = mySignup?.signed_up ?? false;
+              const totalSignedUp = signups.filter(s => s.event_id === e.id && s.signed_up).length;
+              return (
+                <article key={e.id}>
+                  <Card className="border-0 shadow-sm hover:bg-muted/50 cursor-pointer transition-colors">
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between gap-2" onClick={() => navigate(`/events/${e.id}`)}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="font-medium text-sm truncate">{e.title}</p>
+                            <Badge className={`text-[10px] shrink-0 ${statusColor(e.status)}`}>{statusLabel[e.status] || e.status}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(e.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+                            {e.event_category && ` · ${t(`events.categories.${e.event_category}`, { defaultValue: e.event_category })}`}
+                            {e.group_name && ` · ${e.group_name}`}
+                          </p>
+                          {e.meeting_point && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {e.meeting_point}</p>}
+                          <p className="text-xs text-muted-foreground mt-0.5"><Users className="h-3 w-3 inline mr-1" />{totalSignedUp}{e.max_participants ? `/${e.max_participants}` : ""} {t("events.signedUp")}</p>
+                        </div>
+                        {e.status !== "cancelled" && (
+                          <Button variant={isSignedUp ? "default" : "outline"} size="sm" className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`} onClick={(ev) => { ev.stopPropagation(); toggleSignup(e.id); }}>
+                            {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}{isSignedUp ? t("events.signedUpLabel") : t("events.signUp")}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </article>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {/* Hero season stat card */}
@@ -238,48 +274,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </button>
-      )}
-
-      {/* Events */}
-      {events.length > 0 && (
-        <section>
-          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("dashboard.upcomingEvents")}</h2>
-          <div className="space-y-2">
-            {events.map((e) => {
-              const mySignup = signups.find(s => s.event_id === e.id && s.user_id === user?.id);
-              const isSignedUp = mySignup?.signed_up ?? false;
-              const totalSignedUp = signups.filter(s => s.event_id === e.id && s.signed_up).length;
-              return (
-                <article key={e.id}>
-                  <Card className="border-0 shadow-sm hover:bg-muted/50 cursor-pointer transition-colors">
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between gap-2" onClick={() => navigate(`/events/${e.id}`)}>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <p className="font-medium text-sm truncate">{e.title}</p>
-                            <Badge className={`text-[10px] shrink-0 ${statusColor(e.status)}`}>{statusLabel[e.status] || e.status}</Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(e.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
-                            {e.event_category && ` · ${t(`events.categories.${e.event_category}`, { defaultValue: e.event_category })}`}
-                            {e.group_name && ` · ${e.group_name}`}
-                          </p>
-                          {e.meeting_point && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {e.meeting_point}</p>}
-                          <p className="text-xs text-muted-foreground mt-0.5"><Users className="h-3 w-3 inline mr-1" />{totalSignedUp}{e.max_participants ? `/${e.max_participants}` : ""} {t("events.signedUp")}</p>
-                        </div>
-                        {e.status !== "cancelled" && (
-                          <Button variant={isSignedUp ? "default" : "outline"} size="sm" className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`} onClick={(ev) => { ev.stopPropagation(); toggleSignup(e.id); }}>
-                            {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}{isSignedUp ? t("events.signedUpLabel") : t("events.signUp")}
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </article>
-              );
-            })}
-          </div>
-        </section>
       )}
 
       {/* Active Challenges */}
