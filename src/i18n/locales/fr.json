@@ -1189,6 +1189,33 @@
       "areaRanking": "Sites de vol (rendez-vous)",
       "categoryRanking": "Rendez-vous par type",
       "empty": "Aucun rendez-vous enregistré."
+    },
+    "credits": {
+      "title": "Crédits",
+      "totalOpen": "Crédit ouvert",
+      "ratePerDay": "Tarif : {{amount}} par jour",
+      "add": "Ajouter une écriture",
+      "balances": "Soldes",
+      "bookings": "Écritures",
+      "empty": "Aucune écriture.",
+      "person": "Personne",
+      "entryType": "Type",
+      "date": "Date",
+      "days": "Jours",
+      "amount": "Montant",
+      "event": "Rendez-vous",
+      "noEvent": "Aucun rendez-vous",
+      "note": "Note",
+      "save": "Enregistrer",
+      "saved": "Enregistré",
+      "saveFailed": "Échec de l'enregistrement",
+      "deleteConfirm": "Supprimer cette écriture ?",
+      "daysCount": "{{count}} jours de service",
+      "types": {
+        "earned": "Jour de service",
+        "payout": "Versement",
+        "adjustment": "Correction"
+      }
     }
   },
   "search": {
