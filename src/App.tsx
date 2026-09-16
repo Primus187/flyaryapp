@@ -6,6 +6,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { RoleModeProvider } from "@/contexts/RoleModeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
@@ -161,6 +162,7 @@ const App = () => {
           <BrowserRouter>
             <ScrollToTop />
             <AuthProvider>
+              <RoleModeProvider>
               <SplashGate>
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
@@ -206,6 +208,7 @@ const App = () => {
                   </Routes>
                 </Suspense>
               </SplashGate>
+              </RoleModeProvider>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
