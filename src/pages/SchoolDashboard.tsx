@@ -1,11 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
@@ -22,10 +21,41 @@ interface SchoolGroup {
   name: string;
 }
 
+type Section = "days" | "chat" | "people" | "students" | "equipment" | "credits" | "billing" | "stats";
+
+const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
+  {
+    titleKey: "school.hub.operations",
+    items: [
+      { key: "days", icon: CalendarDays, labelKey: "school.flightDays" },
+      { key: "chat", icon: MessageCircle, labelKey: "events.chat" },
+    ],
+  },
+  {
+    titleKey: "school.hub.people",
+    items: [
+      { key: "people", icon: Users, labelKey: "school.people.title" },
+      { key: "students", icon: ClipboardList, labelKey: "school.students" },
+    ],
+  },
+  {
+    titleKey: "school.hub.admin",
+    items: [
+      { key: "equipment", icon: Package, labelKey: "school.equipment.title" },
+      { key: "credits", icon: Coins, labelKey: "school.credits.title" },
+      { key: "billing", icon: Receipt, labelKey: "school.billing.title" },
+      { key: "stats", icon: BarChart3, labelKey: "school.stats.title" },
+    ],
+  },
+];
+
 export default function SchoolDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { section } = useParams<{ section?: string }>();
+  const activeSection = (SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === section)?.key ?? null) as Section | null;
+
   const [schoolGroups, setSchoolGroups] = useState<SchoolGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -40,22 +70,29 @@ export default function SchoolDashboard() {
   const [trainingProgress, setTrainingProgress] = useState<any[]>([]);
   const [examItemCount, setExamItemCount] = useState(0);
 
-  // Load school groups where user is admin
+  // Load school groups where the user is admin, instructor or school lead
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data: memberRows } = await supabase
-        .from("group_members")
-        .select("group_id, role")
-        .eq("user_id", user.id)
-        .eq("role", "admin");
+      const [adminRes, functionRes] = await Promise.all([
+        supabase.from("group_members").select("group_id").eq("user_id", user.id).eq("role", "admin"),
+        supabase
+          .from("group_member_functions")
+          .select("group_id, function")
+          .eq("user_id", user.id)
+          .in("function", ["instructor", "school_lead"]),
+      ]);
 
-      if (!memberRows?.length) {
+      const groupIds = Array.from(new Set([
+        ...(adminRes.data || []).map((m) => m.group_id),
+        ...(functionRes.data || []).map((m) => m.group_id),
+      ]));
+
+      if (!groupIds.length) {
         setLoading(false);
         return;
       }
 
-      const groupIds = memberRows.map((m) => m.group_id);
       const { data: groups } = await supabase
         .from("groups")
         .select("id, name, group_type")
@@ -158,7 +195,6 @@ export default function SchoolDashboard() {
   }, [events]);
 
   const openNotesCount = useMemo(() => {
-    // Events in the last 30 days without any notes
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const recentEvents = events.filter((e) => new Date(e.event_date) >= thirtyDaysAgo && new Date(e.event_date) <= new Date());
@@ -184,8 +220,56 @@ export default function SchoolDashboard() {
     );
   }
 
+  const renderSection = () => {
+    switch (activeSection) {
+      case "days":
+        return <SchoolDays events={eventInfos} />;
+      case "chat":
+        return <GroupChat groupId={selectedGroupId} canAnnounce={true} />;
+      case "people":
+        return <SchoolPeople groupId={selectedGroupId} canManage={true} />;
+      case "students":
+        return <SchoolStudents students={studentInfos} />;
+      case "equipment":
+        return <SchoolEquipment groupId={selectedGroupId} />;
+      case "credits":
+        return <SchoolCredits groupId={selectedGroupId} />;
+      case "billing":
+        return <SchoolBilling groupId={selectedGroupId} />;
+      case "stats":
+        return <SchoolStats groupId={selectedGroupId} />;
+      default:
+        return null;
+    }
+  };
+
+  if (activeSection) {
+    const item = SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeSection)!;
+    return (
+      <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate("/school")}
+            className="h-9 w-9 -ml-2 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted/60 active:scale-95 transition-all"
+            aria-label={t("common.back")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold truncate">{t(item.labelKey)}</h1>
+            <p className="text-xs text-muted-foreground truncate">
+              {schoolGroups.find((g) => g.id === selectedGroupId)?.name}
+            </p>
+          </div>
+        </div>
+        {renderSection()}
+      </div>
+    );
+  }
+
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
       <div className="flex items-center gap-3">
         <GraduationCap className="h-6 w-6 text-primary" />
         {schoolGroups.length === 1 ? (
@@ -204,60 +288,33 @@ export default function SchoolDashboard() {
         )}
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList className="w-full">
-          <TabsTrigger value="overview" className="flex-1 text-xs">{t("school.overview")}</TabsTrigger>
-          <TabsTrigger value="people" className="flex-1 text-xs">{t("school.people.title")}</TabsTrigger>
-          <TabsTrigger value="students" className="flex-1 text-xs">{t("school.students")}</TabsTrigger>
-          <TabsTrigger value="days" className="flex-1 text-xs">{t("school.flightDays")}</TabsTrigger>
-          <TabsTrigger value="equipment" className="flex-1 text-xs">{t("school.equipment.title")}</TabsTrigger>
-          <TabsTrigger value="stats" className="flex-1 text-xs">{t("school.stats.title")}</TabsTrigger>
-          <TabsTrigger value="credits" className="flex-1 text-xs">{t("school.credits.title")}</TabsTrigger>
-          <TabsTrigger value="billing" className="flex-1 text-xs">{t("school.billing.title")}</TabsTrigger>
-          <TabsTrigger value="chat" className="flex-1 text-xs">{t("events.chat")}</TabsTrigger>
-        </TabsList>
+      <SchoolOverview
+        groupId={selectedGroupId}
+        studentCount={studentMembers.length}
+        nextEvent={nextEvent}
+        openNotesCount={openNotesCount}
+      />
 
-        <TabsContent value="overview">
-          <SchoolOverview
-            groupId={selectedGroupId}
-            studentCount={studentMembers.length}
-            nextEvent={nextEvent}
-            openNotesCount={openNotesCount}
-          />
-        </TabsContent>
-
-        <TabsContent value="people">
-          <SchoolPeople groupId={selectedGroupId} canManage={true} />
-        </TabsContent>
-
-        <TabsContent value="students">
-          <SchoolStudents students={studentInfos} />
-        </TabsContent>
-
-        <TabsContent value="days">
-          <SchoolDays events={eventInfos} />
-        </TabsContent>
-
-        <TabsContent value="equipment">
-          <SchoolEquipment groupId={selectedGroupId} />
-        </TabsContent>
-
-        <TabsContent value="stats">
-          <SchoolStats groupId={selectedGroupId} />
-        </TabsContent>
-
-        <TabsContent value="credits">
-          <SchoolCredits groupId={selectedGroupId} />
-        </TabsContent>
-
-        <TabsContent value="billing">
-          <SchoolBilling groupId={selectedGroupId} />
-        </TabsContent>
-
-        <TabsContent value="chat">
-          <GroupChat groupId={selectedGroupId} canAnnounce={true} />
-        </TabsContent>
-      </Tabs>
+      {SECTION_GROUPS.map((group) => (
+        <section key={group.titleKey}>
+          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider px-1">
+            {t(group.titleKey)}
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {group.items.map(({ key, icon: Icon, labelKey }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => navigate(`/school/${key}`)}
+                className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/60 shadow-sm hover:bg-muted/50 active:scale-[0.97] transition-all text-left"
+              >
+                <Icon className="h-5 w-5 text-primary shrink-0" />
+                <span className="text-sm font-medium leading-tight">{t(labelKey)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
