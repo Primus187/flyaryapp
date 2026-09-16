@@ -153,7 +153,7 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
     const rows = filtered.map((p) => [
       csvEscape(p.pilotName),
       csvEscape(p.functions.map((f) => t(`school.functions.${f}`)).join("; ")),
-      csvEscape(p.trainingLevel ? t(`school.levels.${p.trainingLevel}`) : ""),
+      csvEscape(p.trainingLevel ? t(`school.levels.${p.trainingLevel}`, { defaultValue: p.trainingLevel }) : ""),
     ].join(","));
     const csv = "﻿" + [headers.map(csvEscape).join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -242,7 +242,7 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
                 ))}
                 {p.trainingLevel && (
                   <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/40 text-primary">
-                    {t(`school.levels.${p.trainingLevel}`)}
+                    {t(`school.levels.${p.trainingLevel}`, { defaultValue: p.trainingLevel })}
                   </Badge>
                 )}
                 {p.functions.length === 0 && !p.trainingLevel && (
