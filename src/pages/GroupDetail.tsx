@@ -113,6 +113,7 @@ export default function GroupDetail() {
               <Badge variant="secondary" className="ml-1.5 text-[10px] h-4 px-1">{challenges.length}</Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="chat" className="flex-1">{t("events.chat")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4 mt-4">
@@ -167,6 +168,10 @@ export default function GroupDetail() {
           {challenges.map(c => (
             <ChallengeCard key={c.id} challenge={c} />
           ))}
+        </TabsContent>
+
+        <TabsContent value="chat" className="mt-4">
+          <GroupChat groupId={id!} canAnnounce={isAdmin} />
         </TabsContent>
       </Tabs>
     </div>
