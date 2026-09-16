@@ -728,7 +728,8 @@
     "deleteAccountWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Flüge, Fotos und Profildaten werden dauerhaft gelöscht.",
     "deleteAccountConfirmHint": "Tippe DELETE in das Feld, um zu bestätigen.",
     "deleteAccountConfirm": "Endgültig löschen",
-    "accountDeleted": "Konto gelöscht"
+    "accountDeleted": "Konto gelöscht",
+    "dataImport": "Daten importieren"
   },
   "splash": {
     "loading": "Laden..."
@@ -876,10 +877,12 @@
     "leaderboard": "Rangliste",
     "school": "Flugschule",
     "weather": "Meteo Map",
-    "sectionPilot": "Pilot",
-    "sectionTools": "Tools",
-    "sectionAdmin": "Verwaltung",
-    "sectionLegal": "Rechtliches"
+    "sectionFly": "Fliegen",
+    "sectionMe": "Ich",
+    "sectionCommunity": "Community",
+    "stats": "Statistiken",
+    "schoolHint": "Termine, Personen und Verwaltung der Schule",
+    "schoolOpen": "Flugschule öffnen"
   },
   "school": {
     "title": "Flugschule",
@@ -1082,6 +1085,11 @@
         "course_fee": "Kursgebühr",
         "other": "Sonstiges"
       }
+    },
+    "hub": {
+      "operations": "Betrieb",
+      "people": "Personen",
+      "admin": "Verwaltung"
     }
   },
   "feed": {
