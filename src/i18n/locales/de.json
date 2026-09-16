@@ -925,7 +925,7 @@
       "licensed": "Brevetiert"
     },
     "people": {
-      "title": "Personen",
+      "title": "Team",
       "filterAll": "Alle",
       "noMembers": "Keine Mitglieder gefunden.",
       "editTitle": "Person bearbeiten",
@@ -1088,7 +1088,7 @@
     },
     "hub": {
       "operations": "Betrieb",
-      "people": "Personen",
+      "people": "Team",
       "admin": "Verwaltung"
     }
   },

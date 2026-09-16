@@ -1092,7 +1092,7 @@
       "licensed": "Breveté"
     },
     "people": {
-      "title": "Personnes",
+      "title": "Équipe",
       "filterAll": "Tous",
       "noMembers": "Aucun membre trouvé.",
       "editTitle": "Modifier la personne",
@@ -1255,7 +1255,7 @@
     },
     "hub": {
       "operations": "Exploitation",
-      "people": "Personnes",
+      "people": "Équipe",
       "admin": "Administration"
     }
   },
