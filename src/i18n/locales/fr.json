@@ -1176,6 +1176,19 @@
         "launch_leader_per_day": "Crédit chef de décollage par jour"
       },
       "ratesHint": "Ces montants sont modifiables à tout moment. Ils servent au décompte et aux crédits."
+    },
+    "stats": {
+      "title": "Statistiques",
+      "allYears": "Toutes les années",
+      "events": "Rendez-vous",
+      "heightFlightDays": "Jours de vol en altitude",
+      "participations": "Inscriptions",
+      "areasUsed": "Sites de vol",
+      "instructorDays": "Journées moniteurs",
+      "launchHelperDays": "Journées aides au décollage",
+      "areaRanking": "Sites de vol (rendez-vous)",
+      "categoryRanking": "Rendez-vous par type",
+      "empty": "Aucun rendez-vous enregistré."
     }
   },
   "search": {
