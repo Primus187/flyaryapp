@@ -1,71 +1,61 @@
-## Ziel
+# Flugschul-Paket: Ersatz für Flightbook und Telegram
 
-Videos, die kurz genug sind (≤60s), aber über 50 MB liegen, sollen vor dem Upload automatisch im Browser komprimiert werden, sodass sie unter das 50-MB-Limit passen.
+Ziel: Die Flugschule verwaltet alle Personen, Kurse, Höhenflüge und die Kommunikation in Flyary – ohne Flightbook und ohne Telegram.
 
-## Was der Nutzer sieht
+## 1. Personen und Rollen
 
-- Wählt ein Video aus der Galerie
-- Wenn Datei > 50 MB, aber Dauer ≤ 60s → Toast: "Video wird komprimiert…" mit Fortschrittsanzeige
-- Nach erfolgreicher Komprimierung wird das Video normal als Pending-Video hinzugefügt
-- Wenn Komprimierung fehlschlägt oder Endergebnis trotzdem > 50 MB → klare Fehlermeldung mit Empfehlung (z. B. kürzeres Video oder vorab in der Galerie reduzieren)
-- Videos > 60s bleiben wie bisher abgelehnt (oder Vorschlag zum Trimmen via bestehendem `VideoTrimDialog`)
+Heute kennt eine Gruppe nur "Admin" und "Mitglied". Neu bekommt jede Person in einer Schulgruppe:
 
-## Technische Umsetzung
+- **Funktion**: Schüler, Brevetiert, Starthelfer, Fluglehrer, Schulleitung – mehrere gleichzeitig möglich (z. B. Brevetiert + Starthelfer).
+- **Ausbildungsstand**: getrennt davon, z. B. Grundschulung / Höhenflug / Brevetreif / brevetiert, plus Brevet-Nummer und Prüfungsdaten (bereits im Profil vorhanden).
 
-### Neue Utility: `src/lib/video-compress.ts`
+Neue Ansicht "Personen" im Flugschul-Bereich: Liste mit Suche, Filter nach Funktion und Ausbildungsstand, Zählerkacheln (Schüler, Brevetierte, Starthelfer, Fluglehrer). Schulleitung kann Funktionen und Ausbildungsstand setzen. CSV-Export der Liste.
 
-Nutzt die bereits im Projekt vorhandene Browser-API `MediaRecorder` + `HTMLVideoElement.captureStream()` (gleicher Ansatz wie `VideoTrimDialog.tsx` — bekannt funktionsfähig auf Android Chrome, dem Hauptzielsystem des Users).
+## 2. Kurse
 
-```ts
-export async function compressVideo(
-  file: File,
-  opts?: { targetBytes?: number; maxBitrate?: number; onProgress?: (pct: number) => void }
-): Promise<File>
-```
+Neuer Bereich "Kurse" innerhalb einer Schulgruppe:
 
-Vorgehen:
-1. Video in unsichtbares `<video>` laden, Dauer ermitteln
-2. Ziel-Bitrate berechnen: `targetBytes * 8 / duration` (mit Sicherheitsfaktor 0.85, Audio-Reserve ~96 kbps)
-3. Optional Skalierung: Wenn Quelle > 1280px breit, auf max. 1280×720 herunterskalieren via `<canvas>` + `canvas.captureStream()` (für noch stärkere Reduktion bei sehr großen Quellen). Erste Iteration: nur Bitrate-Reduktion via `video.captureStream()`, da das einfacher und für 30s-Clips meist ausreicht.
-4. `MediaRecorder` mit MIME-Präferenz `video/mp4;codecs=avc1,mp4a.40.2` → Fallback `video/webm`
-5. Video von Anfang bis Ende abspielen, Chunks sammeln, am Ende als `File` zurückgeben
-6. Falls Resultat immer noch > Ziel → einmal mit halber Bitrate erneut probieren, sonst Fehler
+- Kurs anlegen: Name, Zeitraum, Beschreibung, Status (geplant / laufend / abgeschlossen).
+- Teilnehmerliste: Schüler zuteilen, Fluglehrer als Kursleitung zuteilen.
+- Kursprogramm: mehrere Termine pro Kurs (Theorie, Übungshang, Höhenflug), verknüpft mit den bestehenden Flugtagen.
+- Fortschritt: pro Teilnehmer Ausbildungsstand, Anzahl Flüge und Kontrollblatt-Fortschritt direkt im Kurs sichtbar.
 
-### Edits in `src/pages/FlightForm.tsx`
+## 3. Höhenflug-Planung
 
-In `handleVideoSelect` (bzw. `addPendingVideoFromFile`):
-- Wenn `file.size > MAX_VIDEO_BYTES` UND `duration ≤ MAX_VIDEO_SECONDS`:
-  - State `videoProcessing` mit Label "Komprimiere Video…" setzen
-  - `compressVideo(file, { targetBytes: MAX_VIDEO_BYTES * 0.95 })` aufrufen
-  - Ergebnis an die bestehende `validateVideo`-Pipeline übergeben
-- Bei Erfolg → ganz normal als Pending-Video aufnehmen
-- Bei Fehler → Toast mit Original-Fehler
+Erweiterung der bestehenden Flugtage:
 
-### Edits in `src/lib/video-utils.ts`
+- **Plätze und Warteliste**: Teilnehmerlimit; wer sich nach dem Limit anmeldet, landet auf der Warteliste und rückt automatisch nach, wenn jemand absagt.
+- **Anmeldeschluss und Bestätigung**: Frist, nach der keine Anmeldung mehr möglich ist; die Schule bestätigt oder sagt ab, betroffene Personen erhalten eine Push-Meldung.
+- **Einteilung**: pro Flugtag Fluglehrer und Starthelfer zuweisen (mit Rolle wie Start, Landeplatz, Funk), sichtbar für alle Teilnehmenden.
+- **Transport**: Fahrgemeinschaften – wer fährt, wie viele Plätze frei, wer fährt mit, Abfahrtsort und -zeit.
 
-- Reihenfolge in `validateVideo` ändern: zuerst Dauer prüfen, **dann** Größe — damit der Aufrufer bei `error === "too large"` + `durationSec ≤ 60` weiß, dass Komprimierung sinnvoll ist. Alternativ neue Hilfs-Konstante `MAX_VIDEO_BYTES` exportieren (existiert bereits) und die Größenprüfung im FlightForm separat vor `validateVideo` machen.
+## 4. Kommunikation statt Telegram
 
-### i18n
+- **Gruppenchat** pro Schulgruppe und pro Kurs, dauerhaft (zusätzlich zum bestehenden Chat pro Flugtag).
+- **Foto- und Dateianhänge** im Chat.
+- **Ankündigungen**: nur Fluglehrer und Schulleitung können posten, alle erhalten Push; oben angepinnt sichtbar.
+- Ungelesen-Zähler, Erwähnungen mit @, Push-Benachrichtigung bei neuen Nachrichten.
 
-Neue Strings in `de.json`/`en.json`/`fr.json`:
-- `flights.compressing` — "Komprimiere Video… ({pct}%)"
-- `flights.compressFailed` — "Komprimierung fehlgeschlagen. Bitte vorab kürzen oder Qualität reduzieren."
-- `flights.compressedTooLarge` — "Auch nach Komprimierung > 50 MB. Bitte kürzeres Video wählen."
+## Umsetzungsreihenfolge
 
-### Browser-Kompatibilität
+1. Rollen und Ausbildungsstand + Personen-Übersicht
+2. Höhenflug-Planung (Plätze, Warteliste, Einteilung, Fahrgemeinschaften)
+3. Gruppen- und Kurschat mit Anhängen und Ankündigungen
+4. Kurse mit Programm und Fortschritt
 
-- Android Chrome: voll unterstützt (MP4-Output)
-- Desktop Chrome/Firefox: voll unterstützt (WebM-Output)
-- iOS Safari: `captureStream()` eingeschränkt — Fallback: Originalfehler "Video zu groß" wie bisher anzeigen, mit Hinweis "Auf iPhone bitte vorher in der Fotos-App kürzen oder Qualität reduzieren"
+Nach jedem Schritt ist die Funktion nutzbar und kann von der Schule getestet werden.
 
-### Außerhalb des Scopes
+## Technische Details
 
-- Server-seitiges Transcoding via ffmpeg-wasm Edge Function (deutlich aufwendiger, kann später nachgerüstet werden falls Browser-Komprimierung in der Praxis zu schwach/inkonsistent)
-- Komprimierung von Videos > 60s (bleibt YouTube vorbehalten oder via bestehendem Trim-Dialog)
+**Datenbank (neue Tabellen, jeweils mit GRANTs und RLS):**
+- `group_member_functions` (group_id, user_id, function enum: student, licensed, launch_helper, instructor, school_lead) – Mehrfachrollen; Schreibrecht nur Gruppen-Admin.
+- `courses`, `course_participants` (role: student/instructor), `course_sessions` (optional verknüpft mit `flight_events.id`).
+- `event_staff` (event_id, user_id, role: instructor/launch_helper, position text).
+- `event_carpools` (event_id, driver_user_id, seats, departure_place, departure_time) + `event_carpool_riders`.
+- `group_messages` (group_id, optional course_id, user_id, message, attachment_path, is_announcement) mit Realtime; Storage-Bucket `chat-attachments` (privat, RLS über Gruppenmitgliedschaft).
+- `event_signups` erweitern: `status` (confirmed/waitlist/declined/cancelled), `waitlist_position`, `confirmed_by_school`.
+- `profiles.training_level` bleibt Ausbildungsstand; Werteliste vereinheitlichen.
 
-## Geänderte Dateien
+**Logik:** Warteliste-Nachrücken per Trigger auf `event_signups`; Anmeldeschluss serverseitig geprüft; Pushes über bestehende `send_push_notification`-Funktion; Ankündigungs-Schreibrecht per Security-Definer-Funktion `has_group_function(user, group, function)`.
 
-- `src/lib/video-compress.ts` (neu)
-- `src/pages/FlightForm.tsx`
-- `src/lib/video-utils.ts` (kleine Anpassung Reihenfolge)
-- `src/i18n/locales/{de,en,fr}.json`
+**UI:** Flugschul-Dashboard erhält Tabs Personen / Kurse / Flugtage; Flugtag-Detail erhält Abschnitte Einteilung, Warteliste, Fahrgemeinschaften; Gruppen-Detail erhält Chat-Tab. Alles dreisprachig (de/en/fr).
