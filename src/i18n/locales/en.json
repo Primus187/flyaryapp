@@ -1216,6 +1216,39 @@
         "payout": "Payout",
         "adjustment": "Adjustment"
       }
+    },
+    "billing": {
+      "title": "Billing",
+      "openTotal": "Open items",
+      "openCount": "{{count}} open items",
+      "add": "Add item",
+      "perPerson": "Open per person",
+      "tabOpen": "Open",
+      "tabPaid": "Paid",
+      "empty": "No items.",
+      "person": "Person",
+      "itemType": "Type",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitAmount": "Rate",
+      "amount": "Amount",
+      "date": "Date",
+      "event": "Event",
+      "noEvent": "No event",
+      "note": "Note",
+      "save": "Save",
+      "saved": "Saved",
+      "saveFailed": "Saving failed",
+      "deleteConfirm": "Really delete this item?",
+      "markPaid": "Mark as paid",
+      "paidOn": "paid on {{date}}",
+      "types": {
+        "travel": "Travel costs",
+        "rental": "Equipment rental",
+        "purchase": "Equipment purchase",
+        "course_fee": "Course fee",
+        "other": "Other"
+      }
     }
   },
   "search": {

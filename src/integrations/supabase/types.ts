@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_items: {
+        Row: {
+          amount: number
+          billing_date: string
+          created_at: string
+          created_by: string
+          description: string | null
+          event_id: string | null
+          group_id: string
+          id: string
+          item_type: string
+          note: string | null
+          paid_at: string | null
+          quantity: number
+          unit_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          billing_date?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_id?: string | null
+          group_id: string
+          id?: string
+          item_type?: string
+          note?: string | null
+          paid_at?: string | null
+          quantity?: number
+          unit_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_date?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_id?: string | null
+          group_id?: string
+          id?: string
+          item_type?: string
+          note?: string | null
+          paid_at?: string | null
+          quantity?: number
+          unit_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookmarks: {
         Row: {
           achievement_id: string | null
