@@ -750,7 +750,8 @@
     "deleteAccountWarning": "This action cannot be undone. All your flights, photos and profile data will be permanently deleted.",
     "deleteAccountConfirmHint": "Type DELETE in the field to confirm.",
     "deleteAccountConfirm": "Delete permanently",
-    "accountDeleted": "Account deleted"
+    "accountDeleted": "Account deleted",
+    "dataImport": "Import data"
   },
   "splash": {
     "loading": "Loading..."
@@ -787,10 +788,12 @@
     "leaderboard": "Leaderboard",
     "school": "Flight School",
     "weather": "Meteo Map",
-    "sectionPilot": "Pilot",
-    "sectionTools": "Tools",
-    "sectionAdmin": "Management",
-    "sectionLegal": "Legal"
+    "sectionFly": "Flying",
+    "sectionMe": "Me",
+    "sectionCommunity": "Community",
+    "stats": "Statistics",
+    "schoolHint": "Events, people and administration",
+    "schoolOpen": "Open flight school"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",
@@ -1249,6 +1252,11 @@
         "course_fee": "Course fee",
         "other": "Other"
       }
+    },
+    "hub": {
+      "operations": "Operations",
+      "people": "People",
+      "admin": "Administration"
     }
   },
   "search": {

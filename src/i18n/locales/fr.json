@@ -750,7 +750,8 @@
     "deleteAccountWarning": "Cette action est irréversible. Tous vos vols, photos et données de profil seront définitivement supprimés.",
     "deleteAccountConfirmHint": "Tapez DELETE dans le champ pour confirmer.",
     "deleteAccountConfirm": "Supprimer définitivement",
-    "accountDeleted": "Compte supprimé"
+    "accountDeleted": "Compte supprimé",
+    "dataImport": "Importer des données"
   },
   "splash": {
     "loading": "Chargement..."
@@ -787,10 +788,12 @@
     "leaderboard": "Classement",
     "school": "École de vol",
     "weather": "Carte Météo",
-    "sectionPilot": "Pilote",
-    "sectionTools": "Outils",
-    "sectionAdmin": "Administration",
-    "sectionLegal": "Mentions légales"
+    "sectionFly": "Voler",
+    "sectionMe": "Moi",
+    "sectionCommunity": "Communauté",
+    "stats": "Statistiques",
+    "schoolHint": "Dates, personnes et administration",
+    "schoolOpen": "Ouvrir l'école"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
@@ -1249,6 +1252,11 @@
         "course_fee": "Frais de cours",
         "other": "Autre"
       }
+    },
+    "hub": {
+      "operations": "Exploitation",
+      "people": "Personnes",
+      "admin": "Administration"
     }
   },
   "search": {

@@ -197,6 +197,7 @@ const App = () => {
                       <Route path="/challenges/:id" element={<ChallengeDetail />} />
                       <Route path="/pilot/:userId" element={<PilotProfile />} />
                       <Route path="/school" element={<SchoolDashboard />} />
+                      <Route path="/school/:section" element={<SchoolDashboard />} />
                       <Route path="/weather" element={<Weather />} />
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />

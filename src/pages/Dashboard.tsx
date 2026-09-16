@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame, GraduationCap } from "lucide-react";
+import { useSchoolAccess } from "@/hooks/use-school-access";
 import { usePilotStreak } from "@/hooks/use-pilot-streak";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,6 +48,7 @@ export default function Dashboard() {
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
   const { streak } = usePilotStreak(user?.id);
+  const { hasSchoolAccess } = useSchoolAccess();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -140,6 +142,17 @@ export default function Dashboard() {
           <Button size="icon" onClick={() => navigate("/flights/new")} className="h-9 w-9 rounded-full" aria-label={t("dashboard.firstFlight")}><Plus className="h-5 w-5" /></Button>
         </div>
       </header>
+
+      {hasSchoolAccess && (
+        <button
+          type="button"
+          onClick={() => navigate("/school")}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/10 border border-primary/25 active:scale-[0.99] transition-transform text-left"
+        >
+          <GraduationCap className="h-5 w-5 text-primary shrink-0" />
+          <span className="text-sm font-medium flex-1">{t("more.schoolOpen")}</span>
+        </button>
+      )}
 
       {/* Hero season stat card */}
       {(() => {
