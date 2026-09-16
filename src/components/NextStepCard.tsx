@@ -8,10 +8,11 @@ interface NextStepCardProps {
   hasProfileName: boolean;
   flightCount: number;
   goalCount: number;
+  onAddGoal?: () => void;
 }
 
 /** Geführter Einstieg: zeigt genau eine empfohlene nächste Handlung. */
-export default function NextStepCard({ hasProfileName, flightCount, goalCount }: NextStepCardProps) {
+export default function NextStepCard({ hasProfileName, flightCount, goalCount, onAddGoal }: NextStepCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -44,7 +45,7 @@ export default function NextStepCard({ hasProfileName, flightCount, goalCount }:
               <Button
                 size="sm"
                 className="mt-3 gap-1.5"
-                onClick={() => navigate(step.key === "goal" ? "/" : step.path)}
+                onClick={() => (step.key === "goal" && onAddGoal ? onAddGoal() : navigate(step.path))}
               >
                 {t(`nextStep.${step.key}Cta`)} <ArrowRight className="h-3.5 w-3.5" />
               </Button>
