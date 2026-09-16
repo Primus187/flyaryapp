@@ -101,9 +101,9 @@ async function loginToXContest(
 
   if (!looksLoggedIn) {
     console.log("Login verification failed. Status:", loginRes.status, "Cookies:", loginCookies.length, "VerifyStatus:", verifyRes.status);
-    return null;
+    return { failure: "credentials" };
   }
-  return allCookies;
+  return { cookies: allCookies };
 }
 
 interface ParsedFlight {
