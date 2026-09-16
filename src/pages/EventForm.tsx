@@ -274,111 +274,80 @@ export default function EventForm() {
   const goBack = () => navigate(fromSchool && !isEdit ? "/school" : isEdit && id ? `/events/${id}` : "/events");
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
+    <div className="px-4 pt-5 pb-8 max-w-lg mx-auto space-y-4">
+      <header className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={goBack} aria-label={t("common.back")}><ArrowLeft className="h-5 w-5" /></Button>
         <div>
           <h1 className="text-xl font-bold tracking-tight">{isEdit ? t("events.editEvent") : t("events.createEvent")}</h1>
-          {isHeight && <p className="text-xs text-muted-foreground">{t("events.heightFlightFormSubtitle")}</p>}
+          <p className="text-xs text-muted-foreground">{t("events.formSubtitle")}</p>
         </div>
-      </div>
-      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-4 space-y-3">
-          {isHeight && <div className="flex items-center gap-2 border-b border-border/60 pb-3"><CalendarDays className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightBasics")}</Label></div>}
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.group")} *</Label><Select value={form.group_id} onValueChange={v => setForm({ ...form, group_id: v })}><SelectTrigger><SelectValue placeholder={t("events.groupSelect")} /></SelectTrigger><SelectContent>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.titleLabel")} *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder={t("events.titlePlaceholder")} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.date")} *</Label><Input type="date" value={form.event_date} onChange={e => setForm({ ...form, event_date: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.time")}</Label><Input type="time" value={form.event_time} onChange={e => setForm({ ...form, event_time: e.target.value })} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.status")}</Label><Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="announced">{t("events.statusAnnounced")}</SelectItem><SelectItem value="confirmed">{t("events.statusConfirmed")}</SelectItem><SelectItem value="cancelled">{t("events.statusCancelled")}</SelectItem></SelectContent></Select></div>
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.category")}</Label><Select value={form.event_category} onValueChange={v => setForm({ ...form, event_category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-              <SelectItem value="height_flight">{t("events.categories.height_flight")}</SelectItem>
-              <SelectItem value="basic_course">{t("events.categories.basic_course")}</SelectItem>
-              <SelectItem value="school_event">{t("events.categories.school_event")}</SelectItem>
-              <SelectItem value="experienced">{t("events.categories.experienced")}</SelectItem>
-              <SelectItem value="multi_day">{t("events.categories.multi_day")}</SelectItem>
-            </SelectContent></Select></div>
-          </div>
-          {form.event_category === "multi_day" && (
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.endDate")}</Label><Input type="date" value={form.end_date} min={form.event_date} onChange={e => setForm({ ...form, end_date: e.target.value })} /></div>
-          )}
-          {!isHeight && (
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.eventType")}</Label><Input value={form.event_type} onChange={e => setForm({ ...form, event_type: e.target.value })} placeholder={t("events.eventTypePlaceholder")} /></div>
-          )}
+      </header>
 
-          {isHeight && <div className="flex items-center gap-2 border-t border-border/60 pt-4"><MapPin className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightPlan")}</Label></div>}
-          {/* Meeting points */}
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3 text-primary" />{t("events.meetingPointShort")}</Label>
-            {meetingRows.map((row, i) => (
-              <div key={i} className="flex gap-2">
-                <Input type="time" value={row.time} onChange={e => updateMeetingRow(i, { time: e.target.value })} className="w-28" />
-                <Input value={row.place} onChange={e => updateMeetingRow(i, { place: e.target.value })} placeholder={t("events.meetingPointPlaceholder")} className="flex-1" />
-                {meetingRows.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" className="shrink-0 h-9 w-9" onClick={() => setMeetingRows(prev => prev.filter((_, j) => j !== i))}><X className="h-3.5 w-3.5" /></Button>
-                )}
-              </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setMeetingRows(prev => [...prev, { time: "", place: "" }])}>
-              <Plus className="h-3.5 w-3.5" />{t("events.addMeetingPoint")}
+      <section className="space-y-2" aria-labelledby="event-category-heading">
+        <Label id="event-category-heading" className="text-sm font-semibold">{t("events.chooseCategory")}</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {categoryOptions.map(({ value, icon: Icon }, index) => (
+            <Button key={value} type="button" variant={form.event_category === value ? "default" : "outline"} className={`h-auto min-h-16 justify-start gap-2 px-3 py-3 ${index === categoryOptions.length - 1 ? "col-span-2" : ""}`} onClick={() => setForm(previous => ({ ...previous, event_category: value }))}>
+              <Icon className="h-5 w-5 shrink-0" />
+              <span className="text-left text-sm whitespace-normal">{t(`events.categories.${value}`)}</span>
             </Button>
-          </div>
-
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.flightArea")}</Label><Input value={form.flight_area} onChange={e => setForm({ ...form, flight_area: e.target.value })} placeholder={t("events.flightAreaPlaceholder")} /></div>
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.dayTopic")}</Label><Input value={form.day_topic} onChange={e => setForm({ ...form, day_topic: e.target.value })} placeholder={t("events.dayTopicPlaceholder")} /></div>
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.returnInfo")}</Label><Textarea value={form.departure_info} onChange={e => setForm({ ...form, departure_info: e.target.value })} placeholder={t("events.returnInfoPlaceholder")} rows={2} /></div>
-
-          {isHeight && <div className="flex items-center gap-2 border-t border-border/60 pt-4"><Users className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightTeam")}</Label></div>}
-          {isHeight ? (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label className="text-xs">{t("events.instructor")}</Label>{memberSelect(members.some(m => m.name === form.instructor) ? (members.find(m => m.name === form.instructor)?.user_id || "") : "", v => setForm({ ...form, instructor: members.find(m => m.user_id === v)?.name || "" }), "w-full")}</div>
-              <div className="space-y-1.5"><Label className="text-xs">{t("events.launchHelper")}</Label>{memberSelect(members.some(m => m.name === form.launch_helper) ? (members.find(m => m.name === form.launch_helper)?.user_id || "") : "", v => setForm({ ...form, launch_helper: members.find(m => m.user_id === v)?.name || "" }), "w-full")}</div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label className="text-xs">{t("events.instructor")}</Label><Input value={form.instructor} onChange={e => setForm({ ...form, instructor: e.target.value })} /></div>
-              <div className="space-y-1.5"><Label className="text-xs">{t("events.launchHelper")}</Label><Input value={form.launch_helper} onChange={e => setForm({ ...form, launch_helper: e.target.value })} /></div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.signupDeadline")}</Label><Input type="date" value={form.signup_deadline} onChange={e => setForm({ ...form, signup_deadline: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.maxParticipants")}</Label><Input type="number" value={form.max_participants} onChange={e => setForm({ ...form, max_participants: e.target.value })} /></div>
-          </div>
-          {!isHeight && (
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.chatLink")}</Label><Input value={form.chat_link} onChange={e => setForm({ ...form, chat_link: e.target.value })} placeholder={t("events.chatLinkPlaceholder")} /></div>
-          )}
-          {isHeight && <div className="flex items-center gap-2 border-t border-border/60 pt-4"><PlaneTakeoff className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightCommunication")}</Label></div>}
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.flightPrep")}</Label><Textarea value={form.flight_prep_notes} onChange={e => setForm({ ...form, flight_prep_notes: e.target.value })} placeholder={t("events.flightPrepPlaceholder")} rows={6} /></div>
-          <div className="space-y-1.5"><Label className="text-xs">{isHeight ? t("events.signature") : t("events.description")}</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder={isHeight ? t("events.signaturePlaceholder") : ""} rows={2} /></div>
-        </CardContent>
-      </Card>
-
-      {/* Briefing Tasks */}
-      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            <Label className="text-sm font-semibold">{t("events.briefingShort")}</Label>
-          </div>
-          {briefingTasks.map((task, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Input value={task.label} onChange={e => setBriefingTasks(prev => prev.map((t, j) => j === i ? { ...t, label: e.target.value } : t))} className="flex-1 text-sm" />
-              {memberSelect(task.assigned_user_id, v => setBriefingTasks(prev => prev.map((t, j) => j === i ? { ...t, assigned_user_id: v } : t)))}
-              <Button type="button" variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => removeBriefingTask(i)}><X className="h-3 w-3" /></Button>
-            </div>
           ))}
-          <div className="flex gap-2">
-            <Input value={newTaskLabel} onChange={e => setNewTaskLabel(e.target.value)} placeholder={t("events.briefingTaskPlaceholder")} className="text-sm" onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addBriefingTask())} />
-            <Button type="button" variant="outline" size="sm" onClick={addBriefingTask}><Plus className="h-4 w-4" /></Button>
+        </div>
+      </section>
+
+      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center gap-2 border-b border-border/60 pb-3"><CalendarDays className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.sections.basics")}</Label></div>
+          {!fromSchool || isEdit ? (
+            <div className="space-y-1.5"><Label className="text-xs">{t("events.group")} *</Label><Select value={form.group_id} onValueChange={value => setForm(previous => ({ ...previous, group_id: value }))}><SelectTrigger><SelectValue placeholder={t("events.groupSelect")} /></SelectTrigger><SelectContent>{groups.map(group => <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>)}</SelectContent></Select></div>
+          ) : groups.find(group => group.id === form.group_id) ? (
+            <div className="rounded-md bg-muted px-3 py-2"><p className="text-xs text-muted-foreground">{t("events.group")}</p><p className="text-sm font-medium">{groups.find(group => group.id === form.group_id)?.name}</p></div>
+          ) : null}
+          <div className="space-y-1.5"><Label className="text-xs">{t("events.titleLabel")} *</Label><Input value={form.title} onChange={event => setForm(previous => ({ ...previous, title: event.target.value }))} placeholder={t(`events.placeholders.${form.event_category}.title`)} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label className="text-xs">{isCamp ? t("events.startDate") : t("events.date")} *</Label><Input type="date" value={form.event_date} onChange={event => setForm(previous => ({ ...previous, event_date: event.target.value }))} /></div>
+            {isCamp ? <div className="space-y-1.5"><Label className="text-xs">{t("events.endDate")} *</Label><Input type="date" value={form.end_date} min={form.event_date} onChange={event => setForm(previous => ({ ...previous, end_date: event.target.value }))} /></div> : <div className="space-y-1.5"><Label className="text-xs">{t("events.time")}</Label><Input type="time" value={form.event_time} onChange={event => setForm(previous => ({ ...previous, event_time: event.target.value }))} /></div>}
           </div>
+          {isCamp && <div className="space-y-1.5"><Label className="text-xs">{t("events.time")}</Label><Input type="time" value={form.event_time} onChange={event => setForm(previous => ({ ...previous, event_time: event.target.value }))} /></div>}
+          <div className="space-y-1.5"><Label className="text-xs">{t("events.status")}</Label><Select value={form.status} onValueChange={value => setForm(previous => ({ ...previous, status: value }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="announced">{t("events.statusAnnounced")}</SelectItem><SelectItem value="confirmed">{t("events.statusConfirmed")}</SelectItem><SelectItem value="cancelled">{t("events.statusCancelled")}</SelectItem></SelectContent></Select></div>
         </CardContent>
       </Card>
 
-      {/* Planned Maneuvers */}
-      {trainingItems.length > 0 && (
+      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center gap-2 border-b border-border/60 pb-3"><MapPin className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t(`events.sections.${form.event_category}`)}</Label></div>
+          {isHeight ? (
+            <div className="space-y-2">
+              <Label className="text-xs">{t("events.meetingPointShort")}</Label>
+              {meetingRows.map((row, index) => <div key={index} className="flex gap-2"><Input type="time" value={row.time} onChange={event => updateMeetingRow(index, { time: event.target.value })} className="w-28" /><Input value={row.place} onChange={event => updateMeetingRow(index, { place: event.target.value })} placeholder={t("events.meetingPointPlaceholder")} className="min-w-0 flex-1" />{meetingRows.length > 1 && <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => setMeetingRows(previous => previous.filter((_, rowIndex) => rowIndex !== index))}><X className="h-4 w-4" /></Button>}</div>)}
+              <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setMeetingRows(previous => [...previous, { time: "", place: "" }])}><Plus className="h-4 w-4" />{t("events.addMeetingPoint")}</Button>
+            </div>
+          ) : <div className="space-y-1.5"><Label className="text-xs">{isCamp ? t("events.destinationAccommodation") : isExperienced ? t("events.locationOrArea") : t("events.location")}</Label><Input value={form.meeting_point} onChange={event => setForm(previous => ({ ...previous, meeting_point: event.target.value }))} placeholder={t(`events.placeholders.${form.event_category}.location`)} /></div>}
+
+          {(isHeight || isExperienced) && <div className="space-y-1.5"><Label className="text-xs">{t("events.flightArea")}</Label><Input value={form.flight_area} onChange={event => setForm(previous => ({ ...previous, flight_area: event.target.value }))} placeholder={t("events.flightAreaPlaceholder")} /></div>}
+          {(isHeight || isBasicCourse) && <div className="space-y-1.5"><Label className="text-xs">{isBasicCourse ? t("events.dayContents") : t("events.dayTopic")}</Label><Input value={form.day_topic} onChange={event => setForm(previous => ({ ...previous, day_topic: event.target.value }))} placeholder={t(`events.placeholders.${form.event_category}.topic`)} /></div>}
+          {isExperienced && <div className="space-y-1.5"><Label className="text-xs">{t("events.requiredLevel")}</Label><Input value={form.event_type} onChange={event => setForm(previous => ({ ...previous, event_type: event.target.value }))} placeholder={t("events.placeholders.experienced.level")} /></div>}
+          {isLecture && <div className="space-y-1.5"><Label className="text-xs">{t("events.topic")}</Label><Input value={form.day_topic} onChange={event => setForm(previous => ({ ...previous, day_topic: event.target.value }))} placeholder={t("events.placeholders.lecture.topic")} /></div>}
+          {(isHeight || isCamp) && <div className="space-y-1.5"><Label className="text-xs">{isCamp ? t("events.travelInfo") : t("events.returnInfo")}</Label><Textarea value={form.departure_info} onChange={event => setForm(previous => ({ ...previous, departure_info: event.target.value }))} placeholder={t(`events.placeholders.${form.event_category}.travel`)} rows={3} /></div>}
+          {isBasicCourse && <div className="space-y-1.5"><Label className="text-xs">{t("events.materialNotes")}</Label><Textarea value={form.flight_prep_notes} onChange={event => setForm(previous => ({ ...previous, flight_prep_notes: event.target.value }))} placeholder={t("events.placeholders.basic_course.material")} rows={3} /></div>}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center gap-2 border-b border-border/60 pb-3"><Users className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.sections.team")}</Label></div>
+          <div className={isHeight ? "grid grid-cols-2 gap-3" : "space-y-1.5"}>
+            <div className="space-y-1.5"><Label className="text-xs">{isLecture ? t("events.speaker") : t("events.lead")}</Label>{memberSelect(selectedMemberId(form.instructor), value => setNamedMember("instructor", value), "w-full")}</div>
+            {isHeight && <div className="space-y-1.5"><Label className="text-xs">{t("events.launchHelper")}</Label>{memberSelect(selectedMemberId(form.launch_helper), value => setNamedMember("launch_helper", value), "w-full")}</div>}
+          </div>
+          {isLecture && <div className="space-y-1.5"><Label className="text-xs">{t("events.externalSpeaker")}</Label><Input value={form.instructor} onChange={event => setForm(previous => ({ ...previous, instructor: event.target.value }))} placeholder={t("events.externalSpeakerPlaceholder")} /></div>}
+          <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("events.signupDeadline")}</Label><Input type="date" value={form.signup_deadline} onChange={event => setForm(previous => ({ ...previous, signup_deadline: event.target.value }))} /></div><div className="space-y-1.5"><Label className="text-xs">{t("events.maxParticipants")}</Label><Input type="number" min="1" value={form.max_participants} onChange={event => setForm(previous => ({ ...previous, max_participants: event.target.value }))} /></div></div>
+        </CardContent>
+      </Card>
+
+      {isHeight && <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm"><CardContent className="p-4 space-y-4"><div className="flex items-center gap-2 border-b border-border/60 pb-3"><ClipboardList className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.briefingShort")}</Label></div>{briefingTasks.map((task, index) => <div key={`${task.task_type}-${index}`} className="flex items-center gap-2"><Input value={task.label} onChange={event => setBriefingTasks(previous => previous.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))} className="min-w-0 flex-1 text-sm" />{memberSelect(task.assigned_user_id, value => setBriefingTasks(previous => previous.map((item, itemIndex) => itemIndex === index ? { ...item, assigned_user_id: value } : item)))}<Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => removeBriefingTask(index)}><X className="h-4 w-4" /></Button></div>)}<div className="flex gap-2"><Input value={newTaskLabel} onChange={event => setNewTaskLabel(event.target.value)} placeholder={t("events.briefingTaskPlaceholder")} className="text-sm" onKeyDown={event => event.key === "Enter" && (event.preventDefault(), addBriefingTask())} /><Button type="button" variant="outline" size="icon" onClick={addBriefingTask}><Plus className="h-4 w-4" /></Button></div></CardContent></Card>}
+
+      {isHeight && trainingItems.length > 0 && (
         <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
           <CardContent className="p-4 space-y-3">
             <Label className="text-sm font-semibold">{t("events.plannedManeuvers")}</Label>
@@ -389,7 +358,7 @@ export default function EventForm() {
                   return item ? (
                     <Badge key={mid} variant="secondary" className="gap-1 pr-1">
                       {item.name}
-                      <button type="button" onClick={() => setSelectedManeuverIds(prev => prev.filter(x => x !== mid))}><X className="h-3 w-3" /></button>
+                      <Button type="button" variant="ghost" size="icon" className="h-5 w-5" onClick={() => setSelectedManeuverIds(prev => prev.filter(x => x !== mid))}><X className="h-3 w-3" /></Button>
                     </Badge>
                   ) : null;
                 })}
@@ -420,7 +389,9 @@ export default function EventForm() {
         </Card>
       )}
 
-      <Button className="w-full" onClick={handleSave} disabled={loading}>{loading ? "..." : isEdit ? t("common.update") : t("common.create")}</Button>
+      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm"><CardContent className="p-4 space-y-3"><div className="flex items-center gap-2"><PlaneTakeoff className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{isHeight ? t("events.heightFlightCommunication") : t("events.sections.details")}</Label></div>{isHeight && <div className="space-y-1.5"><Label className="text-xs">{t("events.flightPrep")}</Label><Textarea value={form.flight_prep_notes} onChange={event => setForm(previous => ({ ...previous, flight_prep_notes: event.target.value }))} placeholder={t("events.flightPrepPlaceholder")} rows={6} /></div>}<div className="space-y-1.5"><Label className="text-xs">{isHeight ? t("events.signature") : isCamp || isExperienced ? t("events.programDescription") : t("events.description")}</Label><Textarea value={form.description} onChange={event => setForm(previous => ({ ...previous, description: event.target.value }))} placeholder={isHeight ? t("events.signaturePlaceholder") : t(`events.placeholders.${form.event_category}.description`)} rows={4} /></div></CardContent></Card>
+
+      <Button className="w-full gap-2" onClick={handleSave} disabled={loading || (isCamp && !form.end_date)}><Save className="h-4 w-4" />{loading ? "..." : isEdit ? t("common.update") : t("common.create")}</Button>
     </div>
   );
 }
