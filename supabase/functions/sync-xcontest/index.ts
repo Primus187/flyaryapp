@@ -35,10 +35,14 @@ export function encryptPassword(password: string, key: string): string {
   return btoa(String.fromCharCode(...result));
 }
 
+type LoginResult =
+  | { cookies: string }
+  | { failure: "antibot" | "credentials" };
+
 async function loginToXContest(
   username: string,
   password: string
-): Promise<string | null> {
+): Promise<LoginResult> {
   // First GET the login page to get initial cookies
   const initRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
     redirect: "manual",
@@ -64,7 +68,15 @@ async function loginToXContest(
   });
 
   const loginCookies = loginRes.headers.getSetCookie?.() || [];
-  await loginRes.text();
+  const loginHtml = (await loginRes.text()).toLowerCase();
+
+  // XContest protects its login form with a JavaScript anti-bot check that a
+  // server-side request cannot satisfy. Detect it so we don't blame credentials.
+  if (loginHtml.includes("anti-bot") || loginHtml.includes("antibot")) {
+    console.log("XContest anti-bot verification blocked the login request.");
+    return { failure: "antibot" };
+  }
+
 
   // Merge cookies (login cookies override init cookies for same names)
   const cookieMap = new Map<string, string>();
@@ -89,9 +101,9 @@ async function loginToXContest(
 
   if (!looksLoggedIn) {
     console.log("Login verification failed. Status:", loginRes.status, "Cookies:", loginCookies.length, "VerifyStatus:", verifyRes.status);
-    return null;
+    return { failure: "credentials" };
   }
-  return allCookies;
+  return { cookies: allCookies };
 }
 
 interface ParsedFlight {
@@ -248,13 +260,24 @@ Deno.serve(async (req) => {
     const password = atob(profile.xcontest_password_encrypted);
 
     // Login to XContest
-    const cookies = await loginToXContest(profile.xcontest_username, password);
-    if (!cookies) {
+    const login = await loginToXContest(profile.xcontest_username, password);
+    if ("failure" in login) {
+      if (login.failure === "antibot") {
+        return new Response(
+          JSON.stringify({
+            code: "xcontest_antibot",
+            error:
+              "XContest blockiert automatische Anmeldungen (Anti-Bot-Prüfung). Der Sync ist derzeit nicht möglich – bitte Flüge per IGC-Datei importieren.",
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       return new Response(
-        JSON.stringify({ error: "XContest login failed. Check your credentials." }),
+        JSON.stringify({ code: "xcontest_credentials", error: "XContest login failed. Check your credentials." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const cookies = login.cookies;
 
     // Fetch flight list
     const flightsUrl = `${XCONTEST_BASE}/world/en/flights/?filter[pilot]=${encodeURIComponent(profile.xcontest_username)}`;
