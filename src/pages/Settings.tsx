@@ -317,6 +317,18 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.dataImport")}</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => navigate("/import")}>
+            <FileSpreadsheet className="h-4 w-4" /> {t("more.importFlights")}
+          </Button>
+          <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => navigate("/import-locations")}>
+            <FileSpreadsheet className="h-4 w-4" /> {t("more.importLocations")}
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card className="border border-destructive/30 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-destructive">
