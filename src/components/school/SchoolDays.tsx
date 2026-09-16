@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, ClipboardCheck, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import EventListItem from "@/components/events/EventListItem";
 
 interface EventInfo {
   id: string;
@@ -18,8 +16,9 @@ interface Props {
 }
 
 export default function SchoolDays({ events }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   if (events.length === 0) {
     return (
@@ -29,44 +28,22 @@ export default function SchoolDays({ events }: Props) {
     );
   }
 
-  const isPast = (date: string) => new Date(date) < new Date();
+  const now = new Date();
 
   return (
     <div className="space-y-2">
       {events.map((ev) => (
-        <Card
+        <EventListItem
           key={ev.id}
-          className="border-0 shadow-sm cursor-pointer hover:bg-muted/30 active:scale-[0.99] transition-all"
+          title={ev.title}
+          date={ev.event_date}
+          status={ev.status}
+          signedUpCount={ev.participantCount}
+          notesCount={ev.notesCount}
+          past={new Date(ev.event_date) < now}
+          locale={locale}
           onClick={() => navigate(`/events/${ev.id}`)}
-        >
-          <CardContent className="p-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(ev.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
-                  </span>
-                  {ev.status === "cancelled" && (
-                    <Badge variant="destructive" className="text-[9px] px-1 py-0">{t("events.cancelled")}</Badge>
-                  )}
-                </div>
-                <p className="font-medium text-sm mt-1 truncate">{ev.title}</p>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Users className="h-3 w-3" /> {ev.participantCount}
-                  </span>
-                  {ev.notesCount > 0 && (
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <ClipboardCheck className="h-3 w-3" /> {ev.notesCount} {t("school.notes")}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground mt-1 shrink-0" />
-            </div>
-          </CardContent>
-        </Card>
+        />
       ))}
     </div>
   );

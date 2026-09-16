@@ -3,17 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Plus, Users, MapPin, CheckCircle2, XCircle } from "lucide-react";
+import { Calendar, Plus, Users, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EmptyState from "@/components/EmptyState";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
+import EventListItem from "@/components/events/EventListItem";
 
 const CATEGORIES = ["height_flight", "basic_course", "experienced", "camp_air", "lecture"] as const;
 
@@ -147,26 +146,31 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, t, locale, pa
   const mySignup = signups.find(s => s.event_id === event.id && s.user_id === userId);
   const isSignedUp = mySignup?.signed_up ?? false;
   const totalSignedUp = signups.filter(s => s.event_id === event.id && s.signed_up).length;
-  const statusLabel = event.status === "confirmed" ? t("events.statusConfirmed") : event.status === "cancelled" ? t("events.statusCancelled") : t("events.statusAnnounced");
-  const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
 
   return (
-    <Card className={`border-0 shadow-sm transition-colors ${past ? "opacity-60" : "hover:bg-accent/50 cursor-pointer"}`}>
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between gap-2" onClick={onNavigate}>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5"><p className="font-medium text-sm truncate">{event.title}</p><Badge className={`text-[10px] shrink-0 ${statusColor}`}>{statusLabel}</Badge></div>
-            <p className="text-xs text-muted-foreground">{new Date(event.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{event.event_category && ` · ${t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}`}{event.groups?.name && ` · ${event.groups.name}`}</p>
-            {event.meeting_point && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {event.meeting_point}</p>}
-            <p className="text-xs text-muted-foreground mt-0.5"><Users className="h-3 w-3 inline mr-1" />{totalSignedUp}{event.max_participants ? `/${event.max_participants}` : ""} {t("events.signedUp")}</p>
-          </div>
-          {!past && event.status !== "cancelled" && (
-            <Button variant={isSignedUp ? "default" : "outline"} size="sm" className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`} onClick={(e) => { e.stopPropagation(); onToggle(event.id); }}>
-              {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}{isSignedUp ? t("events.signedUpLabel") : t("events.signUp")}
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <EventListItem
+      title={event.title}
+      date={event.event_date}
+      status={event.status}
+      category={event.event_category}
+      groupName={event.groups?.name}
+      meetingPoint={event.meeting_point}
+      signedUpCount={totalSignedUp}
+      maxParticipants={event.max_participants}
+      past={past}
+      locale={locale}
+      onClick={onNavigate}
+      action={!past && event.status !== "cancelled" ? (
+        <Button
+          variant={isSignedUp ? "default" : "outline"}
+          size="sm"
+          className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`}
+          onClick={(e) => { e.stopPropagation(); onToggle(event.id); }}
+        >
+          {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+          {isSignedUp ? t("events.signedUpLabel") : t("events.signUp")}
+        </Button>
+      ) : undefined}
+    />
   );
 }
