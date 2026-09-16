@@ -4,6 +4,22 @@ import App from "./App.tsx";
 import "./index.css";
 import "./i18n";
 
+// Never let an older installed build cache the editable preview.
+if (import.meta.env.DEV && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+    const hadRegistrations = registrations.length > 0;
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+    if ("caches" in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+    }
+    if (hadRegistrations && sessionStorage.getItem("preview-cache-cleared") !== "1") {
+      sessionStorage.setItem("preview-cache-cleared", "1");
+      window.location.reload();
+    }
+  }).catch(() => {});
+}
+
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
