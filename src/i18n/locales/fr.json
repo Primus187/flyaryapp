@@ -156,7 +156,14 @@
     "saveAsTemplate": "Enregistrer comme modèle",
     "templateNamePlaceholder": "Nom du modèle...",
     "tags": "Tags",
-    "tagsPlaceholder": "#thermique, #soir..."
+    "tagsPlaceholder": "#thermique, #soir...",
+    "step1": "Vol",
+    "step2": "Détails",
+    "step3": "Médias",
+    "nextStep": "Suivant",
+    "saveFlight": "Enregistrer le vol",
+    "saveNow": "Enregistrer maintenant",
+    "draftRestored": "Brouillon restauré"
   },
   "events": {
     "title": "Événements",

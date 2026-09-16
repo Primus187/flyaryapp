@@ -156,7 +156,14 @@
     "saveAsTemplate": "Save as template",
     "templateNamePlaceholder": "Template name...",
     "tags": "Tags",
-    "tagsPlaceholder": "#thermal, #evening..."
+    "tagsPlaceholder": "#thermal, #evening...",
+    "step1": "Flight",
+    "step2": "Details",
+    "step3": "Media",
+    "nextStep": "Next",
+    "saveFlight": "Save flight",
+    "saveNow": "Save now",
+    "draftRestored": "Draft restored"
   },
   "events": {
     "title": "Events",
