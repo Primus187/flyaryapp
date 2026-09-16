@@ -239,6 +239,73 @@ export type Database = {
           },
         ]
       }
+      equipment_assignments: {
+        Row: {
+          assigned_on: string
+          created_at: string
+          created_by: string
+          due_on: string | null
+          equipment_id: string
+          event_id: string | null
+          group_id: string
+          id: string
+          note: string | null
+          returned_on: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_on?: string
+          created_at?: string
+          created_by?: string
+          due_on?: string | null
+          equipment_id: string
+          event_id?: string | null
+          group_id: string
+          id?: string
+          note?: string | null
+          returned_on?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_on?: string
+          created_at?: string
+          created_by?: string
+          due_on?: string | null
+          equipment_id?: string
+          event_id?: string | null
+          group_id?: string
+          id?: string
+          note?: string | null
+          returned_on?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_assignments_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "school_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_assignments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_assignments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_briefing_tasks: {
         Row: {
           assigned_user_id: string | null
@@ -1607,6 +1674,115 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      school_equipment: {
+        Row: {
+          condition: string | null
+          created_at: string
+          equipment_type: string
+          group_id: string
+          id: string
+          inventory_number: string | null
+          last_check_date: string | null
+          name: string
+          next_check_date: string | null
+          notes: string | null
+          purchase_date: string | null
+          retire_reason: string | null
+          retired_at: string | null
+          size: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string
+          equipment_type?: string
+          group_id: string
+          id?: string
+          inventory_number?: string | null
+          last_check_date?: string | null
+          name: string
+          next_check_date?: string | null
+          notes?: string | null
+          purchase_date?: string | null
+          retire_reason?: string | null
+          retired_at?: string | null
+          size?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string
+          equipment_type?: string
+          group_id?: string
+          id?: string
+          inventory_number?: string | null
+          last_check_date?: string | null
+          name?: string
+          next_check_date?: string | null
+          notes?: string | null
+          purchase_date?: string | null
+          retire_reason?: string | null
+          retired_at?: string | null
+          size?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_equipment_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_rates: {
+        Row: {
+          amount: number
+          created_at: string
+          group_id: string
+          id: string
+          label: string
+          rate_key: string
+          unit: string
+          updated_at: string
+          valid_from: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          group_id: string
+          id?: string
+          label: string
+          rate_key: string
+          unit?: string
+          updated_at?: string
+          valid_from?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          group_id?: string
+          id?: string
+          label?: string
+          rate_key?: string
+          unit?: string
+          updated_at?: string
+          valid_from?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_rates_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_day_notes: {
         Row: {
