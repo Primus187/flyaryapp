@@ -9,7 +9,26 @@ const updateSW = registerSW({
   onNeedRefresh() {
     updateSW(true);
   },
+  onRegisteredSW(_swUrl, registration) {
+    if (!registration) return;
+
+    const checkForUpdate = () => {
+      if (navigator.onLine) registration.update().catch(() => {});
+    };
+
+    checkForUpdate();
+    window.setInterval(checkForUpdate, 60 * 60 * 1000);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    });
+  },
   onOfflineReady() {},
+});
+
+navigator.serviceWorker?.addEventListener("controllerchange", () => {
+  if (sessionStorage.getItem("service-worker-reloaded") === "1") return;
+  sessionStorage.setItem("service-worker-reloaded", "1");
+  window.location.reload();
 });
 
 const recoverFromStaleChunk = () => {
