@@ -21,6 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import TagsInput from "@/components/TagsInput";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
+import { cn } from "@/lib/utils";
+
+const DRAFT_KEY = "flyary.flightDraft";
 
 interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
@@ -58,6 +63,8 @@ export default function FlightForm() {
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [step, setStep] = useState(1);
+  const [draftRestored, setDraftRestored] = useState(false);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
@@ -119,6 +126,34 @@ export default function FlightForm() {
       } catch (err) { console.error("Failed to parse recorded IGC:", err); }
     }
   }, [user, id, isEdit]);
+
+  // Zwischenstand wiederherstellen (nur bei neuem Flug)
+  useEffect(() => {
+    if (isEdit || draftRestored) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft?.form) setForm((prev) => ({ ...prev, ...draft.form }));
+        if (Array.isArray(draft?.tags)) setTags(draft.tags);
+        if (Array.isArray(draft?.selectedTrainingIds)) setSelectedTrainingIds(draft.selectedTrainingIds);
+        if (typeof draft?.step === "number") setStep(Math.min(3, Math.max(1, draft.step)));
+        toast({ title: t("flights.draftRestored", { defaultValue: "Zwischenstand wiederhergestellt" }) });
+      }
+    } catch { /* ignore */ }
+    setDraftRestored(true);
+  }, [isEdit, draftRestored]);
+
+  // Zwischenstand laufend speichern
+  useEffect(() => {
+    if (isEdit || !draftRestored) return;
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, tags, selectedTrainingIds, step }));
+      } catch { /* ignore */ }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form, tags, selectedTrainingIds, step, isEdit, draftRestored]);
 
   const handleIGCUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return; setIgcFile(file);
@@ -280,6 +315,7 @@ export default function FlightForm() {
           createdAt: new Date().toISOString(),
           syncStatus: "pending",
         });
+        try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
         toast({ title: t("offline.flightSaved"), description: t("offline.flightSavedDesc") });
         navigate("/flights");
         return;
@@ -426,6 +462,7 @@ export default function FlightForm() {
         }
       } catch (e) { console.error("Badge check failed:", e); }
 
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
