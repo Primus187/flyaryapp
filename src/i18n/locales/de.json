@@ -401,7 +401,8 @@
       "freeSeats": "{{count}} Platz frei",
       "freeSeats_other": "{{count}} Plätze frei",
       "place": "Abfahrtsort"
-    }
+    },
+    "allCategories": "Alle Arten"
   },
   "locations": {
     "title": "Orte",
@@ -1280,5 +1281,10 @@
     "announcement": "Ankündigung",
     "asAnnouncement": "Als Ankündigung senden (Push an alle)",
     "attachmentFailed": "Anhang konnte nicht hochgeladen werden"
+  },
+  "roleMode": {
+    "label": "Bereich",
+    "pilot": "Pilot",
+    "school": "Flugschule"
   }
 }

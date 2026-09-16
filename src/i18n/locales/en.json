@@ -423,7 +423,8 @@
       "freeSeats": "{{count}} seat free",
       "freeSeats_other": "{{count}} seats free",
       "place": "Departure place"
-    }
+    },
+    "allCategories": "All types"
   },
   "locations": {
     "title": "Sites",
@@ -1270,5 +1271,10 @@
     "announcement": "Announcement",
     "asAnnouncement": "Send as announcement (push to everyone)",
     "attachmentFailed": "Attachment upload failed"
+  },
+  "roleMode": {
+    "label": "Area",
+    "pilot": "Pilot",
+    "school": "Flight school"
   }
 }
