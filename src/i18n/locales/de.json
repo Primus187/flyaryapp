@@ -287,11 +287,37 @@
       "lecture": "Ort, Referent & Thema"
     },
     "placeholders": {
-      "height_flight": { "title": "z.B. Höhenflug Interlaken", "topic": "z.B. Rollen & Nicken", "travel": "z.B. Bus fährt am Abend nach Bern.", "description": "" },
-      "basic_course": { "title": "z.B. Grundkurstag September", "location": "z.B. Übungshang Lehn", "topic": "z.B. Startvorbereitung und Aufziehen", "material": "z.B. Helm, Handschuhe und feste Schuhe", "description": "Weitere Informationen zum Kurstag" },
-      "experienced": { "title": "z.B. Experienced Thermiktag", "location": "z.B. Interlaken", "level": "z.B. Brevetiert, sichere Rückwärtsstarts", "description": "Programm und wichtige Hinweise" },
-      "camp_air": { "title": "z.B. Camp’Air Annecy", "location": "Ziel, Unterkunft oder Treffpunkt", "travel": "Anreise, Gepäck und Transport", "description": "Tagesprogramm und weitere Informationen" },
-      "lecture": { "title": "z.B. Vortrag Flugmeteorologie", "location": "Veranstaltungsort", "topic": "Thema des Vortrags", "description": "Beschreibung und weitere Informationen" }
+      "height_flight": {
+        "title": "z.B. Höhenflug Interlaken",
+        "topic": "z.B. Rollen & Nicken",
+        "travel": "z.B. Bus fährt am Abend nach Bern.",
+        "description": ""
+      },
+      "basic_course": {
+        "title": "z.B. Grundkurstag September",
+        "location": "z.B. Übungshang Lehn",
+        "topic": "z.B. Startvorbereitung und Aufziehen",
+        "material": "z.B. Helm, Handschuhe und feste Schuhe",
+        "description": "Weitere Informationen zum Kurstag"
+      },
+      "experienced": {
+        "title": "z.B. Experienced Thermiktag",
+        "location": "z.B. Interlaken",
+        "level": "z.B. Brevetiert, sichere Rückwärtsstarts",
+        "description": "Programm und wichtige Hinweise"
+      },
+      "camp_air": {
+        "title": "z.B. Camp’Air Annecy",
+        "location": "Ziel, Unterkunft oder Treffpunkt",
+        "travel": "Anreise, Gepäck und Transport",
+        "description": "Tagesprogramm und weitere Informationen"
+      },
+      "lecture": {
+        "title": "z.B. Vortrag Flugmeteorologie",
+        "location": "Veranstaltungsort",
+        "topic": "Thema des Vortrags",
+        "description": "Beschreibung und weitere Informationen"
+      }
     },
     "heightFlightFormSubtitle": "Schnelle Planung und fertige Mitteilung",
     "heightFlightBasics": "Termin",
@@ -920,6 +946,69 @@
       "functions": "Funktionen",
       "noFunction": "Keine Funktion",
       "search": "Name suchen..."
+    },
+    "equipment": {
+      "title": "Material",
+      "stock": "Lager",
+      "loans": "Ausgaben",
+      "ratesTitle": "Ansätze",
+      "add": "Material aufnehmen",
+      "edit": "Bearbeiten",
+      "save": "Speichern",
+      "saved": "Gespeichert",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "empty": "Noch kein Material erfasst.",
+      "searchPlaceholder": "Material suchen …",
+      "filterActive": "Aktiv",
+      "filterAll": "Alle",
+      "name": "Bezeichnung",
+      "namePlaceholder": "z.B. Advance Alpha 7 – 26",
+      "type": "Art",
+      "size": "Grösse",
+      "inventoryNumber": "Inventarnummer",
+      "condition": "Zustand",
+      "purchaseDate": "Kaufdatum",
+      "nextCheck": "Nächster Check",
+      "notes": "Notizen",
+      "retire": "Aussondern",
+      "retireConfirm": "Dieses Material wirklich aussondern?",
+      "retired": "Ausgesondert",
+      "reactivate": "Wieder aufnehmen",
+      "lend": "Ausgeben",
+      "lendTitle": "{{name}} ausgeben",
+      "takeBack": "Zurücknehmen",
+      "assigned": "Material ausgegeben",
+      "returned": "Material zurückgenommen",
+      "person": "Person",
+      "choosePerson": "Person wählen",
+      "from": "Ausgegeben am",
+      "until": "Zurück bis",
+      "due": "bis",
+      "lentTo": "Ausgegeben an {{name}}",
+      "noLoans": "Noch keine Ausgaben erfasst.",
+      "returnedOn": "Zurück am",
+      "types": {
+        "glider": "Schirm",
+        "harness": "Gurtzeug",
+        "reserve": "Rettung",
+        "helmet": "Helm",
+        "radio": "Funk",
+        "vario": "Vario",
+        "other": "Übriges"
+      },
+      "status": {
+        "in_stock": "Im Lager",
+        "assigned": "Ausgegeben",
+        "maintenance": "Service",
+        "retired": "Ausgesondert"
+      },
+      "rates": {
+        "travel_per_km": "Fahrtkosten pro km",
+        "rental_per_day": "Materialmiete pro Tag",
+        "rental_per_week": "Materialmiete pro Woche",
+        "launch_leader_per_day": "Startleiter-Guthaben pro Tag"
+      },
+      "ratesHint": "Diese Beträge kannst du jederzeit anpassen. Sie werden für Abrechnung und Guthaben verwendet."
     }
   },
   "feed": {
