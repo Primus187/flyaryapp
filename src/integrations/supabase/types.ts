@@ -1935,6 +1935,10 @@ export type Database = {
         Args: { _body: string; _title: string; _url?: string; _user_id: string }
         Returns: undefined
       }
+      set_member_training_level: {
+        Args: { _group_id: string; _training_level: string; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
