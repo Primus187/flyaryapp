@@ -302,7 +302,9 @@ export default function EventDetail() {
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <InfoCard icon={Calendar} label={t("events.date")} value={new Date(event.event_date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
+        <InfoCard icon={Calendar} label={t("events.date")} value={event.end_date && event.end_date !== event.event_date.slice(0, 10)
+          ? `${new Date(event.event_date).toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${new Date(event.end_date + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`
+          : new Date(event.event_date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
         <InfoCard icon={Clock} label={t("events.time")} value={new Date(event.event_date).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} />
         {event.event_type && <InfoCard icon={Calendar} label={t("events.eventTypeLabel")} value={event.event_type} />}
         {event.meeting_point && <InfoCard icon={MapPin} label={t("events.meetingPoint")} value={event.meeting_point} />}
