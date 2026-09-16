@@ -68,7 +68,15 @@ async function loginToXContest(
   });
 
   const loginCookies = loginRes.headers.getSetCookie?.() || [];
-  await loginRes.text();
+  const loginHtml = (await loginRes.text()).toLowerCase();
+
+  // XContest protects its login form with a JavaScript anti-bot check that a
+  // server-side request cannot satisfy. Detect it so we don't blame credentials.
+  if (loginHtml.includes("anti-bot") || loginHtml.includes("antibot")) {
+    console.log("XContest anti-bot verification blocked the login request.");
+    return { failure: "antibot" };
+  }
+
 
   // Merge cookies (login cookies override init cookies for same names)
   const cookieMap = new Map<string, string>();
