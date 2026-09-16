@@ -188,8 +188,13 @@ export default function EventDetail() {
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
   if (!event) return null;
 
-  const isSignedUp = signups.find(s => s.user_id === user?.id)?.signed_up ?? false;
-  const totalSignedUp = signups.filter(s => s.signed_up).length;
+  const mySignup = signups.find(s => s.user_id === user?.id);
+  const isSignedUp = mySignup?.signed_up ?? false;
+  const myWaitlist = isSignedUp && mySignup?.status === "waitlist";
+  const confirmedSignups = signups.filter(s => s.signed_up && s.status !== "waitlist");
+  const waitlistSignups = signups.filter(s => s.signed_up && s.status === "waitlist");
+  const totalSignedUp = confirmedSignups.length;
+  const deadlinePassed = !!event.signup_deadline && new Date(event.signup_deadline) < new Date();
   const statusLabel = event.status === "confirmed" ? t("events.statusConfirmed") : event.status === "cancelled" ? t("events.statusCancelled") : t("events.statusAnnounced");
   const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
   const isPast = new Date(event.event_date) < new Date();
@@ -200,6 +205,9 @@ export default function EventDetail() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
         <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{groupName}</p></div>
         <Badge className={statusColor}>{statusLabel}</Badge>
+        {event.event_category && (
+          <Badge variant="secondary">{t(`events.categories.${event.event_category}`, event.event_category)}</Badge>
+        )}
         {isAdmin && (
           <>
             <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4" /></Button>
@@ -221,9 +229,28 @@ export default function EventDetail() {
       </div>
 
       {!isPast && event.status !== "cancelled" && (
-        <Button className={`w-full gap-2 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`} variant={isSignedUp ? "default" : "outline"} onClick={toggleSignup}>
-          {isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}{isSignedUp ? t("events.signedUpAction") : t("events.signUp")}
-        </Button>
+        <>
+          <Button
+            className={`w-full gap-2 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
+            variant={isSignedUp ? "default" : "outline"}
+            onClick={toggleSignup}
+            disabled={!isSignedUp && deadlinePassed}
+          >
+            {myWaitlist ? <Hourglass className="h-4 w-4" /> : isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+            {myWaitlist
+              ? t("events.onWaitlist", { position: mySignup?.waitlist_position || "?" })
+              : isSignedUp
+                ? t("events.signedUpAction")
+                : deadlinePassed
+                  ? t("events.deadlinePassed")
+                  : t("events.signUp")}
+          </Button>
+          {isSignedUp && mySignup?.confirmed_by_school && (
+            <p className="text-xs text-center text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
+              <ShieldCheck className="h-3.5 w-3.5" /> {t("events.confirmedBySchool")}
+            </p>
+          )}
+        </>
       )}
 
       {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
