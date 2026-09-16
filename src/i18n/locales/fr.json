@@ -35,7 +35,8 @@
     "confirm": "Confirmer",
     "saved": "Enregistré",
     "noPosition": "Pas de position",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "sending": "Envoi..."
   },
   "dashboard": {
     "title": "Flyary",
@@ -201,7 +202,21 @@
     "eventTypeLabel": "Type",
     "allGroups": "Tous les groupes",
     "pilot": "Pilote",
-    "chat": "Chat",
+    "chat": {
+      "sendFailed": "Envoi échoué",
+      "send": "Envoyer",
+      "sendAnnouncement": "Envoyer comme annonce à tous (push)",
+      "typeMessage": "Écrire un message...",
+      "attachment": "Pièce jointe",
+      "attachmentTooLarge": "Pièce jointe trop volumineuse (max 10 Mo).",
+      "noMessages": "Pas encore de messages. Dis bonjour !",
+      "removeFailed": "Suppression échouée",
+      "deleted": "Message supprimé",
+      "sendAnnouncementHint": "Les annonces sont épinglées et déclenchent une notification push.",
+      "typeAnnouncement": "Écrire une annonce...",
+      "removeAnnouncement": "Retirer l'annonce",
+      "removeAttachment": "Retirer la pièce jointe"
+    },
     "typeMessage": "Écrire un message...",
     "sendMessage": "Envoyer",
     "noMessages": "Pas encore de messages",
@@ -252,7 +267,74 @@
     "plannedManeuvers": "Manœuvres prévues",
     "addManeuver": "Ajouter une manœuvre",
     "copyTelegramText": "Copier texte Telegram",
-    "telegramCopied": "Texte copié dans le presse-papiers"
+    "telegramCopied": "Texte copié dans le presse-papiers",
+    "category": "Catégorie",
+    "endDate": "Date de fin",
+    "seriesCount": "Répétitions (hebdomadaires)",
+    "seriesCountHint": "Crée plusieurs événements au rythme hebdomadaire, p. ex. une série de cours de base.",
+    "categories": {
+      "height_flight": "Vol d'altitude",
+      "basic_course": "Jour de cours de base",
+      "school_event": "Événement école",
+      "experienced": "Expérimentés",
+      "multi_day": "Plusieurs jours"
+    },
+    "onWaitlist": "Sur liste d'attente (place {{position}})",
+    "waitlist": "Liste d'attente",
+    "deadlinePassed": "Date limite d'inscription dépassée",
+    "confirmedBySchool": "Confirmé par l'école",
+    "confirm": "Confirmer",
+    "unconfirm": "Retirer la confirmation",
+    "staff": {
+      "title": "Encadrement",
+      "none": "Personne n'est encore affecté.",
+      "addStaff": "Affecter",
+      "selectMember": "Choisir un membre",
+      "position": "Position",
+      "addHint": "Seuls les membres avec fonction moniteur ou aide au décollage peuvent être affectés.",
+      "confirmRemoveStaff": "Retirer cette personne de l'encadrement ?",
+      "removed": "Retiré de l'encadrement",
+      "addFailed": "Affectation échouée",
+      "removeFailed": "Suppression échouée",
+      "added": "Affecté",
+      "positions": {
+        "lead": "Moniteur·trice",
+        "helper": "Aide au décollage"
+      }
+    },
+    "program": {
+      "title": "Programme du jour",
+      "empty": "Pas encore de programme.",
+      "addDay": "Ajouter un jour",
+      "day": "Jour",
+      "itemLabel": "Point du programme",
+      "time": "Heure",
+      "add": "Ajouter",
+      "added": "Point ajouté",
+      "addFailed": "Ajout échoué",
+      "removed": "Point supprimé",
+      "removeFailed": "Suppression échouée"
+    },
+    "carpool": {
+      "title": "Covoiturage",
+      "none": "Pas encore de covoiturage.",
+      "offer": "Proposer une place",
+      "offerHint": "Réservé aux personnes inscrites.",
+      "seats": "places libres",
+      "seatsAvailable": "{{count}} place libre",
+      "seatsAvailable_other": "{{count}} places libres",
+      "seatsHint": "Nombre de places libres dans la voiture.",
+      "removeOffer": "Supprimer l'offre",
+      "offerFailed": "Offre échouée",
+      "offerRemoved": "Offre supprimée",
+      "offerAdded": "Offre créée",
+      "join": "Monter",
+      "leave": "Descendre",
+      "full": "Complet",
+      "confirmRemove": "Vraiment supprimer ce covoiturage ?",
+      "joined": "Inscrit",
+      "removed": "Désinscrit"
+    }
   },
   "locations": {
     "title": "Sites",
@@ -900,7 +982,44 @@
       "level": "Niveau",
       "flights": "Vols",
       "examProgress": "Progression examen",
-      "lastSummary": "Dernier résumé"
+      "lastSummary": "Dernier résumé",
+      "downloaded": "CSV téléchargé",
+      "exportFailed": "Échec de l'export"
+    },
+    "functions": {
+      "student": "Élève",
+      "licensed": "Breveté",
+      "launch_helper": "Aide au décollage",
+      "instructor": "Moniteur·trice",
+      "school_lead": "Direction de l'école"
+    },
+    "levels": {
+      "ground": "Niveau sol",
+      "altitude": "Vols d'altitude",
+      "exam_ready": "Prêt pour l'examen",
+      "licensed": "Breveté"
+    },
+    "people": {
+      "title": "Personnes",
+      "filterAll": "Tous",
+      "noMembers": "Aucun membre trouvé.",
+      "editTitle": "Modifier la personne",
+      "functionsLabel": "Fonctions",
+      "trainingLevel": "Niveau de formation",
+      "addTrainingLevel": "Ajouter un niveau de formation",
+      "setBySchool": "défini par l'école",
+      "removeTrainingLevel": "Retirer",
+      "removeTrainingLevelConfirm": "Vraiment retirer le niveau de formation de cette personne ?",
+      "saved": "Enregistré",
+      "saveFailed": "Enregistrement échoué",
+      "trainingRemoved": "Niveau de formation retiré",
+      "trainingRemoveFailed": "Suppression échouée",
+      "counts": {
+        "members": "Membres",
+        "instructors": "Moniteurs",
+        "helpers": "Aides au décollage"
+      },
+      "csvExport": "Exporter en CSV"
     }
   },
   "search": {
