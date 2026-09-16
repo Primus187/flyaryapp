@@ -1092,7 +1092,7 @@
       "licensed": "Licensed"
     },
     "people": {
-      "title": "People",
+      "title": "Team",
       "filterAll": "All",
       "noMembers": "No members found.",
       "editTitle": "Edit person",
@@ -1255,7 +1255,7 @@
     },
     "hub": {
       "operations": "Operations",
-      "people": "People",
+      "people": "Team",
       "admin": "Administration"
     }
   },
