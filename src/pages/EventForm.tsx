@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, X, ClipboardList, MapPin, CalendarDays, Users, PlaneTakeoff } from "lucide-react";
+import { ArrowLeft, Plus, X, ClipboardList, MapPin, CalendarDays, Users, PlaneTakeoff, BookOpen, Mountain, TentTree, Presentation, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +20,15 @@ interface BriefingTask { id?: string; label: string; task_type: string; assigned
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface MemberOption { user_id: string; name: string; functions: string[]; }
 interface MeetingRow { time: string; place: string; }
+
+type EventCategory = "height_flight" | "basic_course" | "experienced" | "camp_air" | "lecture";
+
+const normalizeCategory = (category?: string | null): EventCategory => {
+  if (category === "multi_day") return "camp_air";
+  if (category === "school_event") return "lecture";
+  if (category === "basic_course" || category === "experienced" || category === "camp_air" || category === "lecture") return category;
+  return "height_flight";
+};
 
 const parseMeetingRows = (value: string): MeetingRow[] => {
   const rows = (value || "")
@@ -40,6 +49,8 @@ export default function EventForm() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const duplicateId = searchParams.get("duplicate");
+  const schoolGroupId = searchParams.get("group");
+  const fromSchool = !!schoolGroupId;
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -58,22 +69,33 @@ export default function EventForm() {
     group_id: "", title: "", description: "", status: "announced", event_date: "", event_time: "09:00",
     signup_deadline: "", event_type: "", meeting_point: "", instructor: "", launch_helper: "",
     max_participants: "", chat_link: "", flight_area: "", day_topic: "", departure_info: "", flight_prep_notes: "",
-    event_category: "height_flight", end_date: "",
+    event_category: "height_flight" as EventCategory, end_date: "",
   });
 
   const isHeight = form.event_category === "height_flight";
+  const isCamp = form.event_category === "camp_air";
+  const isLecture = form.event_category === "lecture";
+  const isExperienced = form.event_category === "experienced";
+  const isBasicCourse = form.event_category === "basic_course";
 
   useEffect(() => {
     if (!user) return;
     const fetchGroups = async () => {
       const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, group_type)").eq("user_id", user.id);
-      if (data) { const eligible = data.filter((m: any) => m.role === "admin" || m.groups?.group_type === "pilot_group"); setGroups(eligible.map((m: any) => m.groups).filter(Boolean)); }
+      if (data) {
+        const eligible = data.filter((m: any) => m.role === "admin" || m.groups?.group_type === "pilot_group");
+        const availableGroups = eligible.map((m: any) => m.groups).filter(Boolean);
+        setGroups(availableGroups);
+        if (!isEdit && schoolGroupId && availableGroups.some((group: any) => group.id === schoolGroupId)) {
+          setForm(previous => ({ ...previous, group_id: schoolGroupId }));
+        }
+      }
     };
     fetchGroups();
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
-  }, [user]);
+  }, [user, isEdit, schoolGroupId]);
 
   // Load group members (for instructor / launch helper / briefing pickers)
   useEffect(() => {
@@ -120,7 +142,7 @@ export default function EventForm() {
         max_participants: data.max_participants?.toString() || "", chat_link: data.chat_link || "",
         flight_area: (data as any).flight_area || "", day_topic: (data as any).day_topic || "",
         departure_info: (data as any).departure_info || "", flight_prep_notes: (data as any).flight_prep_notes || "",
-        event_category: (data as any).event_category || "height_flight",
+         event_category: normalizeCategory((data as any).event_category),
         end_date: (data as any).end_date || "",
       });
       setMeetingRows(parseMeetingRows(data.meeting_point || ""));
@@ -180,7 +202,7 @@ export default function EventForm() {
       flight_area: form.flight_area || null, day_topic: form.day_topic || null,
       departure_info: form.departure_info || null, flight_prep_notes: form.flight_prep_notes || null,
       event_category: form.event_category,
-      end_date: form.event_category === "multi_day" && form.end_date ? form.end_date : null,
+      end_date: isCamp && form.end_date ? form.end_date : null,
     };
 
     let eventId: string;
@@ -188,7 +210,8 @@ export default function EventForm() {
       const { created_by, ...updatePayload } = payload;
       const { error } = await supabase.from("flight_events").update(updatePayload).eq("id", id);
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
-      eventId = id!;
+      if (!id) { setLoading(false); return; }
+      eventId = id;
     } else {
       const { data, error } = await supabase.from("flight_events").insert(payload as any).select("id");
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
@@ -197,7 +220,7 @@ export default function EventForm() {
 
     // Save briefing tasks
     if (isEdit) await supabase.from("event_briefing_tasks" as any).delete().eq("event_id", eventId);
-    if (briefingTasks.length > 0) {
+    if (isHeight && briefingTasks.length > 0) {
       await supabase.from("event_briefing_tasks" as any).insert(
         briefingTasks.map((t, i) => ({
           event_id: eventId, label: t.label, task_type: t.task_type,
@@ -208,7 +231,7 @@ export default function EventForm() {
 
     // Save maneuvers
     if (isEdit) await supabase.from("event_maneuvers" as any).delete().eq("event_id", eventId);
-    if (selectedManeuverIds.length > 0) {
+    if (isHeight && selectedManeuverIds.length > 0) {
       await supabase.from("event_maneuvers" as any).insert(
         selectedManeuverIds.map((itemId, i) => ({
           event_id: eventId, training_item_id: itemId, sort_order: i,
@@ -217,7 +240,7 @@ export default function EventForm() {
     }
 
     toast({ title: isEdit ? t("events.eventUpdated") : t("events.eventCreated") });
-    navigate(isEdit ? `/events/${id}` : "/events");
+    navigate(isEdit ? `/events/${id}` : fromSchool ? "/school" : "/events");
     setLoading(false);
   };
 
@@ -234,6 +257,21 @@ export default function EventForm() {
       </SelectContent>
     </Select>
   );
+
+  const selectedMemberId = (name: string) => members.find(member => member.name === name)?.user_id || "";
+  const setNamedMember = (field: "instructor" | "launch_helper", userId: string) => {
+    setForm(previous => ({ ...previous, [field]: members.find(member => member.user_id === userId)?.name || "" }));
+  };
+
+  const categoryOptions: { value: EventCategory; icon: typeof Mountain }[] = [
+    { value: "height_flight", icon: Mountain },
+    { value: "basic_course", icon: BookOpen },
+    { value: "experienced", icon: PlaneTakeoff },
+    { value: "camp_air", icon: TentTree },
+    { value: "lecture", icon: Presentation },
+  ];
+
+  const goBack = () => navigate(fromSchool && !isEdit ? "/school" : isEdit && id ? `/events/${id}` : "/events");
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
