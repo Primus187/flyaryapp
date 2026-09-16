@@ -1009,6 +1009,19 @@
         "launch_leader_per_day": "Startleiter-Guthaben pro Tag"
       },
       "ratesHint": "Diese Beträge kannst du jederzeit anpassen. Sie werden für Abrechnung und Guthaben verwendet."
+    },
+    "stats": {
+      "title": "Statistiken",
+      "allYears": "Alle Jahre",
+      "events": "Termine",
+      "heightFlightDays": "Höhenflug-Tage",
+      "participations": "Anmeldungen",
+      "areasUsed": "Fluggebiete",
+      "instructorDays": "Fluglehrer-Einsätze",
+      "launchHelperDays": "Starthelfer-Einsätze",
+      "areaRanking": "Fluggebiete (Termine)",
+      "categoryRanking": "Termine pro Art",
+      "empty": "Noch keine Termine erfasst."
     }
   },
   "feed": {

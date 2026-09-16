@@ -1176,6 +1176,19 @@
         "launch_leader_per_day": "Launch leader credit per day"
       },
       "ratesHint": "You can change these amounts anytime. They are used for billing and credits."
+    },
+    "stats": {
+      "title": "Statistics",
+      "allYears": "All years",
+      "events": "Events",
+      "heightFlightDays": "High flight days",
+      "participations": "Sign-ups",
+      "areasUsed": "Flying sites",
+      "instructorDays": "Instructor days",
+      "launchHelperDays": "Launch helper days",
+      "areaRanking": "Flying sites (events)",
+      "categoryRanking": "Events by type",
+      "empty": "No events yet."
     }
   },
   "search": {
