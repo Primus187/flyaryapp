@@ -264,7 +264,14 @@
       "positions": {
         "lead": "Fluglehrer:in",
         "helper": "Starthelfer:in"
-      }
+      },
+      "empty": "Noch niemand eingeteilt.",
+      "instructors": "Fluglehrer:innen",
+      "launchHelpers": "Starthelfer:innen",
+      "instructor": "Fluglehrer:in",
+      "launchHelper": "Starthelfer:in",
+      "selectPerson": "Person wählen",
+      "positionPlaceholder": "Position, z. B. Seilbahn-Talstation"
     },
     "program": {
       "title": "Tagesprogramm",
@@ -277,7 +284,9 @@
       "added": "Programmpunkt hinzugefügt",
       "addFailed": "Hinzufügen fehlgeschlagen",
       "removed": "Programmpunkt entfernt",
-      "removeFailed": "Entfernen fehlgeschlagen"
+      "removeFailed": "Entfernen fehlgeschlagen",
+      "titlePlaceholder": "Programmpunkt, z. B. Treffpunkt",
+      "locationPlaceholder": "Ort (optional)"
     },
     "carpool": {
       "title": "Fahrgemeinschaften",
@@ -297,7 +306,11 @@
       "full": "Voll",
       "confirmRemove": "Diese Fahrgemeinschaft wirklich löschen?",
       "joined": "Eingestiegen",
-      "removed": "Ausgestiegen"
+      "removed": "Ausgestiegen",
+      "empty": "Noch keine Fahrgemeinschaften.",
+      "freeSeats": "{{count}} Platz frei",
+      "freeSeats_other": "{{count}} Plätze frei",
+      "place": "Abfahrtsort"
     }
   },
   "locations": {
@@ -838,7 +851,11 @@
         "instructors": "Fluglehrer:innen",
         "helpers": "Starthelfer:innen"
       },
-      "csvExport": "CSV exportieren"
+      "csvExport": "CSV exportieren",
+      "empty": "Keine Mitglieder gefunden.",
+      "functions": "Funktionen",
+      "noFunction": "Keine Funktion",
+      "search": "Name suchen..."
     }
   },
   "feed": {

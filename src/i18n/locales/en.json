@@ -286,7 +286,14 @@
       "positions": {
         "lead": "Instructor",
         "helper": "Launch helper"
-      }
+      },
+      "empty": "Nobody assigned yet.",
+      "instructors": "Instructors",
+      "launchHelpers": "Launch helpers",
+      "instructor": "Instructor",
+      "launchHelper": "Launch helper",
+      "selectPerson": "Select person",
+      "positionPlaceholder": "Position, e.g. cable car valley station"
     },
     "program": {
       "title": "Day program",
@@ -299,7 +306,9 @@
       "added": "Program item added",
       "addFailed": "Adding failed",
       "removed": "Program item removed",
-      "removeFailed": "Removal failed"
+      "removeFailed": "Removal failed",
+      "titlePlaceholder": "Program item, e.g. meeting point",
+      "locationPlaceholder": "Location (optional)"
     },
     "carpool": {
       "title": "Carpools",
@@ -319,7 +328,11 @@
       "full": "Full",
       "confirmRemove": "Really delete this carpool?",
       "joined": "Joined",
-      "removed": "Left"
+      "removed": "Left",
+      "empty": "No carpools yet.",
+      "freeSeats": "{{count}} seat free",
+      "freeSeats_other": "{{count}} seats free",
+      "place": "Departure place"
     }
   },
   "locations": {
@@ -1005,7 +1018,11 @@
         "instructors": "Instructors",
         "helpers": "Launch helpers"
       },
-      "csvExport": "Export CSV"
+      "csvExport": "Export CSV",
+      "empty": "No members found.",
+      "functions": "Functions",
+      "noFunction": "No function",
+      "search": "Search name..."
     }
   },
   "search": {

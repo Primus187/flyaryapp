@@ -286,7 +286,14 @@
       "positions": {
         "lead": "Moniteur·trice",
         "helper": "Aide au décollage"
-      }
+      },
+      "empty": "Personne n'est encore affecté.",
+      "instructors": "Moniteurs",
+      "launchHelpers": "Aides au décollage",
+      "instructor": "Moniteur·trice",
+      "launchHelper": "Aide au décollage",
+      "selectPerson": "Choisir une personne",
+      "positionPlaceholder": "Position, p. ex. station inférieure"
     },
     "program": {
       "title": "Programme du jour",
@@ -299,7 +306,9 @@
       "added": "Point ajouté",
       "addFailed": "Ajout échoué",
       "removed": "Point supprimé",
-      "removeFailed": "Suppression échouée"
+      "removeFailed": "Suppression échouée",
+      "titlePlaceholder": "Point du programme, p. ex. point de rendez-vous",
+      "locationPlaceholder": "Lieu (optionnel)"
     },
     "carpool": {
       "title": "Covoiturage",
@@ -319,7 +328,11 @@
       "full": "Complet",
       "confirmRemove": "Vraiment supprimer ce covoiturage ?",
       "joined": "Inscrit",
-      "removed": "Désinscrit"
+      "removed": "Désinscrit",
+      "empty": "Pas encore de covoiturage.",
+      "freeSeats": "{{count}} place libre",
+      "freeSeats_other": "{{count}} places libres",
+      "place": "Lieu de départ"
     }
   },
   "locations": {
@@ -1005,7 +1018,11 @@
         "instructors": "Moniteurs",
         "helpers": "Aides au décollage"
       },
-      "csvExport": "Exporter en CSV"
+      "csvExport": "Exporter en CSV",
+      "empty": "Aucun membre trouvé.",
+      "functions": "Fonctions",
+      "noFunction": "Aucune fonction",
+      "search": "Rechercher un nom..."
     }
   },
   "search": {
