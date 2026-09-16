@@ -250,6 +250,10 @@ export default function SchoolDashboard() {
           <SchoolCredits groupId={selectedGroupId} />
         </TabsContent>
 
+        <TabsContent value="billing">
+          <SchoolBilling groupId={selectedGroupId} />
+        </TabsContent>
+
         <TabsContent value="chat">
           <GroupChat groupId={selectedGroupId} canAnnounce={true} />
         </TabsContent>
