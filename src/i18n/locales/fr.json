@@ -320,21 +320,6 @@
       "confirmRemove": "Vraiment supprimer ce covoiturage ?",
       "joined": "Inscrit",
       "removed": "Désinscrit"
-    },
-    "groupChat": {
-      "sendFailed": "Envoi échoué",
-      "send": "Envoyer",
-      "sendAnnouncement": "Envoyer comme annonce à tous (push)",
-      "typeMessage": "Écrire un message...",
-      "attachment": "Pièce jointe",
-      "attachmentTooLarge": "Pièce jointe trop volumineuse (max 10 Mo).",
-      "noMessages": "Pas encore de messages. Dis bonjour !",
-      "removeFailed": "Suppression échouée",
-      "deleted": "Message supprimé",
-      "sendAnnouncementHint": "Les annonces sont épinglées et déclenchent une notification push.",
-      "typeAnnouncement": "Écrire une annonce...",
-      "removeAnnouncement": "Retirer l'annonce",
-      "removeAttachment": "Retirer la pièce jointe"
     }
   },
   "locations": {
@@ -1029,5 +1014,10 @@
     "noResults": "Aucun résultat trouvé",
     "hint": "Entrez un terme pour trouver des vols, sites, événements et pilotes.",
     "pilots": "Pilotes"
+  },
+  "chat": {
+    "announcement": "Annonce",
+    "asAnnouncement": "Envoyer comme annonce (push à tous)",
+    "attachmentFailed": "Échec de l'envoi de la pièce jointe"
   }
 }

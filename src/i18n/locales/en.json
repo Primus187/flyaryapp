@@ -320,21 +320,6 @@
       "confirmRemove": "Really delete this carpool?",
       "joined": "Joined",
       "removed": "Left"
-    },
-    "groupChat": {
-      "sendFailed": "Sending failed",
-      "send": "Send",
-      "sendAnnouncement": "Send as announcement to everyone (push)",
-      "typeMessage": "Type a message...",
-      "attachment": "Attachment",
-      "attachmentTooLarge": "Attachment is too large (max 10 MB).",
-      "noMessages": "No messages yet. Say hi!",
-      "removeFailed": "Deletion failed",
-      "deleted": "Message deleted",
-      "sendAnnouncementHint": "Announcements are pinned and trigger a push notification.",
-      "typeAnnouncement": "Write an announcement...",
-      "removeAnnouncement": "Remove announcement",
-      "removeAttachment": "Remove attachment"
     }
   },
   "locations": {
@@ -1029,5 +1014,10 @@
     "noResults": "No results found",
     "hint": "Enter a search term to find flights, sites, events and pilots.",
     "pilots": "Pilots"
+  },
+  "chat": {
+    "announcement": "Announcement",
+    "asAnnouncement": "Send as announcement (push to everyone)",
+    "attachmentFailed": "Attachment upload failed"
   }
 }

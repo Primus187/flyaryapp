@@ -298,21 +298,6 @@
       "confirmRemove": "Diese Fahrgemeinschaft wirklich löschen?",
       "joined": "Eingestiegen",
       "removed": "Ausgestiegen"
-    },
-    "groupChat": {
-      "sendFailed": "Senden fehlgeschlagen",
-      "send": "Senden",
-      "sendAnnouncement": "Als Ankündigung an alle senden (Push)",
-      "typeMessage": "Nachricht schreiben...",
-      "attachment": "Anhang",
-      "attachmentTooLarge": "Anhang ist zu gross (max. 10 MB).",
-      "noMessages": "Noch keine Nachrichten. Sag hallo!",
-      "removeFailed": "Löschen fehlgeschlagen",
-      "deleted": "Nachricht gelöscht",
-      "sendAnnouncementHint": "Ankündigungen sind fixiert und lösen eine Push-Mitteilung aus.",
-      "typeAnnouncement": "Ankündigung schreiben...",
-      "removeAnnouncement": "Ankündigung entfernen",
-      "removeAttachment": "Anhang entfernen"
     }
   },
   "locations": {
@@ -1039,5 +1024,10 @@
   "follows": {
     "follow": "Folgen",
     "unfollow": "Entfolgen"
+  },
+  "chat": {
+    "announcement": "Ankündigung",
+    "asAnnouncement": "Als Ankündigung senden (Push an alle)",
+    "attachmentFailed": "Anhang konnte nicht hochgeladen werden"
   }
 }
