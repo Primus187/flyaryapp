@@ -48,6 +48,7 @@ export default function Dashboard() {
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
   const { streak } = usePilotStreak(user?.id);
+  const { hasSchoolAccess } = useSchoolAccess();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
