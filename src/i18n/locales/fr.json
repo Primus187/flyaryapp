@@ -282,8 +282,11 @@
     "notifyFailed": "Le message n'a pas pu être envoyé",
     "category": "Catégorie",
     "endDate": "Date de fin",
-    "seriesCount": "Répétitions (hebdomadaires)",
-    "seriesCountHint": "Crée plusieurs événements au rythme hebdomadaire, p. ex. une série de cours de base.",
+    "heightFlightFormSubtitle": "Planification rapide et message prêt à envoyer",
+    "heightFlightBasics": "Rendez-vous",
+    "heightFlightPlan": "Point de rencontre & journée de vol",
+    "heightFlightTeam": "Équipe & inscription",
+    "heightFlightCommunication": "Message",
     "categories": {
       "height_flight": "Vol d'altitude",
       "basic_course": "Jour de cours de base",

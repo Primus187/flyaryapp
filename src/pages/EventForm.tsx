@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, X, ClipboardList, MapPin } from "lucide-react";
+import { ArrowLeft, Plus, X, ClipboardList, MapPin, CalendarDays, Users, PlaneTakeoff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,7 +58,7 @@ export default function EventForm() {
     group_id: "", title: "", description: "", status: "announced", event_date: "", event_time: "09:00",
     signup_deadline: "", event_type: "", meeting_point: "", instructor: "", launch_helper: "",
     max_participants: "", chat_link: "", flight_area: "", day_topic: "", departure_info: "", flight_prep_notes: "",
-    event_category: "height_flight", end_date: "", series_count: "1",
+    event_category: "height_flight", end_date: "",
   });
 
   const isHeight = form.event_category === "height_flight";
@@ -121,7 +121,7 @@ export default function EventForm() {
         flight_area: (data as any).flight_area || "", day_topic: (data as any).day_topic || "",
         departure_info: (data as any).departure_info || "", flight_prep_notes: (data as any).flight_prep_notes || "",
         event_category: (data as any).event_category || "height_flight",
-        end_date: (data as any).end_date || "", series_count: "1",
+        end_date: (data as any).end_date || "",
       });
       setMeetingRows(parseMeetingRows(data.meeting_point || ""));
 
@@ -190,24 +190,7 @@ export default function EventForm() {
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
       eventId = id!;
     } else {
-      const seriesCount = Math.min(Math.max(parseInt(form.series_count) || 1, 1), 24);
-      const seriesId = seriesCount > 1 ? crypto.randomUUID() : null;
-      const inserts = [];
-      const startDate = new Date(`${form.event_date}T${form.event_time || "09:00"}`);
-      for (let i = 0; i < seriesCount; i++) {
-        const d = new Date(startDate);
-        d.setDate(d.getDate() + i * 7);
-        inserts.push({
-          ...payload,
-          event_date: d.toISOString(),
-          title: seriesCount > 1 ? `${form.title} (${i + 1}/${seriesCount})` : form.title,
-          series_id: seriesId,
-          end_date: form.event_category === "multi_day" && form.end_date
-            ? new Date(new Date(form.end_date).getTime() + i * 7 * 86400000).toISOString().split("T")[0]
-            : null,
-        });
-      }
-      const { data, error } = await supabase.from("flight_events").insert(inserts as any).select("id");
+      const { data, error } = await supabase.from("flight_events").insert(payload as any).select("id");
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
       eventId = (data as any[])[0].id;
     }
@@ -256,10 +239,14 @@ export default function EventForm() {
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
-        <h1 className="text-xl font-bold tracking-tight">{isEdit ? t("events.editEvent") : t("events.createEvent")}</h1>
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">{isEdit ? t("events.editEvent") : t("events.createEvent")}</h1>
+          {isHeight && <p className="text-xs text-muted-foreground">{t("events.heightFlightFormSubtitle")}</p>}
+        </div>
       </div>
-      <Card className="border-0 shadow-sm">
+      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
         <CardContent className="p-4 space-y-3">
+          {isHeight && <div className="flex items-center gap-2 border-b border-border/60 pb-3"><CalendarDays className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightBasics")}</Label></div>}
           <div className="space-y-1.5"><Label className="text-xs">{t("events.group")} *</Label><Select value={form.group_id} onValueChange={v => setForm({ ...form, group_id: v })}><SelectTrigger><SelectValue placeholder={t("events.groupSelect")} /></SelectTrigger><SelectContent>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent></Select></div>
           <div className="space-y-1.5"><Label className="text-xs">{t("events.titleLabel")} *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder={t("events.titlePlaceholder")} /></div>
           <div className="grid grid-cols-2 gap-3">
@@ -279,13 +266,11 @@ export default function EventForm() {
           {form.event_category === "multi_day" && (
             <div className="space-y-1.5"><Label className="text-xs">{t("events.endDate")}</Label><Input type="date" value={form.end_date} min={form.event_date} onChange={e => setForm({ ...form, end_date: e.target.value })} /></div>
           )}
-          {!isEdit && !duplicateId && (
-            <div className="space-y-1.5"><Label className="text-xs">{t("events.seriesCount")}</Label><Input type="number" min={1} max={24} value={form.series_count} onChange={e => setForm({ ...form, series_count: e.target.value })} /><p className="text-[10px] text-muted-foreground">{t("events.seriesCountHint")}</p></div>
-          )}
           {!isHeight && (
             <div className="space-y-1.5"><Label className="text-xs">{t("events.eventType")}</Label><Input value={form.event_type} onChange={e => setForm({ ...form, event_type: e.target.value })} placeholder={t("events.eventTypePlaceholder")} /></div>
           )}
 
+          {isHeight && <div className="flex items-center gap-2 border-t border-border/60 pt-4"><MapPin className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightPlan")}</Label></div>}
           {/* Meeting points */}
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3 text-primary" />{t("events.meetingPointShort")}</Label>
@@ -307,6 +292,7 @@ export default function EventForm() {
           <div className="space-y-1.5"><Label className="text-xs">{t("events.dayTopic")}</Label><Input value={form.day_topic} onChange={e => setForm({ ...form, day_topic: e.target.value })} placeholder={t("events.dayTopicPlaceholder")} /></div>
           <div className="space-y-1.5"><Label className="text-xs">{t("events.returnInfo")}</Label><Textarea value={form.departure_info} onChange={e => setForm({ ...form, departure_info: e.target.value })} placeholder={t("events.returnInfoPlaceholder")} rows={2} /></div>
 
+          {isHeight && <div className="flex items-center gap-2 border-t border-border/60 pt-4"><Users className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightTeam")}</Label></div>}
           {isHeight ? (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label className="text-xs">{t("events.instructor")}</Label>{memberSelect(members.some(m => m.name === form.instructor) ? (members.find(m => m.name === form.instructor)?.user_id || "") : "", v => setForm({ ...form, instructor: members.find(m => m.user_id === v)?.name || "" }), "w-full")}</div>
@@ -326,13 +312,14 @@ export default function EventForm() {
           {!isHeight && (
             <div className="space-y-1.5"><Label className="text-xs">{t("events.chatLink")}</Label><Input value={form.chat_link} onChange={e => setForm({ ...form, chat_link: e.target.value })} placeholder={t("events.chatLinkPlaceholder")} /></div>
           )}
+          {isHeight && <div className="flex items-center gap-2 border-t border-border/60 pt-4"><PlaneTakeoff className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.heightFlightCommunication")}</Label></div>}
           <div className="space-y-1.5"><Label className="text-xs">{t("events.flightPrep")}</Label><Textarea value={form.flight_prep_notes} onChange={e => setForm({ ...form, flight_prep_notes: e.target.value })} placeholder={t("events.flightPrepPlaceholder")} rows={6} /></div>
           <div className="space-y-1.5"><Label className="text-xs">{isHeight ? t("events.signature") : t("events.description")}</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder={isHeight ? t("events.signaturePlaceholder") : ""} rows={2} /></div>
         </CardContent>
       </Card>
 
       {/* Briefing Tasks */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-primary" />
@@ -354,7 +341,7 @@ export default function EventForm() {
 
       {/* Planned Maneuvers */}
       {trainingItems.length > 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
           <CardContent className="p-4 space-y-3">
             <Label className="text-sm font-semibold">{t("events.plannedManeuvers")}</Label>
             {selectedManeuverIds.length > 0 && (

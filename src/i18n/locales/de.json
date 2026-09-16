@@ -260,8 +260,11 @@
     "noFeedbackYet": "Noch kein Feedback vom Fluglehrer",
     "category": "Kategorie",
     "endDate": "Enddatum",
-    "seriesCount": "Wiederholungen (wöchentlich)",
-    "seriesCountHint": "Erstellt mehrere Termine im Wochenrhythmus, z. B. eine Grundkurs-Serie.",
+    "heightFlightFormSubtitle": "Schnelle Planung und fertige Mitteilung",
+    "heightFlightBasics": "Termin",
+    "heightFlightPlan": "Treffpunkt & Flugtag",
+    "heightFlightTeam": "Team & Anmeldung",
+    "heightFlightCommunication": "Mitteilung",
     "categories": {
       "height_flight": "Höhenflug",
       "basic_course": "Grundkurstag",
