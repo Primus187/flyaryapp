@@ -1293,5 +1293,18 @@
     "label": "Bereich",
     "pilot": "Pilot",
     "school": "Flugschule"
+  },
+  "nextStep": {
+    "title": "Nächster Schritt",
+    "progress": "Schritt {{current}} von {{total}}",
+    "profileTitle": "Profil ausfüllen",
+    "profileDesc": "Name und Schirm hinterlegen, damit dein Flugbuch komplett ist.",
+    "profileCta": "Profil öffnen",
+    "flightTitle": "Ersten Flug erfassen",
+    "flightDesc": "Datum, Orte und Dauer genügen — Fotos kannst du später ergänzen.",
+    "flightCta": "Flug erfassen",
+    "goalTitle": "Saisonziel setzen",
+    "goalDesc": "Ein Ziel gibt dir den Überblick über deine Saison.",
+    "goalCta": "Ziel setzen"
   }
 }

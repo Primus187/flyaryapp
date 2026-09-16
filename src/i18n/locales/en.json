@@ -1283,5 +1283,18 @@
     "label": "Area",
     "pilot": "Pilot",
     "school": "Flight school"
+  },
+  "nextStep": {
+    "title": "Next step",
+    "progress": "Step {{current}} of {{total}}",
+    "profileTitle": "Complete your profile",
+    "profileDesc": "Add your name and glider so your logbook is complete.",
+    "profileCta": "Open profile",
+    "flightTitle": "Log your first flight",
+    "flightDesc": "Date, sites and duration are enough — add photos later.",
+    "flightCta": "Log flight",
+    "goalTitle": "Set a season goal",
+    "goalDesc": "A goal keeps your season in view.",
+    "goalCta": "Set goal"
   }
 }

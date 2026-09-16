@@ -1283,5 +1283,18 @@
     "label": "Espace",
     "pilot": "Pilote",
     "school": "École"
+  },
+  "nextStep": {
+    "title": "Prochaine étape",
+    "progress": "Étape {{current}} sur {{total}}",
+    "profileTitle": "Compléter le profil",
+    "profileDesc": "Ajoute ton nom et ton aile pour un carnet complet.",
+    "profileCta": "Ouvrir le profil",
+    "flightTitle": "Saisir le premier vol",
+    "flightDesc": "Date, sites et durée suffisent — les photos plus tard.",
+    "flightCta": "Saisir un vol",
+    "goalTitle": "Définir un objectif",
+    "goalDesc": "Un objectif garde ta saison en vue.",
+    "goalCta": "Définir"
   }
 }
