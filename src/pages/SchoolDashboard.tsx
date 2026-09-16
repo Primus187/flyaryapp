@@ -13,6 +13,7 @@ import SchoolDays from "@/components/school/SchoolDays";
 import SchoolPeople from "@/components/school/SchoolPeople";
 import SchoolEquipment from "@/components/school/SchoolEquipment";
 import SchoolStats from "@/components/school/SchoolStats";
+import SchoolBilling from "@/components/school/SchoolBilling";
 import SchoolCredits from "@/components/school/SchoolCredits";
 import GroupChat from "@/components/GroupChat";
 
@@ -212,6 +213,7 @@ export default function SchoolDashboard() {
           <TabsTrigger value="equipment" className="flex-1 text-xs">{t("school.equipment.title")}</TabsTrigger>
           <TabsTrigger value="stats" className="flex-1 text-xs">{t("school.stats.title")}</TabsTrigger>
           <TabsTrigger value="credits" className="flex-1 text-xs">{t("school.credits.title")}</TabsTrigger>
+          <TabsTrigger value="billing" className="flex-1 text-xs">{t("school.billing.title")}</TabsTrigger>
           <TabsTrigger value="chat" className="flex-1 text-xs">{t("events.chat")}</TabsTrigger>
         </TabsList>
 
