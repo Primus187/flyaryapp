@@ -248,7 +248,7 @@ export default function Dashboard() {
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {new Date(e.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
-                            {e.event_type && ` · ${e.event_type}`}
+                            {e.event_category && ` · ${t(`events.categories.${e.event_category}`, { defaultValue: e.event_category })}`}
                             {e.group_name && ` · ${e.group_name}`}
                           </p>
                           {e.meeting_point && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {e.meeting_point}</p>}

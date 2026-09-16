@@ -37,6 +37,7 @@ export interface UpcomingEvent {
   meeting_point: string | null;
   group_name: string;
   event_type: string | null;
+  event_category: string | null;
   max_participants: number | null;
 }
 
@@ -165,7 +166,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
       : Promise.resolve({ data: null }),
     // 2: events
     groupIds.length > 0
-      ? supabase.from("flight_events").select("id, title, event_date, status, meeting_point, group_id, event_type, max_participants")
+      ? supabase.from("flight_events").select("id, title, event_date, status, meeting_point, group_id, event_type, event_category, max_participants")
           .in("group_id", groupIds)
           .gte("event_date", new Date().toISOString())
           .order("event_date", { ascending: true })
