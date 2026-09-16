@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
 import SchoolDays from "@/components/school/SchoolDays";
+import SchoolPeople from "@/components/school/SchoolPeople";
+import GroupChat from "@/components/GroupChat";
 
 interface SchoolGroup {
   id: string;
@@ -201,8 +203,10 @@ export default function SchoolDashboard() {
       <Tabs defaultValue="overview">
         <TabsList className="w-full">
           <TabsTrigger value="overview" className="flex-1 text-xs">{t("school.overview")}</TabsTrigger>
+          <TabsTrigger value="people" className="flex-1 text-xs">{t("school.people.title")}</TabsTrigger>
           <TabsTrigger value="students" className="flex-1 text-xs">{t("school.students")}</TabsTrigger>
           <TabsTrigger value="days" className="flex-1 text-xs">{t("school.flightDays")}</TabsTrigger>
+          <TabsTrigger value="chat" className="flex-1 text-xs">{t("events.chat")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -214,12 +218,20 @@ export default function SchoolDashboard() {
           />
         </TabsContent>
 
+        <TabsContent value="people">
+          <SchoolPeople groupId={selectedGroupId} canManage={true} />
+        </TabsContent>
+
         <TabsContent value="students">
           <SchoolStudents students={studentInfos} />
         </TabsContent>
 
         <TabsContent value="days">
           <SchoolDays events={eventInfos} />
+        </TabsContent>
+
+        <TabsContent value="chat">
+          <GroupChat groupId={selectedGroupId} canAnnounce={true} />
         </TabsContent>
       </Tabs>
     </div>
