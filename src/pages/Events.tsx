@@ -11,6 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Plus, Users, MapPin, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EmptyState from "@/components/EmptyState";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
+import SectionHeading from "@/components/layout/SectionHeading";
+
+const CATEGORIES = ["height_flight", "basic_course", "experienced", "camp_air", "lecture"] as const;
 
 interface Group { id: string; name: string; }
 interface EventRow { id: string; group_id: string; title: string; status: string; event_date: string; event_type: string | null; event_category: string | null; meeting_point: string | null; max_participants: number | null; signup_deadline: string | null; groups: { name: string } | null; }
@@ -33,6 +38,7 @@ export default function Events() {
   const { t, i18n } = useTranslation();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [events, setEvents] = useState<EventRow[]>([]);
   const [signups, setSignups] = useState<SignupRow[]>([]);
   const [isAdmin, setIsAdmin] = useState<Record<string, boolean>>({});
@@ -76,26 +82,20 @@ export default function Events() {
 
   const anyCanCreate = Object.values(canCreate).some(Boolean);
   const now = new Date();
-  const upcoming = events.filter(e => new Date(e.event_date) >= now);
-  const past = events.filter(e => new Date(e.event_date) < now);
+  const visible = selectedCategory === "all" ? events : events.filter(e => e.event_category === selectedCategory);
+  const upcoming = visible.filter(e => new Date(e.event_date) >= now);
+  const past = visible.filter(e => new Date(e.event_date) < now);
 
   if (loading) return <EventsSkeleton />;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t("events.title")}</h1>
-        {anyCanCreate && <Button size="sm" className="gap-1.5" onClick={() => navigate("/events/new")}><Plus className="h-4 w-4" /> {t("events.newEvent")}</Button>}
-      </div>
-      {anyCanCreate && (
-        <Button
-          size="icon"
-          className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg"
-          onClick={() => navigate("/events/new")}
-        >
-          <Plus className="h-6 w-6" />
-        </Button>
-      )}
+    <PageContainer className="space-y-4">
+      <PageHeader
+        title={t("events.title")}
+        action={anyCanCreate ? (
+          <Button size="sm" className="gap-1.5" onClick={() => navigate("/events/new")}><Plus className="h-4 w-4" /> {t("events.newEvent")}</Button>
+        ) : undefined}
+      />
       {groups.length === 0 ? (
         <EmptyState
           icon={Users}
@@ -106,18 +106,38 @@ export default function Events() {
         />
       ) : (
         <>
-          <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-            <SelectTrigger className="w-full"><SelectValue placeholder={t("events.allGroups")} /></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("events.allGroups")}</SelectItem>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-2">
+            <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+              <SelectTrigger className="w-full"><SelectValue placeholder={t("events.allGroups")} /></SelectTrigger>
+              <SelectContent><SelectItem value="all">{t("events.allGroups")}</SelectItem>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full"><SelectValue placeholder={t("events.allCategories")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("events.allCategories")}</SelectItem>
+                {CATEGORIES.map(c => (
+                  <SelectItem key={c} value={c}>{t(`events.categories.${c}`, { defaultValue: c })}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {upcoming.length === 0 && past.length === 0 && (
             <EmptyState icon={Calendar} title={t("events.noEvents")} description={t("emptyState.noEventsDesc")} />
           )}
           {upcoming.length > 0 && <div className="space-y-2">{upcoming.map(ev => <EventCard key={ev.id} event={ev} signups={signups} userId={user!.id} onToggle={toggleSignup} onNavigate={() => navigate(`/events/${ev.id}`)} t={t} locale={locale} />)}</div>}
-          {past.length > 0 && (<div className="space-y-2"><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-4">{t("events.pastEvents")}</h2>{past.map(ev => <EventCard key={ev.id} event={ev} signups={signups} userId={user!.id} onToggle={toggleSignup} onNavigate={() => navigate(`/events/${ev.id}`)} t={t} locale={locale} past />)}</div>)}
+          {past.length > 0 && (<div className="space-y-2"><SectionHeading title={t("events.pastEvents")} className="mt-4" />{past.map(ev => <EventCard key={ev.id} event={ev} signups={signups} userId={user!.id} onToggle={toggleSignup} onNavigate={() => navigate(`/events/${ev.id}`)} t={t} locale={locale} past />)}</div>)}
         </>
       )}
-    </div>
+      {anyCanCreate && (
+        <Button
+          size="icon"
+          className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg"
+          onClick={() => navigate("/events/new")}
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      )}
+    </PageContainer>
   );
 }
 

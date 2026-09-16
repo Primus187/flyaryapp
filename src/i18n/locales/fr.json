@@ -423,7 +423,8 @@
       "freeSeats": "{{count}} place libre",
       "freeSeats_other": "{{count}} places libres",
       "place": "Lieu de départ"
-    }
+    },
+    "allCategories": "Tous les types"
   },
   "locations": {
     "title": "Sites",
@@ -1270,5 +1271,10 @@
     "announcement": "Annonce",
     "asAnnouncement": "Envoyer comme annonce (push à tous)",
     "attachmentFailed": "Échec de l'envoi de la pièce jointe"
+  },
+  "roleMode": {
+    "label": "Espace",
+    "pilot": "Pilote",
+    "school": "École"
   }
 }
