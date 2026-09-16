@@ -6,8 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle, ImagePlus, Trash2, Share2, X, Mountain, BookOpen } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck } from "lucide-react";
 import EventChat from "@/components/EventChat";
+import EventStaff from "@/components/EventStaff";
+import EventProgram from "@/components/EventProgram";
+import EventCarpools from "@/components/EventCarpools";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -27,6 +30,7 @@ export default function EventDetail() {
   const [signups, setSignups] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<{ id: string; url: string; storage_path: string }[]>([]);
@@ -57,6 +61,9 @@ export default function EventDetail() {
       if (members) {
         const me = members.find((m: any) => m.user_id === user.id);
         setIsAdmin(me?.role === "admin");
+        const { data: myFuncs } = await supabase.from("group_member_functions" as any).select("function").eq("group_id", ev.group_id).eq("user_id", user.id);
+        const staffRoles = ((myFuncs as any[]) || []).map((f) => f.function);
+        setIsStaff(me?.role === "admin" || staffRoles.includes("instructor") || staffRoles.includes("school_lead"));
         const allUserIds = [...new Set([...(sups || []).map((s: any) => s.user_id), ...members.map(m => m.user_id)])];
         if (allUserIds.length > 0) {
           const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allUserIds);
@@ -149,24 +156,45 @@ export default function EventDetail() {
     toast({ title: t("events.unpublishedFromFeed") });
   };
 
+  const refetchSignups = async () => {
+    if (!id) return;
+    const { data: sups } = await supabase.from("event_signups").select("*").eq("event_id", id);
+    setSignups(sups || []);
+  };
+
   const toggleSignup = async () => {
     if (!user || !id) return;
     const existing = signups.find(s => s.user_id === user.id);
+    let error: any = null;
     if (existing) {
       const newVal = !existing.signed_up;
-      await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id);
-      setSignups(prev => prev.map(s => s.user_id === user.id ? { ...s, signed_up: newVal } : s));
+      ({ error } = await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id));
     } else {
-      await supabase.from("event_signups").insert({ event_id: id, user_id: user.id, signed_up: true });
-      setSignups(prev => [...prev, { event_id: id, user_id: user.id, signed_up: true }]);
+      ({ error } = await supabase.from("event_signups").insert({ event_id: id, user_id: user.id, signed_up: true }));
     }
+    if (error) {
+      toast({ title: t("common.error"), description: error.message.includes("deadline") ? t("events.deadlinePassed") : error.message, variant: "destructive" });
+      return;
+    }
+    await refetchSignups();
+  };
+
+  const toggleSchoolConfirm = async (signup: any) => {
+    if (!id) return;
+    await supabase.from("event_signups").update({ confirmed_by_school: !signup.confirmed_by_school, updated_at: new Date().toISOString() } as any).eq("id", signup.id);
+    await refetchSignups();
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
   if (!event) return null;
 
-  const isSignedUp = signups.find(s => s.user_id === user?.id)?.signed_up ?? false;
-  const totalSignedUp = signups.filter(s => s.signed_up).length;
+  const mySignup = signups.find(s => s.user_id === user?.id);
+  const isSignedUp = mySignup?.signed_up ?? false;
+  const myWaitlist = isSignedUp && mySignup?.status === "waitlist";
+  const confirmedSignups = signups.filter(s => s.signed_up && s.status !== "waitlist");
+  const waitlistSignups = signups.filter(s => s.signed_up && s.status === "waitlist");
+  const totalSignedUp = confirmedSignups.length;
+  const deadlinePassed = !!event.signup_deadline && new Date(event.signup_deadline) < new Date();
   const statusLabel = event.status === "confirmed" ? t("events.statusConfirmed") : event.status === "cancelled" ? t("events.statusCancelled") : t("events.statusAnnounced");
   const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
   const isPast = new Date(event.event_date) < new Date();
@@ -177,6 +205,9 @@ export default function EventDetail() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
         <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{groupName}</p></div>
         <Badge className={statusColor}>{statusLabel}</Badge>
+        {event.event_category && (
+          <Badge variant="secondary">{t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}</Badge>
+        )}
         {isAdmin && (
           <>
             <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4" /></Button>
@@ -198,9 +229,28 @@ export default function EventDetail() {
       </div>
 
       {!isPast && event.status !== "cancelled" && (
-        <Button className={`w-full gap-2 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`} variant={isSignedUp ? "default" : "outline"} onClick={toggleSignup}>
-          {isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}{isSignedUp ? t("events.signedUpAction") : t("events.signUp")}
-        </Button>
+        <>
+          <Button
+            className={`w-full gap-2 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
+            variant={isSignedUp ? "default" : "outline"}
+            onClick={toggleSignup}
+            disabled={!isSignedUp && deadlinePassed}
+          >
+            {myWaitlist ? <Hourglass className="h-4 w-4" /> : isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+            {myWaitlist
+              ? t("events.onWaitlist", { position: mySignup?.waitlist_position || "?" })
+              : isSignedUp
+                ? t("events.signedUpAction")
+                : deadlinePassed
+                  ? t("events.deadlinePassed")
+                  : t("events.signUp")}
+          </Button>
+          {isSignedUp && mySignup?.confirmed_by_school && (
+            <p className="text-xs text-center text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
+              <ShieldCheck className="h-3.5 w-3.5" /> {t("events.confirmedBySchool")}
+            </p>
+          )}
+        </>
       )}
 
       {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
@@ -252,7 +302,9 @@ export default function EventDetail() {
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <InfoCard icon={Calendar} label={t("events.date")} value={new Date(event.event_date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
+        <InfoCard icon={Calendar} label={t("events.date")} value={event.end_date && event.end_date !== event.event_date.slice(0, 10)
+          ? `${new Date(event.event_date).toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${new Date(event.end_date + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`
+          : new Date(event.event_date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
         <InfoCard icon={Clock} label={t("events.time")} value={new Date(event.event_date).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} />
         {event.event_type && <InfoCard icon={Calendar} label={t("events.eventTypeLabel")} value={event.event_type} />}
         {event.meeting_point && <InfoCard icon={MapPin} label={t("events.meetingPoint")} value={event.meeting_point} />}
@@ -279,11 +331,34 @@ export default function EventDetail() {
       {/* Briefing tasks & maneuvers */}
       <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
 
+      {/* Program, staff, carpools */}
+      <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
+      <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
+      <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
+
       {/* Participants */}
       <div>
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("events.participants")}</h2>
-        {signups.filter(s => s.signed_up).length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
-          <div className="space-y-1">{signups.filter(s => s.signed_up).map(s => (<Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /><span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span></CardContent></Card>))}</div>
+        {confirmedSignups.length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
+          <div className="space-y-1">{confirmedSignups.map(s => (
+            <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
+              {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
+              {isStaff && (
+                <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 shrink-0" onClick={() => toggleSchoolConfirm(s)}>
+                  {s.confirmed_by_school ? t("events.unconfirm") : t("events.confirm")}
+                </Button>
+              )}
+            </CardContent></Card>))}</div>
+        )}
+        {waitlistSignups.length > 0 && (
+          <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
+          <div className="space-y-1">{waitlistSignups.map(s => (
+            <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
+              <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
+            </CardContent></Card>))}</div></>
         )}
         {signups.filter(s => !s.signed_up).length > 0 && (
           <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4">{t("events.unregistered")}</h2><div className="space-y-1">{signups.filter(s => !s.signed_up).map(s => (<Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2"><XCircle className="h-4 w-4 text-muted-foreground shrink-0" /><span className="text-sm text-muted-foreground">{profiles[s.user_id] || t("events.pilot")}</span></CardContent></Card>))}</div></>

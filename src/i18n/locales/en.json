@@ -35,7 +35,8 @@
     "confirm": "Confirm",
     "saved": "Saved",
     "noPosition": "No position",
-    "retry": "Retry"
+    "retry": "Retry",
+    "sending": "Sending..."
   },
   "dashboard": {
     "title": "Flyary",
@@ -252,7 +253,87 @@
     "plannedManeuvers": "Planned maneuvers",
     "addManeuver": "Add maneuver",
     "copyTelegramText": "Copy Telegram text",
-    "telegramCopied": "Text copied to clipboard"
+    "telegramCopied": "Text copied to clipboard",
+    "category": "Category",
+    "endDate": "End date",
+    "seriesCount": "Repeats (weekly)",
+    "seriesCountHint": "Creates multiple events in a weekly rhythm, e.g. a basic course series.",
+    "categories": {
+      "height_flight": "Altitude flight",
+      "basic_course": "Basic course day",
+      "school_event": "School event",
+      "experienced": "Experienced",
+      "multi_day": "Multi-day"
+    },
+    "onWaitlist": "On waitlist (spot {{position}})",
+    "waitlist": "Waitlist",
+    "deadlinePassed": "Signup deadline passed",
+    "confirmedBySchool": "Confirmed by the school",
+    "confirm": "Confirm",
+    "unconfirm": "Withdraw confirmation",
+    "staff": {
+      "title": "Staffing",
+      "none": "Nobody assigned yet.",
+      "addStaff": "Assign",
+      "selectMember": "Select member",
+      "position": "Position",
+      "addHint": "Only members with instructor or launch helper function can be assigned.",
+      "confirmRemoveStaff": "Remove this person from staffing?",
+      "removed": "Removed from staffing",
+      "addFailed": "Assignment failed",
+      "removeFailed": "Removal failed",
+      "added": "Assigned",
+      "positions": {
+        "lead": "Instructor",
+        "helper": "Launch helper"
+      },
+      "empty": "Nobody assigned yet.",
+      "instructors": "Instructors",
+      "launchHelpers": "Launch helpers",
+      "instructor": "Instructor",
+      "launchHelper": "Launch helper",
+      "selectPerson": "Select person",
+      "positionPlaceholder": "Position, e.g. cable car valley station"
+    },
+    "program": {
+      "title": "Day program",
+      "empty": "No program yet.",
+      "addDay": "Add day",
+      "day": "Day",
+      "itemLabel": "Program item",
+      "time": "Time",
+      "add": "Add",
+      "added": "Program item added",
+      "addFailed": "Adding failed",
+      "removed": "Program item removed",
+      "removeFailed": "Removal failed",
+      "titlePlaceholder": "Program item, e.g. meeting point",
+      "locationPlaceholder": "Location (optional)"
+    },
+    "carpool": {
+      "title": "Carpools",
+      "none": "No carpools yet.",
+      "offer": "Offer a ride",
+      "offerHint": "Only for signed-up participants.",
+      "seats": "free seats",
+      "seatsAvailable": "{{count}} seat free",
+      "seatsAvailable_other": "{{count}} seats free",
+      "seatsHint": "Number of free seats in the car.",
+      "removeOffer": "Delete offer",
+      "offerFailed": "Offer failed",
+      "offerRemoved": "Offer deleted",
+      "offerAdded": "Offer created",
+      "join": "Join",
+      "leave": "Leave",
+      "full": "Full",
+      "confirmRemove": "Really delete this carpool?",
+      "joined": "Joined",
+      "removed": "Left",
+      "empty": "No carpools yet.",
+      "freeSeats": "{{count}} seat free",
+      "freeSeats_other": "{{count}} seats free",
+      "place": "Departure place"
+    }
   },
   "locations": {
     "title": "Sites",
@@ -900,7 +981,48 @@
       "level": "Level",
       "flights": "Flights",
       "examProgress": "Exam progress",
-      "lastSummary": "Last summary"
+      "lastSummary": "Last summary",
+      "downloaded": "CSV downloaded",
+      "exportFailed": "Export failed"
+    },
+    "functions": {
+      "student": "Student",
+      "licensed": "Licensed",
+      "launch_helper": "Launch helper",
+      "instructor": "Instructor",
+      "school_lead": "School management"
+    },
+    "levels": {
+      "ground": "Ground level",
+      "altitude": "Altitude flights",
+      "exam_ready": "Exam ready",
+      "licensed": "Licensed"
+    },
+    "people": {
+      "title": "People",
+      "filterAll": "All",
+      "noMembers": "No members found.",
+      "editTitle": "Edit person",
+      "functionsLabel": "Functions",
+      "trainingLevel": "Training level",
+      "addTrainingLevel": "Add training level",
+      "setBySchool": "set by the school",
+      "removeTrainingLevel": "Remove",
+      "removeTrainingLevelConfirm": "Really remove the training level for this person?",
+      "saved": "Saved",
+      "saveFailed": "Saving failed",
+      "trainingRemoved": "Training level removed",
+      "trainingRemoveFailed": "Removal failed",
+      "counts": {
+        "members": "Members",
+        "instructors": "Instructors",
+        "helpers": "Launch helpers"
+      },
+      "csvExport": "Export CSV",
+      "empty": "No members found.",
+      "functions": "Functions",
+      "noFunction": "No function",
+      "search": "Search name..."
     }
   },
   "search": {
@@ -909,5 +1031,10 @@
     "noResults": "No results found",
     "hint": "Enter a search term to find flights, sites, events and pilots.",
     "pilots": "Pilots"
+  },
+  "chat": {
+    "announcement": "Announcement",
+    "asAnnouncement": "Send as announcement (push to everyone)",
+    "attachmentFailed": "Attachment upload failed"
   }
 }

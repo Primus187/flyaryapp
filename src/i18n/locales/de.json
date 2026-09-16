@@ -35,7 +35,8 @@
     "confirm": "Bestätigen",
     "saved": "Gespeichert",
     "noPosition": "Keine Position",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "sending": "Senden..."
   },
   "flights": {
     "title": "Flugbuch",
@@ -230,7 +231,87 @@
     "studentResumed": "Schüler wieder aktiv",
     "noNotes": "Noch kein Feedback",
     "yourFeedback": "Dein Feedback",
-    "noFeedbackYet": "Noch kein Feedback vom Fluglehrer"
+    "noFeedbackYet": "Noch kein Feedback vom Fluglehrer",
+    "category": "Kategorie",
+    "endDate": "Enddatum",
+    "seriesCount": "Wiederholungen (wöchentlich)",
+    "seriesCountHint": "Erstellt mehrere Termine im Wochenrhythmus, z. B. eine Grundkurs-Serie.",
+    "categories": {
+      "height_flight": "Höhenflug",
+      "basic_course": "Grundkurstag",
+      "school_event": "Schulevent",
+      "experienced": "Experienced",
+      "multi_day": "Mehrtägig"
+    },
+    "onWaitlist": "Auf Warteliste (Platz {{position}})",
+    "waitlist": "Warteliste",
+    "deadlinePassed": "Anmeldeschluss vorbei",
+    "confirmedBySchool": "Von der Schule bestätigt",
+    "confirm": "Bestätigen",
+    "unconfirm": "Bestätigung zurückziehen",
+    "staff": {
+      "title": "Einteilung",
+      "none": "Noch niemand eingeteilt.",
+      "addStaff": "Einteilen",
+      "selectMember": "Mitglied wählen",
+      "position": "Position",
+      "addHint": "Nur Mitglieder mit Fluglehrer- oder Starthelfer-Funktion können eingeteilt werden.",
+      "confirmRemoveStaff": "Diese Person aus der Einteilung entfernen?",
+      "removed": "Aus Einteilung entfernt",
+      "addFailed": "Einteilung fehlgeschlagen",
+      "removeFailed": "Entfernen fehlgeschlagen",
+      "added": "Eingeteilt",
+      "positions": {
+        "lead": "Fluglehrer:in",
+        "helper": "Starthelfer:in"
+      },
+      "empty": "Noch niemand eingeteilt.",
+      "instructors": "Fluglehrer:innen",
+      "launchHelpers": "Starthelfer:innen",
+      "instructor": "Fluglehrer:in",
+      "launchHelper": "Starthelfer:in",
+      "selectPerson": "Person wählen",
+      "positionPlaceholder": "Position, z. B. Seilbahn-Talstation"
+    },
+    "program": {
+      "title": "Tagesprogramm",
+      "empty": "Noch kein Programm erfasst.",
+      "addDay": "Tag hinzufügen",
+      "day": "Tag",
+      "itemLabel": "Programmpunkt",
+      "time": "Zeit",
+      "add": "Hinzufügen",
+      "added": "Programmpunkt hinzugefügt",
+      "addFailed": "Hinzufügen fehlgeschlagen",
+      "removed": "Programmpunkt entfernt",
+      "removeFailed": "Entfernen fehlgeschlagen",
+      "titlePlaceholder": "Programmpunkt, z. B. Treffpunkt",
+      "locationPlaceholder": "Ort (optional)"
+    },
+    "carpool": {
+      "title": "Fahrgemeinschaften",
+      "none": "Noch keine Fahrgemeinschaften.",
+      "offer": "Mitfahrbankett anbieten",
+      "offerHint": "Nur für angemeldete Teilnehmende.",
+      "seats": "freie Plätze",
+      "seatsAvailable": "{{count}} Platz frei",
+      "seatsAvailable_other": "{{count}} Plätze frei",
+      "seatsHint": "Anzahl freier Plätze im Auto.",
+      "removeOffer": "Angebot löschen",
+      "offerFailed": "Angebot fehlgeschlagen",
+      "offerRemoved": "Angebot gelöscht",
+      "offerAdded": "Angebot erstellt",
+      "join": "Mitfahren",
+      "leave": "Aussitzen",
+      "full": "Voll",
+      "confirmRemove": "Diese Fahrgemeinschaft wirklich löschen?",
+      "joined": "Eingestiegen",
+      "removed": "Ausgestiegen",
+      "empty": "Noch keine Fahrgemeinschaften.",
+      "freeSeats": "{{count}} Platz frei",
+      "freeSeats_other": "{{count}} Plätze frei",
+      "place": "Abfahrtsort"
+    }
   },
   "locations": {
     "title": "Orte",
@@ -733,7 +814,48 @@
       "level": "Stufe",
       "flights": "Flüge",
       "examProgress": "Prüfungsfortschritt",
-      "lastSummary": "Letzte Zusammenfassung"
+      "lastSummary": "Letzte Zusammenfassung",
+      "downloaded": "CSV heruntergeladen",
+      "exportFailed": "Export fehlgeschlagen"
+    },
+    "functions": {
+      "student": "Schüler:in",
+      "licensed": "Brevetiert",
+      "launch_helper": "Starthelfer:in",
+      "instructor": "Fluglehrer:in",
+      "school_lead": "Schulleitung"
+    },
+    "levels": {
+      "ground": "Grundstufe",
+      "altitude": "Höhenflugstufe",
+      "exam_ready": "Prüfungsreif",
+      "licensed": "Brevetiert"
+    },
+    "people": {
+      "title": "Personen",
+      "filterAll": "Alle",
+      "noMembers": "Keine Mitglieder gefunden.",
+      "editTitle": "Person bearbeiten",
+      "functionsLabel": "Funktionen",
+      "trainingLevel": "Ausbildungsstand",
+      "addTrainingLevel": "Ausbildungsstand hinzufügen",
+      "setBySchool": "von der Schule gesetzt",
+      "removeTrainingLevel": "Entfernen",
+      "removeTrainingLevelConfirm": "Ausbildungsstand für diese Person wirklich entfernen?",
+      "saved": "Gespeichert",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "trainingRemoved": "Ausbildungsstand entfernt",
+      "trainingRemoveFailed": "Entfernen fehlgeschlagen",
+      "counts": {
+        "members": "Mitglieder",
+        "instructors": "Fluglehrer:innen",
+        "helpers": "Starthelfer:innen"
+      },
+      "csvExport": "CSV exportieren",
+      "empty": "Keine Mitglieder gefunden.",
+      "functions": "Funktionen",
+      "noFunction": "Keine Funktion",
+      "search": "Name suchen..."
     }
   },
   "feed": {
@@ -919,5 +1041,10 @@
   "follows": {
     "follow": "Folgen",
     "unfollow": "Entfolgen"
+  },
+  "chat": {
+    "announcement": "Ankündigung",
+    "asAnnouncement": "Als Ankündigung senden (Push an alle)",
+    "attachmentFailed": "Anhang konnte nicht hochgeladen werden"
   }
 }
