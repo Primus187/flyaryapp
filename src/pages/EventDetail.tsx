@@ -17,6 +17,7 @@ import EventStudentFlights from "@/components/EventStudentFlights";
 import CoachDayView from "@/components/CoachDayView";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
 import TelegramTextGenerator from "@/components/TelegramTextGenerator";
+import EventAnnounceDialog from "@/components/EventAnnounceDialog";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
 
@@ -255,9 +256,12 @@ export default function EventDetail() {
 
       {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
 
-      {/* Telegram text copy - only for admins */}
-      {isAdmin && (
-        <TelegramTextGenerator event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
+      {/* Announcement (push) + Telegram text copy - staff only */}
+      {isStaff && (
+        <>
+          <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
+          <TelegramTextGenerator event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
+        </>
       )}
 
       {/* Photos section */}
@@ -386,5 +390,5 @@ export default function EventDetail() {
 }
 
 function InfoCard({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
-  return <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 mb-0.5"><Icon className="h-3.5 w-3.5 text-primary" /><span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span></div><p className="text-sm font-medium">{value}</p></CardContent></Card>;
+  return <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 mb-0.5"><Icon className="h-3.5 w-3.5 text-primary" /><span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span></div><p className="text-sm font-medium whitespace-pre-line">{value}</p></CardContent></Card>;
 }
