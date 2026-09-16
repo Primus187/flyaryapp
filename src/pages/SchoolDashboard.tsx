@@ -4,6 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
+import SectionHeading from "@/components/layout/SectionHeading";
+import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import SchoolOverview from "@/components/school/SchoolOverview";
@@ -246,30 +250,20 @@ export default function SchoolDashboard() {
   if (activeSection) {
     const item = SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeSection)!;
     return (
-      <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => navigate("/school")}
-            className="h-9 w-9 -ml-2 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted/60 active:scale-95 transition-all"
-            aria-label={t("common.back")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold truncate">{t(item.labelKey)}</h1>
-            <p className="text-xs text-muted-foreground truncate">
-              {schoolGroups.find((g) => g.id === selectedGroupId)?.name}
-            </p>
-          </div>
-        </div>
+      <PageContainer className="space-y-4">
+        <PageHeader
+          back="/school"
+          title={t(item.labelKey)}
+          subtitle={schoolGroups.find((g) => g.id === selectedGroupId)?.name}
+        />
         {renderSection()}
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
+    <PageContainer>
+      <RoleModeSwitcher />
       <div className="flex items-center gap-3">
         <GraduationCap className="h-6 w-6 text-primary" />
         {schoolGroups.length === 1 ? (
@@ -297,9 +291,7 @@ export default function SchoolDashboard() {
 
       {SECTION_GROUPS.map((group) => (
         <section key={group.titleKey}>
-          <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider px-1">
-            {t(group.titleKey)}
-          </h2>
+          <SectionHeading title={t(group.titleKey)} />
           <div className="grid grid-cols-2 gap-3">
             {group.items.map(({ key, icon: Icon, labelKey }) => (
               <button
@@ -315,6 +307,6 @@ export default function SchoolDashboard() {
           </div>
         </section>
       ))}
-    </div>
+    </PageContainer>
   );
 }
