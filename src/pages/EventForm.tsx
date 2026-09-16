@@ -131,9 +131,26 @@ export default function EventForm() {
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
       eventId = id!;
     } else {
-      const { data, error } = await supabase.from("flight_events").insert(payload).select("id").single();
+      const seriesCount = Math.min(Math.max(parseInt(form.series_count) || 1, 1), 24);
+      const seriesId = seriesCount > 1 ? crypto.randomUUID() : null;
+      const inserts = [];
+      const startDate = new Date(`${form.event_date}T${form.event_time || "09:00"}`);
+      for (let i = 0; i < seriesCount; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i * 7);
+        inserts.push({
+          ...payload,
+          event_date: d.toISOString(),
+          title: seriesCount > 1 ? `${form.title} (${i + 1}/${seriesCount})` : form.title,
+          series_id: seriesId,
+          end_date: form.event_category === "multi_day" && form.end_date
+            ? new Date(new Date(form.end_date).getTime() + i * 7 * 86400000).toISOString().split("T")[0]
+            : null,
+        });
+      }
+      const { data, error } = await supabase.from("flight_events").insert(inserts as any).select("id");
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
-      eventId = data.id;
+      eventId = (data as any[])[0].id;
     }
 
     // Save briefing tasks
@@ -176,7 +193,22 @@ export default function EventForm() {
             <div className="space-y-1.5"><Label className="text-xs">{t("events.date")} *</Label><Input type="date" value={form.event_date} onChange={e => setForm({ ...form, event_date: e.target.value })} /></div>
             <div className="space-y-1.5"><Label className="text-xs">{t("events.time")}</Label><Input type="time" value={form.event_time} onChange={e => setForm({ ...form, event_time: e.target.value })} /></div>
           </div>
-          <div className="space-y-1.5"><Label className="text-xs">{t("events.status")}</Label><Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="announced">{t("events.statusAnnounced")}</SelectItem><SelectItem value="confirmed">{t("events.statusConfirmed")}</SelectItem><SelectItem value="cancelled">{t("events.statusCancelled")}</SelectItem></SelectContent></Select></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label className="text-xs">{t("events.status")}</Label><Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="announced">{t("events.statusAnnounced")}</SelectItem><SelectItem value="confirmed">{t("events.statusConfirmed")}</SelectItem><SelectItem value="cancelled">{t("events.statusCancelled")}</SelectItem></SelectContent></Select></div>
+            <div className="space-y-1.5"><Label className="text-xs">{t("events.category")}</Label><Select value={form.event_category} onValueChange={v => setForm({ ...form, event_category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+              <SelectItem value="height_flight">{t("events.categories.height_flight")}</SelectItem>
+              <SelectItem value="basic_course">{t("events.categories.basic_course")}</SelectItem>
+              <SelectItem value="school_event">{t("events.categories.school_event")}</SelectItem>
+              <SelectItem value="experienced">{t("events.categories.experienced")}</SelectItem>
+              <SelectItem value="multi_day">{t("events.categories.multi_day")}</SelectItem>
+            </SelectContent></Select></div>
+          </div>
+          {form.event_category === "multi_day" && (
+            <div className="space-y-1.5"><Label className="text-xs">{t("events.endDate")}</Label><Input type="date" value={form.end_date} min={form.event_date} onChange={e => setForm({ ...form, end_date: e.target.value })} /></div>
+          )}
+          {!isEdit && !duplicateId && (
+            <div className="space-y-1.5"><Label className="text-xs">{t("events.seriesCount")}</Label><Input type="number" min={1} max={24} value={form.series_count} onChange={e => setForm({ ...form, series_count: e.target.value })} /><p className="text-[10px] text-muted-foreground">{t("events.seriesCountHint")}</p></div>
+          )}
           <div className="space-y-1.5"><Label className="text-xs">{t("events.eventType")}</Label><Input value={form.event_type} onChange={e => setForm({ ...form, event_type: e.target.value })} placeholder={t("events.eventTypePlaceholder")} /></div>
           <div className="space-y-1.5"><Label className="text-xs">{t("events.meetingPoint")}</Label><Input value={form.meeting_point} onChange={e => setForm({ ...form, meeting_point: e.target.value })} placeholder={t("events.meetingPointPlaceholder")} /></div>
           <div className="space-y-1.5"><Label className="text-xs">{t("events.flightArea")}</Label><Input value={form.flight_area} onChange={e => setForm({ ...form, flight_area: e.target.value })} placeholder={t("events.flightAreaPlaceholder")} /></div>
