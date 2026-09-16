@@ -38,6 +38,7 @@ export default function EventForm() {
     group_id: "", title: "", description: "", status: "announced", event_date: "", event_time: "09:00",
     signup_deadline: "", event_type: "", meeting_point: "", instructor: "", launch_helper: "",
     max_participants: "", chat_link: "", flight_area: "", day_topic: "", departure_info: "", flight_prep_notes: "",
+    event_category: "height_flight", end_date: "", series_count: "1",
   });
 
   useEffect(() => {
@@ -68,6 +69,8 @@ export default function EventForm() {
         max_participants: data.max_participants?.toString() || "", chat_link: data.chat_link || "",
         flight_area: (data as any).flight_area || "", day_topic: (data as any).day_topic || "",
         departure_info: (data as any).departure_info || "", flight_prep_notes: (data as any).flight_prep_notes || "",
+        event_category: (data as any).event_category || "height_flight",
+        end_date: (data as any).end_date || "", series_count: "1",
       });
 
       // Load briefing tasks
@@ -117,6 +120,8 @@ export default function EventForm() {
       chat_link: form.chat_link || null, created_by: user.id,
       flight_area: form.flight_area || null, day_topic: form.day_topic || null,
       departure_info: form.departure_info || null, flight_prep_notes: form.flight_prep_notes || null,
+      event_category: form.event_category,
+      end_date: form.event_category === "multi_day" && form.end_date ? form.end_date : null,
     };
 
     let eventId: string;
