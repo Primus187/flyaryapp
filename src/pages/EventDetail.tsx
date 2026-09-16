@@ -206,7 +206,7 @@ export default function EventDetail() {
         <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{groupName}</p></div>
         <Badge className={statusColor}>{statusLabel}</Badge>
         {event.event_category && (
-          <Badge variant="secondary">{t(`events.categories.${event.event_category}`, event.event_category)}</Badge>
+          <Badge variant="secondary">{t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}</Badge>
         )}
         {isAdmin && (
           <>
