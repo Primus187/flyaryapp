@@ -202,21 +202,7 @@
     "eventTypeLabel": "Type",
     "allGroups": "All groups",
     "pilot": "Pilot",
-    "chat": {
-      "sendFailed": "Sending failed",
-      "send": "Send",
-      "sendAnnouncement": "Send as announcement to everyone (push)",
-      "typeMessage": "Type a message...",
-      "attachment": "Attachment",
-      "attachmentTooLarge": "Attachment is too large (max 10 MB).",
-      "noMessages": "No messages yet. Say hi!",
-      "removeFailed": "Deletion failed",
-      "deleted": "Message deleted",
-      "sendAnnouncementHint": "Announcements are pinned and trigger a push notification.",
-      "typeAnnouncement": "Write an announcement...",
-      "removeAnnouncement": "Remove announcement",
-      "removeAttachment": "Remove attachment"
-    },
+    "chat": "Chat",
     "typeMessage": "Write a message...",
     "sendMessage": "Send",
     "noMessages": "No messages yet",
@@ -334,6 +320,21 @@
       "confirmRemove": "Really delete this carpool?",
       "joined": "Joined",
       "removed": "Left"
+    },
+    "groupChat": {
+      "sendFailed": "Sending failed",
+      "send": "Send",
+      "sendAnnouncement": "Send as announcement to everyone (push)",
+      "typeMessage": "Type a message...",
+      "attachment": "Attachment",
+      "attachmentTooLarge": "Attachment is too large (max 10 MB).",
+      "noMessages": "No messages yet. Say hi!",
+      "removeFailed": "Deletion failed",
+      "deleted": "Message deleted",
+      "sendAnnouncementHint": "Announcements are pinned and trigger a push notification.",
+      "typeAnnouncement": "Write an announcement...",
+      "removeAnnouncement": "Remove announcement",
+      "removeAttachment": "Remove attachment"
     }
   },
   "locations": {

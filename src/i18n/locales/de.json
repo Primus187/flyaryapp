@@ -180,21 +180,7 @@
     "eventTypeLabel": "Art",
     "allGroups": "Alle Gruppen",
     "pilot": "Pilot",
-    "chat": {
-      "sendFailed": "Senden fehlgeschlagen",
-      "send": "Senden",
-      "sendAnnouncement": "Als Ankündigung an alle senden (Push)",
-      "typeMessage": "Nachricht schreiben...",
-      "attachment": "Anhang",
-      "attachmentTooLarge": "Anhang ist zu gross (max. 10 MB).",
-      "noMessages": "Noch keine Nachrichten. Sag hallo!",
-      "removeFailed": "Löschen fehlgeschlagen",
-      "deleted": "Nachricht gelöscht",
-      "sendAnnouncementHint": "Ankündigungen sind fixiert und lösen eine Push-Mitteilung aus.",
-      "typeAnnouncement": "Ankündigung schreiben...",
-      "removeAnnouncement": "Ankündigung entfernen",
-      "removeAttachment": "Anhang entfernen"
-    },
+    "chat": "Chat",
     "typeMessage": "Nachricht schreiben...",
     "sendMessage": "Senden",
     "noMessages": "Noch keine Nachrichten",
@@ -312,6 +298,21 @@
       "confirmRemove": "Diese Fahrgemeinschaft wirklich löschen?",
       "joined": "Eingestiegen",
       "removed": "Ausgestiegen"
+    },
+    "groupChat": {
+      "sendFailed": "Senden fehlgeschlagen",
+      "send": "Senden",
+      "sendAnnouncement": "Als Ankündigung an alle senden (Push)",
+      "typeMessage": "Nachricht schreiben...",
+      "attachment": "Anhang",
+      "attachmentTooLarge": "Anhang ist zu gross (max. 10 MB).",
+      "noMessages": "Noch keine Nachrichten. Sag hallo!",
+      "removeFailed": "Löschen fehlgeschlagen",
+      "deleted": "Nachricht gelöscht",
+      "sendAnnouncementHint": "Ankündigungen sind fixiert und lösen eine Push-Mitteilung aus.",
+      "typeAnnouncement": "Ankündigung schreiben...",
+      "removeAnnouncement": "Ankündigung entfernen",
+      "removeAttachment": "Anhang entfernen"
     }
   },
   "locations": {
