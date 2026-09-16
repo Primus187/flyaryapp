@@ -21,6 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import TagsInput from "@/components/TagsInput";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
+import { cn } from "@/lib/utils";
+
+const DRAFT_KEY = "flyary.flightDraft";
 
 interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
@@ -58,6 +63,8 @@ export default function FlightForm() {
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [step, setStep] = useState(1);
+  const [draftRestored, setDraftRestored] = useState(false);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
@@ -119,6 +126,34 @@ export default function FlightForm() {
       } catch (err) { console.error("Failed to parse recorded IGC:", err); }
     }
   }, [user, id, isEdit]);
+
+  // Zwischenstand wiederherstellen (nur bei neuem Flug)
+  useEffect(() => {
+    if (isEdit || draftRestored) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft?.form) setForm((prev) => ({ ...prev, ...draft.form }));
+        if (Array.isArray(draft?.tags)) setTags(draft.tags);
+        if (Array.isArray(draft?.selectedTrainingIds)) setSelectedTrainingIds(draft.selectedTrainingIds);
+        if (typeof draft?.step === "number") setStep(Math.min(3, Math.max(1, draft.step)));
+        toast({ title: t("flights.draftRestored", { defaultValue: "Zwischenstand wiederhergestellt" }) });
+      }
+    } catch { /* ignore */ }
+    setDraftRestored(true);
+  }, [isEdit, draftRestored]);
+
+  // Zwischenstand laufend speichern
+  useEffect(() => {
+    if (isEdit || !draftRestored) return;
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, tags, selectedTrainingIds, step }));
+      } catch { /* ignore */ }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form, tags, selectedTrainingIds, step, isEdit, draftRestored]);
 
   const handleIGCUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return; setIgcFile(file);
@@ -280,6 +315,7 @@ export default function FlightForm() {
           createdAt: new Date().toISOString(),
           syncStatus: "pending",
         });
+        try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
         toast({ title: t("offline.flightSaved"), description: t("offline.flightSavedDesc") });
         navigate("/flights");
         return;
@@ -426,6 +462,7 @@ export default function FlightForm() {
         }
       } catch (e) { console.error("Badge check failed:", e); }
 
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
@@ -467,6 +504,7 @@ export default function FlightForm() {
     toast({ title: t("flights.templateDeleted") });
   };
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [key]: e.target.value });
+  const showStep = (n: number) => isEdit || step === n;
   const takeoffs = locations.filter((l) => l.type === "takeoff" || l.type === "both");
   const landings = locations.filter((l) => l.type === "landing" || l.type === "both");
 
@@ -477,13 +515,27 @@ export default function FlightForm() {
   ];
 
   return (
-    <div className="px-4 pt-4 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
-        <h1 className="text-xl font-bold">{isEdit ? t("flights.editFlight") : t("flights.newFlight")}</h1>
-      </div>
+    <PageContainer>
+      <PageHeader title={isEdit ? t("flights.editFlight") : t("flights.newFlight")} back />
+      {!isEdit && (
+        <div className="flex items-center gap-2">
+          {[1, 2, 3].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setStep(n)}
+              className="flex-1 text-left"
+            >
+              <div className={cn("h-1.5 rounded-full transition-colors", n <= step ? "bg-primary" : "bg-muted")} />
+              <span className={cn("text-[10px] mt-1 block", n === step ? "text-foreground font-medium" : "text-muted-foreground")}>
+                {t(`flights.step${n}`, { defaultValue: n === 1 ? "Flug" : n === 2 ? "Details" : "Medien" })}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       {/* Templates */}
-      {!isEdit && templates.length > 0 && (
+      {!isEdit && step === 1 && templates.length > 0 && (
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center gap-2 mb-2">
@@ -506,6 +558,7 @@ export default function FlightForm() {
         </Card>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {showStep(1) && (<>
         <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
           <CardContent className="p-4">
             <label className="flex flex-col items-center gap-2 cursor-pointer">
@@ -597,6 +650,8 @@ export default function FlightForm() {
             </CardContent>
           </Card>
         )}
+        </>)}
+        {showStep(2) && (<>
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.extendedData")}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -677,6 +732,8 @@ export default function FlightForm() {
             </CardContent>
           </Card>
         )}
+        </>)}
+        {showStep(3) && (<>
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.photos")}</CardTitle></CardHeader>
           <CardContent>
@@ -775,8 +832,31 @@ export default function FlightForm() {
             <div className="flex gap-2"><Input placeholder={t("flights.youtubeUrlPlaceholder")} value={newYoutubeUrl} onChange={(e) => setNewYoutubeUrl(e.target.value)} className="text-sm" /><Button type="button" variant="outline" size="sm" onClick={addYoutubeUrl}>+</Button></div>
           </CardContent>
         </Card>
-        <Button type="submit" className="w-full" disabled={loading}>{loading ? t("flights.saving") : isEdit ? t("common.update") : t("flights.flightSaved")}</Button>
-        {!isEdit && (
+        </>)}
+        <div className="sticky bottom-16 z-10 -mx-1 px-1 py-2 bg-background/85 backdrop-blur-sm space-y-2">
+          <div className="flex gap-2">
+            {!isEdit && step > 1 && (
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
+                {t("common.back")}
+              </Button>
+            )}
+            {!isEdit && step < 3 ? (
+              <Button type="button" className="flex-1" onClick={() => setStep(step + 1)}>
+                {t("flights.nextStep", { defaultValue: "Weiter" })}
+              </Button>
+            ) : (
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? t("flights.saving") : isEdit ? t("common.update") : t("flights.saveFlight", { defaultValue: "Flug speichern" })}
+              </Button>
+            )}
+          </div>
+          {!isEdit && step < 3 && (
+            <Button type="submit" variant="ghost" className="w-full text-xs" disabled={loading}>
+              {loading ? t("flights.saving") : t("flights.saveNow", { defaultValue: "Direkt speichern" })}
+            </Button>
+          )}
+        </div>
+        {!isEdit && step === 3 && (
           <div className="space-y-2">
             {showSaveTemplate ? (
               <div className="flex gap-2">
@@ -796,6 +876,6 @@ export default function FlightForm() {
           </div>
         )}
       </form>
-    </div>
+    </PageContainer>
   );
 }

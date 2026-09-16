@@ -6,6 +6,6 @@
 - [x] 6a. Startseite: nächster Termin zuoberst, dann Kennzahlen, Ziele, letzte Flüge
 - [x] 4a. Terminliste mit Filter nach Gruppe und Art
 - [x] 4b. SchoolDays und Events teilen eine gemeinsame Listenkomponente (EventListItem)
-- [ ] 5. Flug erfassen in Schritten mit Zwischenspeichern (grosser Umbau, eigener Turn)
+- [x] 5. Flug erfassen in drei Schritten (Flug / Details / Medien) mit Zwischenspeichern
 - [ ] 6b. Geführter Einstieg für neue Nutzer (eine empfohlene nächste Handlung)
 - [ ] 7. Feinschliff: Kontrast, Tippziele, Vorlesehilfen, weitere Seiten auf Grundmuster

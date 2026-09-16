@@ -134,7 +134,14 @@
     "saveAsTemplate": "Als Vorlage speichern",
     "templateNamePlaceholder": "Name der Vorlage...",
     "tags": "Tags",
-    "tagsPlaceholder": "#thermik, #abendflug..."
+    "tagsPlaceholder": "#thermik, #abendflug...",
+    "step1": "Flug",
+    "step2": "Details",
+    "step3": "Medien",
+    "nextStep": "Weiter",
+    "saveFlight": "Flug speichern",
+    "saveNow": "Direkt speichern",
+    "draftRestored": "Zwischenstand wiederhergestellt"
   },
   "events": {
     "title": "Termine",
