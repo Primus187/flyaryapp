@@ -1022,6 +1022,33 @@
       "areaRanking": "Fluggebiete (Termine)",
       "categoryRanking": "Termine pro Art",
       "empty": "Noch keine Termine erfasst."
+    },
+    "credits": {
+      "title": "Guthaben",
+      "totalOpen": "Offenes Guthaben",
+      "ratePerDay": "Ansatz: {{amount}} pro Tag",
+      "add": "Buchung erfassen",
+      "balances": "Salden",
+      "bookings": "Buchungen",
+      "empty": "Noch keine Buchungen.",
+      "person": "Person",
+      "entryType": "Art",
+      "date": "Datum",
+      "days": "Tage",
+      "amount": "Betrag",
+      "event": "Termin",
+      "noEvent": "Kein Termin",
+      "note": "Notiz",
+      "save": "Speichern",
+      "saved": "Gespeichert",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "deleteConfirm": "Diese Buchung wirklich löschen?",
+      "daysCount": "{{count}} Einsatztage",
+      "types": {
+        "earned": "Einsatztag",
+        "payout": "Auszahlung",
+        "adjustment": "Korrektur"
+      }
     }
   },
   "feed": {

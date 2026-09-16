@@ -13,6 +13,7 @@ import SchoolDays from "@/components/school/SchoolDays";
 import SchoolPeople from "@/components/school/SchoolPeople";
 import SchoolEquipment from "@/components/school/SchoolEquipment";
 import SchoolStats from "@/components/school/SchoolStats";
+import SchoolCredits from "@/components/school/SchoolCredits";
 import GroupChat from "@/components/GroupChat";
 
 interface SchoolGroup {
@@ -210,6 +211,7 @@ export default function SchoolDashboard() {
           <TabsTrigger value="days" className="flex-1 text-xs">{t("school.flightDays")}</TabsTrigger>
           <TabsTrigger value="equipment" className="flex-1 text-xs">{t("school.equipment.title")}</TabsTrigger>
           <TabsTrigger value="stats" className="flex-1 text-xs">{t("school.stats.title")}</TabsTrigger>
+          <TabsTrigger value="credits" className="flex-1 text-xs">{t("school.credits.title")}</TabsTrigger>
           <TabsTrigger value="chat" className="flex-1 text-xs">{t("events.chat")}</TabsTrigger>
         </TabsList>
 
@@ -240,6 +242,10 @@ export default function SchoolDashboard() {
 
         <TabsContent value="stats">
           <SchoolStats groupId={selectedGroupId} />
+        </TabsContent>
+
+        <TabsContent value="credits">
+          <SchoolCredits groupId={selectedGroupId} />
         </TabsContent>
 
         <TabsContent value="chat">
