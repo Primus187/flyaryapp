@@ -134,7 +134,7 @@ export default function SchoolStats({ groupId }: Props) {
     });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
-      .map(([key, count]) => ({ name: t(`events.category.${key}`, { defaultValue: key }), count }));
+      .map(([key, count]) => ({ name: t(`events.categories.${key}`, { defaultValue: key }), count }));
   }, [filteredEvents, t]);
 
   if (loading) {
