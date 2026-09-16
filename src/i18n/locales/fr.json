@@ -1216,6 +1216,39 @@
         "payout": "Versement",
         "adjustment": "Correction"
       }
+    },
+    "billing": {
+      "title": "Facturation",
+      "openTotal": "Postes ouverts",
+      "openCount": "{{count}} postes ouverts",
+      "add": "Ajouter un poste",
+      "perPerson": "Ouvert par personne",
+      "tabOpen": "Ouvert",
+      "tabPaid": "Payé",
+      "empty": "Aucun poste.",
+      "person": "Personne",
+      "itemType": "Type",
+      "description": "Description",
+      "quantity": "Quantité",
+      "unitAmount": "Tarif",
+      "amount": "Montant",
+      "date": "Date",
+      "event": "Rendez-vous",
+      "noEvent": "Aucun rendez-vous",
+      "note": "Note",
+      "save": "Enregistrer",
+      "saved": "Enregistré",
+      "saveFailed": "Échec de l'enregistrement",
+      "deleteConfirm": "Supprimer ce poste ?",
+      "markPaid": "Marquer comme payé",
+      "paidOn": "payé le {{date}}",
+      "types": {
+        "travel": "Frais de déplacement",
+        "rental": "Location de matériel",
+        "purchase": "Achat de matériel",
+        "course_fee": "Frais de cours",
+        "other": "Autre"
+      }
     }
   },
   "search": {

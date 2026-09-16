@@ -1049,6 +1049,39 @@
         "payout": "Auszahlung",
         "adjustment": "Korrektur"
       }
+    },
+    "billing": {
+      "title": "Abrechnung",
+      "openTotal": "Offene Posten",
+      "openCount": "{{count}} offene Posten",
+      "add": "Posten erfassen",
+      "perPerson": "Offen pro Person",
+      "tabOpen": "Offen",
+      "tabPaid": "Bezahlt",
+      "empty": "Keine Posten.",
+      "person": "Person",
+      "itemType": "Art",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "unitAmount": "Ansatz",
+      "amount": "Betrag",
+      "date": "Datum",
+      "event": "Termin",
+      "noEvent": "Kein Termin",
+      "note": "Notiz",
+      "save": "Speichern",
+      "saved": "Gespeichert",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "deleteConfirm": "Diesen Posten wirklich löschen?",
+      "markPaid": "Als bezahlt markieren",
+      "paidOn": "bezahlt am {{date}}",
+      "types": {
+        "travel": "Fahrtkosten",
+        "rental": "Materialmiete",
+        "purchase": "Materialkauf",
+        "course_fee": "Kursgebühr",
+        "other": "Sonstiges"
+      }
     }
   },
   "feed": {
