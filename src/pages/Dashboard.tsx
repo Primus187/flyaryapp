@@ -12,6 +12,7 @@ import { usePilotStreak } from "@/hooks/use-pilot-streak";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
+import NextStepCard from "@/components/NextStepCard";
 import EmptyState from "@/components/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
 import GoalCard from "@/components/GoalCard";
@@ -147,6 +148,13 @@ export default function Dashboard() {
       </header>
 
       <RoleModeSwitcher />
+
+      <NextStepCard
+        hasProfileName={Boolean(profile.pilot_name)}
+        flightCount={stats.totalFlights}
+        goalCount={goals.length}
+        onAddGoal={() => setGoalDialogOpen(true)}
+      />
 
       {/* Events */}
       {events.length > 0 && (
@@ -329,17 +337,9 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.noFlightsDesc")}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-2">
-                <Button onClick={() => navigate("/flights/new")} className="gap-2 justify-start">
-                  <Plus className="h-4 w-4" /> {t("dashboard.firstFlight")}
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/import")} className="gap-2 justify-start">
-                  <Plane className="h-4 w-4" /> {t("dashboard.importExisting")}
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/profile")} className="gap-2 justify-start">
-                  <RefreshCw className="h-4 w-4" /> {t("dashboard.connectXcontest")}
-                </Button>
-              </div>
+              <Button variant="outline" onClick={() => navigate("/import")} className="gap-2 justify-start w-full">
+                <Plane className="h-4 w-4" /> {t("dashboard.importExisting")}
+              </Button>
             </CardContent>
           </Card>
         ) : (
