@@ -309,11 +309,37 @@
       "lecture": "Lieu, intervenant et thème"
     },
     "placeholders": {
-      "height_flight": { "title": "p. ex. Vol d’altitude Interlaken", "topic": "p. ex. Roulis et tangage", "travel": "p. ex. Le bus rentre à Berne le soir.", "description": "" },
-      "basic_course": { "title": "p. ex. Cours de base de septembre", "location": "p. ex. Pente école de Lehn", "topic": "p. ex. Préparation et gonflage", "material": "p. ex. Casque, gants et chaussures solides", "description": "Informations complémentaires" },
-      "experienced": { "title": "p. ex. Journée thermique Experienced", "location": "p. ex. Interlaken", "level": "p. ex. Breveté, décollage face voile maîtrisé", "description": "Programme et informations importantes" },
-      "camp_air": { "title": "p. ex. Camp’Air Annecy", "location": "Destination, hébergement ou rendez-vous", "travel": "Voyage, bagages et transport", "description": "Programme quotidien et autres informations" },
-      "lecture": { "title": "p. ex. Conférence de météorologie", "location": "Lieu de l’événement", "topic": "Thème de la conférence", "description": "Description et autres informations" }
+      "height_flight": {
+        "title": "p. ex. Vol d’altitude Interlaken",
+        "topic": "p. ex. Roulis et tangage",
+        "travel": "p. ex. Le bus rentre à Berne le soir.",
+        "description": ""
+      },
+      "basic_course": {
+        "title": "p. ex. Cours de base de septembre",
+        "location": "p. ex. Pente école de Lehn",
+        "topic": "p. ex. Préparation et gonflage",
+        "material": "p. ex. Casque, gants et chaussures solides",
+        "description": "Informations complémentaires"
+      },
+      "experienced": {
+        "title": "p. ex. Journée thermique Experienced",
+        "location": "p. ex. Interlaken",
+        "level": "p. ex. Breveté, décollage face voile maîtrisé",
+        "description": "Programme et informations importantes"
+      },
+      "camp_air": {
+        "title": "p. ex. Camp’Air Annecy",
+        "location": "Destination, hébergement ou rendez-vous",
+        "travel": "Voyage, bagages et transport",
+        "description": "Programme quotidien et autres informations"
+      },
+      "lecture": {
+        "title": "p. ex. Conférence de météorologie",
+        "location": "Lieu de l’événement",
+        "topic": "Thème de la conférence",
+        "description": "Description et autres informations"
+      }
     },
     "heightFlightFormSubtitle": "Planification rapide et message prêt à envoyer",
     "heightFlightBasics": "Rendez-vous",
@@ -1087,6 +1113,69 @@
       "functions": "Fonctions",
       "noFunction": "Aucune fonction",
       "search": "Rechercher un nom..."
+    },
+    "equipment": {
+      "title": "Matériel",
+      "stock": "Stock",
+      "loans": "Prêts",
+      "ratesTitle": "Tarifs",
+      "add": "Ajouter du matériel",
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "saved": "Enregistré",
+      "saveFailed": "Échec de l'enregistrement",
+      "empty": "Aucun matériel enregistré.",
+      "searchPlaceholder": "Rechercher du matériel …",
+      "filterActive": "Actif",
+      "filterAll": "Tous",
+      "name": "Désignation",
+      "namePlaceholder": "p.ex. Advance Alpha 7 – 26",
+      "type": "Type",
+      "size": "Taille",
+      "inventoryNumber": "Numéro d'inventaire",
+      "condition": "État",
+      "purchaseDate": "Date d'achat",
+      "nextCheck": "Prochain contrôle",
+      "notes": "Notes",
+      "retire": "Retirer",
+      "retireConfirm": "Vraiment retirer ce matériel ?",
+      "retired": "Retiré",
+      "reactivate": "Remettre en stock",
+      "lend": "Prêter",
+      "lendTitle": "Prêter {{name}}",
+      "takeBack": "Reprendre",
+      "assigned": "Matériel prêté",
+      "returned": "Matériel repris",
+      "person": "Personne",
+      "choosePerson": "Choisir une personne",
+      "from": "Prêté le",
+      "until": "Retour jusqu'au",
+      "due": "jusqu'au",
+      "lentTo": "Prêté à {{name}}",
+      "noLoans": "Aucun prêt enregistré.",
+      "returnedOn": "Rendu le",
+      "types": {
+        "glider": "Voile",
+        "harness": "Sellette",
+        "reserve": "Secours",
+        "helmet": "Casque",
+        "radio": "Radio",
+        "vario": "Vario",
+        "other": "Autre"
+      },
+      "status": {
+        "in_stock": "En stock",
+        "assigned": "Prêté",
+        "maintenance": "Service",
+        "retired": "Retiré"
+      },
+      "rates": {
+        "travel_per_km": "Frais de route par km",
+        "rental_per_day": "Location matériel par jour",
+        "rental_per_week": "Location matériel par semaine",
+        "launch_leader_per_day": "Crédit chef de décollage par jour"
+      },
+      "ratesHint": "Ces montants sont modifiables à tout moment. Ils servent au décompte et aux crédits."
     }
   },
   "search": {

@@ -309,11 +309,37 @@
       "lecture": "Location, speaker & topic"
     },
     "placeholders": {
-      "height_flight": { "title": "e.g. Altitude flight Interlaken", "topic": "e.g. Roll and pitch", "travel": "e.g. Bus returns to Bern in the evening.", "description": "" },
-      "basic_course": { "title": "e.g. September basic course", "location": "e.g. Lehn training slope", "topic": "e.g. Launch preparation and ground handling", "material": "e.g. Helmet, gloves and sturdy shoes", "description": "Additional course information" },
-      "experienced": { "title": "e.g. Experienced thermal day", "location": "e.g. Interlaken", "level": "e.g. Licensed, confident reverse launches", "description": "Program and important notes" },
-      "camp_air": { "title": "e.g. Camp’Air Annecy", "location": "Destination, accommodation or meeting point", "travel": "Travel, luggage and transport", "description": "Daily program and further information" },
-      "lecture": { "title": "e.g. Flight meteorology lecture", "location": "Venue", "topic": "Lecture topic", "description": "Description and further information" }
+      "height_flight": {
+        "title": "e.g. Altitude flight Interlaken",
+        "topic": "e.g. Roll and pitch",
+        "travel": "e.g. Bus returns to Bern in the evening.",
+        "description": ""
+      },
+      "basic_course": {
+        "title": "e.g. September basic course",
+        "location": "e.g. Lehn training slope",
+        "topic": "e.g. Launch preparation and ground handling",
+        "material": "e.g. Helmet, gloves and sturdy shoes",
+        "description": "Additional course information"
+      },
+      "experienced": {
+        "title": "e.g. Experienced thermal day",
+        "location": "e.g. Interlaken",
+        "level": "e.g. Licensed, confident reverse launches",
+        "description": "Program and important notes"
+      },
+      "camp_air": {
+        "title": "e.g. Camp’Air Annecy",
+        "location": "Destination, accommodation or meeting point",
+        "travel": "Travel, luggage and transport",
+        "description": "Daily program and further information"
+      },
+      "lecture": {
+        "title": "e.g. Flight meteorology lecture",
+        "location": "Venue",
+        "topic": "Lecture topic",
+        "description": "Description and further information"
+      }
     },
     "heightFlightFormSubtitle": "Quick planning and ready-to-send message",
     "heightFlightBasics": "Event",
@@ -1087,6 +1113,69 @@
       "functions": "Functions",
       "noFunction": "No function",
       "search": "Search name..."
+    },
+    "equipment": {
+      "title": "Equipment",
+      "stock": "Inventory",
+      "loans": "Loans",
+      "ratesTitle": "Rates",
+      "add": "Add equipment",
+      "edit": "Edit",
+      "save": "Save",
+      "saved": "Saved",
+      "saveFailed": "Saving failed",
+      "empty": "No equipment yet.",
+      "searchPlaceholder": "Search equipment …",
+      "filterActive": "Active",
+      "filterAll": "All",
+      "name": "Name",
+      "namePlaceholder": "e.g. Advance Alpha 7 – 26",
+      "type": "Type",
+      "size": "Size",
+      "inventoryNumber": "Inventory number",
+      "condition": "Condition",
+      "purchaseDate": "Purchase date",
+      "nextCheck": "Next check",
+      "notes": "Notes",
+      "retire": "Retire",
+      "retireConfirm": "Really retire this item?",
+      "retired": "Retired",
+      "reactivate": "Put back in stock",
+      "lend": "Hand out",
+      "lendTitle": "Hand out {{name}}",
+      "takeBack": "Take back",
+      "assigned": "Equipment handed out",
+      "returned": "Equipment returned",
+      "person": "Person",
+      "choosePerson": "Choose person",
+      "from": "Handed out on",
+      "until": "Return by",
+      "due": "until",
+      "lentTo": "Lent to {{name}}",
+      "noLoans": "No loans yet.",
+      "returnedOn": "Returned on",
+      "types": {
+        "glider": "Glider",
+        "harness": "Harness",
+        "reserve": "Reserve",
+        "helmet": "Helmet",
+        "radio": "Radio",
+        "vario": "Vario",
+        "other": "Other"
+      },
+      "status": {
+        "in_stock": "In stock",
+        "assigned": "Handed out",
+        "maintenance": "Service",
+        "retired": "Retired"
+      },
+      "rates": {
+        "travel_per_km": "Travel cost per km",
+        "rental_per_day": "Equipment rental per day",
+        "rental_per_week": "Equipment rental per week",
+        "launch_leader_per_day": "Launch leader credit per day"
+      },
+      "ratesHint": "You can change these amounts anytime. They are used for billing and credits."
     }
   },
   "search": {
