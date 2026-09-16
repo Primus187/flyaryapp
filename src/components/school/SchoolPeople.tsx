@@ -279,8 +279,11 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
               <Select value={editLevel || "__none__"} onValueChange={(v) => setEditLevel(v === "__none__" ? "" : v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">—</SelectItem>
-                  {TRAINING_LEVELS.map((l) => (
+                   <SelectItem value="__none__">—</SelectItem>
+                   {editLevel && !(TRAINING_LEVELS as readonly string[]).includes(editLevel) && (
+                     <SelectItem value={editLevel}>{editLevel}</SelectItem>
+                   )}
+                   {TRAINING_LEVELS.map((l) => (
                     <SelectItem key={l} value={l}>{t(`school.levels.${l}`)}</SelectItem>
                   ))}
                 </SelectContent>
