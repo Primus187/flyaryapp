@@ -331,11 +331,34 @@ export default function EventDetail() {
       {/* Briefing tasks & maneuvers */}
       <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
 
+      {/* Program, staff, carpools */}
+      <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
+      <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
+      <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
+
       {/* Participants */}
       <div>
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("events.participants")}</h2>
-        {signups.filter(s => s.signed_up).length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
-          <div className="space-y-1">{signups.filter(s => s.signed_up).map(s => (<Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /><span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span></CardContent></Card>))}</div>
+        {confirmedSignups.length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
+          <div className="space-y-1">{confirmedSignups.map(s => (
+            <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
+              {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
+              {isStaff && (
+                <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 shrink-0" onClick={() => toggleSchoolConfirm(s)}>
+                  {s.confirmed_by_school ? t("events.unconfirm") : t("events.confirm")}
+                </Button>
+              )}
+            </CardContent></Card>))}</div>
+        )}
+        {waitlistSignups.length > 0 && (
+          <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
+          <div className="space-y-1">{waitlistSignups.map(s => (
+            <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
+              <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
+            </CardContent></Card>))}</div></>
         )}
         {signups.filter(s => !s.signed_up).length > 0 && (
           <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4">{t("events.unregistered")}</h2><div className="space-y-1">{signups.filter(s => !s.signed_up).map(s => (<Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2"><XCircle className="h-4 w-4 text-muted-foreground shrink-0" /><span className="text-sm text-muted-foreground">{profiles[s.user_id] || t("events.pilot")}</span></CardContent></Card>))}</div></>
