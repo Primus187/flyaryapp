@@ -61,6 +61,9 @@ export default function EventDetail() {
       if (members) {
         const me = members.find((m: any) => m.user_id === user.id);
         setIsAdmin(me?.role === "admin");
+        const { data: myFuncs } = await supabase.from("group_member_functions" as any).select("function").eq("group_id", ev.group_id).eq("user_id", user.id);
+        const staffRoles = ((myFuncs as any[]) || []).map((f) => f.function);
+        setIsStaff(me?.role === "admin" || staffRoles.includes("instructor") || staffRoles.includes("school_lead"));
         const allUserIds = [...new Set([...(sups || []).map((s: any) => s.user_id), ...members.map(m => m.user_id)])];
         if (allUserIds.length > 0) {
           const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allUserIds);
@@ -153,17 +156,33 @@ export default function EventDetail() {
     toast({ title: t("events.unpublishedFromFeed") });
   };
 
+  const refetchSignups = async () => {
+    if (!id) return;
+    const { data: sups } = await supabase.from("event_signups").select("*").eq("event_id", id);
+    setSignups(sups || []);
+  };
+
   const toggleSignup = async () => {
     if (!user || !id) return;
     const existing = signups.find(s => s.user_id === user.id);
+    let error: any = null;
     if (existing) {
       const newVal = !existing.signed_up;
-      await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id);
-      setSignups(prev => prev.map(s => s.user_id === user.id ? { ...s, signed_up: newVal } : s));
+      ({ error } = await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id));
     } else {
-      await supabase.from("event_signups").insert({ event_id: id, user_id: user.id, signed_up: true });
-      setSignups(prev => [...prev, { event_id: id, user_id: user.id, signed_up: true }]);
+      ({ error } = await supabase.from("event_signups").insert({ event_id: id, user_id: user.id, signed_up: true }));
     }
+    if (error) {
+      toast({ title: t("common.error"), description: error.message.includes("deadline") ? t("events.deadlinePassed") : error.message, variant: "destructive" });
+      return;
+    }
+    await refetchSignups();
+  };
+
+  const toggleSchoolConfirm = async (signup: any) => {
+    if (!id) return;
+    await supabase.from("event_signups").update({ confirmed_by_school: !signup.confirmed_by_school, updated_at: new Date().toISOString() } as any).eq("id", signup.id);
+    await refetchSignups();
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
