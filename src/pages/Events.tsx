@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import EmptyState from "@/components/EmptyState";
 
 interface Group { id: string; name: string; }
-interface EventRow { id: string; group_id: string; title: string; status: string; event_date: string; event_type: string | null; meeting_point: string | null; max_participants: number | null; signup_deadline: string | null; groups: { name: string } | null; }
+interface EventRow { id: string; group_id: string; title: string; status: string; event_date: string; event_type: string | null; event_category: string | null; meeting_point: string | null; max_participants: number | null; signup_deadline: string | null; groups: { name: string } | null; }
 interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
 
 function EventsSkeleton() {
@@ -58,7 +58,7 @@ export default function Events() {
   useEffect(() => {
     if (!user || groups.length === 0) return;
     const fetchEvents = async () => {
-      let query = supabase.from("flight_events").select("id, group_id, title, status, event_date, event_type, meeting_point, max_participants, signup_deadline, groups(name)").order("event_date", { ascending: true });
+      let query = supabase.from("flight_events").select("id, group_id, title, status, event_date, event_type, event_category, meeting_point, max_participants, signup_deadline, groups(name)").order("event_date", { ascending: true });
       if (selectedGroup !== "all") query = query.eq("group_id", selectedGroup);
       const { data } = await query; if (data) setEvents(data as any);
       const eventIds = (data || []).map((e: any) => e.id);
@@ -136,7 +136,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, t, locale, pa
         <div className="flex items-start justify-between gap-2" onClick={onNavigate}>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5"><p className="font-medium text-sm truncate">{event.title}</p><Badge className={`text-[10px] shrink-0 ${statusColor}`}>{statusLabel}</Badge></div>
-            <p className="text-xs text-muted-foreground">{new Date(event.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{event.event_type && ` · ${event.event_type}`}{event.groups?.name && ` · ${event.groups.name}`}</p>
+            <p className="text-xs text-muted-foreground">{new Date(event.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{event.event_category && ` · ${t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}`}{event.groups?.name && ` · ${event.groups.name}`}</p>
             {event.meeting_point && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {event.meeting_point}</p>}
             <p className="text-xs text-muted-foreground mt-0.5"><Users className="h-3 w-3 inline mr-1" />{totalSignedUp}{event.max_participants ? `/${event.max_participants}` : ""} {t("events.signedUp")}</p>
           </div>

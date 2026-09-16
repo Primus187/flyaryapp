@@ -257,7 +257,7 @@ export default function EventDetail() {
       {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
 
       {/* Announcement (push) + Telegram text copy - staff only */}
-      {isStaff && (
+      {isStaff && event.event_category === "height_flight" && (
         <>
           <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
           <TelegramTextGenerator event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
