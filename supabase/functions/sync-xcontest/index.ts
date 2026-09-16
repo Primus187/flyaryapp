@@ -260,13 +260,24 @@ Deno.serve(async (req) => {
     const password = atob(profile.xcontest_password_encrypted);
 
     // Login to XContest
-    const cookies = await loginToXContest(profile.xcontest_username, password);
-    if (!cookies) {
+    const login = await loginToXContest(profile.xcontest_username, password);
+    if ("failure" in login) {
+      if (login.failure === "antibot") {
+        return new Response(
+          JSON.stringify({
+            code: "xcontest_antibot",
+            error:
+              "XContest blockiert automatische Anmeldungen (Anti-Bot-Prüfung). Der Sync ist derzeit nicht möglich – bitte Flüge per IGC-Datei importieren.",
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       return new Response(
-        JSON.stringify({ error: "XContest login failed. Check your credentials." }),
+        JSON.stringify({ code: "xcontest_credentials", error: "XContest login failed. Check your credentials." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const cookies = login.cookies;
 
     // Fetch flight list
     const flightsUrl = `${XCONTEST_BASE}/world/en/flights/?filter[pilot]=${encodeURIComponent(profile.xcontest_username)}`;
