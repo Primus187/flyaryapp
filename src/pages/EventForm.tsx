@@ -189,18 +189,20 @@ export default function EventForm() {
   const handleSave = async () => {
     if (!user || !form.title || !form.event_date || !form.group_id) { toast({ title: t("events.fillRequired"), variant: "destructive" }); return; }
     setLoading(true);
-    const meetingPoint = serializeMeetingRows(meetingRows) || form.meeting_point;
+    const meetingPoint = isHeight ? serializeMeetingRows(meetingRows) : form.meeting_point;
     const eventDate = new Date(`${form.event_date}T${form.event_time || "09:00"}`).toISOString();
     const payload: any = {
       group_id: form.group_id, title: form.title, description: form.description || null,
       status: form.status, event_date: eventDate,
       signup_deadline: form.signup_deadline ? new Date(form.signup_deadline).toISOString() : null,
-      event_type: form.event_type || null, meeting_point: meetingPoint || null,
-      instructor: form.instructor || null, launch_helper: form.launch_helper || null,
+      event_type: isExperienced ? form.event_type || null : null, meeting_point: meetingPoint || null,
+      instructor: form.instructor || null, launch_helper: isHeight ? form.launch_helper || null : null,
       max_participants: form.max_participants ? parseInt(form.max_participants) : null,
-      chat_link: form.chat_link || null, created_by: user.id,
-      flight_area: form.flight_area || null, day_topic: form.day_topic || null,
-      departure_info: form.departure_info || null, flight_prep_notes: form.flight_prep_notes || null,
+      chat_link: null, created_by: user.id,
+      flight_area: isHeight || isExperienced ? form.flight_area || null : null,
+      day_topic: isHeight || isBasicCourse || isLecture ? form.day_topic || null : null,
+      departure_info: isHeight || isCamp ? form.departure_info || null : null,
+      flight_prep_notes: isHeight || isBasicCourse ? form.flight_prep_notes || null : null,
       event_category: form.event_category,
       end_date: isCamp && form.end_date ? form.end_date : null,
     };
@@ -337,7 +339,7 @@ export default function EventForm() {
         <CardContent className="p-4 space-y-4">
           <div className="flex items-center gap-2 border-b border-border/60 pb-3"><Users className="h-4 w-4 text-primary" /><Label className="text-sm font-semibold">{t("events.sections.team")}</Label></div>
           <div className={isHeight ? "grid grid-cols-2 gap-3" : "space-y-1.5"}>
-            <div className="space-y-1.5"><Label className="text-xs">{isLecture ? t("events.speaker") : t("events.lead")}</Label>{memberSelect(selectedMemberId(form.instructor), value => setNamedMember("instructor", value), "w-full")}</div>
+            <div className="space-y-1.5"><Label className="text-xs">{isLecture ? t("events.speaker") : isHeight ? t("events.instructor") : t("events.lead")}</Label>{memberSelect(selectedMemberId(form.instructor), value => setNamedMember("instructor", value), "w-full")}</div>
             {isHeight && <div className="space-y-1.5"><Label className="text-xs">{t("events.launchHelper")}</Label>{memberSelect(selectedMemberId(form.launch_helper), value => setNamedMember("launch_helper", value), "w-full")}</div>}
           </div>
           {isLecture && <div className="space-y-1.5"><Label className="text-xs">{t("events.externalSpeaker")}</Label><Input value={form.instructor} onChange={event => setForm(previous => ({ ...previous, instructor: event.target.value }))} placeholder={t("events.externalSpeakerPlaceholder")} /></div>}
