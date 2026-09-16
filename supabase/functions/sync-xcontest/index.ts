@@ -35,10 +35,14 @@ export function encryptPassword(password: string, key: string): string {
   return btoa(String.fromCharCode(...result));
 }
 
+type LoginResult =
+  | { cookies: string }
+  | { failure: "antibot" | "credentials" };
+
 async function loginToXContest(
   username: string,
   password: string
-): Promise<string | null> {
+): Promise<LoginResult> {
   // First GET the login page to get initial cookies
   const initRes = await fetch(`${XCONTEST_BASE}/world/en/`, {
     redirect: "manual",
