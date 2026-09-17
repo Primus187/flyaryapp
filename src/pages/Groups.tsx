@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +34,16 @@ export default function Groups() {
 
   const fetchGroups = async () => { if (!user) return; const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, description, invite_code, created_by, group_type)").eq("user_id", user.id); if (data) setGroups(data.map((m: any) => ({ ...m.groups, role: m.role }))); setLoading(false); };
   useEffect(() => { fetchGroups(); }, [user]);
+
+  useEffect(() => {
+    const code = searchParams.get("invite");
+    if (code) {
+      setInviteCode(code);
+      setJoinOpen(true);
+      searchParams.delete("invite");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const fetchMembers = async (groupId: string) => { if (members[groupId]) return; const { data } = await supabase.from("group_members").select("id, user_id, role, profiles(pilot_name)").eq("group_id", groupId) as any; if (data) setMembers(prev => ({ ...prev, [groupId]: data })); };
   const toggleExpand = (groupId: string) => { if (expandedGroup === groupId) setExpandedGroup(null); else { setExpandedGroup(groupId); fetchMembers(groupId); } };
