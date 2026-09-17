@@ -21,6 +21,7 @@ interface MemberRow { id: string; user_id: string; role: string; profiles: { pil
 export default function Groups() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [groups, setGroups] = useState<GroupRow[]>([]);
