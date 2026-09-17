@@ -46,6 +46,7 @@ export default function SchoolBilling({ groupId }: Props) {
   const [rates, setRates] = useState<Record<string, number>>({});
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [statementUser, setStatementUser] = useState<string | null>(null);
   const [form, setForm] = useState({
     user_id: "",
     item_type: "travel" as (typeof ITEM_TYPES)[number],
@@ -184,6 +185,34 @@ export default function SchoolBilling({ groupId }: Props) {
     a.download = `abrechnung-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const statementItems = statementUser ? items.filter((i) => i.user_id === statementUser) : [];
+  const statementOpen = statementItems.filter((i) => !i.paid_at).reduce((s, i) => s + (Number(i.amount) || 0), 0);
+
+  const printStatement = () => {
+    if (!statementUser) return;
+    const rows = statementItems
+      .map(
+        (i) => `<tr><td>${new Date(i.billing_date).toLocaleDateString("de-CH")}</td><td>${t(`school.billing.types.${i.item_type}`)}</td><td>${(i.description || "").replace(/</g, "&lt;")}</td><td style="text-align:right">${Number(i.quantity)}</td><td style="text-align:right">${Number(i.unit_amount).toFixed(2)}</td><td style="text-align:right">${Number(i.amount).toFixed(2)}</td><td>${i.paid_at ? new Date(i.paid_at).toLocaleDateString("de-CH") : ""}</td></tr>`
+      )
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${t("school.billing.statement")} – ${nameOf(statementUser)}</title>
+<style>body{font-family:system-ui,sans-serif;padding:24px;color:#111}h1{font-size:18px;margin:0 0 4px}p{font-size:12px;color:#555;margin:0 0 16px}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left}
+tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></head><body>
+<h1>${t("school.billing.statement")} – ${nameOf(statementUser)}</h1>
+<p>${new Date().toLocaleDateString("de-CH")}</p>
+<table><thead><tr><th>${t("school.billing.date")}</th><th>${t("school.billing.itemType")}</th><th>${t("school.billing.description")}</th><th>${t("school.billing.quantity")}</th><th>${t("school.billing.unitAmount")}</th><th>${t("school.billing.amount")}</th><th>${t("school.billing.tabPaid")}</th></tr></thead>
+<tbody>${rows}</tbody>
+<tfoot><tr><td colspan="5">${t("school.billing.openTotal")}</td><td style="text-align:right">${statementOpen.toFixed(2)}</td><td></td></tr></tfoot></table>
+</body></html>`;
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    w.print();
   };
 
   const ItemCard = ({ i }: { i: Item }) => (
