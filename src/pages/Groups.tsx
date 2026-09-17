@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Users, Copy, Link, LogOut, Trash2, ChevronDown, ChevronUp, GraduationCap, Mountain } from "lucide-react";
+import { Plus, Users, Copy, Link, LogOut, Trash2, ChevronDown, ChevronUp, GraduationCap, Mountain } from "lucide-react";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 

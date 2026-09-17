@@ -15,6 +15,8 @@ import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
 
 interface Flight {
   id: string;
@@ -212,13 +214,15 @@ export default function Flights() {
           <Loader2 className={cn("h-5 w-5 text-primary", refreshing && "animate-spin")} style={{ opacity: Math.min(1, pullDistance / 60) || (refreshing ? 1 : 0) }} />
         </div>
       )}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t("flights.title")}</h1>
-        <Button size="sm" onClick={() => navigate("/flights/new")}>
-          <Plus className="h-4 w-4 mr-1" />
-          {t("dashboard.newFlight")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("flights.title")}
+        action={
+          <Button size="sm" onClick={() => navigate("/flights/new")}>
+            <Plus className="h-4 w-4 mr-1" />
+            {t("dashboard.newFlight")}
+          </Button>
+        }
+      />
 
       <div className="flex gap-2">
         <div className="relative flex-1">

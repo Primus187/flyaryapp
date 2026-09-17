@@ -1,7 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 
