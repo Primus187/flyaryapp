@@ -1195,7 +1195,8 @@
       "quantity": "Quantité",
       "quantityHint": "Les pièces identiques sont numérotées automatiquement.",
       "ratesSuggestHint": "Aucun tarif défini. Appliquez les valeurs proposées et ajustez-les.",
-      "ratesSuggestApply": "Appliquer les valeurs proposées"
+      "ratesSuggestApply": "Appliquer les valeurs proposées",
+      "emptyHint": "Ajoute d'abord des ailes, sellettes ou casques au stock."
     },
     "stats": {
       "title": "Statistiques",
@@ -1235,7 +1236,8 @@
         "earned": "Jour de service",
         "payout": "Versement",
         "adjustment": "Correction"
-      }
+      },
+      "emptyHint": "Ajoute une journée de service pour créer du crédit."
     },
     "billing": {
       "title": "Facturation",
@@ -1271,7 +1273,9 @@
       },
       "statement": "Décompte",
       "statementHint": "Ouvert : {{amount}}",
-      "print": "Imprimer / PDF"
+      "print": "Imprimer / PDF",
+      "emptyHint": "Ajoute frais de route, location ou frais de cours.",
+      "emptyPaid": "Rien encore marqué comme payé."
     },
     "hub": {
       "operations": "Exploitation",

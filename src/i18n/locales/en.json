@@ -1195,7 +1195,8 @@
       "quantity": "Quantity",
       "quantityHint": "Identical items are numbered automatically.",
       "ratesSuggestHint": "No rates set yet. Apply suggested values and adjust them.",
-      "ratesSuggestApply": "Apply suggested values"
+      "ratesSuggestApply": "Apply suggested values",
+      "emptyHint": "Add gliders, harnesses or helmets to the inventory first."
     },
     "stats": {
       "title": "Statistics",
@@ -1235,7 +1236,8 @@
         "earned": "Duty day",
         "payout": "Payout",
         "adjustment": "Adjustment"
-      }
+      },
+      "emptyHint": "Add a duty day so credit builds up."
     },
     "billing": {
       "title": "Billing",
@@ -1271,7 +1273,9 @@
       },
       "statement": "Statement",
       "statementHint": "Open: {{amount}}",
-      "print": "Print / PDF"
+      "print": "Print / PDF",
+      "emptyHint": "Add travel costs, rental or course fees.",
+      "emptyPaid": "Nothing marked as paid yet."
     },
     "hub": {
       "operations": "Operations",
