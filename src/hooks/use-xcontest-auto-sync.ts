@@ -43,8 +43,8 @@ export function useXcontestAutoSync() {
             },
           }
         );
-        const data = await res.json();
-        if (res.ok && data.imported > 0) {
+        const data = await res.json().catch(() => ({} as any));
+        if (res.ok && data?.imported > 0) {
           toast({
             title: `XContest: ${data.imported} neue Flüge importiert`,
           });

@@ -316,8 +316,15 @@ export default function Profile() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || t("profile.xcontestError"));
+      const data = await res.json().catch(() => ({}));
+      if (data?.code === "xcontest_antibot") {
+        toast({
+          title: "XContest-Sync momentan nicht möglich",
+          description: data.error,
+        });
+        return;
+      }
+      if (!res.ok) throw new Error(data?.error || t("profile.xcontestError"));
       toast({ title: t("profile.xcontestSyncDone", { count: data.imported }) });
     } catch (e: any) {
       toast({ title: t("profile.xcontestError"), description: e.message, variant: "destructive" });
