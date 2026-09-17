@@ -254,7 +254,13 @@ export default function SchoolBilling({ groupId }: Props) {
             {perPerson.map((p) => (
               <Card key={p.user_id} className="border-border/60 bg-card/80 shadow-sm">
                 <CardContent className="p-3 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium truncate">{nameOf(p.user_id)}</p>
+                  <button
+                    type="button"
+                    className="text-sm font-medium truncate text-left flex-1 hover:underline"
+                    onClick={() => setStatementUser(p.user_id)}
+                  >
+                    {nameOf(p.user_id)}
+                  </button>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold tabular-nums">{p.total.toFixed(2)}</span>
                     <Button size="sm" variant="outline" onClick={() => openDialog(p.user_id)}>
