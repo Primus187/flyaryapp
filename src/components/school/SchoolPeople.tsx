@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown } from "lucide-react";
+import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const GROUP_FUNCTIONS = ["student", "licensed", "launch_helper", "instructor", "school_lead"] as const;
@@ -62,6 +62,8 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
   const [editFunctions, setEditFunctions] = useState<GroupFunction[]>([]);
   const [editLevel, setEditLevel] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignBusy, setAssignBusy] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
