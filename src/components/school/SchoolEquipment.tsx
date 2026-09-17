@@ -188,9 +188,18 @@ export default function SchoolEquipment({ groupId }: Props) {
       next_check_date: form.next_check_date || null,
       notes: form.notes.trim() || null,
     };
+    const count = Math.max(1, Math.min(50, parseInt(quantity, 10) || 1));
+    const rows =
+      count > 1
+        ? Array.from({ length: count }, (_, i) => ({
+            ...payload,
+            name: `${payload.name} ${i + 1}`,
+            inventory_number: payload.inventory_number ? `${payload.inventory_number}-${i + 1}` : null,
+          }))
+        : [payload];
     const { error } = editing
       ? await supabase.from("school_equipment" as any).update(payload).eq("id", editing.id)
-      : await supabase.from("school_equipment" as any).insert(payload as any);
+      : await supabase.from("school_equipment" as any).insert(rows as any);
     setSaving(false);
     if (error) {
       toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
