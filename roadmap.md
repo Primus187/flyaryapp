@@ -8,4 +8,4 @@
 - [x] 4b. SchoolDays und Events teilen eine gemeinsame Listenkomponente (EventListItem)
 - [x] 5. Flug erfassen in drei Schritten (Flug / Details / Medien) mit Zwischenspeichern
 - [x] 6b. Geführter Einstieg für neue Nutzer (eine empfohlene nächste Handlung)
-- [ ] 7. Feinschliff: Kontrast, Tippziele, Vorlesehilfen, weitere Seiten auf Grundmuster
+- [x] 7. Feinschliff: Flüge, Fluggebiete, Gruppen, Ausbildung, Statistiken, Rechtliches auf Grundmuster (PageContainer/PageHeader)

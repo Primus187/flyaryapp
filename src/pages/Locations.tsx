@@ -13,6 +13,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine, Plane } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
 
 export default function Locations() {
   const { user } = useAuth();
@@ -166,10 +168,11 @@ export default function Locations() {
   };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t("locations.title")}</h1>
-        <div className="flex gap-2">
+    <PageContainer>
+      <PageHeader
+        title={t("locations.title")}
+        action={
+          <>
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/map")}><MapPin className="h-4 w-4" /> {t("locations.map")}</Button>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
             <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> {t("locations.newLocation")}</Button></DialogTrigger>
@@ -190,8 +193,9 @@ export default function Locations() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
+          </>
+        }
+      />
       {backfillProgress && (
         <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
           <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -225,6 +229,6 @@ export default function Locations() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

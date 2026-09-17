@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
 
 interface Category {
   id: string;
@@ -101,8 +103,8 @@ export default function Training() {
   }
 
   return (
-    <div className="px-4 pt-6 pb-24 max-w-lg mx-auto space-y-4">
-      <h1 className="text-2xl font-bold">{t("training.title")}</h1>
+    <PageContainer className="pb-24">
+      <PageHeader title={t("training.title")} />
 
       {/* Level filter tabs */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
@@ -190,6 +192,6 @@ export default function Training() {
           );
         })}
       </Accordion>
-    </div>
+    </PageContainer>
   );
 }
