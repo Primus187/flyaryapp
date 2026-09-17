@@ -502,6 +502,15 @@ export default function SchoolEquipment({ groupId }: Props) {
               <Label>{t("school.equipment.name")}</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("school.equipment.namePlaceholder")} />
             </div>
+            {!editing && (
+              <div>
+                <Label>{t("school.equipment.quantity")}</Label>
+                <Input type="number" min={1} max={50} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                <p className="text-[11px] text-muted-foreground mt-1">{t("school.equipment.quantityHint")}</p>
+              </div>
+            )}
+            <div className="hidden">
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label>{t("school.equipment.type")}</Label>

@@ -122,6 +122,12 @@ export default function More() {
         <SectionHeading title={t("more.settings")} />
         <div className="space-y-2">
           <ListRow icon={Settings} label={t("more.settings")} onClick={() => navigate("/settings")} />
+          <ListRow
+            icon={MessageSquare}
+            label={t("more.feedback")}
+            description={t("more.feedbackHint")}
+            onClick={sendFeedback}
+          />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
           <ListRow icon={LogOut} label={t("more.signOut")} onClick={signOut} destructive />
         </div>
