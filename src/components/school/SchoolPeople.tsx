@@ -158,6 +158,27 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
     }
   };
 
+  const toggleFunction = async (p: PersonRow, f: GroupFunction) => {
+    const has = p.functions.includes(f);
+    setAssignBusy(`${p.userId}-${f}`);
+    const { error } = has
+      ? await supabase.from("group_member_functions" as any).delete()
+          .eq("group_id", groupId).eq("user_id", p.userId).eq("function", f)
+      : await supabase.from("group_member_functions" as any).insert({ group_id: groupId, user_id: p.userId, function: f } as any);
+    setAssignBusy(null);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
+    setPeople((prev) =>
+      prev.map((x) =>
+        x.userId === p.userId
+          ? { ...x, functions: has ? x.functions.filter((y) => y !== f) : [...x.functions, f] }
+          : x
+      )
+    );
+  };
+
   const handleExport = () => {
     const headers = [t("school.csv.name"), t("school.people.functions"), t("school.csv.level")];
     const rows = filtered.map((p) => [
