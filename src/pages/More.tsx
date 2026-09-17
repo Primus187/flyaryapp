@@ -9,7 +9,7 @@ import ListRow from "@/components/layout/ListRow";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import {
   User, Users, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList,
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare,
 } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
@@ -76,6 +76,18 @@ export default function More() {
   const { mode, canSwitch } = useRoleMode();
 
   const groups = mode === "school" ? schoolGroups : pilotGroups;
+
+  const sendFeedback = () => {
+    const info = [
+      `Version: ${(import.meta as any).env?.VITE_APP_VERSION || "dev"}`,
+      `Modus: ${mode}`,
+      `Seite: ${window.location.pathname}`,
+      `Gerät: ${navigator.userAgent}`,
+    ].join("\n");
+    const subject = encodeURIComponent("Flyary Feedback");
+    const body = encodeURIComponent(`\n\n---\n${info}\n`);
+    window.location.href = `mailto:tobias.a.bolliger@gmail.com?subject=${subject}&body=${body}`;
+  };
 
   return (
     <PageContainer className="space-y-6">
