@@ -18,6 +18,14 @@ const EQUIPMENT_TYPES = ["glider", "harness", "reserve", "helmet", "radio", "var
 const STATUSES = ["in_stock", "assigned", "maintenance", "retired"] as const;
 const RATE_KEYS = ["travel_per_km", "rental_per_day", "rental_per_week", "launch_leader_per_day"] as const;
 
+// Vorschlagswerte für den Start (können jederzeit angepasst werden)
+const SUGGESTED_RATES = [
+  { key: "travel_per_km", amount: 0.7, unit: "km" },
+  { key: "rental_per_day", amount: 30, unit: "day" },
+  { key: "rental_per_week", amount: 120, unit: "week" },
+  { key: "launch_leader_per_day", amount: 50, unit: "day" },
+];
+
 interface Equipment {
   id: string;
   name: string;
@@ -264,6 +272,26 @@ export default function SchoolEquipment({ groupId }: Props) {
       return;
     }
     toast({ title: t("school.equipment.returned") });
+    load();
+  };
+
+  const applySuggestedRates = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("school_rates" as any).insert(
+      SUGGESTED_RATES.map((r) => ({
+        group_id: groupId,
+        rate_key: r.key,
+        label: t(`school.equipment.rates.${r.key}`),
+        amount: r.amount,
+        unit: r.unit,
+      })) as any
+    );
+    setSaving(false);
+    if (error) {
+      toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: t("school.equipment.saved") });
     load();
   };
 
