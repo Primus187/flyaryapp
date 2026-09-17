@@ -9,3 +9,10 @@
 - [x] 5. Flug erfassen in drei Schritten (Flug / Details / Medien) mit Zwischenspeichern
 - [x] 6b. Geführter Einstieg für neue Nutzer (eine empfohlene nächste Handlung)
 - [x] 7. Feinschliff: Flüge, Fluggebiete, Gruppen, Ausbildung, Statistiken, Rechtliches auf Grundmuster (PageContainer/PageHeader)
+
+## Testlauf Vertical
+- [x] Einrichtungs-Übersicht, Einladung (Link/QR), Schnellzuweisung Funktionen
+- [x] Push-Hinweis mit Testnachricht
+- [x] Ansatz-Vorschläge + Material-Schnellerfassung (Anzahl)
+- [x] Feedback-Eintrag im Menü
+- [x] Ausbildungsstände vereinheitlicht (Migration)
