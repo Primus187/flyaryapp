@@ -36,7 +36,8 @@
     "saved": "Enregistré",
     "noPosition": "Pas de position",
     "retry": "Réessayer",
-    "sending": "Envoi..."
+    "sending": "Envoi...",
+    "later": "Plus tard"
   },
   "dashboard": {
     "title": "Flyary",
@@ -801,7 +802,9 @@
     "sectionCommunity": "Communauté",
     "stats": "Statistiques",
     "schoolHint": "Dates, personnes et administration",
-    "schoolOpen": "Ouvrir l'école"
+    "schoolOpen": "Ouvrir l'école",
+    "feedback": "Retour",
+    "feedbackHint": "Signaler une observation du test"
   },
   "flights_training": {
     "trainedManeuvers": "Manœuvres entraînées",
@@ -1123,7 +1126,9 @@
       "empty": "Aucun membre trouvé.",
       "functions": "Fonctions",
       "noFunction": "Aucune fonction",
-      "search": "Rechercher un nom..."
+      "search": "Rechercher un nom...",
+      "assignFunctions": "Attribuer les fonctions",
+      "assignHint": "Touchez une fonction pour l'ajouter ou la retirer."
     },
     "equipment": {
       "title": "Matériel",
@@ -1186,7 +1191,11 @@
         "rental_per_week": "Location matériel par semaine",
         "launch_leader_per_day": "Crédit chef de décollage par jour"
       },
-      "ratesHint": "Ces montants sont modifiables à tout moment. Ils servent au décompte et aux crédits."
+      "ratesHint": "Ces montants sont modifiables à tout moment. Ils servent au décompte et aux crédits.",
+      "quantity": "Quantité",
+      "quantityHint": "Les pièces identiques sont numérotées automatiquement.",
+      "ratesSuggestHint": "Aucun tarif défini. Appliquez les valeurs proposées et ajustez-les.",
+      "ratesSuggestApply": "Appliquer les valeurs proposées"
     },
     "stats": {
       "title": "Statistiques",
@@ -1265,6 +1274,24 @@
       "operations": "Exploitation",
       "people": "Équipe",
       "admin": "Administration"
+    },
+    "setup": {
+      "title": "Configurer l'école",
+      "progress": "{{done}} sur {{total}} terminé",
+      "functions": "Attribuer les fonctions (direction, moniteurs, aides au décollage)",
+      "rates": "Définir les tarifs",
+      "equipment": "Saisir le matériel",
+      "push": "Activer les notifications",
+      "event": "Créer le premier rendez-vous"
+    },
+    "invite": {
+      "title": "Inviter des personnes",
+      "hint": "Partagez le lien ou le QR code — installer l'app, créer un compte, rejoindre le groupe.",
+      "share": "Partager",
+      "copied": "Invitation copiée",
+      "qrAlt": "QR code d'invitation",
+      "shareText": "Rejoins notre école de vol sur Flyary :",
+      "steps": "Installer l'app → créer un compte → rejoindre le groupe"
     }
   },
   "search": {
@@ -1296,5 +1323,19 @@
     "goalTitle": "Définir un objectif",
     "goalDesc": "Un objectif garde ta saison en vue.",
     "goalCta": "Définir"
+  },
+  "push": {
+    "title": "Activer les notifications",
+    "desc": "Recevez les annonces des rendez-vous sur votre appareil.",
+    "enable": "Activer",
+    "enabled": "Notifications activées",
+    "denied": "Notifications refusées",
+    "activeTitle": "Notifications actives",
+    "activeDesc": "Envoyez-vous un message test pour vérifier.",
+    "test": "Envoyer un test",
+    "testTitle": "Test Flyary",
+    "testBody": "Les notifications fonctionnent.",
+    "testSent": "Message test envoyé",
+    "testFailed": "Impossible d'envoyer le message test"
   }
 }
