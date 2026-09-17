@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import NextStepCard from "@/components/NextStepCard";
+import PushPromptCard from "@/components/PushPromptCard";
 import EmptyState from "@/components/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
 import GoalCard from "@/components/GoalCard";
@@ -155,6 +156,9 @@ export default function Dashboard() {
         goalCount={goals.length}
         onAddGoal={() => setGoalDialogOpen(true)}
       />
+
+      <PushPromptCard />
+
 
       {/* Events */}
       {events.length > 0 && (
