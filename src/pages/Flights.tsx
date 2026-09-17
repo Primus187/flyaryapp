@@ -15,7 +15,6 @@ import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
-import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 
 interface Flight {
