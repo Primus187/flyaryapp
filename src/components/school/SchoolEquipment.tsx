@@ -20,10 +20,10 @@ const RATE_KEYS = ["travel_per_km", "rental_per_day", "rental_per_week", "launch
 
 // Vorschlagswerte für den Start (können jederzeit angepasst werden)
 const SUGGESTED_RATES = [
-  { key: "travel_per_km", amount: 0.7, unit: "km" },
-  { key: "rental_per_day", amount: 30, unit: "day" },
-  { key: "rental_per_week", amount: 120, unit: "week" },
-  { key: "launch_leader_per_day", amount: 50, unit: "day" },
+  { key: "travel_per_km", amount: 0.7, unit: "CHF" },
+  { key: "rental_per_day", amount: 30, unit: "CHF" },
+  { key: "rental_per_week", amount: 120, unit: "CHF" },
+  { key: "launch_leader_per_day", amount: 50, unit: "CHF" },
 ];
 
 interface Equipment {
