@@ -435,6 +435,16 @@ export default function SchoolEquipment({ groupId }: Props) {
         {/* Ansätze */}
         <TabsContent value="rates" className="space-y-3 pt-3">
           <p className="text-xs text-muted-foreground">{t("school.equipment.ratesHint")}</p>
+          {rates.length === 0 && (
+            <Card className="border-border/60 bg-card/80 shadow-sm">
+              <CardContent className="p-3 space-y-2">
+                <p className="text-xs text-muted-foreground">{t("school.equipment.ratesSuggestHint")}</p>
+                <Button size="sm" className="w-full" onClick={applySuggestedRates} disabled={saving}>
+                  {t("school.equipment.ratesSuggestApply")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           {RATE_KEYS.map((key) => {
             const existing = rates.find((r) => r.rate_key === key);
             return <RateRow key={key} rateKey={key} existing={existing} onSave={saveRate} />;
