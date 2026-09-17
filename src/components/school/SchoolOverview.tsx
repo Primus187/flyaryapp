@@ -81,6 +81,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
             <p className="font-medium mt-1">{nextEvent.title}</p>
             <p className="text-sm text-muted-foreground">
               {new Date(nextEvent.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}
+              {nextSignups !== null ? ` · ${t("school.signupsCount", { count: nextSignups })}` : ""}
             </p>
             <Button size="sm" variant="outline" className="mt-2" onClick={() => navigate(`/events/${nextEvent.id}`)}>
               <Calendar className="h-3.5 w-3.5 mr-1" />
