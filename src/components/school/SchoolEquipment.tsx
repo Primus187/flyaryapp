@@ -87,6 +87,7 @@ export default function SchoolEquipment({ groupId }: Props) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [rates, setRates] = useState<Rate[]>([]);
+  const [quantity, setQuantity] = useState("1");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
 
@@ -171,6 +172,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       setEditing(null);
       setForm({ ...emptyForm });
     }
+    setQuantity("1");
     setFormOpen(true);
   };
 
