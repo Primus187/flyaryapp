@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Users, Copy, Link, LogOut, Trash2, ChevronDown, ChevronUp, GraduationCap, Mountain } from "lucide-react";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
 
 interface GroupRow { id: string; name: string; description: string | null; invite_code: string; created_by: string; group_type: string; role: string; }
 interface MemberRow { id: string; user_id: string; role: string; profiles: { pilot_name: string | null } | null; }
@@ -63,13 +65,17 @@ export default function Groups() {
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
-        <h1 className="text-xl font-bold tracking-tight flex-1">{t("groups.title")}</h1>
+    <PageContainer>
+      <PageHeader
+        title={t("groups.title")}
+        back
+        action={
+          <>
         <Dialog open={joinOpen} onOpenChange={setJoinOpen}><DialogTrigger asChild><Button size="sm" variant="outline" className="gap-1.5"><Link className="h-4 w-4" /> {t("groups.join")}</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>{t("groups.joinGroup")}</DialogTitle></DialogHeader><div className="space-y-3"><div className="space-y-1.5"><Label className="text-xs">{t("groups.inviteCode")}</Label><Input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder={t("groups.inviteCodePlaceholder")} /></div><Button className="w-full" onClick={handleJoin}>{t("groups.join")}</Button></div></DialogContent></Dialog>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}><DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> {t("groups.new")}</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>{t("groups.createGroup")}</DialogTitle></DialogHeader><div className="space-y-3"><div className="space-y-1.5"><Label className="text-xs">{t("groups.name")}</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t("groups.namePlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("groups.groupType")}</Label><Select value={newType} onValueChange={setNewType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pilot_group">{t("groups.pilotGroup")}</SelectItem><SelectItem value="school">{t("groups.school")}</SelectItem></SelectContent></Select></div><div className="space-y-1.5"><Label className="text-xs">{t("groups.description")}</Label><Input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder={t("common.optional")} /></div><Button className="w-full" onClick={handleCreate}>{t("common.create")}</Button></div></DialogContent></Dialog>
-      </div>
+          </>
+        }
+      />
       {groups.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground"><Users className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("groups.noGroups")}</p><p className="text-xs mt-1">{t("groups.noGroupsDesc")}</p></div>
       ) : (
@@ -103,6 +109,6 @@ export default function Groups() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

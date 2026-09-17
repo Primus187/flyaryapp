@@ -10,6 +10,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import RankedList from "@/components/stats/RankedList";
 import ActivityHeatmap from "@/components/stats/ActivityHeatmap";
+import PageContainer from "@/components/layout/PageContainer";
+import PageHeader from "@/components/layout/PageHeader";
 
 // Lazy-load Recharts-based charts (recharts is ~150 KB gzipped)
 const StatsBarChart = lazy(() => import("@/components/stats/StatsBarChart"));
@@ -172,11 +174,8 @@ export default function Stats() {
   const chartConfig = { flights: { label: t("stats.flights"), color: "hsl(var(--primary))" }, minutes: { label: "Min", color: "hsl(var(--primary) / 0.6)" } };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ChevronLeft className="h-5 w-5" /></Button>
-        <h1 className="text-xl font-bold tracking-tight">{t("stats.title")}</h1>
-      </div>
+    <PageContainer>
+      <PageHeader title={t("stats.title")} back />
 
       <Tabs value={mode} onValueChange={(v) => setMode(v as FilterMode)}>
         <TabsList className="w-full">
@@ -267,6 +266,6 @@ export default function Stats() {
       {(mode === "year" || mode === "all") && Object.keys(heatmapData.days).length > 0 && (
         <ActivityHeatmap title={`${t("stats.activityHeatmap")} ${heatmapData.year}`} year={heatmapData.year} days={heatmapData.days} />
       )}
-    </div>
+    </PageContainer>
   );
 }
