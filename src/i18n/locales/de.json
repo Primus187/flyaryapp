@@ -36,7 +36,8 @@
     "saved": "Gespeichert",
     "noPosition": "Keine Position",
     "retry": "Erneut versuchen",
-    "sending": "Senden..."
+    "sending": "Senden...",
+    "later": "Später"
   },
   "flights": {
     "title": "Flugbuch",
@@ -890,7 +891,9 @@
     "sectionCommunity": "Community",
     "stats": "Statistiken",
     "schoolHint": "Termine, Personen und Verwaltung der Schule",
-    "schoolOpen": "Flugschule öffnen"
+    "schoolOpen": "Flugschule öffnen",
+    "feedback": "Feedback",
+    "feedbackHint": "Beobachtung aus dem Testlauf melden"
   },
   "school": {
     "title": "Flugschule",
@@ -956,7 +959,9 @@
       "empty": "Keine Mitglieder gefunden.",
       "functions": "Funktionen",
       "noFunction": "Keine Funktion",
-      "search": "Name suchen..."
+      "search": "Name suchen...",
+      "assignFunctions": "Funktionen verteilen",
+      "assignHint": "Tippe auf eine Funktion, um sie zu setzen oder zu entfernen."
     },
     "equipment": {
       "title": "Material",
@@ -1019,7 +1024,11 @@
         "rental_per_week": "Materialmiete pro Woche",
         "launch_leader_per_day": "Startleiter-Guthaben pro Tag"
       },
-      "ratesHint": "Diese Beträge kannst du jederzeit anpassen. Sie werden für Abrechnung und Guthaben verwendet."
+      "ratesHint": "Diese Beträge kannst du jederzeit anpassen. Sie werden für Abrechnung und Guthaben verwendet.",
+      "quantity": "Anzahl",
+      "quantityHint": "Mehrere gleiche Stücke werden automatisch durchnummeriert.",
+      "ratesSuggestHint": "Noch keine Ansätze gesetzt. Übernimm Vorschlagswerte und passe sie an.",
+      "ratesSuggestApply": "Vorschlagswerte übernehmen"
     },
     "stats": {
       "title": "Statistiken",
@@ -1098,6 +1107,24 @@
       "operations": "Betrieb",
       "people": "Team",
       "admin": "Verwaltung"
+    },
+    "setup": {
+      "title": "Flugschule einrichten",
+      "progress": "{{done}} von {{total}} erledigt",
+      "functions": "Funktionen verteilen (Schulleitung, Fluglehrer, Starthelfer)",
+      "rates": "Ansätze setzen",
+      "equipment": "Material erfassen",
+      "push": "Mitteilungen aktivieren",
+      "event": "Ersten Termin erstellen"
+    },
+    "invite": {
+      "title": "Personen einladen",
+      "hint": "Link oder QR-Code teilen — App installieren, Konto anlegen, Gruppe beitreten.",
+      "share": "Teilen",
+      "copied": "Einladung kopiert",
+      "qrAlt": "QR-Code zur Einladung",
+      "shareText": "Tritt unserer Flugschule in Flyary bei:",
+      "steps": "App installieren → Konto anlegen → Gruppe beitreten"
     }
   },
   "feed": {
@@ -1306,5 +1333,19 @@
     "goalTitle": "Saisonziel setzen",
     "goalDesc": "Ein Ziel gibt dir den Überblick über deine Saison.",
     "goalCta": "Ziel setzen"
+  },
+  "push": {
+    "title": "Mitteilungen aktivieren",
+    "desc": "Erhalte Ankündigungen zu Terminen direkt auf dein Gerät.",
+    "enable": "Aktivieren",
+    "enabled": "Mitteilungen aktiviert",
+    "denied": "Mitteilungen wurden nicht erlaubt",
+    "activeTitle": "Mitteilungen sind aktiv",
+    "activeDesc": "Sende dir eine Testnachricht, um es zu prüfen.",
+    "test": "Testnachricht senden",
+    "testTitle": "Flyary Test",
+    "testBody": "Mitteilungen funktionieren.",
+    "testSent": "Testnachricht gesendet",
+    "testFailed": "Testnachricht konnte nicht gesendet werden"
   }
 }

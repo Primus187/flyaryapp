@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown } from "lucide-react";
+import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const GROUP_FUNCTIONS = ["student", "licensed", "launch_helper", "instructor", "school_lead"] as const;
@@ -62,6 +62,8 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
   const [editFunctions, setEditFunctions] = useState<GroupFunction[]>([]);
   const [editLevel, setEditLevel] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignBusy, setAssignBusy] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -156,6 +158,27 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
     }
   };
 
+  const toggleFunction = async (p: PersonRow, f: GroupFunction) => {
+    const has = p.functions.includes(f);
+    setAssignBusy(`${p.userId}-${f}`);
+    const { error } = has
+      ? await supabase.from("group_member_functions" as any).delete()
+          .eq("group_id", groupId).eq("user_id", p.userId).eq("function", f)
+      : await supabase.from("group_member_functions" as any).insert({ group_id: groupId, user_id: p.userId, function: f } as any);
+    setAssignBusy(null);
+    if (error) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
+    setPeople((prev) =>
+      prev.map((x) =>
+        x.userId === p.userId
+          ? { ...x, functions: has ? x.functions.filter((y) => y !== f) : [...x.functions, f] }
+          : x
+      )
+    );
+  };
+
   const handleExport = () => {
     const headers = [t("school.csv.name"), t("school.people.functions"), t("school.csv.level")];
     const rows = filtered.map((p) => [
@@ -213,6 +236,14 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
           <span className="hidden sm:inline">{t("school.csv.export")}</span>
         </Button>
       </div>
+
+      {canManage && (
+        <Button variant="secondary" size="sm" className="w-full gap-1.5" onClick={() => setAssignOpen(true)}>
+          <Users className="h-3.5 w-3.5" />
+          {t("school.people.assignFunctions")}
+        </Button>
+      )}
+
 
       {filtered.length === 0 && (
         <p className="text-center py-8 text-muted-foreground text-sm">{t("school.people.empty")}</p>
@@ -302,6 +333,43 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
               <Button variant="outline" onClick={() => setEditing(null)}>{t("common.cancel")}</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("school.people.assignFunctions")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">{t("school.people.assignHint")}</p>
+          <div className="space-y-3">
+            {people.map((p) => (
+              <div key={p.userId} className="space-y-1.5">
+                <p className="text-sm font-medium truncate">{p.pilotName || t("common.unknown")}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {GROUP_FUNCTIONS.map((f) => {
+                    const active = p.functions.includes(f);
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        disabled={assignBusy === `${p.userId}-${f}`}
+                        onClick={() => toggleFunction(p, f)}
+                        className={`rounded-full px-2.5 py-1 text-[11px] border transition-colors ${
+                          active
+                            ? "bg-primary text-primary-foreground border-transparent"
+                            : "bg-muted/40 text-muted-foreground border-border/60"
+                        }`}
+                      >
+                        {t(`school.functions.${f}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button className="w-full" onClick={() => setAssignOpen(false)}>{t("common.close")}</Button>
         </DialogContent>
       </Dialog>
     </div>

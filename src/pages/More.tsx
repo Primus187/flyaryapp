@@ -9,7 +9,7 @@ import ListRow from "@/components/layout/ListRow";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import {
   User, Users, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList,
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare,
 } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
@@ -77,6 +77,18 @@ export default function More() {
 
   const groups = mode === "school" ? schoolGroups : pilotGroups;
 
+  const sendFeedback = () => {
+    const info = [
+      `Version: ${(import.meta as any).env?.VITE_APP_VERSION || "dev"}`,
+      `Modus: ${mode}`,
+      `Seite: ${window.location.pathname}`,
+      `Gerät: ${navigator.userAgent}`,
+    ].join("\n");
+    const subject = encodeURIComponent("Flyary Feedback");
+    const body = encodeURIComponent(`\n\n---\n${info}\n`);
+    window.location.href = `mailto:tobias.a.bolliger@gmail.com?subject=${subject}&body=${body}`;
+  };
+
   return (
     <PageContainer className="space-y-6">
       <PageHeader title={t("more.title")} />
@@ -122,6 +134,12 @@ export default function More() {
         <SectionHeading title={t("more.settings")} />
         <div className="space-y-2">
           <ListRow icon={Settings} label={t("more.settings")} onClick={() => navigate("/settings")} />
+          <ListRow
+            icon={MessageSquare}
+            label={t("more.feedback")}
+            description={t("more.feedbackHint")}
+            onClick={sendFeedback}
+          />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
           <ListRow icon={LogOut} label={t("more.signOut")} onClick={signOut} destructive />
         </div>

@@ -18,6 +18,14 @@ const EQUIPMENT_TYPES = ["glider", "harness", "reserve", "helmet", "radio", "var
 const STATUSES = ["in_stock", "assigned", "maintenance", "retired"] as const;
 const RATE_KEYS = ["travel_per_km", "rental_per_day", "rental_per_week", "launch_leader_per_day"] as const;
 
+// Vorschlagswerte für den Start (können jederzeit angepasst werden)
+const SUGGESTED_RATES = [
+  { key: "travel_per_km", amount: 0.7, unit: "CHF" },
+  { key: "rental_per_day", amount: 30, unit: "CHF" },
+  { key: "rental_per_week", amount: 120, unit: "CHF" },
+  { key: "launch_leader_per_day", amount: 50, unit: "CHF" },
+];
+
 interface Equipment {
   id: string;
   name: string;
@@ -79,6 +87,7 @@ export default function SchoolEquipment({ groupId }: Props) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [rates, setRates] = useState<Rate[]>([]);
+  const [quantity, setQuantity] = useState("1");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
 
@@ -163,6 +172,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       setEditing(null);
       setForm({ ...emptyForm });
     }
+    setQuantity("1");
     setFormOpen(true);
   };
 
@@ -180,9 +190,18 @@ export default function SchoolEquipment({ groupId }: Props) {
       next_check_date: form.next_check_date || null,
       notes: form.notes.trim() || null,
     };
+    const count = Math.max(1, Math.min(50, parseInt(quantity, 10) || 1));
+    const rows =
+      count > 1
+        ? Array.from({ length: count }, (_, i) => ({
+            ...payload,
+            name: `${payload.name} ${i + 1}`,
+            inventory_number: payload.inventory_number ? `${payload.inventory_number}-${i + 1}` : null,
+          }))
+        : [payload];
     const { error } = editing
       ? await supabase.from("school_equipment" as any).update(payload).eq("id", editing.id)
-      : await supabase.from("school_equipment" as any).insert(payload as any);
+      : await supabase.from("school_equipment" as any).insert(rows as any);
     setSaving(false);
     if (error) {
       toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
@@ -264,6 +283,26 @@ export default function SchoolEquipment({ groupId }: Props) {
       return;
     }
     toast({ title: t("school.equipment.returned") });
+    load();
+  };
+
+  const applySuggestedRates = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("school_rates" as any).insert(
+      SUGGESTED_RATES.map((r) => ({
+        group_id: groupId,
+        rate_key: r.key,
+        label: t(`school.equipment.rates.${r.key}`),
+        amount: r.amount,
+        unit: r.unit,
+      })) as any
+    );
+    setSaving(false);
+    if (error) {
+      toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: t("school.equipment.saved") });
     load();
   };
 
@@ -435,6 +474,16 @@ export default function SchoolEquipment({ groupId }: Props) {
         {/* Ansätze */}
         <TabsContent value="rates" className="space-y-3 pt-3">
           <p className="text-xs text-muted-foreground">{t("school.equipment.ratesHint")}</p>
+          {rates.length === 0 && (
+            <Card className="border-border/60 bg-card/80 shadow-sm">
+              <CardContent className="p-3 space-y-2">
+                <p className="text-xs text-muted-foreground">{t("school.equipment.ratesSuggestHint")}</p>
+                <Button size="sm" className="w-full" onClick={applySuggestedRates} disabled={saving}>
+                  {t("school.equipment.ratesSuggestApply")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           {RATE_KEYS.map((key) => {
             const existing = rates.find((r) => r.rate_key === key);
             return <RateRow key={key} rateKey={key} existing={existing} onSave={saveRate} />;
@@ -452,6 +501,15 @@ export default function SchoolEquipment({ groupId }: Props) {
             <div>
               <Label>{t("school.equipment.name")}</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("school.equipment.namePlaceholder")} />
+            </div>
+            {!editing && (
+              <div>
+                <Label>{t("school.equipment.quantity")}</Label>
+                <Input type="number" min={1} max={50} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                <p className="text-[11px] text-muted-foreground mt-1">{t("school.equipment.quantityHint")}</p>
+              </div>
+            )}
+            <div className="hidden">
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>

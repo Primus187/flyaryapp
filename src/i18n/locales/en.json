@@ -36,7 +36,8 @@
     "saved": "Saved",
     "noPosition": "No position",
     "retry": "Retry",
-    "sending": "Sending..."
+    "sending": "Sending...",
+    "later": "Later"
   },
   "dashboard": {
     "title": "Flyary",
@@ -801,7 +802,9 @@
     "sectionCommunity": "Community",
     "stats": "Statistics",
     "schoolHint": "Events, people and administration",
-    "schoolOpen": "Open flight school"
+    "schoolOpen": "Open flight school",
+    "feedback": "Feedback",
+    "feedbackHint": "Report an observation from the test run"
   },
   "flights_training": {
     "trainedManeuvers": "Trained maneuvers",
@@ -1123,7 +1126,9 @@
       "empty": "No members found.",
       "functions": "Functions",
       "noFunction": "No function",
-      "search": "Search name..."
+      "search": "Search name...",
+      "assignFunctions": "Assign functions",
+      "assignHint": "Tap a function to add or remove it."
     },
     "equipment": {
       "title": "Equipment",
@@ -1186,7 +1191,11 @@
         "rental_per_week": "Equipment rental per week",
         "launch_leader_per_day": "Launch leader credit per day"
       },
-      "ratesHint": "You can change these amounts anytime. They are used for billing and credits."
+      "ratesHint": "You can change these amounts anytime. They are used for billing and credits.",
+      "quantity": "Quantity",
+      "quantityHint": "Identical items are numbered automatically.",
+      "ratesSuggestHint": "No rates set yet. Apply suggested values and adjust them.",
+      "ratesSuggestApply": "Apply suggested values"
     },
     "stats": {
       "title": "Statistics",
@@ -1265,6 +1274,24 @@
       "operations": "Operations",
       "people": "Team",
       "admin": "Administration"
+    },
+    "setup": {
+      "title": "Set up flight school",
+      "progress": "{{done}} of {{total}} done",
+      "functions": "Assign functions (school lead, instructors, launch helpers)",
+      "rates": "Set rates",
+      "equipment": "Add equipment",
+      "push": "Enable notifications",
+      "event": "Create first event"
+    },
+    "invite": {
+      "title": "Invite people",
+      "hint": "Share link or QR code — install app, create account, join group.",
+      "share": "Share",
+      "copied": "Invitation copied",
+      "qrAlt": "Invitation QR code",
+      "shareText": "Join our flight school on Flyary:",
+      "steps": "Install app → create account → join group"
     }
   },
   "search": {
@@ -1296,5 +1323,19 @@
     "goalTitle": "Set a season goal",
     "goalDesc": "A goal keeps your season in view.",
     "goalCta": "Set goal"
+  },
+  "push": {
+    "title": "Enable notifications",
+    "desc": "Get event announcements straight to your device.",
+    "enable": "Enable",
+    "enabled": "Notifications enabled",
+    "denied": "Notifications were not allowed",
+    "activeTitle": "Notifications are active",
+    "activeDesc": "Send yourself a test message to check.",
+    "test": "Send test message",
+    "testTitle": "Flyary test",
+    "testBody": "Notifications are working.",
+    "testSent": "Test message sent",
+    "testFailed": "Could not send test message"
   }
 }
