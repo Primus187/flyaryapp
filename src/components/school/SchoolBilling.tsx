@@ -393,6 +393,39 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!statementUser} onOpenChange={(o) => !o && setStatementUser(null)}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{statementUser ? nameOf(statementUser) : ""}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            {t("school.billing.statementHint", { amount: statementOpen.toFixed(2) })}
+          </p>
+          <div className="space-y-1.5">
+            {statementItems.map((i) => (
+              <div key={i.id} className="flex items-center justify-between gap-2 border-b border-border/50 pb-1.5">
+                <div className="min-w-0">
+                  <p className="text-sm truncate">
+                    {t(`school.billing.types.${i.item_type}`)}
+                    {i.description ? ` · ${i.description}` : ""}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(i.billing_date).toLocaleDateString("de-CH")}
+                    {i.paid_at ? ` · ${t("school.billing.paidOn", { date: new Date(i.paid_at).toLocaleDateString("de-CH") })}` : ""}
+                  </p>
+                </div>
+                <span className="text-sm font-semibold tabular-nums">{Number(i.amount).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={printStatement} disabled={statementItems.length === 0}>
+              {t("school.billing.print")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
