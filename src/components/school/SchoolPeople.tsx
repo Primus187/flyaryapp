@@ -17,6 +17,9 @@ import { useToast } from "@/hooks/use-toast";
 export const GROUP_FUNCTIONS = ["student", "licensed", "launch_helper", "instructor", "school_lead"] as const;
 export type GroupFunction = (typeof GROUP_FUNCTIONS)[number];
 
+// Im Team-Bereich werden nur Schulleitung, Fluglehrer und Starthelfer angezeigt
+const TEAM_FUNCTIONS: GroupFunction[] = ["school_lead", "instructor", "launch_helper"];
+
 const FUNCTION_ICONS: Record<GroupFunction, any> = {
   student: GraduationCap,
   licensed: ShieldCheck,
