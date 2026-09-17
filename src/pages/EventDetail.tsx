@@ -11,6 +11,7 @@ import EventChat from "@/components/EventChat";
 import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
 import EventCarpools from "@/components/EventCarpools";
+import EventAttendance from "@/components/school/EventAttendance";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -339,6 +340,17 @@ export default function EventDetail() {
       <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
       <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
       <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
+
+      {isStaff && (
+        <EventAttendance
+          eventId={id!}
+          groupId={event.group_id}
+          eventDate={event.event_date}
+          signups={confirmedSignups}
+          profiles={profiles}
+          onChanged={refetchSignups}
+        />
+      )}
 
       {/* Participants */}
       <div>

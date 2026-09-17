@@ -46,6 +46,7 @@ export default function SchoolBilling({ groupId }: Props) {
   const [rates, setRates] = useState<Record<string, number>>({});
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [statementUser, setStatementUser] = useState<string | null>(null);
   const [form, setForm] = useState({
     user_id: "",
     item_type: "travel" as (typeof ITEM_TYPES)[number],
@@ -186,6 +187,34 @@ export default function SchoolBilling({ groupId }: Props) {
     URL.revokeObjectURL(url);
   };
 
+  const statementItems = statementUser ? items.filter((i) => i.user_id === statementUser) : [];
+  const statementOpen = statementItems.filter((i) => !i.paid_at).reduce((s, i) => s + (Number(i.amount) || 0), 0);
+
+  const printStatement = () => {
+    if (!statementUser) return;
+    const rows = statementItems
+      .map(
+        (i) => `<tr><td>${new Date(i.billing_date).toLocaleDateString("de-CH")}</td><td>${t(`school.billing.types.${i.item_type}`)}</td><td>${(i.description || "").replace(/</g, "&lt;")}</td><td style="text-align:right">${Number(i.quantity)}</td><td style="text-align:right">${Number(i.unit_amount).toFixed(2)}</td><td style="text-align:right">${Number(i.amount).toFixed(2)}</td><td>${i.paid_at ? new Date(i.paid_at).toLocaleDateString("de-CH") : ""}</td></tr>`
+      )
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${t("school.billing.statement")} – ${nameOf(statementUser)}</title>
+<style>body{font-family:system-ui,sans-serif;padding:24px;color:#111}h1{font-size:18px;margin:0 0 4px}p{font-size:12px;color:#555;margin:0 0 16px}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left}
+tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></head><body>
+<h1>${t("school.billing.statement")} – ${nameOf(statementUser)}</h1>
+<p>${new Date().toLocaleDateString("de-CH")}</p>
+<table><thead><tr><th>${t("school.billing.date")}</th><th>${t("school.billing.itemType")}</th><th>${t("school.billing.description")}</th><th>${t("school.billing.quantity")}</th><th>${t("school.billing.unitAmount")}</th><th>${t("school.billing.amount")}</th><th>${t("school.billing.tabPaid")}</th></tr></thead>
+<tbody>${rows}</tbody>
+<tfoot><tr><td colspan="5">${t("school.billing.openTotal")}</td><td style="text-align:right">${statementOpen.toFixed(2)}</td><td></td></tr></tfoot></table>
+</body></html>`;
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    w.print();
+  };
+
   const ItemCard = ({ i }: { i: Item }) => (
     <Card className="border-border/60 bg-card/80 shadow-sm">
       <CardContent className="p-3 flex items-center justify-between gap-2">
@@ -254,7 +283,13 @@ export default function SchoolBilling({ groupId }: Props) {
             {perPerson.map((p) => (
               <Card key={p.user_id} className="border-border/60 bg-card/80 shadow-sm">
                 <CardContent className="p-3 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium truncate">{nameOf(p.user_id)}</p>
+                  <button
+                    type="button"
+                    className="text-sm font-medium truncate text-left flex-1 hover:underline"
+                    onClick={() => setStatementUser(p.user_id)}
+                  >
+                    {nameOf(p.user_id)}
+                  </button>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold tabular-nums">{p.total.toFixed(2)}</span>
                     <Button size="sm" variant="outline" onClick={() => openDialog(p.user_id)}>
@@ -355,6 +390,39 @@ export default function SchoolBilling({ groupId }: Props) {
           </div>
           <DialogFooter>
             <Button onClick={save} disabled={saving || !form.user_id}>{t("school.billing.save")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!statementUser} onOpenChange={(o) => !o && setStatementUser(null)}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{statementUser ? nameOf(statementUser) : ""}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            {t("school.billing.statementHint", { amount: statementOpen.toFixed(2) })}
+          </p>
+          <div className="space-y-1.5">
+            {statementItems.map((i) => (
+              <div key={i.id} className="flex items-center justify-between gap-2 border-b border-border/50 pb-1.5">
+                <div className="min-w-0">
+                  <p className="text-sm truncate">
+                    {t(`school.billing.types.${i.item_type}`)}
+                    {i.description ? ` · ${i.description}` : ""}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(i.billing_date).toLocaleDateString("de-CH")}
+                    {i.paid_at ? ` · ${t("school.billing.paidOn", { date: new Date(i.paid_at).toLocaleDateString("de-CH") })}` : ""}
+                  </p>
+                </div>
+                <span className="text-sm font-semibold tabular-nums">{Number(i.amount).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={printStatement} disabled={statementItems.length === 0}>
+              {t("school.billing.print")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

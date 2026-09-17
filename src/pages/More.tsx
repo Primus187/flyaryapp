@@ -9,7 +9,7 @@ import ListRow from "@/components/layout/ListRow";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import {
   User, Users, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare,
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell,
 } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
@@ -134,6 +134,12 @@ export default function More() {
         <SectionHeading title={t("more.settings")} />
         <div className="space-y-2">
           <ListRow icon={Settings} label={t("more.settings")} onClick={() => navigate("/settings")} />
+          <ListRow
+            icon={Bell}
+            label={t("push.pageTitle")}
+            description={t("push.pageSubtitle")}
+            onClick={() => navigate("/notifications")}
+          />
           <ListRow
             icon={MessageSquare}
             label={t("more.feedback")}
