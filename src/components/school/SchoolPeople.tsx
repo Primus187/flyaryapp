@@ -214,6 +214,14 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
         </Button>
       </div>
 
+      {canManage && (
+        <Button variant="secondary" size="sm" className="w-full gap-1.5" onClick={() => setAssignOpen(true)}>
+          <Users className="h-3.5 w-3.5" />
+          {t("school.people.assignFunctions")}
+        </Button>
+      )}
+
+
       {filtered.length === 0 && (
         <p className="text-center py-8 text-muted-foreground text-sm">{t("school.people.empty")}</p>
       )}
