@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, ClipboardList, Plus, Send } from "lucide-react";
+import SchoolSetupCard from "./SchoolSetupCard";
+import SchoolInvite from "./SchoolInvite";
 
 interface Props {
   groupId: string;
@@ -22,6 +24,9 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
 
   return (
     <div className="space-y-4">
+      <SchoolSetupCard groupId={groupId} />
+      <SchoolInvite groupId={groupId} />
+
       <div className="grid grid-cols-2 gap-3">
         {kpis.map(({ icon: Icon, label, value }) => (
           <Card key={label} className="border-0 shadow-sm">
