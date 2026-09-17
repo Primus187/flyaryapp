@@ -17,6 +17,9 @@ import { useToast } from "@/hooks/use-toast";
 export const GROUP_FUNCTIONS = ["student", "licensed", "launch_helper", "instructor", "school_lead"] as const;
 export type GroupFunction = (typeof GROUP_FUNCTIONS)[number];
 
+// Im Team-Bereich werden nur Schulleitung, Fluglehrer und Starthelfer angezeigt
+const TEAM_FUNCTIONS: GroupFunction[] = ["school_lead", "instructor", "launch_helper"];
+
 const FUNCTION_ICONS: Record<GroupFunction, any> = {
   student: GraduationCap,
   licensed: ShieldCheck,
@@ -92,19 +95,24 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
 
   useEffect(() => { load(); }, [groupId]);
 
+  const teamPeople = useMemo(
+    () => people.filter((p) => p.functions.some((f) => TEAM_FUNCTIONS.includes(f as any))),
+    [people]
+  );
+
   const counts = useMemo(() => {
     const c: Record<GroupFunction, number> = { student: 0, licensed: 0, launch_helper: 0, instructor: 0, school_lead: 0 };
-    people.forEach((p) => p.functions.forEach((f) => { c[f]++; }));
+    teamPeople.forEach((p) => p.functions.forEach((f) => { c[f]++; }));
     return c;
-  }, [people]);
+  }, [teamPeople]);
 
   const filtered = useMemo(() => {
-    return people.filter((p) => {
+    return teamPeople.filter((p) => {
       if (filter !== "all" && !p.functions.includes(filter)) return false;
       if (search.trim() && !p.pilotName.toLowerCase().includes(search.trim().toLowerCase())) return false;
       return true;
     });
-  }, [people, filter, search]);
+  }, [teamPeople, filter, search]);
 
   const openEdit = (p: PersonRow) => {
     setEditing(p);
@@ -175,8 +183,8 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
   return (
     <div className="space-y-3">
       {/* Counters */}
-      <div className="grid grid-cols-5 gap-1.5">
-        {GROUP_FUNCTIONS.map((f) => {
+      <div className="grid grid-cols-3 gap-1.5">
+        {TEAM_FUNCTIONS.map((f) => {
           const Icon = FUNCTION_ICONS[f];
           const active = filter === f;
           return (
