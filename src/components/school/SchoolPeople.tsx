@@ -183,8 +183,8 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
   return (
     <div className="space-y-3">
       {/* Counters */}
-      <div className="grid grid-cols-5 gap-1.5">
-        {GROUP_FUNCTIONS.map((f) => {
+      <div className="grid grid-cols-3 gap-1.5">
+        {TEAM_FUNCTIONS.map((f) => {
           const Icon = FUNCTION_ICONS[f];
           const active = filter === f;
           return (
