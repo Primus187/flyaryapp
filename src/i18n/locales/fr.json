@@ -1268,7 +1268,10 @@
         "purchase": "Achat de matériel",
         "course_fee": "Frais de cours",
         "other": "Autre"
-      }
+      },
+      "statement": "Décompte",
+      "statementHint": "Ouvert : {{amount}}",
+      "print": "Imprimer / PDF"
     },
     "hub": {
       "operations": "Exploitation",
@@ -1292,6 +1295,17 @@
       "qrAlt": "QR code d'invitation",
       "shareText": "Rejoins notre école de vol sur Flyary :",
       "steps": "Installer l'app → créer un compte → rejoindre le groupe"
+    },
+    "signupsCount": "{{count}} inscriptions",
+    "attendance": {
+      "title": "Présence",
+      "count": "{{count}} sur {{total}}",
+      "hint": "Cochez qui était présent. Cela crée les avoirs chef de décollage et les postes de facturation.",
+      "book": "Comptabiliser avoirs et postes",
+      "booked": "{{credits}} avoirs et {{items}} postes comptabilisés",
+      "nothingToBook": "Rien à comptabiliser – vérifiez les tarifs ou la présence.",
+      "alreadyBooked": "Déjà comptabilisé : {{credits}} avoirs, {{items}} postes",
+      "rentalDescription": "Location matériel journée de vol"
     }
   },
   "search": {
@@ -1336,6 +1350,20 @@
     "testTitle": "Test Flyary",
     "testBody": "Les notifications fonctionnent.",
     "testSent": "Message test envoyé",
-    "testFailed": "Impossible d'envoyer le message test"
+    "testFailed": "Impossible d'envoyer le message test",
+    "pageTitle": "Notifications",
+    "pageSubtitle": "Messages push pour les dates et annonces",
+    "unsupported": "Cet appareil ne prend pas en charge les notifications push.",
+    "disable": "Désactiver",
+    "howToTitle": "Comment ça marche",
+    "howToIphone": "iPhone/iPad : installez d’abord l’app via « Partager → Sur l’écran d’accueil », puis activez ici.",
+    "howToAndroid": "Android : activez dans le navigateur ou l’app installée et autorisez les notifications.",
+    "howToDesktop": "Ordinateur : activez et autorisez la demande du navigateur.",
+    "installHint": "Vous utilisez l’app dans le navigateur – installez-la pour des notifications fiables.",
+    "recipients": "Destinataires {{group}}",
+    "recipientsCount": "{{active}} sur {{total}} ont activé les notifications",
+    "statusOn": "actif",
+    "statusOff": "inactif",
+    "noRecipients": "Aucun membre trouvé."
   }
 }

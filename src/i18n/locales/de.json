@@ -1101,7 +1101,10 @@
         "purchase": "Materialkauf",
         "course_fee": "Kursgebühr",
         "other": "Sonstiges"
-      }
+      },
+      "statement": "Aufstellung",
+      "statementHint": "Offen: {{amount}}",
+      "print": "Drucken / PDF"
     },
     "hub": {
       "operations": "Betrieb",
@@ -1125,6 +1128,17 @@
       "qrAlt": "QR-Code zur Einladung",
       "shareText": "Tritt unserer Flugschule in Flyary bei:",
       "steps": "App installieren → Konto anlegen → Gruppe beitreten"
+    },
+    "signupsCount": "{{count}} Anmeldungen",
+    "attendance": {
+      "title": "Anwesenheit",
+      "count": "{{count}} von {{total}}",
+      "hint": "Häkchen setzen, wer am Flugtag da war. Daraus entstehen Startleiter-Guthaben und Abrechnungsposten.",
+      "book": "Guthaben & Posten verbuchen",
+      "booked": "{{credits}} Guthaben und {{items}} Posten verbucht",
+      "nothingToBook": "Nichts zu verbuchen – Ansätze prüfen oder Anwesenheit setzen.",
+      "alreadyBooked": "Bereits verbucht: {{credits}} Guthaben, {{items}} Posten",
+      "rentalDescription": "Materialmiete Flugtag"
     }
   },
   "feed": {
@@ -1346,6 +1360,20 @@
     "testTitle": "Flyary Test",
     "testBody": "Mitteilungen funktionieren.",
     "testSent": "Testnachricht gesendet",
-    "testFailed": "Testnachricht konnte nicht gesendet werden"
+    "testFailed": "Testnachricht konnte nicht gesendet werden",
+    "pageTitle": "Mitteilungen",
+    "pageSubtitle": "Push-Nachrichten für Termine und Ankündigungen",
+    "unsupported": "Dieses Gerät unterstützt keine Push-Nachrichten.",
+    "disable": "Deaktivieren",
+    "howToTitle": "So funktioniert es",
+    "howToIphone": "iPhone/iPad: App zuerst über „Teilen → Zum Home-Bildschirm\" installieren, dann hier aktivieren.",
+    "howToAndroid": "Android: Im Browser oder in der installierten App aktivieren und Mitteilungen erlauben.",
+    "howToDesktop": "Computer: Aktivieren und im Browser die Nachfrage erlauben.",
+    "installHint": "Du nutzt die App im Browser – installiere sie für zuverlässige Mitteilungen.",
+    "recipients": "Empfänger {{group}}",
+    "recipientsCount": "{{active}} von {{total}} haben Mitteilungen aktiv",
+    "statusOn": "aktiv",
+    "statusOff": "inaktiv",
+    "noRecipients": "Keine Mitglieder gefunden."
   }
 }

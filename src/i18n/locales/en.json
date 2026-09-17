@@ -1268,7 +1268,10 @@
         "purchase": "Equipment purchase",
         "course_fee": "Course fee",
         "other": "Other"
-      }
+      },
+      "statement": "Statement",
+      "statementHint": "Open: {{amount}}",
+      "print": "Print / PDF"
     },
     "hub": {
       "operations": "Operations",
@@ -1292,6 +1295,17 @@
       "qrAlt": "Invitation QR code",
       "shareText": "Join our flight school on Flyary:",
       "steps": "Install app → create account → join group"
+    },
+    "signupsCount": "{{count}} sign-ups",
+    "attendance": {
+      "title": "Attendance",
+      "count": "{{count}} of {{total}}",
+      "hint": "Tick who attended the flying day. This creates launch leader credits and billing items.",
+      "book": "Book credits & items",
+      "booked": "{{credits}} credits and {{items}} items booked",
+      "nothingToBook": "Nothing to book – check rates or set attendance.",
+      "alreadyBooked": "Already booked: {{credits}} credits, {{items}} items",
+      "rentalDescription": "Equipment rental flying day"
     }
   },
   "search": {
@@ -1336,6 +1350,20 @@
     "testTitle": "Flyary test",
     "testBody": "Notifications are working.",
     "testSent": "Test message sent",
-    "testFailed": "Could not send test message"
+    "testFailed": "Could not send test message",
+    "pageTitle": "Notifications",
+    "pageSubtitle": "Push messages for events and announcements",
+    "unsupported": "This device does not support push messages.",
+    "disable": "Disable",
+    "howToTitle": "How it works",
+    "howToIphone": "iPhone/iPad: install the app first via “Share → Add to Home Screen”, then enable here.",
+    "howToAndroid": "Android: enable in the browser or installed app and allow notifications.",
+    "howToDesktop": "Computer: enable and allow the browser prompt.",
+    "installHint": "You are using the app in a browser – install it for reliable notifications.",
+    "recipients": "Recipients {{group}}",
+    "recipientsCount": "{{active}} of {{total}} have notifications enabled",
+    "statusOn": "on",
+    "statusOff": "off",
+    "noRecipients": "No members found."
   }
 }
