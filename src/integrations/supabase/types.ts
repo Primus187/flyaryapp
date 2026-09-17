@@ -617,6 +617,7 @@ export type Database = {
       }
       event_signups: {
         Row: {
+          attended: boolean
           confirmed_by_school: boolean
           event_id: string
           id: string
@@ -627,6 +628,7 @@ export type Database = {
           waitlist_position: number | null
         }
         Insert: {
+          attended?: boolean
           confirmed_by_school?: boolean
           event_id: string
           id?: string
@@ -637,6 +639,7 @@ export type Database = {
           waitlist_position?: number | null
         }
         Update: {
+          attended?: boolean
           confirmed_by_school?: boolean
           event_id?: string
           id?: string
@@ -2159,6 +2162,14 @@ export type Database = {
       check_and_award_badges_for_user: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      get_group_push_status: {
+        Args: { _group_id: string }
+        Returns: {
+          enabled: boolean
+          pilot_name: string
+          user_id: string
+        }[]
       }
       get_own_profile_private: {
         Args: never
