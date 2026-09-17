@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import EmptyState from "@/components/layout/EmptyState";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -381,7 +382,7 @@ export default function SchoolEquipment({ groupId }: Props) {
           </Button>
 
           {filteredEquipment.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">{t("school.equipment.empty")}</p>
+            <EmptyState icon={Package} title={t("school.equipment.empty")} description={t("school.equipment.emptyHint")} actionLabel={t("school.equipment.add")} onAction={() => openForm()} />
           ) : (
             <div className="space-y-2">
               {filteredEquipment.map((item) => {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import EmptyState from "@/components/layout/EmptyState";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -310,12 +311,12 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
         </TabsList>
         <TabsContent value="open" className="space-y-2 pt-3">
           {openItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">{t("school.billing.empty")}</p>
+            <EmptyState icon={Receipt} title={t("school.billing.empty")} description={t("school.billing.emptyHint")} actionLabel={t("school.billing.add")} onAction={() => openDialog()} />
           ) : openItems.map((i) => <ItemCard key={i.id} i={i} />)}
         </TabsContent>
         <TabsContent value="paid" className="space-y-2 pt-3">
           {paidItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">{t("school.billing.empty")}</p>
+            <EmptyState icon={Receipt} title={t("school.billing.emptyPaid")} />
           ) : paidItems.map((i) => <ItemCard key={i.id} i={i} />)}
         </TabsContent>
       </Tabs>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import EmptyState from "@/components/layout/EmptyState";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -179,7 +180,7 @@ export default function SchoolCredits({ groupId }: Props) {
       <div>
         <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("school.credits.balances")}</h2>
         {balances.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">{t("school.credits.empty")}</p>
+          <EmptyState icon={Wallet} title={t("school.credits.empty")} description={t("school.credits.emptyHint")} actionLabel={t("school.credits.add")} onAction={() => openDialog()} />
         ) : (
           <div className="space-y-2">
             {balances.map((b) => (

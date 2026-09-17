@@ -1028,7 +1028,8 @@
       "quantity": "Anzahl",
       "quantityHint": "Mehrere gleiche Stücke werden automatisch durchnummeriert.",
       "ratesSuggestHint": "Noch keine Ansätze gesetzt. Übernimm Vorschlagswerte und passe sie an.",
-      "ratesSuggestApply": "Vorschlagswerte übernehmen"
+      "ratesSuggestApply": "Vorschlagswerte übernehmen",
+      "emptyHint": "Nimm zuerst Schirme, Gurtzeuge oder Helme ins Lager auf."
     },
     "stats": {
       "title": "Statistiken",
@@ -1068,7 +1069,8 @@
         "earned": "Einsatztag",
         "payout": "Auszahlung",
         "adjustment": "Korrektur"
-      }
+      },
+      "emptyHint": "Buche einen Einsatztag, damit Guthaben entsteht."
     },
     "billing": {
       "title": "Abrechnung",
@@ -1104,7 +1106,9 @@
       },
       "statement": "Aufstellung",
       "statementHint": "Offen: {{amount}}",
-      "print": "Drucken / PDF"
+      "print": "Drucken / PDF",
+      "emptyHint": "Erfasse Fahrtkosten, Miete oder Kursgebühren.",
+      "emptyPaid": "Noch nichts als bezahlt verbucht."
     },
     "hub": {
       "operations": "Betrieb",

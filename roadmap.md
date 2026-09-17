@@ -24,4 +24,4 @@
 - [x] 4. Ausbildungsstand im Team änderbar (RPC im Personen-Dialog)
 - [x] 5. Flugschul-Startseite mit offenen Beträgen und Anmeldezahl
 - [x] 6. Abrechnung pro Person als Aufstellung mit Druck/PDF
-- [ ] 7. Feinschliff Leerzustände/Ladezustände (offen)
+- [x] 7. Feinschliff: einheitlicher Leerzustand (EmptyState) in Material, Guthaben, Abrechnung
