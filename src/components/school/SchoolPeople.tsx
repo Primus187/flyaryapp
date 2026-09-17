@@ -335,6 +335,43 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("school.people.assignFunctions")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">{t("school.people.assignHint")}</p>
+          <div className="space-y-3">
+            {people.map((p) => (
+              <div key={p.userId} className="space-y-1.5">
+                <p className="text-sm font-medium truncate">{p.pilotName || t("common.unknown")}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {GROUP_FUNCTIONS.map((f) => {
+                    const active = p.functions.includes(f);
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        disabled={assignBusy === `${p.userId}-${f}`}
+                        onClick={() => toggleFunction(p, f)}
+                        className={`rounded-full px-2.5 py-1 text-[11px] border transition-colors ${
+                          active
+                            ? "bg-primary text-primary-foreground border-transparent"
+                            : "bg-muted/40 text-muted-foreground border-border/60"
+                        }`}
+                      >
+                        {t(`school.functions.${f}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button className="w-full" onClick={() => setAssignOpen(false)}>{t("common.close")}</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
