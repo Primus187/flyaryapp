@@ -68,7 +68,7 @@ export default function EventForm() {
   const [form, setForm] = useState({
     group_id: "", title: "", description: "", status: "announced", event_date: "", event_time: "09:00",
     signup_deadline: "", event_type: "", meeting_point: "", instructor: "", launch_helper: "",
-    max_participants: "", chat_link: "", flight_area: "", day_topic: "", departure_info: "", flight_prep_notes: "",
+    max_participants: "", flight_area: "", day_topic: "", departure_info: "", flight_prep_notes: "",
     event_category: "height_flight" as EventCategory, end_date: "",
   });
 
@@ -139,7 +139,7 @@ export default function EventForm() {
         signup_deadline: data.signup_deadline ? new Date(data.signup_deadline).toISOString().split("T")[0] : "",
         event_type: data.event_type || "", meeting_point: data.meeting_point || "",
         instructor: data.instructor || "", launch_helper: data.launch_helper || "",
-        max_participants: data.max_participants?.toString() || "", chat_link: data.chat_link || "",
+        max_participants: data.max_participants?.toString() || "",
         flight_area: (data as any).flight_area || "", day_topic: (data as any).day_topic || "",
         departure_info: (data as any).departure_info || "", flight_prep_notes: (data as any).flight_prep_notes || "",
          event_category: normalizeCategory((data as any).event_category),
@@ -198,7 +198,7 @@ export default function EventForm() {
       event_type: isExperienced ? form.event_type || null : null, meeting_point: meetingPoint || null,
       instructor: form.instructor || null, launch_helper: isHeight ? form.launch_helper || null : null,
       max_participants: form.max_participants ? parseInt(form.max_participants) : null,
-      chat_link: null, created_by: user.id,
+      created_by: user.id,
       flight_area: isHeight || isExperienced ? form.flight_area || null : null,
       day_topic: isHeight || isBasicCourse || isLecture ? form.day_topic || null : null,
       departure_info: isHeight || isCamp ? form.departure_info || null : null,
