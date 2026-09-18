@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, MessageCircle, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck } from "lucide-react";
 import EventChat from "@/components/EventChat";
 import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
@@ -17,7 +17,6 @@ import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
 import CoachDayView from "@/components/CoachDayView";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
-import TelegramTextGenerator from "@/components/TelegramTextGenerator";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
@@ -255,14 +254,9 @@ export default function EventDetail() {
         </>
       )}
 
-      {event.chat_link && <Button variant="outline" className="w-full gap-2" asChild><a href={event.chat_link} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />{t("events.openGroupChat")}</a></Button>}
-
-      {/* Announcement (push) + Telegram text copy - staff only */}
+      {/* Announcement (push) - staff only */}
       {isStaff && event.event_category === "height_flight" && (
-        <>
-          <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
-          <TelegramTextGenerator event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
-        </>
+        <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
       )}
 
       {/* Photos section */}

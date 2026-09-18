@@ -1,6 +1,6 @@
 /**
  * Builds the announcement text for an event (altitude flight day) in the exact
- * layout the flight school communicates today (previously via Telegram).
+ * layout the flight school communicates today in the app.
  */
 
 export interface BriefingTaskLike {

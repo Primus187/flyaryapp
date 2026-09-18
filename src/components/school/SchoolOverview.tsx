@@ -98,7 +98,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
         </Button>
         <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => nextEvent ? navigate(`/events/${nextEvent.id}`) : null}>
           <Send className="h-4 w-4" />
-          <span className="text-xs">{t("school.telegram")}</span>
+          <span className="text-xs">{t("school.announce")}</span>
         </Button>
       </div>
     </div>

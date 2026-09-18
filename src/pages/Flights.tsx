@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Plane, Plus, Filter, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/layout/EmptyState";
 import FlightThumbnailMap from "@/components/FlightThumbnailMap";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
