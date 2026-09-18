@@ -9,7 +9,7 @@ import FeedEventCard, { type FeedEvent } from "@/components/FeedEventCard";
 import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchievementCard";
 import FeedStoryBar from "@/components/FeedStoryBar";
 import NotificationBell from "@/components/NotificationBell";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/layout/EmptyState";
 import PilotSuggestions from "@/components/PilotSuggestions";
 import { Users, X } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";

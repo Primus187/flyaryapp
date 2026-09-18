@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import NextStepCard from "@/components/NextStepCard";
 import PushPromptCard from "@/components/PushPromptCard";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/layout/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
 import GoalCard from "@/components/GoalCard";
 import GoalFormDialog from "@/components/GoalFormDialog";
