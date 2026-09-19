@@ -1371,7 +1371,8 @@
       "blocked": "Les notifications sont bloquées pour Flyary dans ton navigateur – autorise-les dans les réglages du site.",
       "dismissed": "La demande a été ignorée – réessaie et choisis « Autoriser ».",
       "save_failed": "Impossible d’enregistrer les notifications",
-      "failed": "Impossible d’activer les notifications"
+      "failed": "Impossible d’activer les notifications",
+      "resubscribe": "Réactive les notifications sur cet appareil."
     }
   }
 }
