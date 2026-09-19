@@ -64,10 +64,9 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     if (!members || members.length === 0) { setLoading(false); return; }
 
     // Only show students (members) who are signed up for this event
-    const allStudentIds = members.filter(m => m.role === "member").map(m => m.user_id);
-    const studentIds = signedUpIds.length > 0
-      ? allStudentIds.filter(id => signedUpIds.includes(id))
-      : allStudentIds; // fallback: show all if no signups exist
+    const memberIds = members.filter(m => m.role === "member").map(m => m.user_id);
+    // Only students who signed up (confirmed or waitlist) for this event
+    const studentIds = memberIds.filter(id => signedUpIds.includes(id));
     if (studentIds.length === 0) { setLoading(false); return; }
 
     const dateStr = new Date(eventDate).toISOString().split("T")[0];
