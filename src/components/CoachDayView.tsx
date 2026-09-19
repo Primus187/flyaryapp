@@ -67,7 +67,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const memberIds = members.filter(m => m.role === "member").map(m => m.user_id);
     // Only students who signed up (confirmed or waitlist) for this event
     const studentIds = memberIds.filter(id => signedUpIds.includes(id));
-    if (studentIds.length === 0) { setLoading(false); return; }
+    if (studentIds.length === 0) { setStudents([]); setLoading(false); return; }
 
     const dateStr = new Date(eventDate).toISOString().split("T")[0];
 
