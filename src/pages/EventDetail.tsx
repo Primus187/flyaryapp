@@ -370,7 +370,6 @@ export default function EventDetail() {
               <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
             </CardContent></Card>))}</div></>
         )}
-        )}
       </div>
 
       {/* Student flights - admin only (simple view) */}
