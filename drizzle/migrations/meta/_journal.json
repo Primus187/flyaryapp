@@ -8,6 +8,13 @@
       "when": 1789643476634,
       "tag": "0000_attendance_and_push_status",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789788644442,
+      "tag": "0001_fix_signup_waitlist_record",
+      "breakpoints": true
     }
   ]
 }
