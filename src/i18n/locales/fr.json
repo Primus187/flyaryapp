@@ -1363,6 +1363,15 @@
     "recipientsCount": "{{active}} sur {{total}} ont activé les notifications",
     "statusOn": "actif",
     "statusOff": "inactif",
-    "noRecipients": "Aucun membre trouvé."
+    "noRecipients": "Aucun membre trouvé.",
+    "reason": {
+      "no_user": "Connecte-toi d’abord",
+      "unsupported": "Cet appareil ne prend pas en charge les notifications",
+      "ios_install_required": "Sur iPhone/iPad, installe d’abord Flyary via Partager → Sur l’écran d’accueil, puis ouvre-la depuis là.",
+      "blocked": "Les notifications sont bloquées pour Flyary dans ton navigateur – autorise-les dans les réglages du site.",
+      "dismissed": "La demande a été ignorée – réessaie et choisis « Autoriser ».",
+      "save_failed": "Impossible d’enregistrer les notifications",
+      "failed": "Impossible d’activer les notifications"
+    }
   }
 }

@@ -1363,6 +1363,15 @@
     "recipientsCount": "{{active}} of {{total}} have notifications enabled",
     "statusOn": "on",
     "statusOff": "off",
-    "noRecipients": "No members found."
+    "noRecipients": "No members found.",
+    "reason": {
+      "no_user": "Please sign in first",
+      "unsupported": "This device does not support notifications",
+      "ios_install_required": "On iPhone/iPad, install Flyary first via Share → Add to Home Screen, then open it from there.",
+      "blocked": "Notifications are blocked for Flyary in your browser – allow them in the site settings.",
+      "dismissed": "The prompt was dismissed – please try again and choose Allow.",
+      "save_failed": "Could not save your notification settings",
+      "failed": "Could not enable notifications"
+    }
   }
 }
