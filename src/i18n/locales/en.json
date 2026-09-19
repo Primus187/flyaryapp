@@ -1371,7 +1371,8 @@
       "blocked": "Notifications are blocked for Flyary in your browser – allow them in the site settings.",
       "dismissed": "The prompt was dismissed – please try again and choose Allow.",
       "save_failed": "Could not save your notification settings",
-      "failed": "Could not enable notifications"
+      "failed": "Could not enable notifications",
+      "resubscribe": "Please enable notifications on this device again."
     }
   }
 }

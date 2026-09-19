@@ -1381,7 +1381,8 @@
       "blocked": "Mitteilungen sind für Flyary im Browser gesperrt – bitte in den Website-Einstellungen erlauben.",
       "dismissed": "Die Anfrage wurde weggeklickt – bitte nochmals versuchen und „Erlauben“ wählen.",
       "save_failed": "Mitteilungen konnten nicht gespeichert werden",
-      "failed": "Mitteilungen konnten nicht aktiviert werden"
+      "failed": "Mitteilungen konnten nicht aktiviert werden",
+      "resubscribe": "Mitteilungen bitte auf diesem Gerät erneut aktivieren."
     }
   }
 }
