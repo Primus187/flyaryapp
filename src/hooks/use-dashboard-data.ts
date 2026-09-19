@@ -272,13 +272,21 @@ export function useDashboardData() {
   const toggleSignup = async (eventId: string) => {
     if (!user) return;
     const existing = signups.find(s => s.event_id === eventId && s.user_id === user.id);
+    let error: any = null;
     if (existing) {
       const newVal = !existing.signed_up;
-      await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", eventId).eq("user_id", user.id);
-      setSignups(prev => prev.map(s => s.event_id === eventId && s.user_id === user.id ? { ...s, signed_up: newVal } : s));
+      ({ error } = await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", eventId).eq("user_id", user.id));
+      if (!error) setSignups(prev => prev.map(s => s.event_id === eventId && s.user_id === user.id ? { ...s, signed_up: newVal } : s));
     } else {
-      await supabase.from("event_signups").insert({ event_id: eventId, user_id: user.id, signed_up: true });
-      setSignups(prev => [...prev, { event_id: eventId, user_id: user.id, signed_up: true }]);
+      ({ error } = await supabase.from("event_signups").insert({ event_id: eventId, user_id: user.id, signed_up: true }));
+      if (!error) setSignups(prev => [...prev, { event_id: eventId, user_id: user.id, signed_up: true }]);
+    }
+    if (error) {
+      toast({
+        title: i18n.t("common.error"),
+        description: /deadline/i.test(error.message) ? i18n.t("events.deadlinePassed") : error.message,
+        variant: "destructive",
+      });
     }
   };
 
