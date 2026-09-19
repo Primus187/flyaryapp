@@ -84,11 +84,17 @@ export default function NotificationsPage() {
       body: { user_id: user.id, title: t("push.testTitle"), body: t("push.testBody"), url: "/" },
     });
     setTesting(false);
-    toast(
-      error || !(data as any)?.sent
-        ? { title: t("push.testFailed"), variant: "destructive" }
-        : { title: t("push.testSent") }
-    );
+    const res = data as any;
+    if (!error && res?.sent) {
+      toast({ title: t("push.testSent") });
+      return;
+    }
+    const detail =
+      error?.message ||
+      (res?.reason === "no_subscription"
+        ? t("push.reason.resubscribe")
+        : res?.failures?.[0]?.detail);
+    toast({ title: t("push.testFailed"), description: detail, variant: "destructive" });
   };
 
   return (
