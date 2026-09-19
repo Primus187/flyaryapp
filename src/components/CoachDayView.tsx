@@ -61,7 +61,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       .from("group_members")
       .select("user_id, role")
       .eq("group_id", groupId);
-    if (!members || members.length === 0) { setLoading(false); return; }
+    if (!members || members.length === 0) { setStudents([]); setLoading(false); return; }
 
     // Only show students (members) who are signed up for this event
     const memberIds = members.filter(m => m.role === "member").map(m => m.user_id);
