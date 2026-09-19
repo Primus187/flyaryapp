@@ -3,6 +3,8 @@ import { useQuery, QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSignedUrl, getSignedUrls } from "@/lib/signed-url-cache";
+import i18n from "@/i18n";
+import { toast } from "@/hooks/use-toast";
 
 export interface DashboardStats {
   totalFlights: number;
