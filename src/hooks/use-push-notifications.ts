@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 // VAPID public key - must match the one stored as secret
-const VAPID_PUBLIC_KEY = "BBczYHIWEXzZrq7mbCQRKwvPjn3KmG2BSvDJzH9H5i_NaUUiz-k8RYGtasQt8Bo_bZCNQJoL8YiojLZ82KwG2Q8";
+const VAPID_PUBLIC_KEY = "BIjUl2EXD0dmLLFHmPBmhS2JA4sBOSV7OAB54nb6-4Wdu_RhWPFhDXCUasdHERU8uCd4mNc03iaLvl1GzHVAAJU";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -78,11 +78,31 @@ export function usePushNotifications() {
       }
 
       const registration = await navigator.serviceWorker.ready;
+      const appServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
+      // Drop a subscription created with an older server key — it can no longer receive messages.
+      const existing = await registration.pushManager.getSubscription();
+      if (existing) {
+        const currentKey = existing.options?.applicationServerKey;
+        const matches =
+          !!currentKey &&
+          new Uint8Array(currentKey as ArrayBuffer).every((b, i) => b === appServerKey[i]) &&
+          (currentKey as ArrayBuffer).byteLength === appServerKey.length;
+        if (!matches) {
+          await existing.unsubscribe();
+          await supabase
+            .from("push_subscriptions" as any)
+            .delete()
+            .eq("user_id", user.id)
+            .eq("endpoint", existing.endpoint);
+        }
+      }
+
       const subscription =
         (await registration.pushManager.getSubscription()) ??
         (await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+          applicationServerKey: appServerKey.buffer as ArrayBuffer,
         }));
 
       const json = subscription.toJSON();
