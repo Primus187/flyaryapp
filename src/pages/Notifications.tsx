@@ -65,8 +65,16 @@ export default function NotificationsPage() {
   }, [user, isSubscribed]);
 
   const enable = async () => {
-    const ok = await subscribe();
-    toast(ok ? { title: t("push.enabled") } : { title: t("push.denied"), variant: "destructive" });
+    const res = await subscribe();
+    if (res.ok) {
+      toast({ title: t("push.enabled") });
+      return;
+    }
+    toast({
+      title: t(`push.reason.${res.reason ?? "failed"}`, { defaultValue: t("push.denied") }),
+      description: res.message,
+      variant: "destructive",
+    });
   };
 
   const sendTest = async () => {

@@ -21,12 +21,16 @@ export default function PushPromptCard() {
   if (isSubscribed && !justEnabled) return null;
 
   const enable = async () => {
-    const ok = await subscribe();
-    if (ok) {
+    const res = await subscribe();
+    if (res.ok) {
       setJustEnabled(true);
       toast({ title: t("push.enabled") });
     } else {
-      toast({ title: t("push.denied"), variant: "destructive" });
+      toast({
+        title: t(`push.reason.${res.reason ?? "failed"}`, { defaultValue: t("push.denied") }),
+        description: res.message,
+        variant: "destructive",
+      });
     }
   };
 

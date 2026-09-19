@@ -1373,6 +1373,15 @@
     "recipientsCount": "{{active}} von {{total}} haben Mitteilungen aktiv",
     "statusOn": "aktiv",
     "statusOff": "inaktiv",
-    "noRecipients": "Keine Mitglieder gefunden."
+    "noRecipients": "Keine Mitglieder gefunden.",
+    "reason": {
+      "no_user": "Bitte zuerst anmelden",
+      "unsupported": "Dieses Gerät unterstützt keine Mitteilungen",
+      "ios_install_required": "Auf dem iPhone/iPad musst du Flyary zuerst über „Teilen → Zum Home-Bildschirm“ installieren und dann von dort öffnen.",
+      "blocked": "Mitteilungen sind für Flyary im Browser gesperrt – bitte in den Website-Einstellungen erlauben.",
+      "dismissed": "Die Anfrage wurde weggeklickt – bitte nochmals versuchen und „Erlauben“ wählen.",
+      "save_failed": "Mitteilungen konnten nicht gespeichert werden",
+      "failed": "Mitteilungen konnten nicht aktiviert werden"
+    }
   }
 }
