@@ -41,37 +41,61 @@ export function usePushNotifications() {
     }
   };
 
-  const subscribe = useCallback(async () => {
-    if (!user || !isSupported) return false;
+  const subscribe = useCallback(async (): Promise<PushSubscribeResult> => {
+    if (!user) return { ok: false, reason: "no_user" };
+    if (!isSupported) return { ok: false, reason: "unsupported" };
+
+    // iOS/iPadOS only allows web push when the app is installed to the home screen.
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true;
+    if (isIos && !standalone) return { ok: false, reason: "ios_install_required" };
+
     setLoading(true);
     try {
-      const permission = await Notification.requestPermission();
+      if (Notification.permission === "denied") {
+        return { ok: false, reason: "blocked" };
+      }
+
+      const permission =
+        Notification.permission === "granted"
+          ? "granted"
+          : await Notification.requestPermission();
       if (permission !== "granted") {
-        setLoading(false);
-        return false;
+        return { ok: false, reason: permission === "denied" ? "blocked" : "dismissed" };
       }
 
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
-      });
+      const subscription =
+        (await registration.pushManager.getSubscription()) ??
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+        }));
 
       const json = subscription.toJSON();
-      await supabase.from("push_subscriptions" as any).insert({
-        user_id: user.id,
-        endpoint: json.endpoint,
-        keys_p256dh: json.keys?.p256dh || "",
-        keys_auth: json.keys?.auth || "",
-      });
+      const { error } = await supabase.from("push_subscriptions" as any).upsert(
+        {
+          user_id: user.id,
+          endpoint: json.endpoint,
+          keys_p256dh: json.keys?.p256dh || "",
+          keys_auth: json.keys?.auth || "",
+        },
+        { onConflict: "user_id,endpoint" }
+      );
+      if (error) {
+        console.error("Push subscription save error:", error);
+        return { ok: false, reason: "save_failed", message: error.message };
+      }
 
       setIsSubscribed(true);
-      setLoading(false);
-      return true;
-    } catch (e) {
+      return { ok: true };
+    } catch (e: any) {
       console.error("Push subscribe error:", e);
+      return { ok: false, reason: "failed", message: e?.message };
+    } finally {
       setLoading(false);
-      return false;
     }
   }, [user, isSupported]);
 
