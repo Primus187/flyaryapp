@@ -16,6 +16,17 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+export type PushSubscribeReason =
+  | "no_user"
+  | "unsupported"
+  | "ios_install_required"
+  | "blocked"
+  | "dismissed"
+  | "save_failed"
+  | "failed";
+
+export type PushSubscribeResult = { ok: boolean; reason?: PushSubscribeReason; message?: string };
+
 export function usePushNotifications() {
   const { user } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
