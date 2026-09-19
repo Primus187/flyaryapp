@@ -263,13 +263,16 @@ Deno.serve(async (req) => {
     const login = await loginToXContest(profile.xcontest_username, password);
     if ("failure" in login) {
       if (login.failure === "antibot") {
+        // Not an application error: XContest blocks automated logins.
+        // Return 200 so clients show a friendly notice instead of an error.
         return new Response(
           JSON.stringify({
+            imported: 0,
             code: "xcontest_antibot",
             error:
               "XContest blockiert automatische Anmeldungen (Anti-Bot-Prüfung). Der Sync ist derzeit nicht möglich – bitte Flüge per IGC-Datei importieren.",
           }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       return new Response(
