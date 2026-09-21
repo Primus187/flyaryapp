@@ -386,7 +386,8 @@
       "instructor": "Moniteur·trice",
       "launchHelper": "Aide au décollage",
       "selectPerson": "Choisir une personne",
-      "positionPlaceholder": "Position, p. ex. station inférieure"
+      "positionPlaceholder": "Position, p. ex. station inférieure",
+      "certWarning": "Aucun moniteur ou monitrice avec un certificat valide n'est affecté."
     },
     "program": {
       "title": "Programme du jour",

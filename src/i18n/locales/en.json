@@ -386,7 +386,8 @@
       "instructor": "Instructor",
       "launchHelper": "Launch helper",
       "selectPerson": "Select person",
-      "positionPlaceholder": "Position, e.g. cable car valley station"
+      "positionPlaceholder": "Position, e.g. cable car valley station",
+      "certWarning": "No instructor with a valid certification is assigned."
     },
     "program": {
       "title": "Day program",
