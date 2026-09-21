@@ -26,7 +26,7 @@ interface SchoolGroup {
   name: string;
 }
 
-type Section = "days" | "chat" | "people" | "students" | "equipment" | "credits" | "billing" | "stats";
+type Section = "days" | "chat" | "people" | "students" | "safety" | "equipment" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
   {
