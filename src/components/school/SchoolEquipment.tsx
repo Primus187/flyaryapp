@@ -39,6 +39,7 @@ interface Equipment {
   retired_at: string | null;
   next_check_date: string | null;
   notes: string | null;
+  shv_type_approved?: boolean;
 }
 
 interface Assignment {
