@@ -953,6 +953,9 @@
       "flights": "Flüge",
       "examProgress": "Prüfungsfortschritt",
       "lastSummary": "Letzte Zusammenfassung",
+      "status": "Status",
+      "statusReason": "Grund",
+      "statusDate": "Status seit",
       "downloaded": "CSV heruntergeladen",
       "exportFailed": "Export fehlgeschlagen"
     },

@@ -1120,6 +1120,9 @@
       "flights": "Flights",
       "examProgress": "Exam progress",
       "lastSummary": "Last summary",
+      "status": "Status",
+      "statusReason": "Reason",
+      "statusDate": "Status since",
       "downloaded": "CSV downloaded",
       "exportFailed": "Export failed"
     },

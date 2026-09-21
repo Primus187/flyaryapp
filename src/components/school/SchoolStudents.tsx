@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import StudentEquipmentCheck from "@/components/school/StudentEquipmentCheck";
 import type { StudentStatus } from "@/lib/student-status";
+import { buildStudentCsv } from "@/lib/student-csv";
 
 interface StudentInfo {
   userId: string;
@@ -30,13 +31,6 @@ interface Props {
   groupId?: string;
   students: StudentInfo[];
   onStatusChange?: (userId: string, status: StudentStatus, reason: string | null) => void | Promise<void>;
-}
-
-function csvEscape(value: string | number | null | undefined) {
-  if (value === null || value === undefined) return "";
-  const s = String(value);
-  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
 }
 
 export default function SchoolStudents({ groupId, students, onStatusChange }: Props) {
@@ -79,15 +73,23 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
       t("school.csv.flights"),
       t("school.csv.examProgress"),
       t("school.csv.lastSummary"),
+      t("school.csv.status"),
+      t("school.csv.statusReason"),
+      t("school.csv.statusDate"),
     ];
-    const rows = students.map((s) => [
-      csvEscape(s.pilotName),
-      csvEscape(s.trainingLevel),
-      csvEscape(s.flightCount),
-      csvEscape(`${s.examProgress}%`),
-      csvEscape(s.lastSummary),
-    ].join(","));
-    const csv = "\uFEFF" + [headers.map(csvEscape).join(","), ...rows].join("\n");
+    const csv = buildStudentCsv(
+      headers,
+      students.map((s) => ({
+        pilotName: s.pilotName,
+        trainingLevel: s.trainingLevel,
+        flightCount: s.flightCount,
+        examProgress: s.examProgress,
+        lastSummary: s.lastSummary,
+        statusLabel: t(`school.studentStatus.${s.status ?? "active"}`),
+        statusReason: s.statusReason,
+        statusDateLabel: s.statusUpdatedAt ? new Date(s.statusUpdatedAt).toLocaleDateString("de-CH") : "",
+      })),
+    );
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

@@ -1,5 +1,16 @@
 # Flyary
 
+## Flugschule: CSV-Export mit Pausierungs-Status (Nachtrag zu Planung 5.2)
+
+Der CSV-Export der Personenübersicht enthielt Status, Grund und Datum der letzten Statusänderung
+nicht (nur Name, Stufe, Flüge, Prüfungsfortschritt, letzte Zusammenfassung) – bei der
+Akzeptanzkriterien-Prüfung von Phase 2 als Lücke fürs Reporting aufgefallen. Drei Spalten
+ergänzt (Status, Grund, Status seit); der Status wird übersetzt ausgegeben, Grund/Datum bleiben
+bei aktiven Schülern ohne erfasste Änderung leer statt "aktiv" ohne weitere Angaben vorzutäuschen.
+Der Export bleibt bewusst ungefiltert (exportiert immer alle Schüler unabhängig vom
+Bildschirmfilter, siehe Abschnitt 5.2 oben). CSV-Aufbau und -Escaping nach
+[student-csv.ts](src/lib/student-csv.ts) extrahiert und getestet.
+
 ## Flugschule: Strukturierter Geh/Nogo-Entscheid (Planung 7.1)
 
 Neue, eigenständige Tabelle `event_weather_decisions` statt Erweiterung von
