@@ -1,5 +1,41 @@
 # Flyary
 
+## App-weiter Audit nach Phase 5: i18n-Lücken und ein echter Berechtigungsfehler
+
+Auf Wunsch des Nutzers, sicherzustellen dass „keine Bugs/Mismatches mehr“ in der App vorhanden
+sind. Echtes Rollen-Testing im Browser war in dieser Umgebung nicht möglich (kein lauffähiges
+Playwright-Setup, keine Testaccounts, `.env` zeigt auf eine echte Live-Supabase-Instanz – Schreiben
+von Testdaten dorthin ohne Rückfrage wäre riskant gewesen). Stattdessen: Production-Build,
+vollständiger Testlauf, i18n-Vollständigkeitsabgleich und ein gezielter Abgleich aller
+`is_group_admin`-geschützten Tabellen gegen ihre UI-Gates (dieselbe Fehlerklasse, die bereits in
+den Phasen-Audits mehrfach echte Bugs gefunden hat).
+
+**i18n:** 8 Übersetzungslücken über drei Locales gefunden und geschlossen, keine davon durch diese
+Session verursacht (teils seit der ursprünglichen Baseline vorhanden). Am gravierendsten: `de.json`
+fehlten fast alle Texte des globalen [NotificationBell.tsx](src/components/NotificationBell.tsx)
+(Titel, Leerzustand, Aktivitätstexte) – sichtbar für **jeden** Nutzer, nicht nur Flugschul-Rollen.
+Ausserdem fehlten `goals.*`/`follows.*` komplett in `en`/`fr` und `training.grundkurs`/
+`brevetkurs`/`siku`/`pilot` in `en`/`fr`. Alle drei Locale-Dateien sind jetzt exakt deckungsgleich
+(1449 Schlüssel je Datei, per Skript verifiziert).
+
+**Echter Berechtigungsfehler:** [SchoolPeople.tsx](src/components/school/SchoolPeople.tsx) zeigte
+den „Funktionen zuweisen“-Button und die Funktions-Checkboxen im Bearbeiten-Dialog für jeden
+Betrachter der Seite, weil [SchoolDashboard.tsx](src/pages/SchoolDashboard.tsx) `canManage` hart
+auf `true` setzte – aber `group_member_functions` ist per RLS **admin-only**
+(`is_group_admin`), nicht `is_group_staff` wie der Rest der Seite. Ein Fluglehrer oder Schulleiter
+ohne Admin-Rolle sah damit Bedienelemente für eine Aktion, die serverseitig abgelehnt wird.
+Schlimmer: `saveEdit()` prüfte den `error` der `insert`/`delete`-Aufrufe auf
+`group_member_functions` gar nicht, sodass trotz abgelehnter Schreibung ein „Gespeichert“-Toast
+erschien – ein „false success“, nicht nur eine überflüssig sichtbare Bedienoberfläche. Behoben
+durch einen neuen, aus `group_members.role` abgeleiteten `isAdmin`-Prop für die Funktions-UI
+(statt Hardcode) sowie explizite Fehlerprüfung in `saveEdit()` als zusätzliche Absicherung.
+Ausbildungsstufen-Bearbeitung (RLS: `is_group_staff`) bleibt für alle Team-Rollen unverändert
+verfügbar – nur die admin-only Funktionszuweisung wurde eingeschränkt.
+
+Übrige stichprobenartig geprüfte `is_group_admin`-Policies (Event-Bearbeitung/-Löschung,
+`flight_coach_notes`, `incident_reports`-Löschung, `challenge_goals`) waren bereits korrekt
+gegen den jeweiligen UI-Zugriffspunkt abgeglichen – keine weiteren Funde.
+
 ## Fluggebiets-Wetter-Matching (Planung 7.3)
 
 **Abweichung vom Plan (mit Nutzer abgeklärt):** Die im Akzeptanzkriterium referenzierte

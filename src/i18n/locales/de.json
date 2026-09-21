@@ -1405,7 +1405,14 @@
     "noFlightsForTag": "Keine Flüge für diesen Tag"
   },
   "notifications": {
-    "followed": "folgt dir jetzt"
+    "title": "Mitteilungen",
+    "empty": "Keine Mitteilungen",
+    "liked": "mag",
+    "commented": "kommentierte",
+    "followed": "folgt dir jetzt",
+    "yourFlight": "deinen Flug",
+    "yourEvent": "deinen Termin",
+    "yourAchievement": "deine Errungenschaft"
   },
   "leaderboard": {
     "title": "Rangliste",

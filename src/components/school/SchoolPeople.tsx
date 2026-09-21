@@ -40,7 +40,14 @@ interface PersonRow {
 
 interface Props {
   groupId: string;
+  /** Team-Personal (is_group_staff): darf Ausbildungsstufen bearbeiten. */
   canManage: boolean;
+  /**
+   * Nur Admins (is_group_admin): group_member_functions ist per RLS admin-only, nicht
+   * is_group_staff - ein Fluglehrer/Schulleiter ohne Admin-Rolle darf zwar diese Seite sehen,
+   * aber keine Funktionen zuweisen (sonst könnte er sich z. B. selbst zur Schulleitung machen).
+   */
+  isAdmin?: boolean;
 }
 
 function csvEscape(value: string | number | null | undefined) {
@@ -50,7 +57,7 @@ function csvEscape(value: string | number | null | undefined) {
   return s;
 }
 
-export default function SchoolPeople({ groupId, canManage }: Props) {
+export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -126,17 +133,20 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
     if (!editing) return;
     setSaving(true);
     try {
-      // sync functions
+      // sync functions (admin-only per RLS; checked explicitly so a rejected write never
+      // silently shows a false "saved" toast, see Umsetzungsplan Abschnitt 14)
       const toAdd = editFunctions.filter((f) => !editing.functions.includes(f));
       const toRemove = editing.functions.filter((f) => !editFunctions.includes(f));
       if (toAdd.length > 0) {
-        await supabase.from("group_member_functions" as any).insert(
+        const { error } = await supabase.from("group_member_functions" as any).insert(
           toAdd.map((f) => ({ group_id: groupId, user_id: editing.userId, function: f })) as any
         );
+        if (error) throw error;
       }
       for (const f of toRemove) {
-        await supabase.from("group_member_functions" as any).delete()
+        const { error } = await supabase.from("group_member_functions" as any).delete()
           .eq("group_id", groupId).eq("user_id", editing.userId).eq("function", f);
+        if (error) throw error;
       }
       // training level
       const newLevel = editLevel || null;
@@ -237,7 +247,7 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
         </Button>
       </div>
 
-      {canManage && (
+      {isAdmin && (
         <Button variant="secondary" size="sm" className="w-full gap-1.5" onClick={() => setAssignOpen(true)}>
           <Users className="h-3.5 w-3.5" />
           {t("school.people.assignFunctions")}
@@ -299,20 +309,22 @@ export default function SchoolPeople({ groupId, canManage }: Props) {
             <DialogTitle>{editing?.pilotName}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold">{t("school.people.functions")}</Label>
-              {GROUP_FUNCTIONS.map((f) => (
-                <label key={f} className="flex items-center gap-2 py-1 cursor-pointer">
-                  <Checkbox
-                    checked={editFunctions.includes(f)}
-                    onCheckedChange={(checked) =>
-                      setEditFunctions((prev) => (checked ? [...prev, f] : prev.filter((x) => x !== f)))
-                    }
-                  />
-                  <span className="text-sm">{t(`school.functions.${f}`)}</span>
-                </label>
-              ))}
-            </div>
+            {isAdmin && (
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">{t("school.people.functions")}</Label>
+                {GROUP_FUNCTIONS.map((f) => (
+                  <label key={f} className="flex items-center gap-2 py-1 cursor-pointer">
+                    <Checkbox
+                      checked={editFunctions.includes(f)}
+                      onCheckedChange={(checked) =>
+                        setEditFunctions((prev) => (checked ? [...prev, f] : prev.filter((x) => x !== f)))
+                      }
+                    />
+                    <span className="text-sm">{t(`school.functions.${f}`)}</span>
+                  </label>
+                ))}
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">{t("school.people.trainingLevel")}</Label>
               <Select value={editLevel || "__none__"} onValueChange={(v) => setEditLevel(v === "__none__" ? "" : v)}>

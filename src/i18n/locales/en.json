@@ -812,7 +812,11 @@
     "shvTrainingPortal": "SHV Exam Page — GS Pilot",
     "shvExamChecklist": "Exam Preparation — Checklist",
     "shvElearning": "SHV E-Learning (Theory Questions)",
-    "shvOpenRegulations": "Open SHV exam regulations"
+    "shvOpenRegulations": "Open SHV exam regulations",
+    "grundkurs": "Basic Course",
+    "brevetkurs": "License Course",
+    "siku": "SiKu",
+    "pilot": "Pilot"
   },
   "more": {
     "title": "More",
@@ -953,6 +957,7 @@
     "empty": "No notifications",
     "liked": "liked",
     "commented": "commented on",
+    "followed": "follows you now",
     "yourFlight": "your flight",
     "yourEvent": "your event",
     "yourAchievement": "your achievement"
@@ -1552,6 +1557,18 @@
     "noResults": "No results found",
     "hint": "Enter a search term to find flights, sites, events and pilots.",
     "pilots": "Pilots"
+  },
+  "goals": {
+    "myGoals": "My Season Goals",
+    "addGoal": "Add Goal",
+    "noGoals": "Set yourself goals for this season",
+    "goalType": "Goal Type",
+    "title": "Label",
+    "targetValue": "Target Value"
+  },
+  "follows": {
+    "follow": "Follow",
+    "unfollow": "Unfollow"
   },
   "chat": {
     "announcement": "Announcement",

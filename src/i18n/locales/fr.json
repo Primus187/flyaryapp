@@ -812,7 +812,11 @@
     "shvTrainingPortal": "Page d'examen FSVL — Parapente Pilote",
     "shvExamChecklist": "Préparation à l'examen — Checklist",
     "shvElearning": "FSVL E-Learning (Questions de théorie)",
-    "shvOpenRegulations": "Ouvrir les directives d'examen FSVL"
+    "shvOpenRegulations": "Ouvrir les directives d'examen FSVL",
+    "grundkurs": "Cours de base",
+    "brevetkurs": "Cours de brevet",
+    "siku": "SiKu",
+    "pilot": "Pilote"
   },
   "more": {
     "title": "Plus",
@@ -953,6 +957,7 @@
     "empty": "Aucune notification",
     "liked": "a aimé",
     "commented": "a commenté",
+    "followed": "te suit maintenant",
     "yourFlight": "ton vol",
     "yourEvent": "ton événement",
     "yourAchievement": "ton achievement"
@@ -1552,6 +1557,18 @@
     "noResults": "Aucun résultat trouvé",
     "hint": "Entrez un terme pour trouver des vols, sites, événements et pilotes.",
     "pilots": "Pilotes"
+  },
+  "goals": {
+    "myGoals": "Mes objectifs de saison",
+    "addGoal": "Ajouter un objectif",
+    "noGoals": "Fixe-toi des objectifs pour cette saison",
+    "goalType": "Type d'objectif",
+    "title": "Désignation",
+    "targetValue": "Valeur cible"
+  },
+  "follows": {
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre"
   },
   "chat": {
     "announcement": "Annonce",

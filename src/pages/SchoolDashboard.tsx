@@ -214,6 +214,10 @@ export default function SchoolDashboard() {
 
   // Derived data
   const studentMembers = useMemo(() => members.filter((m) => m.role === "member"), [members]);
+  // group_member_functions (Funktionszuweisung in SchoolPeople) ist per RLS admin-only, nicht
+  // is_group_staff - Instruktoren/Schulleitung dürfen die Seite sehen, aber keine Funktionen
+  // zuweisen. canManage muss deshalb echten Admin-Status widerspiegeln, nicht "true" annehmen.
+  const isSchoolAdmin = useMemo(() => members.some((m) => m.user_id === user?.id && m.role === "admin"), [members, user]);
 
   const eventDateById = useMemo(() => Object.fromEntries(events.map((e) => [e.id, e.event_date])), [events]);
   const nextStepByStudent = useMemo(() => latestNextStepPerStudent(dayNotes, eventDateById), [dayNotes, eventDateById]);
@@ -297,7 +301,7 @@ export default function SchoolDashboard() {
           </div>
         );
       case "people":
-        return <SchoolPeople groupId={selectedGroupId} canManage={true} />;
+        return <SchoolPeople groupId={selectedGroupId} canManage={true} isAdmin={isSchoolAdmin} />;
       case "students":
        return <SchoolStudents groupId={selectedGroupId} students={studentInfos} onStatusChange={handleStudentStatusChange} />;
       case "safety":
