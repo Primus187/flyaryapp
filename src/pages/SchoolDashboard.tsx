@@ -18,6 +18,7 @@ import SchoolEquipment from "@/components/school/SchoolEquipment";
 import SchoolStats from "@/components/school/SchoolStats";
 import SchoolBilling from "@/components/school/SchoolBilling";
 import SchoolCredits from "@/components/school/SchoolCredits";
+import SchoolSafety from "@/components/school/SchoolSafety";
 import GroupChat from "@/components/GroupChat";
 
 interface SchoolGroup {
