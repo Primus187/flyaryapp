@@ -64,6 +64,13 @@
       "when": 1789997400000,
       "tag": "0008_student_day_notes_next_step",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789998000000,
+      "tag": "0009_team_channel",
+      "breakpoints": true
     }
   ]
 }

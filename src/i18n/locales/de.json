@@ -914,6 +914,10 @@
       "reasonPlaceholder": "Grund (optional)"
     },
     "flightDays": "Flugtage",
+    "teamChat": {
+      "title": "Team-Kanal",
+      "hint": "Nur für Schulleitung, Fluglehrer und Starthelfer sichtbar – getrennt vom Termin-/Schul-Chat mit Schülern."
+    },
     "activeStudents": "Aktive Schüler",
     "openReviews": "Offene Bewertungen",
     "nextFlightDay": "Nächster Flugtag",

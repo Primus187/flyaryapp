@@ -8,7 +8,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
-import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, Users2, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { latestStatusPerStudent, type StudentStatus } from "@/lib/student-status";
@@ -30,7 +30,7 @@ interface SchoolGroup {
   name: string;
 }
 
-type Section = "days" | "chat" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
+type Section = "days" | "chat" | "teamChat" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
   {
@@ -38,6 +38,7 @@ const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labe
     items: [
       { key: "days", icon: CalendarDays, labelKey: "school.flightDays" },
       { key: "chat", icon: MessageCircle, labelKey: "events.chat" },
+      { key: "teamChat", icon: Users2, labelKey: "school.teamChat.title" },
     ],
   },
   {
@@ -286,6 +287,13 @@ export default function SchoolDashboard() {
         return <SchoolDays events={eventInfos} />;
       case "chat":
         return <GroupChat groupId={selectedGroupId} canAnnounce={true} />;
+      case "teamChat":
+        return (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">{t("school.teamChat.hint")}</p>
+            <GroupChat groupId={selectedGroupId} canAnnounce={true} teamOnly />
+          </div>
+        );
       case "people":
         return <SchoolPeople groupId={selectedGroupId} canManage={true} />;
       case "students":

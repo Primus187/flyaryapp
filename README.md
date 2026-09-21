@@ -1,5 +1,28 @@
 # Flyary
 
+## Flugschule: Interner Team-Kanal (Planung 6.3)
+
+Der Plan schlägt eine dedizierte "Team"-Gruppe pro Schule vor (Wiederverwendung von
+`group_messages`, keine neue Tabelle). Eine echte zusätzliche `groups`-Zeile hätte aber
+laufend synchronisierte Mitgliedschaft gebraucht und wäre in mehreren anderen Gruppenlisten der
+App aufgetaucht (Gruppenübersicht, Termin-Erstellung, Schulauswahl im Flugschul-Bereich), die
+alle nicht wissen, dass es sich um einen internen Hilfs-Datensatz handelt und ihn fälschlich als
+normale, auswählbare Gruppe anzeigen würden. Stattdessen: `group_messages.is_team_only`, dessen
+Sichtbarkeit live über `group_member_functions` geprüft wird (wie bei `is_group_staff`), ohne
+Mitgliedschaft zu duplizieren. `group_messages` selbst bleibt wie im Plan gefordert unverändert
+wiederverwendet – nur die Zugriffsregel kommt hinzu.
+
+Zugriff hat, wer Schulleitung, Fluglehrer oder Starthelfer ist (`is_group_team_member`, bewusst
+weiter gefasst als `is_group_staff`, das Starthelfer ausschliesst – der Plan nennt "Fluglehrern/
+Startleitern" ausdrücklich als Zielgruppe). Der bestehende Ankündigungs-Push
+([push_on_group_announcement](drizzle/migrations/0009_team_channel.sql)) wurde angepasst, damit
+er bei `is_team_only` nur an Teamfunktionen zustellt statt – wie es die unveränderte
+Originalfunktion getan hätte – den Nachrichtentext eines internen Team-Announcements per Push an
+alle Schüler zu senden. Anhänge sind im Team-Kanal deaktiviert: Der Storage-Bucket für
+Chat-Anhänge kennt nur Gruppenmitgliedschaft, nicht `is_team_only`, ein Schüler könnte bei
+bekanntem Objektpfad sonst direkt auf Team-Anhänge zugreifen, auch ohne die zugehörige Nachricht
+lesen zu können.
+
 ## Flugschule: Übergabenotizen zwischen Fluglehrern (Planung 6.2)
 
 Der Plan nennt `flight_coach_notes.is_next_step` als Datenmodell – diese Tabelle ist aber die

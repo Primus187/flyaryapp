@@ -1081,6 +1081,10 @@
       "reasonPlaceholder": "Motif (facultatif)"
     },
     "flightDays": "Jours de vol",
+    "teamChat": {
+      "title": "Canal d'équipe",
+      "hint": "Visible uniquement pour la direction, les moniteurs et les aides au décollage – séparé du chat d'événement/d'école avec les élèves."
+    },
     "activeStudents": "Élèves actifs",
     "openReviews": "Évaluations en attente",
     "nextFlightDay": "Prochain jour de vol",

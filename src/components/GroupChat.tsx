@@ -19,10 +19,17 @@ interface GroupMessage {
   message: string;
   attachment_path: string | null;
   is_announcement: boolean;
+  is_team_only: boolean;
   created_at: string;
 }
 
-export default function GroupChat({ groupId, canAnnounce = false }: { groupId: string; canAnnounce?: boolean }) {
+/**
+ * `teamOnly` renders the internal team channel (Abschnitt 6.3) instead of the school-wide chat:
+ * separate message set (is_team_only), no attachments (storage RLS only knows group membership,
+ * not is_team_only, so team-only attachments could otherwise be fetched by any group member who
+ * guesses the object path).
+ */
+export default function GroupChat({ groupId, canAnnounce = false, teamOnly = false }: { groupId: string; canAnnounce?: boolean; teamOnly?: boolean }) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -72,6 +79,7 @@ export default function GroupChat({ groupId, canAnnounce = false }: { groupId: s
         .from("group_messages" as any)
         .select("*")
         .eq("group_id", groupId)
+        .eq("is_team_only", teamOnly)
         .order("created_at", { ascending: true })
         .limit(200);
       if (data) {
@@ -84,9 +92,10 @@ export default function GroupChat({ groupId, canAnnounce = false }: { groupId: s
     load();
 
     const channel = supabase
-      .channel(`group-chat-${groupId}`)
+      .channel(`group-chat-${groupId}-${teamOnly ? "team" : "all"}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "group_messages", filter: `group_id=eq.${groupId}` }, (payload) => {
         const msg = payload.new as GroupMessage;
+        if (!!msg.is_team_only !== teamOnly) return;
         setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
         loadProfiles([msg.user_id]);
         if (msg.attachment_path) loadAttachmentUrls([msg]);
@@ -97,7 +106,7 @@ export default function GroupChat({ groupId, canAnnounce = false }: { groupId: s
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [groupId, loadProfiles, loadAttachmentUrls]);
+  }, [groupId, teamOnly, loadProfiles, loadAttachmentUrls]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -108,7 +117,7 @@ export default function GroupChat({ groupId, canAnnounce = false }: { groupId: s
     setSending(true);
     try {
       let attachmentPath: string | null = null;
-      if (pendingFile) {
+      if (pendingFile && !teamOnly) {
         setUploading(true);
         let file: File | Blob = pendingFile;
         let name = pendingFile.name;
@@ -133,6 +142,7 @@ export default function GroupChat({ groupId, canAnnounce = false }: { groupId: s
         message: text.trim(),
         attachment_path: attachmentPath,
         is_announcement: isAnnouncement,
+        is_team_only: teamOnly,
       } as any);
       if (error) {
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
@@ -252,16 +262,20 @@ export default function GroupChat({ groupId, canAnnounce = false }: { groupId: s
         )}
 
         <div className="flex gap-2 p-2 border-t border-border">
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            accept="image/*,.pdf,.txt,.csv,.doc,.docx"
-            onChange={(e) => setPendingFile(e.target.files?.[0] || null)}
-          />
-          <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-            <Paperclip className="h-4 w-4" />
-          </Button>
+          {!teamOnly && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="image/*,.pdf,.txt,.csv,.doc,.docx"
+                onChange={(e) => setPendingFile(e.target.files?.[0] || null)}
+              />
+              <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                <Paperclip className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}

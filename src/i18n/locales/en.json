@@ -1081,6 +1081,10 @@
       "reasonPlaceholder": "Reason (optional)"
     },
     "flightDays": "Flight days",
+    "teamChat": {
+      "title": "Team channel",
+      "hint": "Visible only to school lead, instructors and launch helpers - separate from the event/school chat with students."
+    },
     "activeStudents": "Active Students",
     "openReviews": "Open Reviews",
     "nextFlightDay": "Next Flight Day",
