@@ -317,7 +317,7 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
                             <CheckCheck className="h-3 w-3" /> {t("chat.confirmReceipt")}
                           </Button>
                         )}
-                        {canAnnounce && (() => {
+                        {(() => {
                           const summary = summarizeReceipts(audienceUserIds, receipts[msg.id] || []);
                           const expanded = expandedReceipts === msg.id;
                           return (

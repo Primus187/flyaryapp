@@ -1,6 +1,6 @@
 # Umsetzungsplan: Flugschul-Erweiterungen für Flyary
 
-2026-09-21 · @Someone · zuletzt aktualisiert 2026-09-21 (Stand nach Abschluss Phase 1 + Phase 2)
+2026-09-21 · @Someone · zuletzt aktualisiert 2026-09-21 (Stand nach Abschluss Phase 1 + Phase 2 + Phase 3)
 
 Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in eine technische Spezifikation mit priorisiertem Umsetzungsplan – direkt nutzbar als Vorgabe für Agentic Coding (z. B. Claude Code) gegen die bestehende Flyary-Codebasis (React 18, TypeScript, Vite, Tailwind, shadcn, Supabase mit Row-Level-Security, react-leaflet, MapLibre GL JS).
 
@@ -10,13 +10,13 @@ Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in e
 | --- | --- | --- |
 | 1 – SHV-Compliance-Basis | ✅ Abgeschlossen | Alle 7 Features (4.1–4.4, 5.1, 9.1, 9.2) umgesetzt und akzeptanzgeprüft |
 | 2 – Schüler- und Team-Prozesse | ✅ Abgeschlossen | Alle 6 Features (5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2) umgesetzt und akzeptanzgeprüft |
-| 3 – Kommunikation | 🔶 Umsetzung fertig, Akzeptanzprüfung ausstehend | Alle 3 Features (8.3, 8.4, 8.5) umgesetzt; Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) war aus dem Plan entfernt worden, siehe Abschnitt 8 |
+| 3 – Kommunikation | ✅ Abgeschlossen | Alle 3 Features (8.3, 8.4, 8.5) umgesetzt und akzeptanzgeprüft; Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) war aus dem Plan entfernt worden, siehe Abschnitt 8 |
 | 4 – Administration und Zahlung | ⬜ Nicht begonnen | |
 | 5 – Reporting und Wetter-Integration | ⬜ Nicht begonnen | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig |
 
-Detaillierter Ist-Stand pro Feature direkt bei den jeweiligen Unterabschnitten unten (✅-Markierung). Tatsächliche Implementierungsdetails (Migrationsdateien, Komponenten, Testabdeckung) stehen in der README.md des Repos, dort pro Feature ein eigener Abschnitt mit Begründung für jede Abweichung von diesem Plan. Abschnitt 14 wurde um konkrete Erkenntnisse aus der Umsetzung von Phase 1 und 2 ergänzt.
+Detaillierter Ist-Stand pro Feature direkt bei den jeweiligen Unterabschnitten unten (✅-Markierung). Tatsächliche Implementierungsdetails (Migrationsdateien, Komponenten, Testabdeckung) stehen in der README.md des Repos, dort pro Feature ein eigener Abschnitt mit Begründung für jede Abweichung von diesem Plan. Abschnitt 14 wurde um konkrete Erkenntnisse aus der Umsetzung von Phase 1, 2 und 3 ergänzt.
 
-Bei zwei Akzeptanzkriterien-Prüfungen (nach Phase 1 und nach Phase 2, siehe Abschnitt 14) wurden insgesamt mehrere reale Fehler in bereits „fertigen“ Features gefunden und behoben – u. a. eine RLS-Sichtbarkeitslücke, ein Zeitzonenfehler bei Datums-/Zeitfeldern und eine veraltete Datenanzeige nach Statusänderungen. Diese Prüfung nach jeder Phase hat sich als eigener, lohnender Arbeitsschritt etabliert (siehe Abschnitt 14).
+Bei drei Akzeptanzkriterien-Prüfungen (nach Phase 1, nach Phase 2 und nach Phase 3, siehe Abschnitt 14) wurden insgesamt mehrere reale Fehler in bereits „fertigen“ Features gefunden und behoben – u. a. eine RLS-Sichtbarkeitslücke, ein Zeitzonenfehler bei Datums-/Zeitfeldern, eine veraltete Datenanzeige nach Statusänderungen und eine zu enge UI-Sichtbarkeitsbedingung für eine Empfänger-Übersicht. Diese Prüfung nach jeder Phase hat sich als eigener, lohnender Arbeitsschritt etabliert (siehe Abschnitt 14).
 
 ## 1. Einleitung
 
@@ -329,6 +329,13 @@ Empfänger-Übersicht ist für alle Gruppenmitglieder sichtbar (anders als das N
 Zugriffsprotokoll aus 12.3, das bewusst auf Schulleitung beschränkt ist) – hier ist „wer hat
 gelesen“ der Zweck des Features selbst, keine schützenswerte Information.
 
+**Nachtrag aus der Phase-3-Prüfung:** Die Empfänger-Übersicht war ursprünglich hinter dem
+`canAnnounce`-Prop von `GroupChat.tsx` versteckt, das aufrufende Seiten uneinheitlich setzen
+(`SchoolDashboard.tsx`: immer `true`; `GroupDetail.tsx`, der reguläre Gruppenchat: nur `isAdmin`).
+Dadurch sahen normale Mitglieder im regulären Gruppenchat die Übersicht nie, obwohl weder RLS
+noch dieser Absatz das verlangen. Behoben durch Entfernen der `canAnnounce`-Bedingung für die
+Übersicht (siehe Abschnitt 14).
+
 ### 8.5 Team-Verfügbarkeitsumfrage ✅
 
 **Ziel:** Einfache Ja/Nein-Abfrage an das Team („Wer kann morgen als Startleiter?“), getrennt vom Termin-Chat.
@@ -532,7 +539,7 @@ Die meisten rechtlichen Punkte aus Abschnitt 10 des Anforderungskatalogs sind be
 - **RLS zuerst testen, dann UI bauen** – falsche Berechtigungen sind in einer App mit Minderjährigen- und Gesundheitsdaten das grösste Risiko; ein Feature gilt erst als fertig, wenn ein Test mit einer nicht-berechtigten Rolle den Zugriff nachweislich verweigert.
 - **Bei Unsicherheit über Vertical-spezifische Details** (z. B. genaue Kursbezeichnungen, Zahlungsanbieter-Wahl) den Fragenkatalog aus Abschnitt 12 des Anforderungskatalogs zuerst klären, statt Annahmen im Code zu fixieren.
 
-### Erkenntnisse aus der Umsetzung von Phase 1 und Phase 2
+### Erkenntnisse aus der Umsetzung von Phase 1, Phase 2 und Phase 3
 
 Die folgenden Punkte haben sich erst beim tatsächlichen Bauen gezeigt und sind nicht aus dem ursprünglichen Anforderungskatalog ableitbar. Sie gelten ab sofort genauso verbindlich wie die Punkte oben.
 
@@ -545,4 +552,5 @@ Die folgenden Punkte haben sich erst beim tatsächlichen Bauen gezeigt und sind 
 - **Seiten ohne Realtime-Abo laden Daten nur einmal beim Öffnen.** Wenn eine Kind-Komponente einen Datensatz ändert, den die Elternseite ebenfalls in ihrem lokalen State hält (Beispiel: `EventWeatherDecision` ändert `flight_events.status`, `EventDetail` zeigt `event.status` an), muss die Kind-Komponente einen Callback anbieten, über den die Elternseite ihren State aktualisiert – sonst zeigt die Seite bis zum manuellen Neuladen veraltete Daten.
 - **„Kein hartes Blockieren“ heisst wörtlich keine deaktivierten Bedienelemente**, nur visuelle Hinweise (Badge, Farbe, Text). Die fachliche Entscheidungshoheit bleibt beim Team – wenn ein Akzeptanzkriterium das explizit fordert (z. B. 5.3), braucht es deshalb auch keinen separaten „Freigabe aufheben“-Mechanismus: es gibt nichts, das aufgehoben werden müsste.
 - **Reine Logik konsequent in `src/lib/*.ts` auslagern und mit Vitest testen**, UI-Komponenten bleiben dünne Aufrufer. Hat sich über die gesamte Umsetzung bewährt (u. a. `instructor-availability.ts`, `weather-decision.ts`, `handoff-notes.ts`, `student-csv.ts`) und macht Regressionen bei der nächsten Akzeptanzkriterien-Prüfung sofort sichtbar, statt sie in einer grossen Komponente zu verstecken.
-- **Nach jeder abgeschlossenen Phase eine eigene, gezielte Akzeptanzkriterien-Prüfung aller Features dieser Phase einplanen** (nicht nur Selbsttest des zuletzt gebauten Features). Hat in Phase 1 mehrere Fehler aufgedeckt (u. a. eine fehlende Vorfallmeldungs-Schnellzugriff-Verdrahtung, doppelte/widersprüchliche Migrationen, einen Vokabular-Mismatch im Jahresbericht) und in Phase 2 drei weitere (RLS-Sichtbarkeitslücke, Zeitzonenfehler, veraltete Statusanzeige) – jeweils in Features, die zuvor bereits als „fertig, Tests grün“ galten. Automatisierte Tests decken die reine Logik ab, nicht ob die richtigen Daten überhaupt beim richtigen Betrachter ankommen.
+- **Nach jeder abgeschlossenen Phase eine eigene, gezielte Akzeptanzkriterien-Prüfung aller Features dieser Phase einplanen** (nicht nur Selbsttest des zuletzt gebauten Features). Hat in Phase 1 mehrere Fehler aufgedeckt (u. a. eine fehlende Vorfallmeldungs-Schnellzugriff-Verdrahtung, doppelte/widersprüchliche Migrationen, einen Vokabular-Mismatch im Jahresbericht), in Phase 2 drei weitere (RLS-Sichtbarkeitslücke, Zeitzonenfehler, veraltete Statusanzeige) und in Phase 3 einen weiteren (siehe unten) – jeweils in Features, die zuvor bereits als „fertig, Tests grün“ galten. Automatisierte Tests decken die reine Logik ab, nicht ob die richtigen Daten überhaupt beim richtigen Betrachter ankommen.
+- **UI-Sichtbarkeit muss zum tatsächlichen Empfängerkreis aus RLS/Akzeptanzkriterium passen – in beide Richtungen.** Phase 2 fand den Fall „UI zeigt etwas, das RLS gar nicht liefert“ (Zertifikats-Warnung, siehe oben). Phase-3-Prüfung fand den umgekehrten Fall: Die Empfänger-Übersicht („X von Y bestätigt“) für 8.4 war in `GroupChat.tsx` hinter `canAnnounce` versteckt – einem Prop, das aufrufende Seiten unterschiedlich setzen (`SchoolDashboard.tsx`: immer `true`, aber `GroupDetail.tsx`: nur `isAdmin`). Dadurch sahen normale Gruppenmitglieder im regulären Gruppenchat (`GroupDetail.tsx`) die Übersicht nie, obwohl weder RLS noch das Akzeptanzkriterium das verlangen – dokumentiert war sogar explizit das Gegenteil („keine schützenswerte Information“). Behoben durch Entfernen der `canAnnounce`-Gate für die Übersicht. Lehre: Bei jeder neuen UI-Sichtbarkeitsbedingung prüfen, ob sie enger ist als das, was RLS erlaubt und das Akzeptanzkriterium verlangt – nicht nur, ob sie enger ist als nötig, sondern auch, ob sie über alle tatsächlichen Aufrufer hinweg konsistent ist.

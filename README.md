@@ -1,5 +1,17 @@
 # Flyary
 
+## Empfänger-Übersicht Lesebestätigung: zu enge UI-Sichtbarkeit behoben (Nachtrag zu Planung 8.4)
+
+Bei der Akzeptanzkriterien-Prüfung von Phase 3 aufgefallen: Die „X von Y bestätigt“-Übersicht in
+[GroupChat.tsx](src/components/GroupChat.tsx) war hinter dem `canAnnounce`-Prop versteckt. Dieser
+Prop wird von aufrufenden Seiten uneinheitlich gesetzt – `SchoolDashboard.tsx` übergibt immer
+`true`, der reguläre Gruppenchat in `GroupDetail.tsx` dagegen nur `isAdmin`. Normale Mitglieder
+im regulären Gruppenchat sahen die Übersicht dadurch nie, obwohl weder die RLS-Policy auf
+`announcement_read_receipts` noch das Akzeptanzkriterium das verlangen – dokumentiert war sogar
+explizit das Gegenteil. Behoben durch Entfernen der `canAnnounce`-Bedingung für die Übersicht;
+der „Kenntnis bestätigen“-Button war davon nicht betroffen (war nie hinter `canAnnounce`
+versteckt).
+
 ## Flugschule: Team-Verfügbarkeitsumfrage (Planung 8.5)
 
 Neue Tabellen `team_polls`/`team_poll_responses`, sichtbar im Team-Kanal (Planung 6.3), umgesetzt
