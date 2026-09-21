@@ -11,17 +11,12 @@ import { CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   type AvailabilityStatus,
   nextAvailabilityStatus,
+  parseIsoDateLocal,
   startOfWeek,
   weekDates,
 } from "@/lib/instructor-availability";
 
 const TEAM_FUNCTIONS = ["school_lead", "instructor", "launch_helper"] as const;
-
-/** Parses a yyyy-mm-dd string as a local-midnight Date (avoids UTC-parsing day-shift). */
-function parseIsoDateLocal(iso: string): Date {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
 
 interface Props {
   groupId: string;

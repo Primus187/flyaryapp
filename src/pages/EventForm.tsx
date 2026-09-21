@@ -49,6 +49,7 @@ export default function EventForm() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const duplicateId = searchParams.get("duplicate");
+  const suggestedDate = searchParams.get("date");
   const schoolGroupId = searchParams.get("group");
   const fromSchool = !!schoolGroupId;
   const isEdit = !!id;
@@ -134,7 +135,7 @@ export default function EventForm() {
       const d = new Date(data.event_date);
       setForm({
         group_id: data.group_id, title: data.title, description: data.description || "",
-        status: duplicateId ? "announced" : data.status, event_date: duplicateId ? "" : d.toISOString().split("T")[0],
+        status: duplicateId ? "announced" : data.status, event_date: duplicateId ? (suggestedDate || "") : d.toISOString().split("T")[0],
         event_time: duplicateId ? "09:00" : d.toTimeString().slice(0, 5),
         signup_deadline: data.signup_deadline ? new Date(data.signup_deadline).toISOString().split("T")[0] : "",
         event_type: data.event_type || "", meeting_point: data.meeting_point || "",
@@ -158,7 +159,7 @@ export default function EventForm() {
       if (maneuvers) setSelectedManeuverIds((maneuvers as any[]).map((m: any) => m.training_item_id));
     };
     loadEvent();
-  }, [isEdit, id, duplicateId]);
+  }, [isEdit, id, duplicateId, suggestedDate]);
 
   // Prefill the standard altitude-flight briefing + flight preparation for new events
   useEffect(() => {

@@ -195,6 +195,10 @@
     "unpublishedFromFeed": "Aus Feed entfernt",
     "deleteEvent": "Event löschen",
     "deleteEventConfirm": "Diesen Event wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "alternativeDate": {
+      "title": "Ersatztermin vorschlagen",
+      "none": "Keine Tage mit verfügbarem Team in den nächsten Wochen gefunden."
+    },
     "eventDeleted": "Event gelöscht",
     "feedPreview": "Feed-Vorschau",
     "feedDescription": "Beschreibung",

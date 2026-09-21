@@ -4,6 +4,7 @@ import {
   nextAvailabilityStatus,
   sortByAvailability,
   startOfWeek,
+  suggestAlternativeDates,
   weekDates,
 } from "./instructor-availability";
 
@@ -92,5 +93,36 @@ describe("hasCertifiedAvailableInstructor", () => {
   it("is false when nobody is marked available", () => {
     const result = hasCertifiedAvailableInstructor(["u1"], {}, () => true);
     expect(result).toBe(false);
+  });
+});
+
+describe("suggestAlternativeDates", () => {
+  it("returns dates after afterDate with at least one available person, skipping gaps", () => {
+    const availability = {
+      "2026-09-22": ["u1"],
+      "2026-09-24": ["u2"],
+      "2026-09-26": [],
+      "2026-09-27": ["u1", "u2"],
+    };
+    expect(suggestAlternativeDates("2026-09-21", availability)).toEqual(["2026-09-22", "2026-09-24", "2026-09-27"]);
+  });
+
+  it("excludes afterDate itself even if it has availability", () => {
+    const availability = { "2026-09-21": ["u1"], "2026-09-22": ["u1"] };
+    expect(suggestAlternativeDates("2026-09-21", availability)).toEqual(["2026-09-22"]);
+  });
+
+  it("respects the limit", () => {
+    const availability = { "2026-09-22": ["u1"], "2026-09-23": ["u1"], "2026-09-24": ["u1"] };
+    expect(suggestAlternativeDates("2026-09-21", availability, 2)).toEqual(["2026-09-22", "2026-09-23"]);
+  });
+
+  it("returns an empty array when nobody is available within the scan window", () => {
+    expect(suggestAlternativeDates("2026-09-21", {})).toEqual([]);
+  });
+
+  it("does not scan past maxScanDays", () => {
+    const availability = { "2026-10-20": ["u1"] }; // 29 days after 2026-09-21
+    expect(suggestAlternativeDates("2026-09-21", availability, 3, 21)).toEqual([]);
   });
 });

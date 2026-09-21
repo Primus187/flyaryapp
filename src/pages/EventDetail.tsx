@@ -15,6 +15,7 @@ import EventAttendance from "@/components/school/EventAttendance";
 import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import StudentEquipmentHint from "@/components/school/StudentEquipmentHint";
 import IncidentReportDialog from "@/components/school/IncidentReportDialog";
+import AlternativeDateSuggestion from "@/components/school/AlternativeDateSuggestion";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -234,6 +235,10 @@ export default function EventDetail() {
           </>
         )}
       </div>
+
+      {isStaff && event.status === "cancelled" && event.groups?.group_type === "school" && (
+        <AlternativeDateSuggestion eventId={id!} groupId={event.group_id} eventDate={event.event_date} />
+      )}
 
       {!isPast && event.status !== "cancelled" && (
         <>

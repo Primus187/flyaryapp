@@ -19,11 +19,36 @@ export function startOfWeek(date: Date): Date {
 const toIsoDate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
+/** Parses a yyyy-mm-dd string as a local-midnight Date (avoids UTC-parsing day-shift). */
+export function parseIsoDateLocal(iso: string): Date {
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 /** The 7 ISO dates (yyyy-mm-dd) of the week starting at `monday`, in local time. */
 export function weekDates(monday: Date): string[] {
   return Array.from({ length: 7 }, (_, i) =>
     toIsoDate(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)),
   );
+}
+
+/**
+ * Finds up to `limit` dates after `afterDate` (exclusive) with at least one available team
+ * member, scanning at most `maxScanDays` days forward. Not necessarily consecutive days.
+ */
+export function suggestAlternativeDates(
+  afterDate: string,
+  availableUserIdsByDate: Record<string, string[]>,
+  limit = 3,
+  maxScanDays = 21,
+): string[] {
+  const start = parseIsoDateLocal(afterDate);
+  const results: string[] = [];
+  for (let i = 1; i <= maxScanDays && results.length < limit; i++) {
+    const iso = toIsoDate(new Date(start.getFullYear(), start.getMonth(), start.getDate() + i));
+    if ((availableUserIdsByDate[iso] || []).length > 0) results.push(iso);
+  }
+  return results;
 }
 
 const ORDER: Record<AvailabilityStatus | "none", number> = { available: 0, unsure: 1, none: 2, unavailable: 3 };

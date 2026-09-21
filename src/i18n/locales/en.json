@@ -217,6 +217,10 @@
     "unpublishedFromFeed": "Removed from feed",
     "deleteEvent": "Delete event",
     "deleteEventConfirm": "Really delete this event? This action cannot be undone.",
+    "alternativeDate": {
+      "title": "Suggest a replacement date",
+      "none": "No days with an available team found in the next few weeks."
+    },
     "eventDeleted": "Event deleted",
     "feedPreview": "Feed preview",
     "feedDescription": "Description",

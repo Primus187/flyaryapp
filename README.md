@@ -1,5 +1,19 @@
 # Flyary
 
+## Flugschule: Ersatztermin-Vorschlag bei Absage (Planung 7.2)
+
+Termine einer Flugschulgruppe mit Status "abgesagt" zeigen dem Team einen Vorschlag für bis zu
+drei Ersatztage, basierend auf der Team-Verfügbarkeit aus Abschnitt 6.1: gesucht wird ab dem Tag
+nach dem ursprünglichen Termin (nicht ab heute, damit auch rückwirkend abgesagte Termine sinnvolle
+Vorschläge liefern) über bis zu drei Wochen vorwärts nach den nächsten Tagen, an denen mindestens
+ein aktuelles Teammitglied (Schulleitung/Fluglehrer/Starthelfer) sich als verfügbar eingetragen
+hat – nicht zwingend die nächsten drei Kalendertage in Folge, sondern die nächsten drei Tage mit
+tatsächlicher Verfügbarkeit. Verfügbarkeits-Einträge von Personen, die keine dieser Funktionen
+(mehr) haben, zählen nicht mit. Ein Klick auf einen Vorschlag übernimmt die bestehende
+Duplikat-Funktion (`/events/new?duplicate=…`), jetzt erweitert um einen optionalen
+`date`-Parameter, der das Terminformular mit dem gewählten Tag vorausfüllt statt das Datum leer
+zu lassen.
+
 ## Flugschule: Pausierungs-Status (Planung 5.2)
 
 Die Statusverwaltung (aktiv/pausiert/abgebrochen mit Grund und Datum) griff bereits auf eine

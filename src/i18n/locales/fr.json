@@ -217,6 +217,10 @@
     "unpublishedFromFeed": "Retiré du fil",
     "deleteEvent": "Supprimer l'événement",
     "deleteEventConfirm": "Voulez-vous vraiment supprimer cet événement ? Cette action est irréversible.",
+    "alternativeDate": {
+      "title": "Proposer une date de remplacement",
+      "none": "Aucun jour avec une équipe disponible trouvé dans les prochaines semaines."
+    },
     "eventDeleted": "Événement supprimé",
     "feedPreview": "Aperçu du fil",
     "feedDescription": "Description",
