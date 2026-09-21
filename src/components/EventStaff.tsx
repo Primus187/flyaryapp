@@ -26,9 +26,11 @@ interface Props {
   eventId: string;
   groupId: string;
   canManage: boolean;
+  /** Nur für Flugschulgruppen gilt die SHV-Zertifikats-Mindestbesetzung. */
+  isSchool?: boolean;
 }
 
-export default function EventStaff({ eventId, groupId, canManage }: Props) {
+export default function EventStaff({ eventId, groupId, canManage, isSchool = false }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [staff, setStaff] = useState<StaffRow[]>([]);
@@ -78,7 +80,8 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
     };
     loadOptions();
 
-    // Load instructor certification validity for the SHV staffing warning.
+    // Load instructor certification validity for the SHV staffing warning (school groups only).
+    if (!isSchool) { setInstructorCertValidity({}); return; }
     const loadCertValidity = async () => {
       const { data } = await supabase
         .from("instructor_certifications")
@@ -90,7 +93,7 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
       setInstructorCertValidity(map);
     };
     loadCertValidity();
-  }, [eventId, groupId]);
+  }, [eventId, groupId, isSchool]);
 
   const addStaff = async () => {
     if (!newUserId) return;
@@ -119,6 +122,7 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
     const validUntil = instructorCertValidity[s.user_id];
     return !!validUntil && new Date(validUntil).getTime() >= Date.now();
   });
+  const showCertWarning = isSchool && instructors.length > 0 && !hasValidInstructor;
 
   if (staff.length === 0 && !canManage) return null;
 
@@ -127,7 +131,7 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.staff.title")}</h2>
       <Card className="border-0 shadow-sm">
         <CardContent className="p-3 space-y-2">
-          {!hasValidInstructor && (
+          {showCertWarning && (
             <p className="text-xs text-amber-500 flex items-start gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               {t("events.staff.certWarning")}

@@ -341,7 +341,7 @@ export default function EventDetail() {
 
       {/* Program, staff, carpools */}
       <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
-      <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
+      <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} isSchool={event.groups?.group_type === "school"} />
       {isStaff && event.groups?.group_type === "school" && event.event_category === "basic_course" && event.status !== "cancelled" && (
         <EquipmentQuotaHint groupId={event.group_id} eventDate={event.event_date} signups={signups} />
       )}

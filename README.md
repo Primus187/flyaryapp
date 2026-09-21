@@ -131,15 +131,46 @@ npm run dev
 Die Schema-Historie ist auf zwei Ordner verteilt, weil Lovable die Art, wie Migrationen
 geführt werden, unterwegs umgestellt hat:
 
-- `supabase/migrations/` – die ursprüngliche, historische Migrationsreihe (bis ca. Mai 2026).
-- `drizzle/migrations/` – die neuere Migrationsreihe (ab Phase 1 der Flugschul-Erweiterungen,
-  z. B. `0002_school_phase1_shv_compliance.sql`). `drizzle/schema.ts` ist absichtlich leer
-  (`// auto-generated and intentionally left blank, do not edit`) – Drizzle wird hier nur als
-  Migrations-Journal genutzt, nicht als ORM. Es gibt kein `drizzle-kit`-npm-Skript und keinen
-  CI-Workflow, der eine der beiden Reihen automatisch anwendet; Lovable spielt Änderungen direkt
-  gegen die produktive Datenbank ein.
+- `supabase/migrations/` – die ursprüngliche Migrationsreihe. War lange historisch (bis ca. Mai
+  2026), enthält aber inzwischen auch `20260921113000_flight_school_phase1.sql` – ein
+  versehentliches Duplikat der Phase-1-Tabellen aus `drizzle/migrations/0002_...`, entstanden
+  durch parallele Arbeit auf zwei Branches ohne Kenntnis voneinander. Siehe
+  `drizzle/migrations/0004_reconcile_phase1_rls.sql` für den Hintergrund und die Bereinigung.
+- `drizzle/migrations/` – die eigentlich vorgesehene neuere Migrationsreihe (ab Phase 1 der
+  Flugschul-Erweiterungen, z. B. `0002_school_phase1_shv_compliance.sql`). `drizzle/schema.ts`
+  ist absichtlich leer (`// auto-generated and intentionally left blank, do not edit`) – Drizzle
+  wird hier nur als Migrations-Journal genutzt, nicht als ORM. Es gibt kein `drizzle-kit`-npm-Skript
+  und keinen CI-Workflow, der eine der beiden Reihen automatisch anwendet; Lovable spielt
+  Änderungen direkt gegen die produktive Datenbank ein.
 
 Für einen Schema-Aufbau von Grund auf müssen **beide Ordner, in dieser Reihenfolge**, angewendet
 werden: zuerst alle Dateien aus `supabase/migrations/`, danach alle aus `drizzle/migrations/`
 (chronologisch nach Dateiname). Neue Migrationen ab Phase 1 der Flugschul-Erweiterungen gehören
 in `drizzle/migrations/`.
+
+### Bereinigung der doppelten Phase-1-Tabellen (`0004_reconcile_phase1_rls.sql`)
+
+`20260921113000_flight_school_phase1.sql` (supabase) und `0002_school_phase1_shv_compliance.sql`
+(drizzle) legen unabhängig voneinander dieselben fünf Tabellen an
+(`incident_reports`, `instructor_certifications`, `equipment_maintenance`, `equipment_checks`,
+`annual_report_submissions`), mit **unterschiedlichen RLS-Policies**. Welche der beiden zuerst
+gegen die produktive Datenbank lief – und ob beide liefen – lässt sich aus dem Repo-Stand allein
+nicht feststellen; es gibt keinen Zugriff auf eine Migrations-Tracking-Tabelle oder die DB selbst
+im Rahmen dieser Arbeit.
+
+Statt zu raten, macht `0004_reconcile_phase1_rls.sql` das Ergebnis unabhängig vom Ausgangszustand
+eindeutig: Sie entfernt zuerst alle Policy-Namen, die aus beiden ursprünglichen Migrationen
+stammen könnten (`DROP POLICY IF EXISTS`, dadurch idempotent), und legt danach einen einzigen,
+definitiven Policy-Satz an. Zwei konkrete Abweichungen wurden dabei bewusst zugunsten der
+strengeren/präziseren Variante aufgelöst:
+
+- `incident_reports`: Löschen ist nur Admins vorbehalten, nicht jedem Staff-Mitglied (die
+  supabase-Migration hatte hier eine pauschale Staff-Policy für alle Operationen).
+- `instructor_certifications` und `equipment_checks`: Die betroffene Person kann ihre eigenen
+  Zeilen lesen (z. B. liest [StudentEquipmentHint.tsx](src/components/school/StudentEquipmentHint.tsx)
+  `equipment_checks` als der angemeldete Schüler selbst). War nur die supabase-Migration aktiv,
+  gab es diese Selbstlese-Policy nicht – der Ausrüstungs-Hinweis hätte dann für Schüler dauerhaft
+  "fehlend" angezeigt, unabhängig vom tatsächlichen Stand.
+
+Die beiden ursprünglichen Migrationsdateien bleiben unverändert als historischer Beleg stehen;
+nur `0004` verändert das tatsächliche Verhalten.
