@@ -41,6 +41,7 @@ const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labe
     items: [
       { key: "people", icon: Users, labelKey: "school.people.title" },
       { key: "students", icon: ClipboardList, labelKey: "school.students" },
+      { key: "safety", icon: ShieldAlert, labelKey: "school.safety.title" },
     ],
   },
   {
