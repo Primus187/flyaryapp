@@ -410,9 +410,14 @@ export default function SchoolEquipment({ groupId }: Props) {
                             </p>
                           )}
                         </div>
-                        <Badge variant={item.status === "retired" ? "outline" : item.status === "assigned" ? "secondary" : "default"} className="text-[10px]">
-                          {t(`school.equipment.status.${item.status}`)}
-                        </Badge>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <Badge variant={item.status === "retired" ? "outline" : item.status === "assigned" ? "secondary" : "default"} className="text-[10px]">
+                            {t(`school.equipment.status.${item.status}`)}
+                          </Badge>
+                          {item.shv_type_approved && (
+                            <Badge variant="outline" className="text-[10px]">{t("school.equipment.shvApprovedShort")}</Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {item.status !== "retired" && !open && (
