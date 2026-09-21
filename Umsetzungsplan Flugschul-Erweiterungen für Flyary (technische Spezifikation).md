@@ -11,8 +11,8 @@ Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in e
 | 1 – SHV-Compliance-Basis | ✅ Abgeschlossen | Alle 7 Features (4.1–4.4, 5.1, 9.1, 9.2) umgesetzt und akzeptanzgeprüft |
 | 2 – Schüler- und Team-Prozesse | ✅ Abgeschlossen | Alle 6 Features (5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2) umgesetzt und akzeptanzgeprüft |
 | 3 – Kommunikation | ✅ Abgeschlossen | Alle 3 Features (8.3, 8.4, 8.5) umgesetzt und akzeptanzgeprüft; Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) war aus dem Plan entfernt worden, siehe Abschnitt 8 |
-| 4 – Administration und Zahlung | ⬜ Nicht begonnen | |
-| 5 – Reporting und Wetter-Integration | ⬜ Nicht begonnen | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig |
+| 4 – Administration und Zahlung | ⏸ Bewusst zurückgestellt | Wird erst nach dem Workshop mit Vertical angegangen (Zahlungsanbieter-Wahl, Aufbewahrungsdauer 12.1 u. a. offene Fragen hängen davon ab); Phase 5 wird vorgezogen |
+| 5 – Reporting und Wetter-Integration | ⬜ Nicht begonnen | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig; vorgezogen vor Phase 4 |
 
 Detaillierter Ist-Stand pro Feature direkt bei den jeweiligen Unterabschnitten unten (✅-Markierung). Tatsächliche Implementierungsdetails (Migrationsdateien, Komponenten, Testabdeckung) stehen in der README.md des Repos, dort pro Feature ein eigener Abschnitt mit Begründung für jede Abweichung von diesem Plan. Abschnitt 14 wurde um konkrete Erkenntnisse aus der Umsetzung von Phase 1, 2 und 3 ergänzt.
 
@@ -393,7 +393,9 @@ für alle Team-Mitglieder sichtbar.
 
 **Ist-Stand:** Attribut editierbar in `SchoolEquipment.tsx`; Filter in der Materialliste (alle/typengeprüft/nicht typengeprüft) bei der Phase-1-Prüfung als fehlend erkannt und nachgezogen.
 
-## 10. Administration und Zahlung (Phase 4) ⬜ Nicht begonnen
+## 10. Administration und Zahlung (Phase 4) ⏸ Bewusst zurückgestellt
+
+**Hinweis:** Diese Phase wird erst nach dem Workshop mit Vertical angegangen – mehrere Punkte hier (Zahlungsanbieter-Wahl in 10.1, Aufbewahrungsdauer in 12.1) hängen von dort zu klärenden Fragen ab. Phase 5 (Reporting und Wetter-Integration) wird vorgezogen, da sie keine solchen offenen Fragen hat.
 
 ### 10.1 Online-Zahlung bei Kursbuchung
 
