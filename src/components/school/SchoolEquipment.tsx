@@ -97,6 +97,7 @@ export default function SchoolEquipment({ groupId }: Props) {
   const [quantity, setQuantity] = useState("1");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
+  const [shvFilter, setShvFilter] = useState<string>("all");
 
   const [editing, setEditing] = useState<Equipment | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
@@ -150,10 +151,12 @@ export default function SchoolEquipment({ groupId }: Props) {
     return equipment.filter((e) => {
       if (statusFilter === "active" && e.status === "retired") return false;
       if (statusFilter !== "active" && statusFilter !== "all" && e.status !== statusFilter) return false;
+      if (shvFilter === "approved" && !e.shv_type_approved) return false;
+      if (shvFilter === "not_approved" && e.shv_type_approved) return false;
       if (q && !`${e.name} ${e.inventory_number || ""}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [equipment, search, statusFilter]);
+  }, [equipment, search, statusFilter, shvFilter]);
 
   const counts = useMemo(() => {
     return {
@@ -388,6 +391,14 @@ export default function SchoolEquipment({ groupId }: Props) {
               </SelectContent>
             </Select>
           </div>
+          <Select value={shvFilter} onValueChange={setShvFilter}>
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("school.equipment.shvFilterAll")}</SelectItem>
+              <SelectItem value="approved">{t("school.equipment.shvFilterApproved")}</SelectItem>
+              <SelectItem value="not_approved">{t("school.equipment.shvFilterNotApproved")}</SelectItem>
+            </SelectContent>
+          </Select>
 
           <Button onClick={() => openForm()} className="w-full">
             <Plus className="h-4 w-4 mr-2" />{t("school.equipment.add")}

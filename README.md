@@ -1,5 +1,17 @@
 # Flyary
 
+## Flugschule: Vorfallmeldung – Schnellzugriff & Materialfilter (Planung 4.1, 9.2)
+
+Das Formular zur Unfall-/Vorfallmeldung ist aus [IncidentReports.tsx](src/components/school/IncidentReports.tsx)
+in [IncidentReportDialog.tsx](src/components/school/IncidentReportDialog.tsx) ausgelagert und wird jetzt an zwei
+Stellen verwendet: in der Sicherheits-Übersicht (Liste + Formular) und als eigenständiger
+Schnellzugriff direkt im Termin (`EventDetail.tsx`), sichtbar für Schulleitung/Fluglehrer bei
+Terminen einer Flugschulgruppe, unabhängig vom Terminstatus. Der Termin ist beim Öffnen aus dem
+Termin heraus vorausgewählt, lässt sich aber weiterhin ändern oder auf „kein Termin" setzen.
+
+In der Materialliste lässt sich zusätzlich nach dem SHV-Typengeprüft-Attribut filtern (alle /
+nur typengeprüft / nur nicht typengeprüft), kombinierbar mit dem bestehenden Status-Filter.
+
 ## Flugschule: Zertifikate und Unterrichtstage (Planung 4.2)
 
 Unter **Sicherheit → Zertifikate** zählt die Übersicht unterschiedliche lokale

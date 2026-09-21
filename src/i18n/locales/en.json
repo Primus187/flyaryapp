@@ -1202,7 +1202,10 @@
       "ratesSuggestApply": "Apply suggested values",
       "emptyHint": "Add gliders, harnesses or helmets to the inventory first.",
       "shvApproved": "SHV type-approved",
-      "shvApprovedShort": "SHV approved"
+      "shvApprovedShort": "SHV approved",
+      "shvFilterAll": "SHV: all",
+      "shvFilterApproved": "Type-approved only",
+      "shvFilterNotApproved": "Not type-approved only"
     },
     "stats": {
       "title": "Statistics",
@@ -1321,6 +1324,7 @@
       "title": "Safety",
       "tab": "Incidents",
       "report": "Report incident",
+      "reportForEvent": "Report an incident for this event",
       "saved": "Incident saved",
       "saveFailed": "Could not save",
       "empty": "No incidents recorded.",

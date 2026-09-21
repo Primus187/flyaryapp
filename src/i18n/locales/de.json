@@ -1035,7 +1035,10 @@
       "ratesSuggestApply": "Vorschlagswerte übernehmen",
       "emptyHint": "Nimm zuerst Schirme, Gurtzeuge oder Helme ins Lager auf.",
       "shvApproved": "SHV-typengeprüft",
-      "shvApprovedShort": "SHV-geprüft"
+      "shvApprovedShort": "SHV-geprüft",
+      "shvFilterAll": "SHV: alle",
+      "shvFilterApproved": "Nur SHV-typengeprüft",
+      "shvFilterNotApproved": "Nur nicht typengeprüft"
     },
     "stats": {
       "title": "Statistiken",
@@ -1154,6 +1157,7 @@
       "title": "Sicherheit",
       "tab": "Vorfälle",
       "report": "Vorfall melden",
+      "reportForEvent": "Vorfall zu diesem Termin melden",
       "saved": "Vorfall erfasst",
       "saveFailed": "Speichern fehlgeschlagen",
       "empty": "Keine Vorfälle erfasst.",

@@ -1202,7 +1202,10 @@
       "ratesSuggestApply": "Appliquer les valeurs proposées",
       "emptyHint": "Ajoute d'abord des ailes, sellettes ou casques au stock.",
       "shvApproved": "Homologué FSVL",
-      "shvApprovedShort": "Homologué"
+      "shvApprovedShort": "Homologué",
+      "shvFilterAll": "FSVL : tous",
+      "shvFilterApproved": "Homologués uniquement",
+      "shvFilterNotApproved": "Non homologués uniquement"
     },
     "stats": {
       "title": "Statistiques",
@@ -1321,6 +1324,7 @@
       "title": "Sécurité",
       "tab": "Incidents",
       "report": "Signaler un incident",
+      "reportForEvent": "Signaler un incident pour cet événement",
       "saved": "Incident enregistré",
       "saveFailed": "Enregistrement impossible",
       "empty": "Aucun incident enregistré.",

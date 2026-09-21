@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck, AlertTriangle } from "lucide-react";
 import EventChat from "@/components/EventChat";
 import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
@@ -14,6 +14,7 @@ import EventCarpools from "@/components/EventCarpools";
 import EventAttendance from "@/components/school/EventAttendance";
 import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import StudentEquipmentHint from "@/components/school/StudentEquipmentHint";
+import IncidentReportDialog from "@/components/school/IncidentReportDialog";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -40,6 +41,7 @@ export default function EventDetail() {
   const [photos, setPhotos] = useState<{ id: string; url: string; storage_path: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [incidentDialogOpen, setIncidentDialogOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [pilotName, setPilotName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -342,6 +344,19 @@ export default function EventDetail() {
       <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
       {isStaff && event.groups?.group_type === "school" && event.event_category === "basic_course" && event.status !== "cancelled" && (
         <EquipmentQuotaHint groupId={event.group_id} eventDate={event.event_date} signups={signups} />
+      )}
+      {isStaff && event.groups?.group_type === "school" && (
+        <>
+          <Button variant="outline" className="w-full gap-2 text-destructive" onClick={() => setIncidentDialogOpen(true)}>
+            <AlertTriangle className="h-4 w-4" />{t("school.safety.reportForEvent")}
+          </Button>
+          <IncidentReportDialog
+            groupId={event.group_id}
+            open={incidentDialogOpen}
+            onOpenChange={setIncidentDialogOpen}
+            presetEventId={id}
+          />
+        </>
       )}
       <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
 
