@@ -79,6 +79,7 @@ const emptyForm = {
   purchase_date: "",
   next_check_date: "",
   notes: "",
+  shv_type_approved: false,
 };
 
 export default function SchoolEquipment({ groupId }: Props) {
