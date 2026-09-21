@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Send, Paperclip, Megaphone, Trash2, FileText, X } from "lucide-react";
+import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/image-compress";
+import { hasConfirmed, summarizeReceipts } from "@/lib/announcement-receipts";
 
 interface GroupMessage {
   id: string;
@@ -20,8 +21,11 @@ interface GroupMessage {
   attachment_path: string | null;
   is_announcement: boolean;
   is_team_only: boolean;
+  requires_confirmation: boolean;
   created_at: string;
 }
+
+const TEAM_FUNCTIONS = ["school_lead", "instructor", "launch_helper"] as const;
 
 /**
  * `teamOnly` renders the internal team channel (Abschnitt 6.3) instead of the school-wide chat:
@@ -39,8 +43,12 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [announcement, setAnnouncement] = useState(false);
+  const [requiresConfirmation, setRequiresConfirmation] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [audienceUserIds, setAudienceUserIds] = useState<string[]>([]);
+  const [receipts, setReceipts] = useState<Record<string, string[]>>({});
+  const [expandedReceipts, setExpandedReceipts] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profilesRef = useRef(profiles);
@@ -73,6 +81,54 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
     }
   }, [attachmentUrls]);
 
+  const loadReceipts = useCallback(async (msgs: GroupMessage[]) => {
+    const ids = msgs.filter((m) => m.is_announcement && m.requires_confirmation).map((m) => m.id);
+    if (ids.length === 0) return;
+    const { data } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+      .from("announcement_read_receipts" as any)
+      .select("message_id, user_id")
+      .in("message_id", ids);
+    if (data) {
+      setReceipts((prev) => {
+        const next = { ...prev };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+        (data as any[]).forEach((r) => {
+          next[r.message_id] = [...new Set([...(next[r.message_id] || []), r.user_id])];
+        });
+        return next;
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Empfänger-Kreis für "X von Y bestätigt": bei is_team_only nur Teamfunktionen + Admins
+    // (analog zu is_group_team_member), sonst alle Gruppenmitglieder.
+    const loadAudience = async () => {
+      const { data: members } = await supabase.from("group_members").select("user_id, role").eq("group_id", groupId);
+      if (!members) return;
+      if (!teamOnly) {
+        const ids = members.map((m) => m.user_id);
+        setAudienceUserIds(ids);
+        loadProfiles(ids);
+        return;
+      }
+      const admins = members.filter((m) => m.role === "admin").map((m) => m.user_id);
+      const { data: funcs } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+        .from("group_member_functions" as any)
+        .select("user_id, function")
+        .eq("group_id", groupId)
+        .in("function", TEAM_FUNCTIONS as unknown as string[]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+      const teamFuncUserIds = ((funcs as any[]) || []).map((f) => f.user_id);
+      const ids = [...new Set([...admins, ...teamFuncUserIds])];
+      setAudienceUserIds(ids);
+      loadProfiles(ids);
+    };
+    loadAudience();
+  }, [groupId, teamOnly, loadProfiles]);
+
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
@@ -87,6 +143,7 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
         setMessages(msgs);
         loadProfiles(msgs.map((m) => m.user_id));
         loadAttachmentUrls(msgs);
+        loadReceipts(msgs);
       }
     };
     load();
@@ -103,10 +160,17 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "group_messages", filter: `group_id=eq.${groupId}` }, (payload) => {
         setMessages((prev) => prev.filter((m) => m.id !== (payload.old as any).id));
       })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "announcement_read_receipts" }, (payload) => {
+        const receipt = payload.new as { message_id: string; user_id: string };
+        setReceipts((prev) => ({
+          ...prev,
+          [receipt.message_id]: [...new Set([...(prev[receipt.message_id] || []), receipt.user_id])],
+        }));
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [groupId, teamOnly, loadProfiles, loadAttachmentUrls]);
+  }, [groupId, teamOnly, loadProfiles, loadAttachmentUrls, loadReceipts]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -143,6 +207,7 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
         attachment_path: attachmentPath,
         is_announcement: isAnnouncement,
         is_team_only: teamOnly,
+        requires_confirmation: isAnnouncement && requiresConfirmation,
       } as any);
       if (error) {
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
@@ -150,6 +215,7 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
         setText("");
         setPendingFile(null);
         setAnnouncement(false);
+        setRequiresConfirmation(false);
       }
     } finally {
       setSending(false);
@@ -164,6 +230,22 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
     }
     await supabase.from("group_messages" as any).delete().eq("id", msg.id);
     setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+  };
+
+  const confirmReceipt = async (msg: GroupMessage) => {
+    if (!user) return;
+    const receiptRow = { message_id: msg.id, user_id: user.id };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    const { error } = await supabase.from("announcement_read_receipts" as any).insert(receiptRow as any);
+    // Ein Duplicate-Key-Fehler (bereits bestätigt) ist hier kein echter Fehler.
+    if (error && !error.message?.includes("duplicate")) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      return;
+    }
+    setReceipts((prev) => ({
+      ...prev,
+      [msg.id]: [...new Set([...(prev[msg.id] || []), user.id])],
+    }));
   };
 
   const formatTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -224,6 +306,39 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
                       )
                     )}
                     {msg.message && <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>}
+                    {msg.is_announcement && msg.requires_confirmation && (
+                      <div className="mt-1.5 pt-1.5 border-t border-primary/20 space-y-1">
+                        {user && hasConfirmed(receipts[msg.id] || [], user.id) ? (
+                          <p className="text-[10px] flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <CheckCheck className="h-3 w-3" /> {t("chat.confirmed")}
+                          </p>
+                        ) : (
+                          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 gap-1" onClick={() => confirmReceipt(msg)}>
+                            <CheckCheck className="h-3 w-3" /> {t("chat.confirmReceipt")}
+                          </Button>
+                        )}
+                        {canAnnounce && (() => {
+                          const summary = summarizeReceipts(audienceUserIds, receipts[msg.id] || []);
+                          const expanded = expandedReceipts === msg.id;
+                          return (
+                            <div>
+                              <button
+                                type="button"
+                                className="text-[10px] underline text-muted-foreground"
+                                onClick={() => setExpandedReceipts(expanded ? null : msg.id)}
+                              >
+                                {t("chat.receiptSummary", { confirmed: summary.confirmedCount, total: summary.totalCount })}
+                              </button>
+                              {expanded && summary.pendingUserIds.length > 0 && (
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  {t("chat.receiptPending")}: {summary.pendingUserIds.map((id) => profiles[id] || "Pilot").join(", ")}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                     <div className={`flex items-center gap-1.5 mt-0.5 justify-end ${isMe && !msg.is_announcement ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                       <p className="text-[9px]">{formatTime(msg.created_at)}</p>
                       {isMe && (
@@ -253,11 +368,21 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
         )}
 
         {canAnnounce && (
-          <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border">
-            <Switch id="announce" checked={announcement} onCheckedChange={setAnnouncement} />
-            <Label htmlFor="announce" className="text-xs flex items-center gap-1 cursor-pointer">
-              <Megaphone className="h-3 w-3" /> {t("chat.asAnnouncement")}
-            </Label>
+          <div className="flex flex-col gap-1.5 px-2 py-1.5 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Switch id="announce" checked={announcement} onCheckedChange={(v) => { setAnnouncement(v); if (!v) setRequiresConfirmation(false); }} />
+              <Label htmlFor="announce" className="text-xs flex items-center gap-1 cursor-pointer">
+                <Megaphone className="h-3 w-3" /> {t("chat.asAnnouncement")}
+              </Label>
+            </div>
+            {announcement && (
+              <div className="flex items-center gap-2 pl-1">
+                <Switch id="require-confirmation" checked={requiresConfirmation} onCheckedChange={setRequiresConfirmation} />
+                <Label htmlFor="require-confirmation" className="text-xs flex items-center gap-1 cursor-pointer">
+                  <CheckCheck className="h-3 w-3" /> {t("chat.requireConfirmation")}
+                </Label>
+              </div>
+            )}
           </div>
         )}
 

@@ -1520,7 +1520,12 @@
   "chat": {
     "announcement": "Announcement",
     "asAnnouncement": "Send as announcement (push to everyone)",
-    "attachmentFailed": "Attachment upload failed"
+    "attachmentFailed": "Attachment upload failed",
+    "requireConfirmation": "Require confirmation",
+    "confirmReceipt": "Confirm receipt",
+    "confirmed": "Confirmed",
+    "receiptSummary": "{{confirmed}} of {{total}} confirmed",
+    "receiptPending": "Pending"
   },
   "roleMode": {
     "label": "Area",

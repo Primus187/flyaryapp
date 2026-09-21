@@ -1530,7 +1530,12 @@
   "chat": {
     "announcement": "Ankündigung",
     "asAnnouncement": "Als Ankündigung senden (Push an alle)",
-    "attachmentFailed": "Anhang konnte nicht hochgeladen werden"
+    "attachmentFailed": "Anhang konnte nicht hochgeladen werden",
+    "requireConfirmation": "Bestätigung erforderlich",
+    "confirmReceipt": "Kenntnis bestätigen",
+    "confirmed": "Bestätigt",
+    "receiptSummary": "{{confirmed}} von {{total}} bestätigt",
+    "receiptPending": "Ausstehend"
   },
   "roleMode": {
     "label": "Bereich",

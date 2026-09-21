@@ -306,7 +306,7 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 
 **Ist-Stand:** **Abweichung vom Plan:** „zusätzliche RLS-Policy“ reicht nicht aus, da eine spätere Migration (`20260417064846`) die Notfallfelder bereits per `REVOKE SELECT` auf Spaltenebene für alle ausser dem Zeileneigentümer gesperrt hat. Umgesetzt stattdessen als neue SECURITY-DEFINER-RPC `get_emergency_contact_info()`, die Berechtigung prüft, liest und protokolliert – in einem Schritt, siehe Abschnitt 12.3 (damit zusammen als ein Feature umgesetzt). UI: Notfall-Button (`EmergencyInfoDialog.tsx`) direkt in der Teilnehmerliste in `EventDetail.tsx`, sichtbar für alle Team-Rollen. `blood_type`/`allergies`/`medical_notes` werden nur bei erteilter Gesundheitsdaten-Einwilligung zurückgegeben, Notfallkontakt (Name/Telefon) davon unabhängig.
 
-### 8.4 Lesebestätigung sicherheitsrelevanter Ankündigungen
+### 8.4 Lesebestätigung sicherheitsrelevanter Ankündigungen ✅
 
 **Ziel:** Nachweis, dass eine Wetterabsage oder Treffpunktänderung tatsächlich angekommen ist.
 
@@ -318,6 +318,16 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 **Datenmodell:** neue Tabelle `announcement_read_receipts` (Abschnitt 3)
 
 **UI:** Ankündigungs-Erstellung und -Übersicht
+
+**Ist-Stand:** Erweitert die bestehende Ankündigungsfunktion in `GroupChat.tsx`
+(`group_messages.is_announcement`, Abschnitt 6.3) um `requires_confirmation` statt eine neue
+Mitteilungs-Struktur zu bauen; gilt für normalen Gruppenkanal und Team-Kanal gleichermassen.
+**Abweichung vom Plan:** „gelesen/bestätigt“ ist als einzelne, aktive Bestätigungs-Aktion
+umgesetzt (Button „Kenntnis bestätigen“), nicht als automatisches Lese-Tracking beim blossen
+Anzeigen – nur ein aktiver Tap beweist tatsächliche Kenntnisnahme, wie im Ziel gefordert.
+Empfänger-Übersicht ist für alle Gruppenmitglieder sichtbar (anders als das Notfall-
+Zugriffsprotokoll aus 12.3, das bewusst auf Schulleitung beschränkt ist) – hier ist „wer hat
+gelesen“ der Zweck des Features selbst, keine schützenswerte Information.
 
 ### 8.5 Team-Verfügbarkeitsumfrage
 

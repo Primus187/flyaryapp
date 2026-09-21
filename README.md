@@ -1,5 +1,28 @@
 # Flyary
 
+## Flugschule: Lesebestätigung sicherheitsrelevanter Ankündigungen (Planung 8.4)
+
+Erweitert die bestehende Ankündigungsfunktion in [GroupChat.tsx](src/components/GroupChat.tsx)
+(`group_messages.is_announcement`, siehe Planung 6.3) statt eine neue Mitteilungs-Struktur zu
+bauen: eine neue Spalte `requires_confirmation` und eine neue Tabelle
+`announcement_read_receipts` (`message_id`, `user_id`, `confirmed_at`, `UNIQUE(message_id,
+user_id)`). Gilt sowohl für den normalen Gruppenkanal als auch den Team-Kanal
+(`is_team_only`).
+
+**Abweichung vom Plan:** Die Empfänger-Übersicht ("gelesen/bestätigt vs. ausstehend") ist als
+einzelne, aktive Bestätigungs-Aktion umgesetzt ("Kenntnis bestätigen"-Button), nicht als
+automatisches Lese-Tracking beim blossen Anzeigen der Nachricht – ein Tap beweist tatsächliche
+Kenntnisnahme, ein reines Rendern der Nachricht im DOM nicht (Zweck des Features laut Ziel:
+"Nachweis, dass … tatsächlich angekommen ist"). Der Empfänger-Kreis für die Zähler ("X von Y
+bestätigt") wird analog zu `is_group_team_member` clientseitig bestimmt: alle Gruppenmitglieder
+im normalen Kanal, nur Admins + Team-Funktionen (`school_lead`/`instructor`/`launch_helper`) im
+Team-Kanal. Anders als beim Notfall-Zugriffsprotokoll (Planung 12.3) ist die Empfänger-Übersicht
+für **alle** Gruppenmitglieder sichtbar, nicht nur die Schulleitung – "wer hat gelesen" ist hier
+der Zweck des Features selbst, keine schützenswerte Information.
+
+Zähl-/Abgleichslogik (bestätigt vs. ausstehend, Duplikat-Erkennung) in
+[announcement-receipts.ts](src/lib/announcement-receipts.ts) extrahiert und getestet.
+
 ## Flugschule: Notfall-Schnellzugriff & Zugriffsprotokollierung (Planung 8.3, 12.3)
 
 Naiver Ansatz (Client liest Notfallfelder aus `profiles`, Log wird separat geschrieben) scheitert:

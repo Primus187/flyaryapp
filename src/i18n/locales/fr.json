@@ -1520,7 +1520,12 @@
   "chat": {
     "announcement": "Annonce",
     "asAnnouncement": "Envoyer comme annonce (push à tous)",
-    "attachmentFailed": "Échec de l'envoi de la pièce jointe"
+    "attachmentFailed": "Échec de l'envoi de la pièce jointe",
+    "requireConfirmation": "Confirmation requise",
+    "confirmReceipt": "Confirmer la prise de connaissance",
+    "confirmed": "Confirmé",
+    "receiptSummary": "{{confirmed}} sur {{total}} confirmé(s)",
+    "receiptPending": "En attente"
   },
   "roleMode": {
     "label": "Espace",
