@@ -236,6 +236,8 @@ export default function SchoolDashboard() {
         return <SchoolPeople groupId={selectedGroupId} canManage={true} />;
       case "students":
         return <SchoolStudents students={studentInfos} />;
+      case "safety":
+        return <SchoolSafety groupId={selectedGroupId} />;
       case "equipment":
         return <SchoolEquipment groupId={selectedGroupId} />;
       case "credits":
