@@ -346,7 +346,13 @@ export default function EventDetail() {
       <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
 
       {event.groups?.group_type === "school" && (
-        <EventWeatherDecision eventId={id!} groupId={event.group_id} eventTitle={event.title} canManage={isStaff} />
+        <EventWeatherDecision
+          eventId={id!}
+          groupId={event.group_id}
+          eventTitle={event.title}
+          canManage={isStaff}
+          onEventStatusSynced={(status) => setEvent((prev) => (prev ? { ...prev, status } : prev))}
+        />
       )}
 
       {/* Program, staff, carpools */}

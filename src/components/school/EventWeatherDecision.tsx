@@ -11,13 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CloudSun, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { isDeadlineOverdue, syncedEventStatus, type WeatherDecisionStatus } from "@/lib/weather-decision";
+import { isDeadlineOverdue, syncedEventStatus, toLocalDatetimeInputValue, type WeatherDecisionStatus } from "@/lib/weather-decision";
 
 interface Props {
   eventId: string;
   groupId: string;
   eventTitle: string;
   canManage: boolean;
+  /** Called after flight_events.status was synced, so the parent can refresh its own copy. */
+  onEventStatusSynced?: (status: "confirmed" | "cancelled") => void;
 }
 
 interface Decision {
@@ -33,7 +35,7 @@ const STATUS_STYLES: Record<WeatherDecisionStatus, string> = {
   cancelled: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/40",
 };
 
-export default function EventWeatherDecision({ eventId, groupId, eventTitle, canManage }: Props) {
+export default function EventWeatherDecision({ eventId, groupId, eventTitle, canManage, onEventStatusSynced }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -55,7 +57,7 @@ export default function EventWeatherDecision({ eventId, groupId, eventTitle, can
       .maybeSingle();
     const row = data as Decision | null;
     setDecision(row);
-    setDeadlineDraft(row?.decision_deadline ? row.decision_deadline.slice(0, 16) : "");
+    setDeadlineDraft(row?.decision_deadline ? toLocalDatetimeInputValue(row.decision_deadline) : "");
     setStatusDraft(row?.status ?? "weather_pending");
     setNoteDraft(row?.note ?? "");
     setLoading(false);
@@ -95,6 +97,7 @@ export default function EventWeatherDecision({ eventId, groupId, eventTitle, can
     const synced = syncedEventStatus(statusDraft);
     if (statusChanged && synced) {
       await supabase.from("flight_events").update({ status: synced }).eq("id", eventId);
+      onEventStatusSynced?.(synced);
     }
 
     if (statusChanged) {

@@ -150,11 +150,15 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
     return !!validUntil && new Date(validUntil).getTime() >= Date.now();
   };
   const hasValidInstructor = instructors.some((s) => hasValidCert(s.user_id));
-  const showCertWarning = isSchool && instructors.length > 0 && !hasValidInstructor;
+  // instructor_certifications is only readable by staff/the cert owner (RLS); a non-staff
+  // viewer would see an empty instructorCertValidity map and the warning would incorrectly
+  // claim "no valid certificate" even when one exists, purely for lack of visibility. Gate on
+  // canManage so only viewers who can actually see the underlying data get the warning.
+  const showCertWarning = canManage && isSchool && instructors.length > 0 && !hasValidInstructor;
 
   const availableInstructorOptions = options.filter((o) => o.functions.includes("instructor")).map((o) => o.user_id);
   const showNoCertifiedAvailableWarning =
-    isSchool && !!eventDate && instructors.length === 0 && availableInstructorOptions.length > 0 &&
+    canManage && isSchool && !!eventDate && instructors.length === 0 && availableInstructorOptions.length > 0 &&
     !hasCertifiedAvailableInstructor(availableInstructorOptions, availability, hasValidCert);
 
   const sortedOptions = eventDate ? sortByAvailability(options, (o) => availability[o.user_id] ?? null) : options;

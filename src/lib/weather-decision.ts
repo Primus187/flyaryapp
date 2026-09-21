@@ -16,3 +16,14 @@ export function isDeadlineOverdue(deadline: string | null, decidedAt: string | n
   if (!deadline || decidedAt) return false;
   return new Date(deadline).getTime() <= now.getTime();
 }
+
+/**
+ * Formats a stored (UTC) timestamp for a `<input type="datetime-local">` value, in the
+ * viewer's local timezone. A plain string slice of the ISO value would instead show the raw
+ * UTC wall-clock time, shifted by the viewer's UTC offset from what was actually entered.
+ */
+export function toLocalDatetimeInputValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
