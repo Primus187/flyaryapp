@@ -364,7 +364,8 @@
       "instructor": "Fluglehrer:in",
       "launchHelper": "Starthelfer:in",
       "selectPerson": "Person wählen",
-      "positionPlaceholder": "Position, z. B. Seilbahn-Talstation"
+      "positionPlaceholder": "Position, z. B. Seilbahn-Talstation",
+      "certWarning": "Kein Fluglehrer/keine Fluglehrerin mit gültigem Zertifikat eingeteilt."
     },
     "program": {
       "title": "Tagesprogramm",

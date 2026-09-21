@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, HandHelping, Plus, X } from "lucide-react";
+import { User, HandHelping, Plus, X, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface StaffRow {
@@ -37,6 +37,8 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
   const [newUserId, setNewUserId] = useState("");
   const [newRole, setNewRole] = useState<"instructor" | "launch_helper">("instructor");
   const [newPosition, setNewPosition] = useState("");
+  /** user_id -> valid_until (cert_type "instructor") for the group; used for the SHV staffing warning. */
+  const [instructorCertValidity, setInstructorCertValidity] = useState<Record<string, string | null>>({});
 
   const load = async () => {
     const { data } = await supabase.from("event_staff" as any).select("*").eq("event_id", eventId);
@@ -75,6 +77,19 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
       })));
     };
     loadOptions();
+
+    // Load instructor certification validity for the SHV staffing warning.
+    const loadCertValidity = async () => {
+      const { data } = await supabase
+        .from("instructor_certifications")
+        .select("user_id, valid_until")
+        .eq("group_id", groupId)
+        .eq("cert_type", "instructor");
+      const map: Record<string, string | null> = {};
+      (data || []).forEach((c: { user_id: string; valid_until: string | null }) => { map[c.user_id] = c.valid_until; });
+      setInstructorCertValidity(map);
+    };
+    loadCertValidity();
   }, [eventId, groupId]);
 
   const addStaff = async () => {
@@ -100,6 +115,10 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
 
   const instructors = staff.filter((s) => s.role === "instructor");
   const helpers = staff.filter((s) => s.role === "launch_helper");
+  const hasValidInstructor = instructors.some((s) => {
+    const validUntil = instructorCertValidity[s.user_id];
+    return !!validUntil && new Date(validUntil).getTime() >= Date.now();
+  });
 
   if (staff.length === 0 && !canManage) return null;
 
@@ -108,6 +127,12 @@ export default function EventStaff({ eventId, groupId, canManage }: Props) {
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.staff.title")}</h2>
       <Card className="border-0 shadow-sm">
         <CardContent className="p-3 space-y-2">
+          {!hasValidInstructor && (
+            <p className="text-xs text-amber-500 flex items-start gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              {t("events.staff.certWarning")}
+            </p>
+          )}
           {staff.length === 0 && <p className="text-sm text-muted-foreground">{t("events.staff.empty")}</p>}
           {[
             { list: instructors, icon: User, label: t("events.staff.instructors") },
