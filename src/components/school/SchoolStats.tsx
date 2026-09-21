@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import RankedList from "@/components/stats/RankedList";
+import AnnualReport from "@/components/school/AnnualReport";
 import { CalendarDays, MapPin, Users, GraduationCap } from "lucide-react";
 
 interface Props {
