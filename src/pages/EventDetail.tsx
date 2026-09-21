@@ -12,6 +12,7 @@ import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
 import EventCarpools from "@/components/EventCarpools";
 import EventAttendance from "@/components/school/EventAttendance";
+import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
