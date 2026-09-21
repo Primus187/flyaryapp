@@ -1,5 +1,23 @@
 # Flyary
 
+## Flugschule: Verfügbarkeitsplanung Team (Planung 6.1)
+
+Unter **Verfügbarkeit** trägt das Team (Schulleitung, Fluglehrer, Starthelfer) pro Tag eine
+Wochenansicht mit drei Zuständen (verfügbar/unsicher/nicht verfügbar, optional mit Notiz) ein –
+ein Klick auf den eigenen Status zykelt weiter, ein weiterer Klick über "nicht verfügbar" hinaus
+löscht den Eintrag wieder. Da die Flugschul-Ansicht insgesamt nur für Schulleitung/Fluglehrer
+erreichbar ist, kann von dort aus auch für andere Teammitglieder eingetragen werden (z. B. wenn
+ein Starthelfer die Abwesenheit telefonisch durchgibt); serverseitig bleibt es über RLS
+abgesichert (jede Person darf ohnehin nur ihre eigenen Einträge schreiben, Staff zusätzlich alle).
+
+Bei der Termin-Einteilung ([EventStaff.tsx](src/components/EventStaff.tsx)) werden die
+vorschlagbaren Personen nach Verfügbarkeit für das Termindatum sortiert (verfügbar zuerst) und
+mit ihrem Status markiert – als Empfehlung, kein Blocker, da nicht jede Person ihre Verfügbarkeit
+zwingend vorab einträgt. Ist bereits jemand eingeteilt, der sich für diesen Tag explizit als
+nicht verfügbar gemeldet hat, erscheint dafür ein eigener Hinweis. Zusätzlich – kombiniert mit
+Abschnitt 4.2 – warnt die Ansicht, wenn für ein Flugschul-Termin noch niemand eingeteilt ist und
+keine als verfügbar gemeldete Person ein gültiges Fluglehrer-Zertifikat hat.
+
 ## Flugschule: Vorfallmeldung – Schnellzugriff & Materialfilter (Planung 4.1, 9.2)
 
 Das Formular zur Unfall-/Vorfallmeldung ist aus [IncidentReports.tsx](src/components/school/IncidentReports.tsx)

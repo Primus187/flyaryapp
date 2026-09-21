@@ -365,7 +365,9 @@
       "launchHelper": "Starthelfer:in",
       "selectPerson": "Person wählen",
       "positionPlaceholder": "Position, z. B. Seilbahn-Talstation",
-      "certWarning": "Kein Fluglehrer/keine Fluglehrerin mit gültigem Zertifikat eingeteilt."
+      "certWarning": "Kein Fluglehrer/keine Fluglehrerin mit gültigem Zertifikat eingeteilt.",
+      "noCertifiedAvailable": "Für diesen Tag ist keine als verfügbar markierte Person mit gültigem Fluglehrer-Zertifikat gemeldet.",
+      "markedUnavailable": "Als nicht verfügbar gemeldet"
     },
     "program": {
       "title": "Tagesprogramm",
@@ -1184,6 +1186,22 @@
       "status": {
         "open": "offen",
         "submitted": "gemeldet"
+      }
+    },
+    "availability": {
+      "title": "Verfügbarkeit",
+      "loadFailed": "Verfügbarkeit konnte nicht geladen werden.",
+      "retry": "Erneut laden",
+      "prevWeek": "Vorherige Woche",
+      "nextWeek": "Nächste Woche",
+      "noTeam": "Kein Team erfasst",
+      "noTeamHint": "Personen mit Schulleitungs-, Fluglehrer- oder Starthelfer-Funktion erscheinen hier.",
+      "notePlaceholder": "Notiz für {{name}} …",
+      "status": {
+        "available": "verfügbar",
+        "unsure": "unsicher",
+        "unavailable": "nicht verfügbar",
+        "none": "—"
       }
     },
     "certs": {

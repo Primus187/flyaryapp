@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { User, HandHelping, Plus, X, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { type AvailabilityStatus, hasCertifiedAvailableInstructor, sortByAvailability } from "@/lib/instructor-availability";
 
 interface StaffRow {
   id: string;
@@ -26,11 +27,19 @@ interface Props {
   eventId: string;
   groupId: string;
   canManage: boolean;
-  /** Nur für Flugschulgruppen gilt die SHV-Zertifikats-Mindestbesetzung. */
+  /** Nur für Flugschulgruppen gilt die SHV-Zertifikats-Mindestbesetzung und Verfügbarkeitsplanung. */
   isSchool?: boolean;
+  /** Datum des Termins (yyyy-mm-dd oder ISO), für den Abgleich mit der Team-Verfügbarkeit (Abschnitt 6.1). */
+  eventDate?: string;
 }
 
-export default function EventStaff({ eventId, groupId, canManage, isSchool = false }: Props) {
+const AVAILABILITY_LABEL: Record<AvailabilityStatus, string> = {
+  available: "✓",
+  unsure: "?",
+  unavailable: "✗",
+};
+
+export default function EventStaff({ eventId, groupId, canManage, isSchool = false, eventDate }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [staff, setStaff] = useState<StaffRow[]>([]);
@@ -41,6 +50,8 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
   const [newPosition, setNewPosition] = useState("");
   /** user_id -> valid_until (cert_type "instructor") for the group; used for the SHV staffing warning. */
   const [instructorCertValidity, setInstructorCertValidity] = useState<Record<string, string | null>>({});
+  /** user_id -> availability status for eventDate (Abschnitt 6.1). */
+  const [availability, setAvailability] = useState<Record<string, AvailabilityStatus>>({});
 
   const load = async () => {
     const { data } = await supabase.from("event_staff" as any).select("*").eq("event_id", eventId);
@@ -81,7 +92,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
     loadOptions();
 
     // Load instructor certification validity for the SHV staffing warning (school groups only).
-    if (!isSchool) { setInstructorCertValidity({}); return; }
+    if (!isSchool) { setInstructorCertValidity({}); setAvailability({}); return; }
     const loadCertValidity = async () => {
       const { data } = await supabase
         .from("instructor_certifications")
@@ -93,7 +104,23 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
       setInstructorCertValidity(map);
     };
     loadCertValidity();
-  }, [eventId, groupId, isSchool]);
+
+    // Load team availability for the event's date (Abschnitt 6.1).
+    if (!eventDate) { setAvailability({}); return; }
+    const day = eventDate.slice(0, 10);
+    const loadAvailability = async () => {
+      const { data } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+        .from("instructor_availability" as any)
+        .select("user_id, status")
+        .eq("group_id", groupId)
+        .eq("date", day);
+      const map: Record<string, AvailabilityStatus> = {};
+      ((data as { user_id: string; status: AvailabilityStatus }[]) || []).forEach((row) => { map[row.user_id] = row.status; });
+      setAvailability(map);
+    };
+    loadAvailability();
+  }, [eventId, groupId, isSchool, eventDate]);
 
   const addStaff = async () => {
     if (!newUserId) return;
@@ -118,11 +145,19 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
 
   const instructors = staff.filter((s) => s.role === "instructor");
   const helpers = staff.filter((s) => s.role === "launch_helper");
-  const hasValidInstructor = instructors.some((s) => {
-    const validUntil = instructorCertValidity[s.user_id];
+  const hasValidCert = (userId: string) => {
+    const validUntil = instructorCertValidity[userId];
     return !!validUntil && new Date(validUntil).getTime() >= Date.now();
-  });
+  };
+  const hasValidInstructor = instructors.some((s) => hasValidCert(s.user_id));
   const showCertWarning = isSchool && instructors.length > 0 && !hasValidInstructor;
+
+  const availableInstructorOptions = options.filter((o) => o.functions.includes("instructor")).map((o) => o.user_id);
+  const showNoCertifiedAvailableWarning =
+    isSchool && !!eventDate && instructors.length === 0 && availableInstructorOptions.length > 0 &&
+    !hasCertifiedAvailableInstructor(availableInstructorOptions, availability, hasValidCert);
+
+  const sortedOptions = eventDate ? sortByAvailability(options, (o) => availability[o.user_id] ?? null) : options;
 
   if (staff.length === 0 && !canManage) return null;
 
@@ -135,6 +170,12 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
             <p className="text-xs text-amber-500 flex items-start gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               {t("events.staff.certWarning")}
+            </p>
+          )}
+          {showNoCertifiedAvailableWarning && (
+            <p className="text-xs text-amber-500 flex items-start gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              {t("events.staff.noCertifiedAvailable")}
             </p>
           )}
           {staff.length === 0 && <p className="text-sm text-muted-foreground">{t("events.staff.empty")}</p>}
@@ -151,6 +192,11 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
                   {list.map((s) => (
                     <div key={s.id} className="flex items-center gap-2">
                       <span className="text-sm flex-1 truncate">{names[s.user_id] || "Pilot"}</span>
+                      {eventDate && availability[s.user_id] === "unavailable" && (
+                        <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4">
+                          {t("events.staff.markedUnavailable")}
+                        </Badge>
+                      )}
                       {s.position && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">{s.position}</Badge>}
                       {canManage && (
                         <button onClick={() => removeStaff(s.id)} className="text-muted-foreground hover:text-destructive">
@@ -170,9 +216,14 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
                 <Select value={newUserId} onValueChange={setNewUserId}>
                   <SelectTrigger className="flex-1 h-8 text-xs"><SelectValue placeholder={t("events.staff.selectPerson")} /></SelectTrigger>
                   <SelectContent>
-                    {options.map((o) => (
-                      <SelectItem key={o.user_id} value={o.user_id}>{o.name}</SelectItem>
-                    ))}
+                    {sortedOptions.map((o) => {
+                      const status = availability[o.user_id];
+                      return (
+                        <SelectItem key={o.user_id} value={o.user_id}>
+                          {o.name}{status ? ` ${AVAILABILITY_LABEL[status]}` : ""}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>

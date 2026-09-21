@@ -387,7 +387,9 @@
       "launchHelper": "Launch helper",
       "selectPerson": "Select person",
       "positionPlaceholder": "Position, e.g. cable car valley station",
-      "certWarning": "No instructor with a valid certification is assigned."
+      "certWarning": "No instructor with a valid certification is assigned.",
+      "noCertifiedAvailable": "No one with a valid instructor certification has marked themselves available for this day.",
+      "markedUnavailable": "Marked unavailable"
     },
     "program": {
       "title": "Day program",
@@ -1351,6 +1353,22 @@
       "status": {
         "open": "open",
         "submitted": "reported"
+      }
+    },
+    "availability": {
+      "title": "Availability",
+      "loadFailed": "Could not load availability.",
+      "retry": "Retry",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week",
+      "noTeam": "No team recorded",
+      "noTeamHint": "People with a school lead, instructor or launch helper function appear here.",
+      "notePlaceholder": "Note for {{name}} …",
+      "status": {
+        "available": "available",
+        "unsure": "unsure",
+        "unavailable": "unavailable",
+        "none": "—"
       }
     },
     "certs": {

@@ -8,7 +8,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
-import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
@@ -19,6 +19,7 @@ import SchoolStats from "@/components/school/SchoolStats";
 import SchoolBilling from "@/components/school/SchoolBilling";
 import SchoolCredits from "@/components/school/SchoolCredits";
 import SchoolSafety from "@/components/school/SchoolSafety";
+import TeamAvailability from "@/components/school/TeamAvailability";
 import GroupChat from "@/components/GroupChat";
 
 interface SchoolGroup {
@@ -33,7 +34,7 @@ const normalizeStudentStatus = (value: unknown): StudentStatus => {
   return "active";
 };
 
-type Section = "days" | "chat" | "people" | "students" | "safety" | "equipment" | "credits" | "billing" | "stats";
+type Section = "days" | "chat" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
   {
@@ -49,6 +50,7 @@ const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labe
       { key: "people", icon: Users, labelKey: "school.people.title" },
       { key: "students", icon: ClipboardList, labelKey: "school.students" },
       { key: "safety", icon: ShieldAlert, labelKey: "school.safety.title" },
+      { key: "availability", icon: CalendarClock, labelKey: "school.availability.title" },
     ],
   },
   {
@@ -345,6 +347,8 @@ export default function SchoolDashboard() {
        return <SchoolStudents groupId={selectedGroupId} students={studentInfos} onStatusChange={handleStudentStatusChange} />;
       case "safety":
         return <SchoolSafety groupId={selectedGroupId} />;
+      case "availability":
+        return <TeamAvailability groupId={selectedGroupId} />;
       case "equipment":
         return <SchoolEquipment groupId={selectedGroupId} />;
       case "credits":

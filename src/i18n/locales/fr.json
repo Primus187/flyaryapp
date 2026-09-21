@@ -387,7 +387,9 @@
       "launchHelper": "Aide au décollage",
       "selectPerson": "Choisir une personne",
       "positionPlaceholder": "Position, p. ex. station inférieure",
-      "certWarning": "Aucun moniteur ou monitrice avec un certificat valide n'est affecté."
+      "certWarning": "Aucun moniteur ou monitrice avec un certificat valide n'est affecté.",
+      "noCertifiedAvailable": "Personne avec un certificat de moniteur valide ne s'est déclaré disponible pour ce jour.",
+      "markedUnavailable": "Déclaré indisponible"
     },
     "program": {
       "title": "Programme du jour",
@@ -1351,6 +1353,22 @@
       "status": {
         "open": "ouvert",
         "submitted": "annoncé"
+      }
+    },
+    "availability": {
+      "title": "Disponibilité",
+      "loadFailed": "La disponibilité n'a pas pu être chargée.",
+      "retry": "Réessayer",
+      "prevWeek": "Semaine précédente",
+      "nextWeek": "Semaine suivante",
+      "noTeam": "Aucune équipe enregistrée",
+      "noTeamHint": "Les personnes avec une fonction de direction, de moniteur ou d'aide au décollage apparaissent ici.",
+      "notePlaceholder": "Note pour {{name}} …",
+      "status": {
+        "available": "disponible",
+        "unsure": "incertain",
+        "unavailable": "indisponible",
+        "none": "—"
       }
     },
     "certs": {
