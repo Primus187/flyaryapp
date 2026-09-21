@@ -55,3 +55,21 @@ export function licensedCompletionsInYear(history: LevelHistoryEntry[], year: nu
   );
   return ids.size;
 }
+
+/** Distinct licensed completions across the `windowYears` ending in `endYear` (inclusive). */
+export function licensedCompletionsInWindow(history: LevelHistoryEntry[], endYear: number, windowYears = 3): number {
+  let total = 0;
+  for (let year = endYear - windowYears + 1; year <= endYear; year++) {
+    total += licensedCompletionsInYear(history, year);
+  }
+  return total;
+}
+
+export type ShvMinimumPerformanceStatus = "ok" | "warning" | "critical";
+
+/** SHV minimum-performance traffic light: at least 3 licensed completions in the last 3 years. */
+export function shvMinimumPerformanceStatus(completionsInWindow: number): ShvMinimumPerformanceStatus {
+  if (completionsInWindow >= 3) return "ok";
+  if (completionsInWindow >= 1) return "warning";
+  return "critical";
+}

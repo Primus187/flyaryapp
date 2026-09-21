@@ -1104,6 +1104,12 @@
     },
     "activeStudents": "Élèves actifs",
     "openReviews": "Évaluations en attente",
+    "shvAmpel": {
+      "ok": "Prestation minimale SHV atteinte",
+      "warning": "Prestation minimale SHV proche de la limite",
+      "critical": "Prestation minimale SHV non atteinte",
+      "count": "{{count}} brevet(s) obtenu(s) ces 3 dernières années (minimum : 3)"
+    },
     "nextFlightDay": "Prochain jour de vol",
     "openEvent": "Ouvrir l'événement",
     "newFlightDay": "Nouveau jour de vol",
@@ -1254,6 +1260,12 @@
       "launchHelperDays": "Journées aides au décollage",
       "areaRanking": "Sites de vol (rendez-vous)",
       "categoryRanking": "Rendez-vous par type",
+      "utilizationByCategory": "Taux d'occupation par type de cours",
+      "studentsPerInstructor": "Élèves encadrés par moniteur",
+      "performanceOverall": "Réussite de la formation (global)",
+      "successRate": "Taux de réussite cours de base → brevet",
+      "avgDurationMonths": "Durée moyenne de formation (mois)",
+      "performanceOverallHint": "Non filtré par l'année sélectionnée – une formation dure généralement plusieurs années, une seule année ne serait pas représentative. Les formations abandonnées ne comptent ni comme réussite ni comme échec.",
       "empty": "Aucun rendez-vous enregistré."
     },
     "credits": {

@@ -12,7 +12,7 @@ Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in e
 | 2 – Schüler- und Team-Prozesse | ✅ Abgeschlossen | Alle 6 Features (5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2) umgesetzt und akzeptanzgeprüft |
 | 3 – Kommunikation | ✅ Abgeschlossen | Alle 3 Features (8.3, 8.4, 8.5) umgesetzt und akzeptanzgeprüft; Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) war aus dem Plan entfernt worden, siehe Abschnitt 8 |
 | 4 – Administration und Zahlung | ⏸ Bewusst zurückgestellt | Wird erst nach dem Workshop mit Vertical angegangen (Zahlungsanbieter-Wahl, Aufbewahrungsdauer 12.1 u. a. offene Fragen hängen davon ab); Phase 5 wird vorgezogen |
-| 5 – Reporting und Wetter-Integration | ⬜ Nicht begonnen | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig; vorgezogen vor Phase 4 |
+| 5 – Reporting und Wetter-Integration | 🔶 Teilweise (11.1, 11.2 fertig; 7.3 offen) | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig; vorgezogen vor Phase 4 |
 
 Detaillierter Ist-Stand pro Feature direkt bei den jeweiligen Unterabschnitten unten (✅-Markierung). Tatsächliche Implementierungsdetails (Migrationsdateien, Komponenten, Testabdeckung) stehen in der README.md des Repos, dort pro Feature ein eigener Abschnitt mit Begründung für jede Abweichung von diesem Plan. Abschnitt 14 wurde um konkrete Erkenntnisse aus der Umsetzung von Phase 1, 2 und 3 ergänzt.
 
@@ -448,11 +448,11 @@ für alle Team-Mitglieder sichtbar.
 
 **Datenmodell:** keine neue Tabelle, Export-Funktion über bestehende `billing_items`
 
-## 11. Reporting und Auswertungen (Phase 5) ⬜ Nicht begonnen (4.4 bereits fertig, siehe dort)
+## 11. Reporting und Auswertungen (Phase 5) ✅ Abgeschlossen (4.4 bereits in Phase 1 fertig, siehe dort)
 
 Der SHV-Jahresbericht ist bereits unter 4.4 spezifiziert (Compliance-kritisch, Phase 1). Dieser Abschnitt ergänzt die betriebswirtschaftlichen Auswertungen für die Schulleitung. Die Voraussetzung `student_status_history` (Abschnitt 5.2) existiert jetzt bereits.
 
-### 11.1 Auslastung und Erfolgsquote
+### 11.1 Auslastung und Erfolgsquote ✅
 
 **Ziel:** Sichtbar machen, wie ausgelastet Kursarten und Fluglehrer sind und wie viele Schüler vom Grundkurs bis zum Brevet gelangen.
 
@@ -466,7 +466,24 @@ Der SHV-Jahresbericht ist bereits unter 4.4 spezifiziert (Compliance-kritisch, P
 
 **UI:** Erweiterung der bestehenden Statistiken-Kachel im Flugschul-Bereich (Kapitel 18)
 
-### 11.2 SHV-Mindestleistungs-Ampel
+**Ist-Stand:** Erweitert `SchoolStats.tsx` um zwei neue `RankedList`s (Auslastung pro Kursart,
+betreute Schüler pro Fluglehrer, beide jahresfilterbar wie die bestehenden Kennzahlen) und eine
+neue, separat beschriftete Kachelgruppe „Ausbildungserfolg (gesamt)“ mit Erfolgsquote und
+durchschnittlicher Ausbildungsdauer. **Abweichung vom Plan:** Erfolgsquote und Ausbildungsdauer
+sind bewusst **nicht** durch die Jahresauswahl gefiltert (die Ausbildung dauert typischerweise
+mehrere Jahre, eine „Erfolgsquote 2025“ allein wäre nicht aussagekräftig) – stattdessen ein
+Gesamt-Kennwert über alle Schüler der Schule, im UI klar so beschriftet. Datenquelle ist
+`training_level_history` statt `training_progress` (Letzteres ist eine reine
+Manöver-Bewertungstabelle pro Übungspunkt, keine Stufenhistorie) – analog zur bereits für 4.4
+etablierten Begründung. **Vorjahresvergleich wurde nicht umgesetzt:** Die bestehende
+Statistiken-Kachel, auf die dieses Akzeptanzkriterium verweist, bietet selbst nur einen
+Jahres-Select ohne Delta-Anzeige zum Vorjahr – es gibt kein bestehendes Muster, das hier
+übernommen werden könnte; eine solche Vergleichsanzeige wäre ein eigenständiges Feature.
+„Grundkurs → Brevet“ wird vokabular-agnostisch berechnet (frühester Historieneintrag bis
+`licensed`), nicht an den Begriff „Grundkurs“ gebunden, aus demselben Grund wie beim
+Jahresbericht (Abschnitt 14: unterschiedliche `training_level`-Vokabulare je Gruppe).
+
+### 11.2 SHV-Mindestleistungs-Ampel ✅
 
 **Ziel:** Laufende Sichtbarkeit, ob die SHV-Mindestleistung (3 Brevetierte in 3 Jahren) erfüllt ist, statt nachträglicher Feststellung.
 
@@ -475,6 +492,11 @@ Der SHV-Jahresbericht ist bereits unter 4.4 spezifiziert (Compliance-kritisch, P
 - Ampel-Anzeige (grün/gelb/rot) in der Flugschul-Übersicht basierend auf abgeschlossenen Brevetierungen der letzten 3 Jahre
 
 **Datenmodell:** aggregierende Abfrage über `training_progress`, keine neue Tabelle
+
+**Ist-Stand:** Ampel-Karte in `SchoolOverview.tsx` (Flugschul-Übersicht), berechnet über
+`training_level_history` (statt `training_progress`, aus demselben Grund wie bei 11.1) mit den
+Schwellen ≥3 Brevetierte = grün, 1–2 = gelb, 0 = rot, jeweils über das rollierende 3-Jahres-Fenster
+bis zum aktuellen Jahr.
 
 ## 12. Recht und Datenschutz – technische Umsetzung ⬜ Nicht begonnen
 

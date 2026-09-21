@@ -1104,6 +1104,12 @@
     },
     "activeStudents": "Active Students",
     "openReviews": "Open Reviews",
+    "shvAmpel": {
+      "ok": "SHV minimum performance met",
+      "warning": "SHV minimum performance close to the limit",
+      "critical": "SHV minimum performance not met",
+      "count": "{{count}} license(s) completed in the last 3 years (minimum: 3)"
+    },
     "nextFlightDay": "Next Flight Day",
     "openEvent": "Open Event",
     "newFlightDay": "New Flight Day",
@@ -1254,6 +1260,12 @@
       "launchHelperDays": "Launch helper days",
       "areaRanking": "Flying sites (events)",
       "categoryRanking": "Events by type",
+      "utilizationByCategory": "Utilization by course type",
+      "studentsPerInstructor": "Students supervised per instructor",
+      "performanceOverall": "Training success (overall)",
+      "successRate": "Success rate basic course → license",
+      "avgDurationMonths": "Avg. training duration (months)",
+      "performanceOverallHint": "Not filtered by the year selection - training usually spans several years, so a single year wouldn't be meaningful. Discontinued trainings count as neither a success nor a failure.",
       "empty": "No events yet."
     },
     "credits": {

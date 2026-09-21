@@ -937,6 +937,12 @@
     },
     "activeStudents": "Aktive Schüler",
     "openReviews": "Offene Bewertungen",
+    "shvAmpel": {
+      "ok": "SHV-Mindestleistung erfüllt",
+      "warning": "SHV-Mindestleistung knapp",
+      "critical": "SHV-Mindestleistung nicht erfüllt",
+      "count": "{{count}} Brevetierung(en) in den letzten 3 Jahren (Minimum: 3)"
+    },
     "nextFlightDay": "Nächster Flugtag",
     "openEvent": "Zum Flugtag",
     "newFlightDay": "Neuer Flugtag",
@@ -1087,6 +1093,12 @@
       "launchHelperDays": "Starthelfer-Einsätze",
       "areaRanking": "Fluggebiete (Termine)",
       "categoryRanking": "Termine pro Art",
+      "utilizationByCategory": "Auslastung pro Kursart",
+      "studentsPerInstructor": "Betreute Schüler pro Fluglehrer",
+      "performanceOverall": "Ausbildungserfolg (gesamt)",
+      "successRate": "Erfolgsquote Grundkurs → Brevet",
+      "avgDurationMonths": "⌀ Ausbildungsdauer (Monate)",
+      "performanceOverallHint": "Nicht durch die Jahresauswahl gefiltert – die Ausbildung dauert meist mehrere Jahre, ein Einzeljahr wäre nicht aussagekräftig. Abgebrochene Ausbildungen zählen weder als Erfolg noch als Misserfolg.",
       "empty": "Noch keine Termine erfasst."
     },
     "credits": {

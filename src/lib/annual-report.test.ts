@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { levelCountsAtYearEnd, licensedCompletionsInYear } from "./annual-report";
+import {
+  levelCountsAtYearEnd,
+  licensedCompletionsInWindow,
+  licensedCompletionsInYear,
+  shvMinimumPerformanceStatus,
+} from "./annual-report";
 
 describe("levelCountsAtYearEnd", () => {
   it("falls back to the live profile value for the current year when there is no history", () => {
@@ -89,5 +94,37 @@ describe("licensedCompletionsInYear", () => {
   it("ignores non-licensed transitions", () => {
     const history = [{ user_id: "u1", training_level: "grundkurs", changed_at: "2025-05-01T00:00:00Z" }];
     expect(licensedCompletionsInYear(history, 2025)).toBe(0);
+  });
+});
+
+describe("licensedCompletionsInWindow", () => {
+  it("sums completions across the 3 years ending in endYear", () => {
+    const history = [
+      { user_id: "u1", training_level: "licensed", changed_at: "2023-06-01T00:00:00Z" },
+      { user_id: "u2", training_level: "licensed", changed_at: "2024-06-01T00:00:00Z" },
+      { user_id: "u3", training_level: "licensed", changed_at: "2025-06-01T00:00:00Z" },
+    ];
+    expect(licensedCompletionsInWindow(history, 2025)).toBe(3);
+  });
+
+  it("excludes completions before the window", () => {
+    const history = [{ user_id: "u1", training_level: "licensed", changed_at: "2021-06-01T00:00:00Z" }];
+    expect(licensedCompletionsInWindow(history, 2025)).toBe(0);
+  });
+});
+
+describe("shvMinimumPerformanceStatus", () => {
+  it("is ok at or above the SHV minimum of 3", () => {
+    expect(shvMinimumPerformanceStatus(3)).toBe("ok");
+    expect(shvMinimumPerformanceStatus(5)).toBe("ok");
+  });
+
+  it("is warning below the minimum but not zero", () => {
+    expect(shvMinimumPerformanceStatus(1)).toBe("warning");
+    expect(shvMinimumPerformanceStatus(2)).toBe("warning");
+  });
+
+  it("is critical at zero", () => {
+    expect(shvMinimumPerformanceStatus(0)).toBe("critical");
   });
 });

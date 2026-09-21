@@ -1,5 +1,42 @@
 # Flyary
 
+## Flugschule: Auslastung, Erfolgsquote, SHV-Mindestleistungs-Ampel (Planung 11.1, 11.2)
+
+Phase 4 (Administration und Zahlung) ist bewusst zurückgestellt bis nach dem Workshop mit
+Vertical; Phase 5 (Reporting und Wetter-Integration) wurde vorgezogen. Dies ist der erste Teil
+davon (11.1, 11.2); 7.3 (Fluggebiets-Wetter-Matching) folgt separat.
+
+**11.1 Auslastung und Erfolgsquote:** Erweitert die bestehende Statistiken-Kachel
+[SchoolStats.tsx](src/components/school/SchoolStats.tsx) um zwei neue Ranglisten (Auslastung pro
+Kursart, betreute Schüler pro Fluglehrer – beide jahresfilterbar wie die bestehenden Kennzahlen)
+und eine separat beschriftete Kachelgruppe „Ausbildungserfolg (gesamt)“.
+
+**Abweichung vom Plan:** Erfolgsquote und Ausbildungsdauer sind bewusst *nicht* durch die
+Jahresauswahl gefiltert – eine Ausbildung dauert typischerweise mehrere Jahre, eine
+„Erfolgsquote 2025“ allein wäre nicht aussagekräftig. Stattdessen ein Gesamt-Kennwert über alle
+Schüler der Schule, im UI klar so beschriftet (Hinweistext unter der Kachel). Datenquelle ist
+`training_level_history` statt der im Plan vorgeschlagenen `training_progress` (Letzteres ist
+eine reine Manöver-Bewertungstabelle pro Übungspunkt aus dem Kontrollblatt, keine
+Stufenhistorie – dieselbe Begründung wie bereits beim SHV-Jahresbericht, Planung 4.4).
+„Grundkurs → Brevet“ wird vokabular-agnostisch berechnet (frühester Historieneintrag bis
+`licensed`), da `training_level`-Vokabulare zwischen Gruppen differieren (siehe Umsetzungsplan
+Abschnitt 14). Abgebrochene Ausbildungen (`student_status_history`, Status „cancelled“) werden
+aus dem Nenner der Erfolgsquote entfernt statt als Misserfolg gezählt, wie im
+Akzeptanzkriterium gefordert. Der im Akzeptanzkriterium erwähnte „Vorjahresvergleich wie bei den
+bestehenden Schulstatistiken“ wurde nicht umgesetzt: Die referenzierte bestehende Kachel bietet
+selbst nur einen Jahres-Select ohne Delta-Anzeige zum Vorjahr – es existiert kein wiederverwendbares
+Muster dafür.
+
+**11.2 SHV-Mindestleistungs-Ampel:** Neue Ampel-Karte in
+[SchoolOverview.tsx](src/components/school/SchoolOverview.tsx) (Flugschul-Übersicht), ebenfalls
+über `training_level_history` berechnet. Schwellen: ≥3 Brevetierte in den letzten 3 Jahren =
+grün, 1–2 = gelb, 0 = rot.
+
+Aggregationslogik (Auslastung pro Kategorie, Schüler pro Fluglehrer, Erfolgsquote,
+Ausbildungsdauer) in [school-performance.ts](src/lib/school-performance.ts), Ampel-Logik in
+[annual-report.ts](src/lib/annual-report.ts) (dort bereits die verwandte
+`licensedCompletionsInYear`-Funktion aus 4.4), beide getestet.
+
 ## Empfänger-Übersicht Lesebestätigung: zu enge UI-Sichtbarkeit behoben (Nachtrag zu Planung 8.4)
 
 Bei der Akzeptanzkriterien-Prüfung von Phase 3 aufgefallen: Die „X von Y bestätigt“-Übersicht in

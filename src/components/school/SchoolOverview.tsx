@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ClipboardList, Plus, Send, Receipt } from "lucide-react";
+import { Users, Calendar, ClipboardList, Plus, Send, Receipt, Gauge } from "lucide-react";
 import SchoolSetupCard from "./SchoolSetupCard";
 import SchoolInvite from "./SchoolInvite";
+import { licensedCompletionsInWindow, shvMinimumPerformanceStatus, type ShvMinimumPerformanceStatus } from "@/lib/annual-report";
 
 interface Props {
   groupId: string;
@@ -15,11 +16,18 @@ interface Props {
   openNotesCount: number;
 }
 
+const SHV_AMPEL_STYLES: Record<ShvMinimumPerformanceStatus, string> = {
+  ok: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  warning: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  critical: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+};
+
 export default function SchoolOverview({ groupId, studentCount, nextEvent, openNotesCount }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openBilling, setOpenBilling] = useState(0);
   const [nextSignups, setNextSignups] = useState<number | null>(null);
+  const [shvStatus, setShvStatus] = useState<{ status: ShvMinimumPerformanceStatus; count: number } | null>(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -51,6 +59,23 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
     return () => { cancelled = true; };
   }, [nextEvent?.id]);
 
+  useEffect(() => {
+    if (!groupId) return;
+    let cancelled = false;
+    supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+      .from("training_level_history" as any)
+      .select("user_id, training_level, changed_at")
+      .eq("group_id", groupId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const history = (data as { user_id: string; training_level: string; changed_at: string }[]) || [];
+        const count = licensedCompletionsInWindow(history, new Date().getFullYear());
+        setShvStatus({ status: shvMinimumPerformanceStatus(count), count });
+      });
+    return () => { cancelled = true; };
+  }, [groupId]);
+
   const kpis = [
     { icon: Users, label: t("school.activeStudents"), value: studentCount },
     { icon: ClipboardList, label: t("school.openReviews"), value: openNotesCount },
@@ -73,6 +98,18 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
           </Card>
         ))}
       </div>
+
+      {shvStatus && (
+        <Card className={`border-0 shadow-sm ${SHV_AMPEL_STYLES[shvStatus.status]}`}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Gauge className="h-5 w-5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium">{t(`school.shvAmpel.${shvStatus.status}`)}</p>
+              <p className="text-xs opacity-80">{t("school.shvAmpel.count", { count: shvStatus.count })}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {nextEvent && (
         <Card className="border-0 shadow-sm">

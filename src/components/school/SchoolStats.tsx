@@ -6,7 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import RankedList from "@/components/stats/RankedList";
 import AnnualReport from "@/components/school/AnnualReport";
-import { CalendarDays, MapPin, Users, GraduationCap } from "lucide-react";
+import { CalendarDays, MapPin, Users, GraduationCap, Percent, Clock } from "lucide-react";
+import { latestStatusPerStudent } from "@/lib/student-status";
+import {
+  averageTrainingDurationDays,
+  studentsPerInstructor,
+  successRate,
+  utilizationByCategory,
+  type EventCapacityInfo,
+} from "@/lib/school-performance";
 
 interface Props {
   groupId: string;
@@ -18,6 +26,7 @@ interface EventRow {
   event_category: string | null;
   flight_area: string | null;
   status: string;
+  max_participants: number | null;
 }
 
 interface StaffRow {
@@ -34,6 +43,10 @@ export default function SchoolStats({ groupId }: Props) {
   const [signups, setSignups] = useState<{ event_id: string; user_id: string }[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [year, setYear] = useState<string>("all");
+  const [performance, setPerformance] = useState<{
+    successRate: ReturnType<typeof successRate>;
+    avgDurationDays: number | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -42,7 +55,7 @@ export default function SchoolStats({ groupId }: Props) {
       setLoading(true);
       const { data: eventRows } = await supabase
         .from("flight_events")
-        .select("id, event_date, event_category, flight_area, status")
+        .select("id, event_date, event_category, flight_area, status, max_participants")
         .eq("group_id", groupId)
         .order("event_date", { ascending: false });
 
@@ -67,11 +80,32 @@ export default function SchoolStats({ groupId }: Props) {
         (profs || []).forEach((p: any) => { nameMap[p.user_id] = p.pilot_name || "—"; });
       }
 
+      // Erfolgsquote/Ausbildungsdauer sind bewusst nicht auf das Jahresfilter eingeschränkt:
+      // eine Ausbildung dauert typischerweise mehrere Jahre, "Erfolgsquote 2025" allein wäre
+      // dadurch nicht aussagekräftig. Stattdessen ein Gesamt-Kennwert über alle Schüler der Schule.
+      const [membersRes, historyRes, statusRes] = await Promise.all([
+        supabase.from("group_members").select("user_id, role").eq("group_id", groupId),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+        supabase.from("training_level_history" as any).select("user_id, training_level, changed_at").eq("group_id", groupId),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+        supabase.from("student_status_history" as any).select("student_id, status, reason, changed_at").eq("group_id", groupId).order("changed_at", { ascending: false }),
+      ]);
+      const studentIds = (membersRes.data || []).filter((m) => m.role === "member").map((m) => m.user_id);
+      const history = (historyRes.data as { user_id: string; training_level: string; changed_at: string }[]) || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+      const latestStatus = latestStatusPerStudent((statusRes.data as any[]) || []);
+      const statusMap: Record<string, ReturnType<typeof latestStatusPerStudent>[string]["status"]> = {};
+      Object.entries(latestStatus).forEach(([id, entry]) => { statusMap[id] = entry.status; });
+
       if (cancelled) return;
       setEvents(evs);
       setStaff(staffRows);
       setSignups(signupRows);
       setNames(nameMap);
+      setPerformance({
+        successRate: successRate(studentIds, history, statusMap),
+        avgDurationDays: averageTrainingDurationDays(history),
+      });
       setLoading(false);
     };
     load();
@@ -118,6 +152,28 @@ export default function SchoolStats({ groupId }: Props) {
 
   const instructorDays = useMemo(() => rank("instructor"), [staff, eventIdSet, names]);
   const launchHelperDays = useMemo(() => rank("launch_helper"), [staff, eventIdSet, names]);
+
+  const utilizationRanking = useMemo(() => {
+    const capacityEvents: EventCapacityInfo[] = filteredEvents.map((e) => ({
+      eventId: e.id,
+      category: e.event_category || "height_flight",
+      maxParticipants: e.max_participants,
+      confirmedSignups: signups.filter((s) => s.event_id === e.id).length,
+    }));
+    const byCategory = utilizationByCategory(capacityEvents);
+    return Object.entries(byCategory)
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, percent]) => ({ name: t(`events.categories.${key}`, { defaultValue: key }), count: percent }));
+  }, [filteredEvents, signups, t]);
+
+  const studentsPerInstructorRanking = useMemo(() => {
+    const assignments = staff.filter((s) => s.role === "instructor" && eventIdSet.has(s.event_id)).map((s) => ({ eventId: s.event_id, userId: s.user_id }));
+    const relevantSignups = signups.filter((s) => eventIdSet.has(s.event_id)).map((s) => ({ eventId: s.event_id, userId: s.user_id }));
+    const counts = studentsPerInstructor(assignments, relevantSignups);
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([userId, count]) => ({ name: names[userId] || "—", count }));
+  }, [staff, signups, eventIdSet, names]);
 
   const areaRanking = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -181,6 +237,35 @@ export default function SchoolStats({ groupId }: Props) {
       <RankedList title={t("school.stats.launchHelperDays")} items={launchHelperDays} />
       <RankedList title={t("school.stats.areaRanking")} items={areaRanking} />
       <RankedList title={t("school.stats.categoryRanking")} items={categoryRanking} />
+      <RankedList title={t("school.stats.utilizationByCategory")} items={utilizationRanking} />
+      <RankedList title={t("school.stats.studentsPerInstructor")} items={studentsPerInstructorRanking} />
+
+      {performance && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("school.stats.performanceOverall")}</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+              <CardContent className="p-4 flex flex-col items-center gap-1">
+                <Percent className="h-5 w-5 text-primary" />
+                <span className="text-2xl font-bold tabular-nums">
+                  {performance.successRate.rate !== null ? `${performance.successRate.rate}%` : "—"}
+                </span>
+                <span className="text-[10px] text-muted-foreground text-center">{t("school.stats.successRate")}</span>
+              </CardContent>
+            </Card>
+            <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+              <CardContent className="p-4 flex flex-col items-center gap-1">
+                <Clock className="h-5 w-5 text-primary" />
+                <span className="text-2xl font-bold tabular-nums">
+                  {performance.avgDurationDays !== null ? Math.round(performance.avgDurationDays / 30) : "—"}
+                </span>
+                <span className="text-[10px] text-muted-foreground text-center">{t("school.stats.avgDurationMonths")}</span>
+              </CardContent>
+            </Card>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1.5">{t("school.stats.performanceOverallHint")}</p>
+        </div>
+      )}
 
       <AnnualReport groupId={groupId} />
     </div>
