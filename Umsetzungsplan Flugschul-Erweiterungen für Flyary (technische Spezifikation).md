@@ -10,7 +10,7 @@ Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in e
 | --- | --- | --- |
 | 1 – SHV-Compliance-Basis | ✅ Abgeschlossen | Alle 7 Features (4.1–4.4, 5.1, 9.1, 9.2) umgesetzt und akzeptanzgeprüft |
 | 2 – Schüler- und Team-Prozesse | ✅ Abgeschlossen | Alle 6 Features (5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2) umgesetzt und akzeptanzgeprüft |
-| 3 – Minderjährige und Kommunikation | ⬜ Nicht begonnen | |
+| 3 – Kommunikation | ⬜ Nicht begonnen | Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) aus dem Plan entfernt, siehe Abschnitt 8 |
 | 4 – Administration und Zahlung | ⬜ Nicht begonnen | |
 | 5 – Reporting und Wetter-Integration | ⬜ Nicht begonnen | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig |
 
@@ -40,7 +40,7 @@ Priorisiert nach SHV-Compliance-Risiko, Abhängigkeiten zu bestehenden Tabellen 
 | --- | --- | --- | --- | --- | --- |
 | 1 | SHV-Compliance-Basis | Unfallmeldung, Fluglehrer-Zertifikats-Tracking, Materialquote-Check, Ausrüstungscheck im Onboarding, Wartungsfristen Material | Direktes regulatorisches Risiko bei Nichteinhaltung; baut nur auf bestehenden Tabellen `school_equipment`, `training_progress`, `profiles` auf | M | ✅ |
 | 2 | Schüler- und Team-Prozesse | Meilenstein-Freigaben im Kontrollblatt, Pausierungs-Status, Verfügbarkeitsplanung Team, Übergabenotizen, Geh/Nogo-Workflow, Ersatztermin-Vorschlag | Kerntätigkeit des Schulbetriebs; hoher Alltagsnutzen für Vertical | L | ✅ |
-| 3 | Minderjährige und Kommunikation | Eltern-Zugang, digitale Einverständniserklärung mit Protokollierung, Notfall-Schnellzugriff, Lesebestätigung, Team-Verfügbarkeitsumfrage | Rechtlich sensibel (Abschnitt 10 des Anforderungskatalogs), sollte vor breiterem Rollout an Minderjährige stehen | M | ⬜ |
+| 3 | Kommunikation | Notfall-Schnellzugriff, Lesebestätigung sicherheitsrelevanter Ankündigungen, Team-Verfügbarkeitsumfrage | Alltagsnutzen im laufenden Schulbetrieb; ursprünglich mit Minderjährigen-Handling gebündelt, das nicht mehr Teil des Plans ist (kein spezifischer rechtlicher Zeitdruck mehr) | S | ⬜ |
 | 4 | Administration und Zahlung | Online-Zahlung bei Kursbuchung, digitale Vertragsunterschrift, Gutscheine/Rabatte, strukturierter Rechnungsexport | Unabhängiges Teilsystem, benötigt externen Zahlungsanbieter – grösster Integrationsaufwand | L | ⬜ |
 | 5 | Reporting und Wetter-Integration | SHV-Jahresbericht-Export, Auslastungs-/Erfolgsquote-Dashboards, Fluggebiets-Wetter-Matching | Baut auf den Daten aus Phase 1–3 auf, liefert erst dann verlässliche Kennzahlen | S–M | ⬜ (4.4 bereits in Phase 1 erledigt) |
 
@@ -66,15 +66,14 @@ Logisches Modell als Ausgangspunkt – vor der Umsetzung gegen das tatsächliche
 | `event_weather_decisions` | Termine (ergänzt `flight_events`) | Strukturierter Geh/Nogo-Entscheid | `event_id`, `decision_deadline`, `status` (bestätigt/wetterabhängig/abgesagt), `decided_by`, `decided_at`, `note`. **Zusatz gegenüber Plan:** Ein-Weg-Sync von `status` nach `flight_events.status` bei den Werten „bestätigt“/„abgesagt“ (siehe Abschnitt 14, `event_status`-Enum bewusst nicht erweitert) | 7 | ✅ |
 | `group_messages` (erweitert) | Termine/Community | Interner Team-Kanal (6.3) | + Feld `is_team_only: boolean`, neue RLS-Funktion `is_group_team_member()`. **Abweichung vom Plan:** keine dedizierte „Team“-Gruppe pro Schule (siehe Abschnitt 14) | 6 | ✅ |
 | `student_day_notes` (erweitert) | Ausbildung | Übergabenotizen (6.2) | + Feld `is_next_step: boolean`. **Abweichung vom Plan:** nicht `flight_coach_notes` (das ist die allgemeine, gruppenunabhängige Flug-Coaching-Notiz), sondern die bereits bestehende schulspezifische Tagesnotiz-Tabelle (siehe Abschnitt 14) | 6 | ✅ |
-| `guardian_links` | Piloten | Verknüpfung minderjährige Schüler – Erziehungsberechtigte | `student_profile_id`, `guardian_name`, `guardian_email`, `guardian_phone`, `relation` | 8, 12 | ⬜ Phase 3 |
-| `consent_records` | Piloten | Protokollierte Einwilligungen (Beweiskraft, siehe Abschnitt 12) | `profile_id`, `consent_type` (AGB/Haftungsausschluss/Foto/Datenbearbeitung), `version`, `accepted_at`, `accepted_by` | 5, 8, 12 | ⬜ Phase 3 |
+| `consent_records` | Piloten | Protokollierte Einwilligungen (Beweiskraft, siehe Abschnitt 12) | `profile_id`, `consent_type` (AGB/Haftungsausschluss/Foto/Datenbearbeitung), `version`, `accepted_at`, `accepted_by` | 10, 12 | ⬜ Phase 4 |
 | `announcement_read_receipts` | Termine (ergänzt `event_messages`) | Lesebestätigung sicherheitsrelevanter Ankündigungen | `announcement_id`, `profile_id`, `read_at` | 8 | ⬜ Phase 3 |
 | `team_polls`, `team_poll_responses` | Flugschule | Kurze Verfügbarkeitsabfragen im Team | `question`, `closes_at`; `poll_id`, `profile_id`, `response` | 8 | ⬜ Phase 3 |
 | `course_payments` | Flugschule (ergänzt `billing_items`) | Online-Zahlung pro Kursbuchung | `billing_item_id`, `amount`, `provider`, `provider_ref`, `status`, `paid_at` | 10 | ⬜ Phase 4 |
 | `vouchers` | Flugschule | Gutscheine/Rabattcodes | `code`, `discount_type`, `value`, `valid_until`, `redeemed_by`, `redeemed_at` | 10 | ⬜ Phase 4 |
 | `locations` (erweitert) | Infrastruktur | SHV-Fluggebietsstatus, Wetter-Matching | + Felder `shv_approved: boolean`, `wind_sock: boolean`, `optimal_wind_directions: text[]`, `usage_permission_ref` | 4, 7 | ⬜ Phase 5 |
 
-Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur für Schulteam bzw. betroffene Person selbst); Datenschutz-relevante Tabellen (`guardian_links`, `consent_records`, Notfalldaten-Zugriff) benötigen eine eigene, engere Policy analog zu den bestehenden Notfall-/Gesundheitsdaten.
+Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur für Schulteam bzw. betroffene Person selbst); Datenschutz-relevante Tabellen (`consent_records`, Notfalldaten-Zugriff) benötigen eine eigene, engere Policy analog zu den bestehenden Notfall-/Gesundheitsdaten.
 
 **Migrations-Infrastruktur (Nachtrag, nicht ursprünglich Teil des Plans):** Es gibt zwei Migrationsordner – `supabase/migrations/` (historisch, plus ein versehentliches Phase-1-Duplikat vom 21.9.) und `drizzle/migrations/` (die tatsächlich massgebliche Reihe ab Phase 1, s. Abschnitt 14). Eine Reconciliation-Migration (`drizzle/migrations/0004_reconcile_phase1_rls.sql`) bereinigt die daraus entstandenen RLS-Abweichungen idempotent, unabhängig davon, welche der beiden Migrationen tatsächlich zuerst gegen die Datenbank lief.
 
@@ -146,7 +145,7 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 
 **Ist-Stand:** `AnnualReport.tsx`, `annual_report_submissions`-Tabelle wie geplant. **Nachtrag:** Ursprünglich zeigte der Jahresfilter nur die Betriebstage/Monat korrekt gefiltert an, „Schüler nach Kursart“ und „abgeschlossene Brevetierungen“ blieben ein Live-Snapshot unabhängig vom gewählten Jahr (bei der Phase-1-Prüfung gefunden). Neue Tabelle `training_level_history` protokolliert seither jede Statusänderung mit Zeitstempel; für vergangene Jahre wird daraus rekonstruiert statt geraten. Ausserdem behoben: ein Vokabular-Mismatch zwischen zwei parallel verwendeten `training_level`-Wertebereichen im Bestandscode (`grundkurs/brevetkurs/siku` vs. `ground/altitude/exam_ready/licensed`).
 
-## 5. Schülerverwaltung (Phase 1–2) ✅ Abgeschlossen (5.1–5.3; 5.4 = Phase 3, offen)
+## 5. Schülerverwaltung (Phase 1–2) ✅ Abgeschlossen
 
 ### 5.1 Ausrüstungscheck im Onboarding (Phase 1) ✅
 
@@ -194,10 +193,6 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 **UI:** Bestehende Kontrollblatt-Ansicht (Kapitel 13), ergänzt um Sperr-/Freigabe-Indikator
 
 **Ist-Stand:** `Training.tsx`, Schloss-Badge mit Name der Voraussetzung. Wie gefordert rein informativ – keine deaktivierten Bedienelemente, daher auch kein separater „Freigabe aufheben“-Mechanismus nötig. `training_categories` ist ein globales Curriculum ohne `group_id`; die Beispiel-Verknüpfung aus dem Plan (Höhenflüge nach Übungshang) wurde direkt per Migration gesetzt, analog dazu, wie die Kategorien selbst bereits gepflegt werden (keine App-UI dafür).
-
-### 5.4 Digitale Einverständniserklärung und Eltern-Verknüpfung (Phase 3) ⬜
-
-Siehe Abschnitt 8 (Kommunikation) und Abschnitt 12 (Recht) – technisch eng verknüpft mit `guardian_links` und `consent_records`.
 
 ## 6. Team- und Fluglehrerorganisation (Phase 2) ✅ Abgeschlossen
 
@@ -291,35 +286,9 @@ Siehe Abschnitt 8 (Kommunikation) und Abschnitt 12 (Recht) – technisch eng ver
 
 **Datenmodell:** `locations.optimal_wind_directions` (Abschnitt 3), keine neue Tabelle
 
-## 8. Kommunikation (Phase 2–3) ⬜ Nicht begonnen (gehört vollständig zu Phase 3, siehe Abschnitt 2)
+## 8. Kommunikation (Phase 3) ⬜ Nicht begonnen
 
-### 8.1 Eltern-/Erziehungsberechtigten-Verknüpfung (Phase 3)
-
-**Ziel:** Bei minderjährigen Schülern Termin-Infos und Wetterentscheide zusätzlich an Erziehungsberechtigte kommunizieren, ohne ihnen vollen App-Zugang zu geben.
-
-**Akzeptanzkriterien:**
-
-- Erziehungsberechtigte werden als Kontakt zu einem minderjährigen Schülerprofil erfasst (Name, E-Mail/Telefon, Beziehung)
-- Push-/E-Mail-Kopie von sicherheitsrelevanten Ankündigungen (Wetterentscheid, Treffpunktänderung) an hinterlegte Erziehungsberechtigte, ohne eigenes Login
-- Umsetzung als E-Mail-Fallback (Edge Function) reicht für den Start; ein eigener Leseblick später optional
-
-**Datenmodell:** neue Tabelle `guardian_links` (Abschnitt 3)
-
-**UI:** Schülerprofil-Ergänzung im Onboarding (Abschnitt 5.1)
-
-### 8.2 Digitale Einverständniserklärung mit Protokollierung (Phase 3)
-
-**Ziel:** Nachweisbare Kenntnisnahme von SHV-Weisungen, AGB und Haftungsausschluss (SHV-Pflicht, siehe Anforderungskatalog Abschnitt 1 und 10).
-
-**Akzeptanzkriterien:**
-
-- Beim Onboarding werden Version des Dokuments, Zeitpunkt und bestätigendes Konto protokolliert (nicht nur ein Checkbox-Klick ohne Log)
-- Bei Minderjährigen erfolgt die Bestätigung durch das verknüpfte Erziehungsberechtigten-Konto bzw. wird als „im Namen von“ protokolliert
-- Historie einsehbar (welche Version wurde wann akzeptiert)
-
-**Datenmodell:** neue Tabelle `consent_records` (Abschnitt 3)
-
-**UI:** Onboarding-Flow, zusätzlich einsehbar in den Kontoeinstellungen
+**Hinweis:** 8.1 (Eltern-/Erziehungsberechtigten-Verknüpfung) und 8.2 (Digitale Einverständniserklärung mit Protokollierung) wurden entfernt – das Minderjährigen-Handling ist nicht mehr Teil dieses Plans. Die Nummerierung startet bewusst bei 8.3, um Verweise aus anderen Abschnitten (u. a. 12.3) nicht zu brechen. Ein allgemeiner (nicht minderjährigenspezifischer) Bedarf an protokollierten Einwilligungen bleibt bestehen und ist jetzt unter 10.2 eigenständig beschrieben.
 
 ### 8.3 Notfall-Schnellzugriff
 
@@ -411,11 +380,18 @@ Siehe Abschnitt 8 (Kommunikation) und Abschnitt 12 (Recht) – technisch eng ver
 
 **UI:** Abrechnungs-Kachel im Flugschul-Bereich, Zahl-Button in der Schüler-Aufstellung
 
-### 10.2 Digitale Vertragsunterschrift
+### 10.2 Digitale Vertragsunterschrift (inkl. protokollierte Einwilligungen)
 
-**Ziel:** AGB/Haftungsausschluss rechtssicher genug bestätigen (siehe rechtliche Einordnung im Anforderungskatalog, Abschnitt 10).
+**Ziel:** AGB/Haftungsausschluss/SHV-Weisungen rechtssicher genug bestätigen (siehe rechtliche Einordnung im Anforderungskatalog, Abschnitt 10). Deckt sowohl die Vertragsunterschrift als auch die SHV-Kenntnisnahme über dieselbe Tabelle ab, um Doppelspurigkeiten zu vermeiden. Ursprünglich Teil von Abschnitt 8.2 (Phase 3); da diese Version kein Minderjährigen-Handling mehr enthält, hierher verschoben und darauf reduziert.
 
-**Akzeptanzkriterien:** siehe Abschnitt 8.2 – dieselbe `consent_records`-Tabelle deckt Vertragsdokumente und SHV-Kenntnisnahme gemeinsam ab, um Doppelspurigkeiten zu vermeiden
+**Akzeptanzkriterien:**
+
+- Beim Onboarding bzw. bei der Kursbuchung werden Version des Dokuments, Zeitpunkt und bestätigendes Konto protokolliert (nicht nur ein Checkbox-Klick ohne Log)
+- Historie einsehbar (welche Version wurde wann akzeptiert)
+
+**Datenmodell:** neue Tabelle `consent_records` (Abschnitt 3)
+
+**UI:** Onboarding-Flow bzw. Kursbuchung, zusätzlich einsehbar in den Kontoeinstellungen
 
 ### 10.3 Gutscheine und Rabatte
 
@@ -471,7 +447,7 @@ Der SHV-Jahresbericht ist bereits unter 4.4 spezifiziert (Compliance-kritisch, P
 
 ## 12. Recht und Datenschutz – technische Umsetzung ⬜ Nicht begonnen
 
-Die meisten rechtlichen Punkte aus Abschnitt 10 des Anforderungskatalogs sind bereits in die Features oben eingearbeitet (`consent_records`, `guardian_links`). Drei Punkte brauchen eine explizite technische Entscheidung vor der Umsetzung:
+Die meisten rechtlichen Punkte aus Abschnitt 10 des Anforderungskatalogs sind bereits in die Features oben eingearbeitet (`consent_records`, siehe Abschnitt 10.2). Das ursprünglich hier mitgedachte Minderjährigen-Handling (`guardian_links`) ist nicht mehr Teil dieses Plans. Drei Punkte brauchen eine explizite technische Entscheidung vor der Umsetzung:
 
 ### 12.1 Aufbewahrung vs. Konto-Löschung
 
@@ -525,8 +501,8 @@ Die meisten rechtlichen Punkte aus Abschnitt 10 des Anforderungskatalogs sind be
 
 ## 14. Hinweise für den Einsatz im Agentic Coding
 
-- **Ein Feature pro Task/Prompt.** Jeder Unterabschnitt (z. B. 4.1, 5.3, 8.2) ist bewusst so geschnitten, dass er als einzelner Auftrag an den Coding-Agenten funktioniert – inklusive Ziel, Akzeptanzkriterien und betroffener Tabellen. Nicht mehrere Abschnitte gleichzeitig beauftragen, das erschwert Review und Rollback.
-- **Reihenfolge innerhalb einer Phase beachten**, wo Abhängigkeiten bestehen: z. B. 5.1 (Ausrüstungscheck) vor 4.3 (Materialquoten-Check), 6.1 (Verfügbarkeit) vor 7.2 (Ersatztermin-Vorschlag), 8.2 (Consent-Tabelle) vor 10.2 (Vertragsunterschrift).
+- **Ein Feature pro Task/Prompt.** Jeder Unterabschnitt (z. B. 4.1, 5.3, 8.3) ist bewusst so geschnitten, dass er als einzelner Auftrag an den Coding-Agenten funktioniert – inklusive Ziel, Akzeptanzkriterien und betroffener Tabellen. Nicht mehrere Abschnitte gleichzeitig beauftragen, das erschwert Review und Rollback.
+- **Reihenfolge innerhalb einer Phase beachten**, wo Abhängigkeiten bestehen: z. B. 5.1 (Ausrüstungscheck) vor 4.3 (Materialquoten-Check), 6.1 (Verfügbarkeit) vor 7.2 (Ersatztermin-Vorschlag).
 - **Vor jedem Feature**: den Agenten das aktuelle Supabase-Schema (`supabase db dump` oder äquivalent) sowie die betroffenen bestehenden Dateien/Komponenten einsehen lassen, statt blind auf die hier vorgeschlagenen Tabellennamen zu vertrauen – dieses Dokument ist ein fachliches Zielbild, keine verbindliche DDL.
 - **Migrationen einzeln committen**, mit Bezug auf die Abschnittsnummer dieses Dokuments in der Commit-Message (erleichtert später die Rückverfolgung zum Anforderungskatalog).
 - **RLS zuerst testen, dann UI bauen** – falsche Berechtigungen sind in einer App mit Minderjährigen- und Gesundheitsdaten das grösste Risiko; ein Feature gilt erst als fertig, wenn ein Test mit einer nicht-berechtigten Rolle den Zugriff nachweislich verweigert.
