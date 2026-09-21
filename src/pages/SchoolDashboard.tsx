@@ -8,7 +8,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
-import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3 } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
@@ -18,6 +18,7 @@ import SchoolEquipment from "@/components/school/SchoolEquipment";
 import SchoolStats from "@/components/school/SchoolStats";
 import SchoolBilling from "@/components/school/SchoolBilling";
 import SchoolCredits from "@/components/school/SchoolCredits";
+import SchoolSafety from "@/components/school/SchoolSafety";
 import GroupChat from "@/components/GroupChat";
 
 interface SchoolGroup {
@@ -25,7 +26,7 @@ interface SchoolGroup {
   name: string;
 }
 
-type Section = "days" | "chat" | "people" | "students" | "equipment" | "credits" | "billing" | "stats";
+type Section = "days" | "chat" | "people" | "students" | "safety" | "equipment" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
   {
@@ -40,6 +41,7 @@ const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labe
     items: [
       { key: "people", icon: Users, labelKey: "school.people.title" },
       { key: "students", icon: ClipboardList, labelKey: "school.students" },
+      { key: "safety", icon: ShieldAlert, labelKey: "school.safety.title" },
     ],
   },
   {
@@ -234,6 +236,8 @@ export default function SchoolDashboard() {
         return <SchoolPeople groupId={selectedGroupId} canManage={true} />;
       case "students":
         return <SchoolStudents students={studentInfos} />;
+      case "safety":
+        return <SchoolSafety groupId={selectedGroupId} />;
       case "equipment":
         return <SchoolEquipment groupId={selectedGroupId} />;
       case "credits":

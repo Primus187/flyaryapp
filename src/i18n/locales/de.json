@@ -1024,7 +1024,9 @@
       "quantityHint": "Mehrere gleiche Stücke werden automatisch durchnummeriert.",
       "ratesSuggestHint": "Noch keine Ansätze gesetzt. Übernimm Vorschlagswerte und passe sie an.",
       "ratesSuggestApply": "Vorschlagswerte übernehmen",
-      "emptyHint": "Nimm zuerst Schirme, Gurtzeuge oder Helme ins Lager auf."
+      "emptyHint": "Nimm zuerst Schirme, Gurtzeuge oder Helme ins Lager auf.",
+      "shvApproved": "SHV-typengeprüft",
+      "shvApprovedShort": "SHV-geprüft"
     },
     "stats": {
       "title": "Statistiken",
@@ -1138,6 +1140,113 @@
       "nothingToBook": "Nichts zu verbuchen – Ansätze prüfen oder Anwesenheit setzen.",
       "alreadyBooked": "Bereits verbucht: {{credits}} Guthaben, {{items}} Posten",
       "rentalDescription": "Materialmiete Flugtag"
+    },
+    "safety": {
+      "title": "Sicherheit",
+      "tab": "Vorfälle",
+      "report": "Vorfall melden",
+      "saved": "Vorfall erfasst",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "empty": "Keine Vorfälle erfasst.",
+      "emptyHint": "Ereignisse mit Verletzung oder Materialschaden werden hier dokumentiert und innerhalb von 10 Tagen dem SHV gemeldet.",
+      "occurredAt": "Zeitpunkt",
+      "event": "Termin",
+      "noEvent": "Kein Termin",
+      "involved": "Beteiligte Personen",
+      "involvedPlaceholder": "Namen, durch Komma getrennt",
+      "description": "Hergang",
+      "descriptionPlaceholder": "Was ist passiert?",
+      "measures": "Getroffene Massnahmen",
+      "deadline": "Meldefrist",
+      "deadlineHint": "Die Meldefrist beträgt 10 Tage ab Ereignis und wird automatisch berechnet.",
+      "countdown": "Noch {{days}} von 10 Tagen zur Meldung",
+      "overdue": "Meldefrist seit {{days}} Tagen abgelaufen",
+      "openCount": "{{count}} Vorfall noch nicht gemeldet",
+      "print": "Meldung drucken",
+      "markSubmitted": "Als gemeldet markieren",
+      "markOpen": "Wieder öffnen",
+      "pdfTitle": "Vorfallmeldung",
+      "pdfSubtitle": "Meldung an den Schweizerischen Hängegleiter-Verband",
+      "status": {
+        "open": "offen",
+        "submitted": "gemeldet"
+      }
+    },
+    "certs": {
+      "tab": "Zertifikate",
+      "types": {
+        "instructor": "Fluglehrer",
+        "launch_leader": "Startleiter",
+        "biplace_1": "Biplace 1",
+        "biplace_2": "Biplace 2",
+        "biplace_3": "Biplace 3",
+        "first_aid": "Nothelfer"
+      },
+      "teachingDays": "{{count}} Unterrichtstage {{year}}",
+      "none": "Keine Zertifikate erfasst",
+      "edit": "Zertifikate bearbeiten",
+      "saved": "Zertifikate gespeichert",
+      "dateHint": "Links: ausgestellt am · Rechts: gültig bis",
+      "noTeam": "Noch keine Teamfunktionen verteilt.",
+      "noTeamHint": "Verteile im Reiter «Team» zuerst die Funktionen, danach erscheinen hier die Zertifikate.",
+      "warnMissing": "{{name}}: Fluglehrer-Zertifikat fehlt",
+      "warnExpired": "{{name}}: Fluglehrer-Zertifikat ist abgelaufen",
+      "warnSoon": "{{name}}: Fluglehrer-Zertifikat läuft am {{date}} ab",
+      "warnDays": "{{name}}: erst {{days}} von {{min}} Unterrichtstagen in {{year}}"
+    },
+    "maintenance": {
+      "tab": "Wartung",
+      "add": "Frist erfassen",
+      "saved": "Frist erfasst",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "empty": "Keine Wartungsfristen erfasst.",
+      "emptyHint": "Erfasse Rettungspackungen und Checks, damit du rechtzeitig erinnert wirst.",
+      "equipment": "Material",
+      "type": "Art",
+      "types": {
+        "reserve_repack": "Rettung neu packen",
+        "harness_check": "Gurtzeug-Check",
+        "glider_check": "Schirm-Check",
+        "other": "Andere"
+      },
+      "dueAt": "Fällig am",
+      "note": "Notiz",
+      "done": "Erledigt",
+      "markDone": "Erledigt",
+      "dueSoonCount": "{{count}} Frist in den nächsten 30 Tagen fällig"
+    },
+    "gear": {
+      "tab": "Ausrüstung",
+      "hint": "Markiere, was beim Schüler vorhanden ist. Fehlendes kann mit Leihmaterial abgedeckt werden.",
+      "empty": "Noch keine Schüler in dieser Gruppe.",
+      "emptyHint": "Sobald Schüler beigetreten sind, kannst du hier die Ausrüstung abhaken.",
+      "complete": "vollständig",
+      "missing": "{{count}} offen",
+      "items": {
+        "helmet": "Helm",
+        "shoes": "Schuhwerk",
+        "harness_protector": "Gurtzeug mit Protektor",
+        "reserve": "Rettungsgerät"
+      }
+    },
+    "quota": {
+      "warning": "Materialquote: {{available}} von {{needed}} typengeprüften Systemen verfügbar."
+    },
+    "annual": {
+      "title": "SHV-Jahresbericht",
+      "operatingDays": "Betriebstage",
+      "licensed": "Brevetierungen",
+      "unknownLevel": "Ohne Ausbildungsstand",
+      "month": "Monat",
+      "key": "Kennzahl",
+      "value": "Wert",
+      "print": "Drucken",
+      "csv": "CSV",
+      "markSubmitted": "Als eingereicht markieren",
+      "markOpen": "Wieder öffnen",
+      "markedSubmitted": "Als eingereicht markiert",
+      "markedOpen": "Wieder geöffnet",
+      "reminder": "Der Jahresbericht {{year}} ist noch nicht eingereicht."
     }
   },
   "feed": {

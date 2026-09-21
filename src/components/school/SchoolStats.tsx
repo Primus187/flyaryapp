@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import RankedList from "@/components/stats/RankedList";
+import AnnualReport from "@/components/school/AnnualReport";
 import { CalendarDays, MapPin, Users, GraduationCap } from "lucide-react";
 
 interface Props {
@@ -180,6 +181,8 @@ export default function SchoolStats({ groupId }: Props) {
       <RankedList title={t("school.stats.launchHelperDays")} items={launchHelperDays} />
       <RankedList title={t("school.stats.areaRanking")} items={areaRanking} />
       <RankedList title={t("school.stats.categoryRanking")} items={categoryRanking} />
+
+      <AnnualReport groupId={groupId} />
     </div>
   );
 }

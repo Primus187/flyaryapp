@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      annual_report_submissions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          submitted_at: string | null
+          submitted_by: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_report_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_items: {
         Row: {
           amount: number
@@ -368,6 +403,101 @@ export type Database = {
           },
           {
             foreignKeyName: "equipment_assignments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_checks: {
+        Row: {
+          checked_at: string
+          checked_by: string
+          group_id: string
+          id: string
+          item: string
+          note: string | null
+          present: boolean
+          student_user_id: string
+        }
+        Insert: {
+          checked_at?: string
+          checked_by?: string
+          group_id: string
+          id?: string
+          item: string
+          note?: string | null
+          present?: boolean
+          student_user_id: string
+        }
+        Update: {
+          checked_at?: string
+          checked_by?: string
+          group_id?: string
+          id?: string
+          item?: string
+          note?: string | null
+          present?: boolean
+          student_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_checks_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_maintenance: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_at: string
+          equipment_id: string
+          group_id: string
+          id: string
+          maintenance_type: string
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_at: string
+          equipment_id: string
+          group_id: string
+          id?: string
+          maintenance_type: string
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_at?: string
+          equipment_id?: string
+          group_id?: string
+          id?: string
+          maintenance_type?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_maintenance_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "school_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_maintenance_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
@@ -1426,6 +1556,126 @@ export type Database = {
           },
         ]
       }
+      incident_reports: {
+        Row: {
+          created_at: string
+          description: string
+          event_id: string | null
+          flight_id: string | null
+          group_id: string
+          id: string
+          involved_persons: string | null
+          measures: string | null
+          occurred_at: string
+          reported_by: string
+          shv_deadline: string | null
+          status: string
+          student_user_id: string | null
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_id?: string | null
+          flight_id?: string | null
+          group_id: string
+          id?: string
+          involved_persons?: string | null
+          measures?: string | null
+          occurred_at: string
+          reported_by?: string
+          shv_deadline?: string | null
+          status?: string
+          student_user_id?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_id?: string | null
+          flight_id?: string | null
+          group_id?: string
+          id?: string
+          involved_persons?: string | null
+          measures?: string | null
+          occurred_at?: string
+          reported_by?: string
+          shv_deadline?: string | null
+          status?: string
+          student_user_id?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_reports_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_certifications: {
+        Row: {
+          cert_type: string
+          created_at: string
+          group_id: string
+          id: string
+          issued_at: string | null
+          note: string | null
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          cert_type: string
+          created_at?: string
+          group_id: string
+          id?: string
+          issued_at?: string | null
+          note?: string | null
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          cert_type?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          issued_at?: string | null
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_certifications_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       launch_leader_credits: {
         Row: {
           amount: number
@@ -1822,6 +2072,7 @@ export type Database = {
           purchase_date: string | null
           retire_reason: string | null
           retired_at: string | null
+          shv_type_approved: boolean
           size: string | null
           status: string
           updated_at: string
@@ -1840,6 +2091,7 @@ export type Database = {
           purchase_date?: string | null
           retire_reason?: string | null
           retired_at?: string | null
+          shv_type_approved?: boolean
           size?: string | null
           status?: string
           updated_at?: string
@@ -1858,6 +2110,7 @@ export type Database = {
           purchase_date?: string | null
           retire_reason?: string | null
           retired_at?: string | null
+          shv_type_approved?: boolean
           size?: string | null
           status?: string
           updated_at?: string

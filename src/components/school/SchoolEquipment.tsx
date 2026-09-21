@@ -39,6 +39,7 @@ interface Equipment {
   retired_at: string | null;
   next_check_date: string | null;
   notes: string | null;
+  shv_type_approved?: boolean;
 }
 
 interface Assignment {
@@ -78,6 +79,7 @@ const emptyForm = {
   purchase_date: "",
   next_check_date: "",
   notes: "",
+  shv_type_approved: false,
 };
 
 export default function SchoolEquipment({ groupId }: Props) {
@@ -168,6 +170,7 @@ export default function SchoolEquipment({ groupId }: Props) {
         purchase_date: item.purchase_date || "",
         next_check_date: item.next_check_date || "",
         notes: item.notes || "",
+        shv_type_approved: !!item.shv_type_approved,
       });
     } else {
       setEditing(null);
@@ -190,6 +193,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       purchase_date: form.purchase_date || null,
       next_check_date: form.next_check_date || null,
       notes: form.notes.trim() || null,
+      shv_type_approved: form.shv_type_approved,
     };
     const count = Math.max(1, Math.min(50, parseInt(quantity, 10) || 1));
     const rows =
@@ -406,9 +410,14 @@ export default function SchoolEquipment({ groupId }: Props) {
                             </p>
                           )}
                         </div>
-                        <Badge variant={item.status === "retired" ? "outline" : item.status === "assigned" ? "secondary" : "default"} className="text-[10px]">
-                          {t(`school.equipment.status.${item.status}`)}
-                        </Badge>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <Badge variant={item.status === "retired" ? "outline" : item.status === "assigned" ? "secondary" : "default"} className="text-[10px]">
+                            {t(`school.equipment.status.${item.status}`)}
+                          </Badge>
+                          {item.shv_type_approved && (
+                            <Badge variant="outline" className="text-[10px]">{t("school.equipment.shvApprovedShort")}</Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {item.status !== "retired" && !open && (
@@ -549,6 +558,15 @@ export default function SchoolEquipment({ groupId }: Props) {
                 <Input type="date" value={form.next_check_date} onChange={(e) => setForm({ ...form, next_check_date: e.target.value })} />
               </div>
             </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
+                checked={form.shv_type_approved}
+                onChange={(e) => setForm({ ...form, shv_type_approved: e.target.checked })}
+              />
+              {t("school.equipment.shvApproved")}
+            </label>
             <div>
               <Label>{t("school.equipment.notes")}</Label>
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />

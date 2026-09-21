@@ -12,6 +12,7 @@ import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
 import EventCarpools from "@/components/EventCarpools";
 import EventAttendance from "@/components/school/EventAttendance";
+import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -333,6 +334,7 @@ export default function EventDetail() {
       {/* Program, staff, carpools */}
       <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
       <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
+      {isStaff && <EquipmentQuotaHint eventId={id!} groupId={event.group_id} />}
       <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
 
       {isStaff && (

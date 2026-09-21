@@ -1191,7 +1191,9 @@
       "quantityHint": "Identical items are numbered automatically.",
       "ratesSuggestHint": "No rates set yet. Apply suggested values and adjust them.",
       "ratesSuggestApply": "Apply suggested values",
-      "emptyHint": "Add gliders, harnesses or helmets to the inventory first."
+      "emptyHint": "Add gliders, harnesses or helmets to the inventory first.",
+      "shvApproved": "SHV type-approved",
+      "shvApprovedShort": "SHV approved"
     },
     "stats": {
       "title": "Statistics",
@@ -1305,6 +1307,113 @@
       "nothingToBook": "Nothing to book – check rates or set attendance.",
       "alreadyBooked": "Already booked: {{credits}} credits, {{items}} items",
       "rentalDescription": "Equipment rental flying day"
+    },
+    "safety": {
+      "title": "Safety",
+      "tab": "Incidents",
+      "report": "Report incident",
+      "saved": "Incident saved",
+      "saveFailed": "Could not save",
+      "empty": "No incidents recorded.",
+      "emptyHint": "Events with injury or equipment damage are documented here and reported to the SHV within 10 days.",
+      "occurredAt": "Date and time",
+      "event": "Event",
+      "noEvent": "No event",
+      "involved": "People involved",
+      "involvedPlaceholder": "Names, comma separated",
+      "description": "What happened",
+      "descriptionPlaceholder": "What happened?",
+      "measures": "Measures taken",
+      "deadline": "Reporting deadline",
+      "deadlineHint": "The deadline is 10 days after the event and is calculated automatically.",
+      "countdown": "{{days}} of 10 days left to report",
+      "overdue": "Deadline passed {{days}} days ago",
+      "openCount": "{{count}} incident not reported yet",
+      "print": "Print report",
+      "markSubmitted": "Mark as reported",
+      "markOpen": "Reopen",
+      "pdfTitle": "Incident report",
+      "pdfSubtitle": "Report to the Swiss Hang Gliding Association",
+      "status": {
+        "open": "open",
+        "submitted": "reported"
+      }
+    },
+    "certs": {
+      "tab": "Certificates",
+      "types": {
+        "instructor": "Instructor",
+        "launch_leader": "Launch leader",
+        "biplace_1": "Biplace 1",
+        "biplace_2": "Biplace 2",
+        "biplace_3": "Biplace 3",
+        "first_aid": "First aid"
+      },
+      "teachingDays": "{{count}} teaching days {{year}}",
+      "none": "No certificates recorded",
+      "edit": "Edit certificates",
+      "saved": "Certificates saved",
+      "dateHint": "Left: issued on · Right: valid until",
+      "noTeam": "No team roles assigned yet.",
+      "noTeamHint": "Assign roles under «Team» first, then certificates appear here.",
+      "warnMissing": "{{name}}: instructor certificate missing",
+      "warnExpired": "{{name}}: instructor certificate has expired",
+      "warnSoon": "{{name}}: instructor certificate expires on {{date}}",
+      "warnDays": "{{name}}: only {{days}} of {{min}} teaching days in {{year}}"
+    },
+    "maintenance": {
+      "tab": "Maintenance",
+      "add": "Add due date",
+      "saved": "Due date saved",
+      "saveFailed": "Could not save",
+      "empty": "No maintenance dates recorded.",
+      "emptyHint": "Record reserve repacks and checks so you get reminded in time.",
+      "equipment": "Equipment",
+      "type": "Type",
+      "types": {
+        "reserve_repack": "Reserve repack",
+        "harness_check": "Harness check",
+        "glider_check": "Glider check",
+        "other": "Other"
+      },
+      "dueAt": "Due on",
+      "note": "Note",
+      "done": "Done",
+      "markDone": "Done",
+      "dueSoonCount": "{{count}} due within the next 30 days"
+    },
+    "gear": {
+      "tab": "Gear",
+      "hint": "Mark what the student already has. Missing items can be covered with rental gear.",
+      "empty": "No students in this group yet.",
+      "emptyHint": "Once students join you can check off their gear here.",
+      "complete": "complete",
+      "missing": "{{count}} open",
+      "items": {
+        "helmet": "Helmet",
+        "shoes": "Footwear",
+        "harness_protector": "Harness with protector",
+        "reserve": "Reserve parachute"
+      }
+    },
+    "quota": {
+      "warning": "Equipment quota: {{available}} of {{needed}} type-approved systems available."
+    },
+    "annual": {
+      "title": "SHV annual report",
+      "operatingDays": "Operating days",
+      "licensed": "Licences",
+      "unknownLevel": "Without training level",
+      "month": "Month",
+      "key": "Metric",
+      "value": "Value",
+      "print": "Print",
+      "csv": "CSV",
+      "markSubmitted": "Mark as submitted",
+      "markOpen": "Reopen",
+      "markedSubmitted": "Marked as submitted",
+      "markedOpen": "Reopened",
+      "reminder": "The {{year}} annual report has not been submitted yet."
     }
   },
   "search": {

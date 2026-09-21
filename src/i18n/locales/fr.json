@@ -1191,7 +1191,9 @@
       "quantityHint": "Les pièces identiques sont numérotées automatiquement.",
       "ratesSuggestHint": "Aucun tarif défini. Appliquez les valeurs proposées et ajustez-les.",
       "ratesSuggestApply": "Appliquer les valeurs proposées",
-      "emptyHint": "Ajoute d'abord des ailes, sellettes ou casques au stock."
+      "emptyHint": "Ajoute d'abord des ailes, sellettes ou casques au stock.",
+      "shvApproved": "Homologué FSVL",
+      "shvApprovedShort": "Homologué"
     },
     "stats": {
       "title": "Statistiques",
@@ -1305,6 +1307,113 @@
       "nothingToBook": "Rien à comptabiliser – vérifiez les tarifs ou la présence.",
       "alreadyBooked": "Déjà comptabilisé : {{credits}} avoirs, {{items}} postes",
       "rentalDescription": "Location matériel journée de vol"
+    },
+    "safety": {
+      "title": "Sécurité",
+      "tab": "Incidents",
+      "report": "Signaler un incident",
+      "saved": "Incident enregistré",
+      "saveFailed": "Enregistrement impossible",
+      "empty": "Aucun incident enregistré.",
+      "emptyHint": "Les événements avec blessure ou dégât matériel sont documentés ici et annoncés à la FSVL dans les 10 jours.",
+      "occurredAt": "Date et heure",
+      "event": "Rendez-vous",
+      "noEvent": "Aucun rendez-vous",
+      "involved": "Personnes impliquées",
+      "involvedPlaceholder": "Noms, séparés par des virgules",
+      "description": "Déroulement",
+      "descriptionPlaceholder": "Que s'est-il passé ?",
+      "measures": "Mesures prises",
+      "deadline": "Délai d'annonce",
+      "deadlineHint": "Le délai est de 10 jours après l'événement et est calculé automatiquement.",
+      "countdown": "Encore {{days}} jours sur 10 pour annoncer",
+      "overdue": "Délai dépassé depuis {{days}} jours",
+      "openCount": "{{count}} incident pas encore annoncé",
+      "print": "Imprimer l'annonce",
+      "markSubmitted": "Marquer comme annoncé",
+      "markOpen": "Réouvrir",
+      "pdfTitle": "Annonce d'incident",
+      "pdfSubtitle": "Annonce à la Fédération Suisse de Vol Libre",
+      "status": {
+        "open": "ouvert",
+        "submitted": "annoncé"
+      }
+    },
+    "certs": {
+      "tab": "Certificats",
+      "types": {
+        "instructor": "Moniteur",
+        "launch_leader": "Chef de décollage",
+        "biplace_1": "Biplace 1",
+        "biplace_2": "Biplace 2",
+        "biplace_3": "Biplace 3",
+        "first_aid": "Premiers secours"
+      },
+      "teachingDays": "{{count}} jours d'enseignement {{year}}",
+      "none": "Aucun certificat enregistré",
+      "edit": "Modifier les certificats",
+      "saved": "Certificats enregistrés",
+      "dateHint": "À gauche : délivré le · à droite : valable jusqu'au",
+      "noTeam": "Aucune fonction d'équipe attribuée.",
+      "noTeamHint": "Attribue d'abord les fonctions sous « Équipe », les certificats apparaîtront ensuite ici.",
+      "warnMissing": "{{name}} : certificat de moniteur manquant",
+      "warnExpired": "{{name}} : certificat de moniteur échu",
+      "warnSoon": "{{name}} : certificat de moniteur échoit le {{date}}",
+      "warnDays": "{{name}} : seulement {{days}} jours d'enseignement sur {{min}} en {{year}}"
+    },
+    "maintenance": {
+      "tab": "Entretien",
+      "add": "Ajouter une échéance",
+      "saved": "Échéance enregistrée",
+      "saveFailed": "Enregistrement impossible",
+      "empty": "Aucune échéance enregistrée.",
+      "emptyHint": "Enregistre les pliages de secours et les contrôles pour être rappelé à temps.",
+      "equipment": "Matériel",
+      "type": "Type",
+      "types": {
+        "reserve_repack": "Pliage du secours",
+        "harness_check": "Contrôle sellette",
+        "glider_check": "Contrôle voile",
+        "other": "Autre"
+      },
+      "dueAt": "Échéance",
+      "note": "Note",
+      "done": "Fait",
+      "markDone": "Fait",
+      "dueSoonCount": "{{count}} échéance dans les 30 prochains jours"
+    },
+    "gear": {
+      "tab": "Équipement",
+      "hint": "Marque ce que l'élève possède déjà. Le manquant peut être couvert par du matériel de location.",
+      "empty": "Aucun élève dans ce groupe.",
+      "emptyHint": "Dès que des élèves rejoignent, tu peux cocher leur équipement ici.",
+      "complete": "complet",
+      "missing": "{{count}} ouvert",
+      "items": {
+        "helmet": "Casque",
+        "shoes": "Chaussures",
+        "harness_protector": "Sellette avec protection",
+        "reserve": "Parachute de secours"
+      }
+    },
+    "quota": {
+      "warning": "Quota matériel : {{available}} systèmes homologués sur {{needed}} disponibles."
+    },
+    "annual": {
+      "title": "Rapport annuel FSVL",
+      "operatingDays": "Jours d'exploitation",
+      "licensed": "Brevets",
+      "unknownLevel": "Sans niveau de formation",
+      "month": "Mois",
+      "key": "Indicateur",
+      "value": "Valeur",
+      "print": "Imprimer",
+      "csv": "CSV",
+      "markSubmitted": "Marquer comme remis",
+      "markOpen": "Réouvrir",
+      "markedSubmitted": "Marqué comme remis",
+      "markedOpen": "Réouvert",
+      "reminder": "Le rapport annuel {{year}} n'a pas encore été remis."
     }
   },
   "search": {
