@@ -15,6 +15,13 @@
       "when": 1789788644442,
       "tag": "0001_fix_signup_waitlist_record",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789977438502,
+      "tag": "0002_school_phase1_shv_compliance",
+      "breakpoints": true
     }
   ]
 }
