@@ -1,5 +1,23 @@
 # Flyary
 
+## Flugschule: Team-Verfügbarkeitsumfrage (Planung 8.5)
+
+Neue Tabellen `team_polls`/`team_poll_responses`, sichtbar im Team-Kanal (Planung 6.3), umgesetzt
+in [TeamPolls.tsx](src/components/school/TeamPolls.tsx), gerendert oberhalb des Team-Kanal-Chats
+im „teamChat“-Bereich von [SchoolDashboard.tsx](src/pages/SchoolDashboard.tsx).
+
+**Abweichung vom Plan:** Antwortoptionen sind ein freies, kommagetrenntes `text[]`-Feld (Default
+„Ja, Nein“) statt eines fixen Ja/Nein-Enums – das Akzeptanzkriterium spricht im Plural von
+„Antwortoptionen“, Ja/Nein im Ziel ist nur das Beispiel, nicht die einzige zulässige Form.
+Erstellen/Löschen einer Umfrage bleibt Team-Personal im engeren Sinn vorbehalten
+(`is_group_staff`, wie bei Ankündigungen in 8.4), Abstimmen ist allen Team-Kanal-Mitgliedern
+möglich (`is_group_team_member`, schliesst Startleiter mit ein). Der Empfänger-Kreis für die
+Antwort-Übersicht wird – wie in [GroupChat.tsx](src/components/GroupChat.tsx) für 8.4 – client-
+seitig aus Admins plus Team-Funktionen (`school_lead`/`instructor`/`launch_helper`) bestimmt.
+
+Zähl-/Abgleichslogik (Stimmen pro Option, eigene Antwort, Ablaufprüfung, Options-Parsing) in
+[team-polls.ts](src/lib/team-polls.ts) extrahiert und getestet.
+
 ## Flugschule: Lesebestätigung sicherheitsrelevanter Ankündigungen (Planung 8.4)
 
 Erweitert die bestehende Ankündigungsfunktion in [GroupChat.tsx](src/components/GroupChat.tsx)

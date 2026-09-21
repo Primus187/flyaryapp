@@ -1237,6 +1237,19 @@
         "none": "—"
       }
     },
+    "polls": {
+      "title": "Team-Umfragen",
+      "new": "Neue Umfrage",
+      "empty": "Keine Umfragen",
+      "emptyHint": "Kurze Ja/Nein- oder Auswahl-Abfragen ans Team, z. B. „Wer kann morgen als Startleiter?“.",
+      "question": "Frage",
+      "questionPlaceholder": "Wer kann morgen als Startleiter?",
+      "options": "Antwortoptionen",
+      "optionsHint": "Mit Komma getrennt, mindestens zwei, z. B. „Ja, Nein“.",
+      "closesAtLabel": "Schlussdatum (optional)",
+      "closesAt": "Läuft bis {{date}}",
+      "closed": "Umfrage geschlossen"
+    },
     "certs": {
       "warnIssueDate": "{{name}}: Ausstellungs-/Rezertifizierungsdatum fehlt; Unterrichtstage nicht berechenbar",
       "daysUnknown": "Unterrichtstage unbekannt",

@@ -1404,6 +1404,19 @@
         "none": "—"
       }
     },
+    "polls": {
+      "title": "Sondages d'équipe",
+      "new": "Nouveau sondage",
+      "empty": "Aucun sondage",
+      "emptyHint": "Questions courtes oui/non ou à choix multiple pour l'équipe, p. ex. « Qui peut être aide au décollage demain ? ».",
+      "question": "Question",
+      "questionPlaceholder": "Qui peut être aide au décollage demain ?",
+      "options": "Options de réponse",
+      "optionsHint": "Séparées par des virgules, au moins deux, p. ex. « Oui, Non ».",
+      "closesAtLabel": "Date de clôture (facultatif)",
+      "closesAt": "Ouvert jusqu'au {{date}}",
+      "closed": "Sondage clos"
+    },
     "certs": {
       "warnIssueDate": "{{name}} : date de délivrance/renouvellement manquante ; jours d'enseignement non calculables",
       "daysUnknown": "Jours d'enseignement inconnus",

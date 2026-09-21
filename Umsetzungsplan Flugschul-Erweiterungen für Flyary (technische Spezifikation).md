@@ -10,7 +10,7 @@ Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in e
 | --- | --- | --- |
 | 1 – SHV-Compliance-Basis | ✅ Abgeschlossen | Alle 7 Features (4.1–4.4, 5.1, 9.1, 9.2) umgesetzt und akzeptanzgeprüft |
 | 2 – Schüler- und Team-Prozesse | ✅ Abgeschlossen | Alle 6 Features (5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2) umgesetzt und akzeptanzgeprüft |
-| 3 – Kommunikation | ⬜ Nicht begonnen | Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) aus dem Plan entfernt, siehe Abschnitt 8 |
+| 3 – Kommunikation | 🔶 Umsetzung fertig, Akzeptanzprüfung ausstehend | Alle 3 Features (8.3, 8.4, 8.5) umgesetzt; Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) war aus dem Plan entfernt worden, siehe Abschnitt 8 |
 | 4 – Administration und Zahlung | ⬜ Nicht begonnen | |
 | 5 – Reporting und Wetter-Integration | ⬜ Nicht begonnen | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig |
 
@@ -40,7 +40,7 @@ Priorisiert nach SHV-Compliance-Risiko, Abhängigkeiten zu bestehenden Tabellen 
 | --- | --- | --- | --- | --- | --- |
 | 1 | SHV-Compliance-Basis | Unfallmeldung, Fluglehrer-Zertifikats-Tracking, Materialquote-Check, Ausrüstungscheck im Onboarding, Wartungsfristen Material | Direktes regulatorisches Risiko bei Nichteinhaltung; baut nur auf bestehenden Tabellen `school_equipment`, `training_progress`, `profiles` auf | M | ✅ |
 | 2 | Schüler- und Team-Prozesse | Meilenstein-Freigaben im Kontrollblatt, Pausierungs-Status, Verfügbarkeitsplanung Team, Übergabenotizen, Geh/Nogo-Workflow, Ersatztermin-Vorschlag | Kerntätigkeit des Schulbetriebs; hoher Alltagsnutzen für Vertical | L | ✅ |
-| 3 | Kommunikation | Notfall-Schnellzugriff, Lesebestätigung sicherheitsrelevanter Ankündigungen, Team-Verfügbarkeitsumfrage | Alltagsnutzen im laufenden Schulbetrieb; ursprünglich mit Minderjährigen-Handling gebündelt, das nicht mehr Teil des Plans ist (kein spezifischer rechtlicher Zeitdruck mehr) | S | ⬜ |
+| 3 | Kommunikation | Notfall-Schnellzugriff, Lesebestätigung sicherheitsrelevanter Ankündigungen, Team-Verfügbarkeitsumfrage | Alltagsnutzen im laufenden Schulbetrieb; ursprünglich mit Minderjährigen-Handling gebündelt, das nicht mehr Teil des Plans ist (kein spezifischer rechtlicher Zeitdruck mehr) | S | ✅ |
 | 4 | Administration und Zahlung | Online-Zahlung bei Kursbuchung, digitale Vertragsunterschrift, Gutscheine/Rabatte, strukturierter Rechnungsexport | Unabhängiges Teilsystem, benötigt externen Zahlungsanbieter – grösster Integrationsaufwand | L | ⬜ |
 | 5 | Reporting und Wetter-Integration | SHV-Jahresbericht-Export, Auslastungs-/Erfolgsquote-Dashboards, Fluggebiets-Wetter-Matching | Baut auf den Daten aus Phase 1–3 auf, liefert erst dann verlässliche Kennzahlen | S–M | ⬜ (4.4 bereits in Phase 1 erledigt) |
 
@@ -69,7 +69,7 @@ Logisches Modell als Ausgangspunkt – vor der Umsetzung gegen das tatsächliche
 | `consent_records` | Piloten | Protokollierte Einwilligungen (Beweiskraft, siehe Abschnitt 12) | `profile_id`, `consent_type` (AGB/Haftungsausschluss/Foto/Datenbearbeitung), `version`, `accepted_at`, `accepted_by` | 10, 12 | ⬜ Phase 4 |
 | `emergency_data_access_log` | Piloten/Flugschule | Zugriffsprotokollierung Notfall-Schnellzugriff (12.3, verknüpft mit 8.3) | `profile_id`, `accessed_by`, `accessed_at`, `context_event_id`. **Zusatz gegenüber Plan:** zusätzliche `group_id`-Spalte, damit die „nur Schulleitung“-Policy stabil bleibt, auch wenn der Termin später gelöscht wird (`context_event_id` dann `ON DELETE SET NULL`) | 8, 12 | ✅ |
 | `announcement_read_receipts` | Termine (ergänzt `event_messages`) | Lesebestätigung sicherheitsrelevanter Ankündigungen | `announcement_id`, `profile_id`, `read_at` | 8 | ⬜ Phase 3 |
-| `team_polls`, `team_poll_responses` | Flugschule | Kurze Verfügbarkeitsabfragen im Team | `question`, `closes_at`; `poll_id`, `profile_id`, `response` | 8 | ⬜ Phase 3 |
+| `team_polls`, `team_poll_responses` | Flugschule | Kurze Verfügbarkeitsabfragen im Team | `group_id`, `question`, `options` (`text[]`, statt fixem Ja/Nein), `closes_at`, `created_by`; `poll_id`, `user_id` (statt `profile_id`), `response` | 8 | ✅ |
 | `course_payments` | Flugschule (ergänzt `billing_items`) | Online-Zahlung pro Kursbuchung | `billing_item_id`, `amount`, `provider`, `provider_ref`, `status`, `paid_at` | 10 | ⬜ Phase 4 |
 | `vouchers` | Flugschule | Gutscheine/Rabattcodes | `code`, `discount_type`, `value`, `valid_until`, `redeemed_by`, `redeemed_at` | 10 | ⬜ Phase 4 |
 | `locations` (erweitert) | Infrastruktur | SHV-Fluggebietsstatus, Wetter-Matching | + Felder `shv_approved: boolean`, `wind_sock: boolean`, `optimal_wind_directions: text[]`, `usage_permission_ref` | 4, 7 | ⬜ Phase 5 |
@@ -287,7 +287,7 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 
 **Datenmodell:** `locations.optimal_wind_directions` (Abschnitt 3), keine neue Tabelle
 
-## 8. Kommunikation (Phase 3) 🔶 In Arbeit
+## 8. Kommunikation (Phase 3) ✅ Abgeschlossen
 
 **Hinweis:** 8.1 (Eltern-/Erziehungsberechtigten-Verknüpfung) und 8.2 (Digitale Einverständniserklärung mit Protokollierung) wurden entfernt – das Minderjährigen-Handling ist nicht mehr Teil dieses Plans. Die Nummerierung startet bewusst bei 8.3, um Verweise aus anderen Abschnitten (u. a. 12.3) nicht zu brechen. Ein allgemeiner (nicht minderjährigenspezifischer) Bedarf an protokollierten Einwilligungen bleibt bestehen und ist jetzt unter 10.2 eigenständig beschrieben.
 
@@ -329,7 +329,7 @@ Empfänger-Übersicht ist für alle Gruppenmitglieder sichtbar (anders als das N
 Zugriffsprotokoll aus 12.3, das bewusst auf Schulleitung beschränkt ist) – hier ist „wer hat
 gelesen“ der Zweck des Features selbst, keine schützenswerte Information.
 
-### 8.5 Team-Verfügbarkeitsumfrage
+### 8.5 Team-Verfügbarkeitsumfrage ✅
 
 **Ziel:** Einfache Ja/Nein-Abfrage an das Team („Wer kann morgen als Startleiter?“), getrennt vom Termin-Chat.
 
@@ -343,6 +343,15 @@ gelesen“ der Zweck des Features selbst, keine schützenswerte Information.
 **UI:** Team-Kanal im Flugschul-Bereich
 
 **Hinweis:** Die Voraussetzung „Team-Kanal“ (Abschnitt 6.3) existiert jetzt (`group_messages.is_team_only`, siehe dort) – dieses Feature ist damit direkt umsetzbar, sobald Phase 3 angegangen wird.
+
+**Ist-Stand:** `TeamPolls.tsx`, gerendert oberhalb des Team-Kanal-Chats im „teamChat“-Bereich von
+`SchoolDashboard.tsx`. **Abweichung vom Plan:** Antwortoptionen sind ein freies, kommagetrenntes
+`text[]`-Feld statt eines fixen Ja/Nein-Enums, da das Akzeptanzkriterium „Antwortoptionen“ im
+Plural als frei definierbar zu verstehen ist (Ja/Nein im Ziel ist nur das Beispiel). Erstellen/
+Löschen einer Umfrage bleibt Team-Personal im engeren Sinn vorbehalten (`is_group_staff`, wie bei
+Ankündigungen), Abstimmen ist allen Team-Kanal-Mitgliedern möglich (`is_group_team_member`,
+schliesst Startleiter ein). Empfänger-/Antwort-Übersicht ist wie bei 8.4 nicht schützenswert und
+für alle Team-Mitglieder sichtbar.
 
 ## 9. Material- und Ausrüstungsverwaltung (Phase 1) ✅ Abgeschlossen
 

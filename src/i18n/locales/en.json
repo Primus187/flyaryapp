@@ -1404,6 +1404,19 @@
         "none": "—"
       }
     },
+    "polls": {
+      "title": "Team polls",
+      "new": "New poll",
+      "empty": "No polls",
+      "emptyHint": "Short yes/no or multiple-choice questions for the team, e.g. \"Who can be launch helper tomorrow?\".",
+      "question": "Question",
+      "questionPlaceholder": "Who can be launch helper tomorrow?",
+      "options": "Answer options",
+      "optionsHint": "Comma-separated, at least two, e.g. \"Yes, No\".",
+      "closesAtLabel": "Closing date (optional)",
+      "closesAt": "Open until {{date}}",
+      "closed": "Poll closed"
+    },
     "certs": {
       "warnIssueDate": "{{name}}: issue/renewal date missing; teaching days cannot be calculated",
       "daysUnknown": "Teaching days unknown",

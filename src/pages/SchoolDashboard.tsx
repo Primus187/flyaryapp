@@ -23,6 +23,7 @@ import SchoolBilling from "@/components/school/SchoolBilling";
 import SchoolCredits from "@/components/school/SchoolCredits";
 import SchoolSafety from "@/components/school/SchoolSafety";
 import TeamAvailability from "@/components/school/TeamAvailability";
+import TeamPolls from "@/components/school/TeamPolls";
 import GroupChat from "@/components/GroupChat";
 
 interface SchoolGroup {
@@ -289,8 +290,9 @@ export default function SchoolDashboard() {
         return <GroupChat groupId={selectedGroupId} canAnnounce={true} />;
       case "teamChat":
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-xs text-muted-foreground">{t("school.teamChat.hint")}</p>
+            <TeamPolls groupId={selectedGroupId} />
             <GroupChat groupId={selectedGroupId} canAnnounce={true} teamOnly />
           </div>
         );

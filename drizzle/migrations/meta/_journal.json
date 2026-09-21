@@ -92,6 +92,13 @@
       "when": 1789999800000,
       "tag": "0012_announcement_read_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790000400000,
+      "tag": "0013_team_polls",
+      "breakpoints": true
     }
   ]
 }
