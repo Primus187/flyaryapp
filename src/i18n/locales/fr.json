@@ -498,7 +498,18 @@
     "searchLocation": "Rechercher un site...",
     "createNew": "+ Créer un nouveau site",
     "noResults": "Aucun site trouvé",
-    "weather": "Météo"
+    "weather": "Météo",
+    "optimalWind": "Direction(s) de vent optimale(s)",
+    "optimalWindHint": "Pour la comparaison du vent sur la page de détail du site (affichée uniquement si des coordonnées sont définies).",
+    "compass": {
+      "N": "N", "NE": "NE", "E": "E", "SE": "SE", "S": "S", "SW": "SO", "W": "O", "NW": "NO"
+    },
+    "windMatch": {
+      "match": "Direction du vent adaptée",
+      "borderline": "Direction du vent limite",
+      "unsuitable": "Direction du vent inadaptée",
+      "current": "Actuel : {{compass}}, {{speed}} km/h"
+    }
   },
   "groups": {
     "title": "Groupes",

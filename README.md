@@ -1,5 +1,30 @@
 # Flyary
 
+## Fluggebiets-Wetter-Matching (Planung 7.3)
+
+**Abweichung vom Plan (mit Nutzer abgeklärt):** Die im Akzeptanzkriterium referenzierte
+"bestehende Windy-Einbindung" ist tatsächlich nur ein reines Bild-Iframe
+(`embed.windy.com/embed2.html`, siehe [LocationDetail.tsx](src/pages/LocationDetail.tsx)) ohne
+jeden JS-lesbaren Datenzugriff – dagegen lässt sich nichts programmatisch "abgleichen". Eine
+echte Windy-API bräuchte einen kostenpflichtigen API-Key, den es nicht gibt. Auf Rückfrage hat
+der Nutzer entschieden, stattdessen [Open-Meteo](https://api.open-meteo.com) zu verwenden
+(kostenlos, kein API-Key, CORS-fähig, direkt vom Client aufrufbar). Das erfüllt den Grundsatz
+"keine Speicherung von Wetterdaten" sogar wörtlicher als eine echte Windy-Anbindung: Der
+abgerufene Wert lebt nur ephemer im Komponentenstand von `LocationDetail.tsx`, nirgends in der
+Datenbank.
+
+Neue Spalte `locations.optimal_wind_directions text[]` (8-Punkte-Kompass N/NE/E/SE/S/SW/W/NW),
+editierbar in [Locations.tsx](src/pages/Locations.tsx) als Toggle-Buttons im Bearbeiten-Dialog.
+Ampel-Anzeige (passend/grenzwertig/ungeeignet) nur auf der Ortsdetailseite, nicht auf der
+separaten allgemeinen Wetterkarte ([Weather.tsx](src/pages/Weather.tsx)) – letztere zeigt keinen
+einzelnen Ort mit hinterlegten optimalen Windrichtungen, ein Abgleich ohne Ortsbezug wäre nicht
+sinnvoll möglich. `shv_approved`/`wind_sock`/`usage_permission_ref` aus der ursprünglichen
+§3-Datenmodell-Zeile gehören zu anderen, noch nicht beauftragten Akzeptanzkriterien und wurden
+nicht mitgebaut.
+
+Kompass-Rundung, Match/Grenzwertig/Ungeeignet-Logik und das Parsen der Open-Meteo-Antwort in
+[wind-match.ts](src/lib/wind-match.ts) extrahiert und getestet.
+
 ## Flugschule: Auslastung, Erfolgsquote, SHV-Mindestleistungs-Ampel (Planung 11.1, 11.2)
 
 Phase 4 (Administration und Zahlung) ist bewusst zurückgestellt bis nach dem Workshop mit

@@ -12,7 +12,7 @@ Dieses Dokument übersetzt den project/ce138141-fdda-49a8-b7a9-3e338e67ef48 in e
 | 2 – Schüler- und Team-Prozesse | ✅ Abgeschlossen | Alle 6 Features (5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2) umgesetzt und akzeptanzgeprüft |
 | 3 – Kommunikation | ✅ Abgeschlossen | Alle 3 Features (8.3, 8.4, 8.5) umgesetzt und akzeptanzgeprüft; Minderjährigen-Handling (Eltern-Zugang, digitale Einverständniserklärung) war aus dem Plan entfernt worden, siehe Abschnitt 8 |
 | 4 – Administration und Zahlung | ⏸ Bewusst zurückgestellt | Wird erst nach dem Workshop mit Vertical angegangen (Zahlungsanbieter-Wahl, Aufbewahrungsdauer 12.1 u. a. offene Fragen hängen davon ab); Phase 5 wird vorgezogen |
-| 5 – Reporting und Wetter-Integration | 🔶 Teilweise (11.1, 11.2 fertig; 7.3 offen) | 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig; vorgezogen vor Phase 4 |
+| 5 – Reporting und Wetter-Integration | ✅ Abgeschlossen | Alle 3 Features (7.3, 11.1, 11.2) umgesetzt; 4.4 (SHV-Jahresbericht) ist bereits Teil von Phase 1 und fertig; vorgezogen vor Phase 4 |
 
 Detaillierter Ist-Stand pro Feature direkt bei den jeweiligen Unterabschnitten unten (✅-Markierung). Tatsächliche Implementierungsdetails (Migrationsdateien, Komponenten, Testabdeckung) stehen in der README.md des Repos, dort pro Feature ein eigener Abschnitt mit Begründung für jede Abweichung von diesem Plan. Abschnitt 14 wurde um konkrete Erkenntnisse aus der Umsetzung von Phase 1, 2 und 3 ergänzt.
 
@@ -42,7 +42,7 @@ Priorisiert nach SHV-Compliance-Risiko, Abhängigkeiten zu bestehenden Tabellen 
 | 2 | Schüler- und Team-Prozesse | Meilenstein-Freigaben im Kontrollblatt, Pausierungs-Status, Verfügbarkeitsplanung Team, Übergabenotizen, Geh/Nogo-Workflow, Ersatztermin-Vorschlag | Kerntätigkeit des Schulbetriebs; hoher Alltagsnutzen für Vertical | L | ✅ |
 | 3 | Kommunikation | Notfall-Schnellzugriff, Lesebestätigung sicherheitsrelevanter Ankündigungen, Team-Verfügbarkeitsumfrage | Alltagsnutzen im laufenden Schulbetrieb; ursprünglich mit Minderjährigen-Handling gebündelt, das nicht mehr Teil des Plans ist (kein spezifischer rechtlicher Zeitdruck mehr) | S | ✅ |
 | 4 | Administration und Zahlung | Online-Zahlung bei Kursbuchung, digitale Vertragsunterschrift, Gutscheine/Rabatte, strukturierter Rechnungsexport | Unabhängiges Teilsystem, benötigt externen Zahlungsanbieter – grösster Integrationsaufwand | L | ⬜ |
-| 5 | Reporting und Wetter-Integration | SHV-Jahresbericht-Export, Auslastungs-/Erfolgsquote-Dashboards, Fluggebiets-Wetter-Matching | Baut auf den Daten aus Phase 1–3 auf, liefert erst dann verlässliche Kennzahlen | S–M | ⬜ (4.4 bereits in Phase 1 erledigt) |
+| 5 | Reporting und Wetter-Integration | SHV-Jahresbericht-Export, Auslastungs-/Erfolgsquote-Dashboards, Fluggebiets-Wetter-Matching | Baut auf den Daten aus Phase 1–3 auf, liefert erst dann verlässliche Kennzahlen | S–M | ✅ (4.4 bereits in Phase 1 erledigt) |
 
 Empfehlung: Phase 1 und 2 vor dem nächsten Austausch mit Vertical prototypisch umsetzen – das macht den Workshop (Abschnitt 12 des Anforderungskatalogs) konkreter, weil Vertical an echten Bildschirmen statt an Konzepten Feedback geben kann. **Umgesetzt:** Phase 1 und 2 sind fertig; die nächste sinnvolle Grundlage für den Workshop mit Vertical ist damit vorhanden.
 
@@ -72,7 +72,7 @@ Logisches Modell als Ausgangspunkt – vor der Umsetzung gegen das tatsächliche
 | `team_polls`, `team_poll_responses` | Flugschule | Kurze Verfügbarkeitsabfragen im Team | `group_id`, `question`, `options` (`text[]`, statt fixem Ja/Nein), `closes_at`, `created_by`; `poll_id`, `user_id` (statt `profile_id`), `response` | 8 | ✅ |
 | `course_payments` | Flugschule (ergänzt `billing_items`) | Online-Zahlung pro Kursbuchung | `billing_item_id`, `amount`, `provider`, `provider_ref`, `status`, `paid_at` | 10 | ⬜ Phase 4 |
 | `vouchers` | Flugschule | Gutscheine/Rabattcodes | `code`, `discount_type`, `value`, `valid_until`, `redeemed_by`, `redeemed_at` | 10 | ⬜ Phase 4 |
-| `locations` (erweitert) | Infrastruktur | SHV-Fluggebietsstatus, Wetter-Matching | + Felder `shv_approved: boolean`, `wind_sock: boolean`, `optimal_wind_directions: text[]`, `usage_permission_ref` | 4, 7 | ⬜ Phase 5 |
+| `locations` (erweitert) | Infrastruktur | SHV-Fluggebietsstatus, Wetter-Matching | + Feld `optimal_wind_directions: text[]` (umgesetzt für 7.3). `shv_approved`, `wind_sock`, `usage_permission_ref` gehören zu anderen, noch nicht beauftragten Akzeptanzkriterien und wurden nicht mitgebaut | 4, 7 | 🔶 Teilweise (nur `optimal_wind_directions`) |
 
 Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur für Schulteam bzw. betroffene Person selbst); Datenschutz-relevante Tabellen (`consent_records`, Notfalldaten-Zugriff) benötigen eine eigene, engere Policy analog zu den bestehenden Notfall-/Gesundheitsdaten.
 
@@ -241,7 +241,7 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 
 **Ist-Stand/Abweichung:** Keine dedizierte Gruppe pro Schule – hätte laufend synchronisierte Mitgliedschaft gebraucht und wäre in Gruppenübersicht, Termin-Erstellung und Schulauswahl als normale, auswählbare Gruppe aufgetaucht. Stattdessen `group_messages.is_team_only` (Boolean), Sichtbarkeit live über eine neue Funktion `is_group_team_member()` geprüft (school_lead/instructor/launch_helper – bewusst weiter als `is_group_staff`, das Starthelfer ausschliesst, obwohl der Plan „Fluglehrern/Startleitern“ nennt). Wichtiger Fund beim Umsetzen: der bestehende Ankündigungs-Push-Trigger hätte bei `is_team_only`-Nachrichten unverändert alle Gruppenmitglieder benachrichtigt (inkl. Nachrichtentext in der Push-Payload) – Trigger entsprechend angepasst. Anhänge im Team-Kanal deaktiviert, da der Storage-Bucket für Chat-Anhänge nur Gruppenmitgliedschaft kennt, nicht `is_team_only`.
 
-## 7. Terminplanung und Wetterentscheidung (Phase 2, Wetter-Matching Phase 5) ✅ 7.1/7.2 abgeschlossen, 7.3 = Phase 5 offen
+## 7. Terminplanung und Wetterentscheidung (Phase 2, Wetter-Matching Phase 5) ✅ Abgeschlossen (7.1/7.2 aus Phase 2, 7.3 aus Phase 5)
 
 ### 7.1 Strukturierter Geh/Nogo-Entscheid ✅
 
@@ -275,7 +275,7 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 
 **Ist-Stand:** `AlternativeDateSuggestion.tsx`. Sucht ab dem Tag nach dem Original-Termin (nicht ab heute) über bis zu drei Wochen vorwärts nach den nächsten Tagen mit tatsächlicher Verfügbarkeit – nicht zwingend die nächsten drei Kalendertage in Folge. Duplikat-Funktion um einen `date`-Parameter erweitert, der das Terminformular vorausfüllt statt das Datum leer zu lassen.
 
-### 7.3 Fluggebiets-Wetter-Matching (Phase 5) ⬜
+### 7.3 Fluggebiets-Wetter-Matching (Phase 5) ✅
 
 **Ziel:** Pro Fluggebiet anzeigen, ob die aktuelle Windrichtung passt.
 
@@ -286,6 +286,20 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 - Keine Speicherung von Wetterdaten in Flyary selbst – Grundsatz aus Kapitel 17 bleibt bestehen, Abgleich erfolgt zur Laufzeit
 
 **Datenmodell:** `locations.optimal_wind_directions` (Abschnitt 3), keine neue Tabelle
+
+**Ist-Stand:** **Abweichung vom Plan (mit Nutzer abgeklärt):** Die "bestehende Windy-Einbindung"
+ist tatsächlich nur ein reines Bild-Iframe (`embed.windy.com`) ohne jeden JS-lesbaren Datenzugriff
+– dagegen lässt sich nichts "abgleichen". Eine echte Windy-API bräuchte einen kostenpflichtigen
+API-Key, den es nicht gibt. Auf Nutzerentscheid hin stattdessen Open-Meteo (`api.open-meteo.com`,
+kostenlos, kein API-Key, CORS-fähig) direkt vom Client aufgerufen – erfüllt den Grundsatz "keine
+Speicherung von Wetterdaten" sogar wörtlicher als eine Windy-Anbindung, da der Wert nur ephemer im
+Komponentenstand von `LocationDetail.tsx` lebt. Neue Spalte `locations.optimal_wind_directions
+text[]` (8-Punkte-Kompass N/NE/E/SE/S/SW/W/NW), editierbar in `Locations.tsx` als Toggle-Buttons.
+Ampel-Anzeige nur in `LocationDetail.tsx` ("Orte-Seite") umgesetzt, nicht auf der separaten
+allgemeinen Wetterkarte (`Weather.tsx`) – letztere zeigt keinen einzelnen Ort mit hinterlegten
+optimalen Windrichtungen, ein Abgleich ohne Ortsbezug wäre nicht sinnvoll möglich.
+`shv_approved`/`wind_sock`/`usage_permission_ref` aus der ursprünglichen §3-Datenmodell-Zeile
+gehören zu anderen Akzeptanzkriterien ausserhalb von 7.3 und wurden nicht mitgebaut.
 
 ## 8. Kommunikation (Phase 3) ✅ Abgeschlossen
 

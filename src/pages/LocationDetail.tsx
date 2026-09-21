@@ -5,13 +5,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useToast } from "@/hooks/use-toast";
+import { degreesToCompassPoint, parseOpenMeteoWind, windMatchStatus, type WindMatchStatus } from "@/lib/wind-match";
 
 const markerIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+
+const WIND_MATCH_STYLES: Record<WindMatchStatus, string> = {
+  match: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  borderline: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  unsuitable: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+};
 
 export default function LocationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +29,7 @@ export default function LocationDetail() {
   const [location, setLocation] = useState<any>(null);
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [wind, setWind] = useState<{ status: WindMatchStatus; compass: string; speedKmh: number } | null | undefined>(undefined);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   const typeLabel = (ty: string) => ty === "takeoff" ? t("locations.takeoff") : ty === "landing" ? t("locations.landingPlace") : t("locations.both");
@@ -40,6 +48,29 @@ export default function LocationDetail() {
     };
     load();
   }, [user, id]);
+
+  // Abschnitt 7.3: Wind-Abgleich zur Laufzeit gegen eine freie Wetter-API (Open-Meteo, kein
+  // API-Key nötig) - keine Wetterdaten werden gespeichert, nur ephemer im Komponentenstand.
+  useEffect(() => {
+    if (!location || !(location.latitude || location.longitude)) { setWind(null); return; }
+    const optimal: string[] = location.optimal_wind_directions || [];
+    if (optimal.length === 0) { setWind(null); return; }
+    let cancelled = false;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=wind_direction_10m,wind_speed_10m`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled) return;
+        const result = parseOpenMeteoWind(json);
+        if (!result) { setWind(null); return; }
+        setWind({
+          status: windMatchStatus(result.directionDegrees, optimal),
+          compass: degreesToCompassPoint(result.directionDegrees),
+          speedKmh: result.speedKmh,
+        });
+      })
+      .catch(() => { if (!cancelled) setWind(null); });
+    return () => { cancelled = true; };
+  }, [location]);
 
   const handleDelete = async () => { if (!confirm(t("locations.deleteLocation"))) return; await supabase.from("locations").delete().eq("id", id!); toast({ title: t("locations.locationDeleted") }); navigate("/locations"); };
 
@@ -79,6 +110,17 @@ export default function LocationDetail() {
         <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Plane className="h-3 w-3" /> {t("dashboard.flights")}</div><p className="text-sm font-medium">{flights.length}</p></CardContent></Card>
       </div>
       {location.description && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><FileText className="h-3 w-3" /> {t("locations.descriptionLabel")}</div><p className="text-sm">{location.description}</p></CardContent></Card>)}
+      {wind && (
+        <Card className={`border-0 shadow-sm ${WIND_MATCH_STYLES[wind.status]}`}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <Wind className="h-5 w-5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium">{t(`locations.windMatch.${wind.status}`)}</p>
+              <p className="text-xs opacity-80">{t("locations.windMatch.current", { compass: wind.compass, speed: Math.round(wind.speedKmh) })}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Windy Weather Widget */}
       {hasCoords && (
         <div>

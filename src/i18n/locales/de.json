@@ -476,7 +476,18 @@
     "searchLocation": "Ort suchen...",
     "createNew": "+ Neuen Ort erstellen",
     "noResults": "Kein Ort gefunden",
-    "weather": "Wetter"
+    "weather": "Wetter",
+    "optimalWind": "Optimale Windrichtung(en)",
+    "optimalWindHint": "Für den Wind-Abgleich in der Ortsdetailansicht (nur bei gesetzten Koordinaten).",
+    "compass": {
+      "N": "N", "NE": "NO", "E": "O", "SE": "SO", "S": "S", "SW": "SW", "W": "W", "NW": "NW"
+    },
+    "windMatch": {
+      "match": "Windrichtung passend",
+      "borderline": "Windrichtung grenzwertig",
+      "unsuitable": "Windrichtung ungeeignet",
+      "current": "Aktuell: {{compass}}, {{speed}} km/h"
+    }
   },
   "groups": {
     "title": "Gruppen",

@@ -15,6 +15,7 @@ import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircl
 import LocationMapPicker from "@/components/LocationMapPicker";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
+import { COMPASS_POINTS } from "@/lib/wind-match";
 
 export default function Locations() {
   const { user } = useAuth();
@@ -26,7 +27,7 @@ export default function Locations() {
   const [flightStats, setFlightStats] = useState<Record<string, { count: number; lastDate: string | null }>>({});
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "" });
+  const [form, setForm] = useState({ name: "", latitude: "", longitude: "", type: "both" as string, altitude: "", description: "", country_code: "", optimal_wind_directions: [] as string[] });
   const [backfillProgress, setBackfillProgress] = useState<{ current: number; total: number } | null>(null);
   const cancelledRef = useRef(false);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
@@ -69,7 +70,7 @@ export default function Locations() {
     if (editParam && locations.length > 0) {
       const loc = locations.find((l) => l.id === editParam);
       if (loc) {
-        setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "" });
+        setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "", optimal_wind_directions: loc.optimal_wind_directions || [] });
         setEditId(loc.id);
         setOpen(true);
         setSearchParams({}, { replace: true });
@@ -113,10 +114,18 @@ export default function Locations() {
     both: locations.filter((l) => l.type === "both"),
   }), [locations]);
 
-  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "" }); setEditId(null); };
+  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "", optimal_wind_directions: [] }); setEditId(null); };
+  const toggleWindDirection = (dir: string) => {
+    setForm((prev) => ({
+      ...prev,
+      optimal_wind_directions: prev.optimal_wind_directions.includes(dir)
+        ? prev.optimal_wind_directions.filter((d) => d !== dir)
+        : [...prev.optimal_wind_directions, dir],
+    }));
+  };
   const handleSave = async () => {
     if (!user) return;
-    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null };
+    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null, optimal_wind_directions: form.optimal_wind_directions };
     if (editId) { await supabase.from("locations").update(data).eq("id", editId); toast({ title: t("locations.locationUpdated") }); }
     else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
     resetForm(); setOpen(false); fetchLocations();
@@ -189,6 +198,24 @@ export default function Locations() {
                 <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("locations.altitude")}</Label><Input type="number" value={form.altitude} onChange={(e) => setForm({ ...form, altitude: e.target.value })} /></div></div>
                 <div className="space-y-1.5"><Label className="text-xs">{t("locations.country")}</Label><Select value={form.country_code} onValueChange={(v) => setForm({ ...form, country_code: v })}><SelectTrigger><SelectValue placeholder={t("locations.countryPlaceholder")} /></SelectTrigger><SelectContent>{countries.map((c) => (<SelectItem key={c.code} value={c.code}>{getFlagEmoji(c.code)} {c.name}</SelectItem>))}</SelectContent></Select></div>
                 <div className="space-y-1.5"><Label className="text-xs">{t("locations.descriptionLabel")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t("common.optional")} /></div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{t("locations.optimalWind")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("locations.optimalWindHint")}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {COMPASS_POINTS.map((dir) => (
+                      <button
+                        key={dir}
+                        type="button"
+                        onClick={() => toggleWindDirection(dir)}
+                        className={`text-xs px-2.5 py-1 rounded-full border ${
+                          form.optimal_wind_directions.includes(dir) ? "bg-primary/15 border-primary/50 text-primary font-medium" : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {t(`locations.compass.${dir}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <Button className="w-full" onClick={handleSave}>{editId ? t("common.update") : t("common.save")}</Button>
               </div>
             </DialogContent>

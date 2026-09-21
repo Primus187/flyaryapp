@@ -99,6 +99,13 @@
       "when": 1790000400000,
       "tag": "0013_team_polls",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790001000000,
+      "tag": "0014_location_optimal_wind",
+      "breakpoints": true
     }
   ]
 }

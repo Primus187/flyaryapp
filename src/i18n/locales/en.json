@@ -498,7 +498,18 @@
     "searchLocation": "Search location...",
     "createNew": "+ Create new location",
     "noResults": "No location found",
-    "weather": "Weather"
+    "weather": "Weather",
+    "optimalWind": "Optimal wind direction(s)",
+    "optimalWindHint": "For the wind match on the location detail page (only shown when coordinates are set).",
+    "compass": {
+      "N": "N", "NE": "NE", "E": "E", "SE": "SE", "S": "S", "SW": "SW", "W": "W", "NW": "NW"
+    },
+    "windMatch": {
+      "match": "Wind direction suitable",
+      "borderline": "Wind direction borderline",
+      "unsuitable": "Wind direction unsuitable",
+      "current": "Current: {{compass}}, {{speed}} km/h"
+    }
   },
   "groups": {
     "title": "Groups",
