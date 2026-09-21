@@ -333,6 +333,7 @@ export default function EventDetail() {
       {/* Program, staff, carpools */}
       <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
       <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} />
+      {isStaff && <EquipmentQuotaHint eventId={id!} groupId={event.group_id} />}
       <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
 
       {isStaff && (
