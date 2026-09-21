@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Plus, ArchiveX, Pencil, Search, Undo2, HandHelping } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EquipmentMaintenance from "@/components/school/EquipmentMaintenance";
+import { equipmentHasOverdueMaintenance, type MaintenanceDeadline } from "@/lib/equipment-maintenance";
 
 const EQUIPMENT_TYPES = ["glider", "harness", "reserve", "helmet", "radio", "vario", "other"] as const;
 const STATUSES = ["in_stock", "assigned", "maintenance", "retired"] as const;
@@ -90,6 +92,8 @@ export default function SchoolEquipment({ groupId }: Props) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [rates, setRates] = useState<Rate[]>([]);
+  const [maintenance, setMaintenance] = useState<MaintenanceDeadline[]>([]);
+  const [maintenanceError, setMaintenanceError] = useState(false);
   const [quantity, setQuantity] = useState("1");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
@@ -106,16 +110,18 @@ export default function SchoolEquipment({ groupId }: Props) {
   const [assignNote, setAssignNote] = useState("");
 
   const load = async () => {
-    setLoading(true);
-    const [eqRes, asRes, memRes, rateRes] = await Promise.all([
+    const [eqRes, asRes, memRes, rateRes, maintenanceRes] = await Promise.all([
       supabase.from("school_equipment" as any).select("*").eq("group_id", groupId).order("name"),
       supabase.from("equipment_assignments" as any).select("*").eq("group_id", groupId).order("assigned_on", { ascending: false }),
       supabase.from("group_members").select("user_id").eq("group_id", groupId),
       supabase.from("school_rates" as any).select("*").eq("group_id", groupId).order("valid_from", { ascending: false }),
+      supabase.from("equipment_maintenance").select("equipment_id, due_at, completed_at").eq("group_id", groupId).is("completed_at", null),
     ]);
     setEquipment(((eqRes.data as any[]) || []) as Equipment[]);
     setAssignments(((asRes.data as any[]) || []) as Assignment[]);
     setRates(((rateRes.data as any[]) || []) as Rate[]);
+    setMaintenance(maintenanceRes.data || []);
+    setMaintenanceError(!!maintenanceRes.error);
 
     const ids = (memRes.data || []).map((m) => m.user_id);
     if (ids.length > 0) {
@@ -344,15 +350,17 @@ export default function SchoolEquipment({ groupId }: Props) {
 
   return (
     <div className="space-y-4 pt-4">
-      <Tabs defaultValue="stock">
+      <Tabs defaultValue="stock" onValueChange={(value) => { if (value === "stock" || value === "loans") void load(); }}>
         <TabsList className="w-full">
           <TabsTrigger value="stock" className="flex-1 text-xs">{t("school.equipment.stock")}</TabsTrigger>
           <TabsTrigger value="loans" className="flex-1 text-xs">{t("school.equipment.loans")}</TabsTrigger>
           <TabsTrigger value="rates" className="flex-1 text-xs">{t("school.equipment.ratesTitle")}</TabsTrigger>
+          <TabsTrigger value="maintenance" className="flex-1 text-xs">{t("school.maintenance.tab")}</TabsTrigger>
         </TabsList>
 
         {/* Lager */}
         <TabsContent value="stock" className="space-y-3 pt-3">
+          {maintenanceError && <p role="alert" className="text-sm text-destructive">{t("school.maintenance.loadFailed")}</p>}
           <div className="grid grid-cols-3 gap-2">
             {(["in_stock", "assigned", "retired"] as const).map((k) => (
               <Card key={k} className="border-border/60 bg-card/80">
@@ -420,6 +428,9 @@ export default function SchoolEquipment({ groupId }: Props) {
                         </div>
                       </div>
                       <div className="flex gap-2 flex-wrap">
+                        {equipmentHasOverdueMaintenance(item, maintenance) && (
+                          <Badge variant="destructive">{t("school.maintenance.overdue")}</Badge>
+                        )}
                         {item.status !== "retired" && !open && (
                           <Button size="sm" variant="secondary" onClick={() => openAssign(item)}>
                             <HandHelping className="h-3.5 w-3.5 mr-1" />{t("school.equipment.lend")}
@@ -499,6 +510,7 @@ export default function SchoolEquipment({ groupId }: Props) {
             return <RateRow key={key} rateKey={key} existing={existing} onSave={saveRate} />;
           })}
         </TabsContent>
+        <TabsContent value="maintenance"><EquipmentMaintenance groupId={groupId} /></TabsContent>
       </Tabs>
 
       {/* Material Dialog */}
@@ -584,6 +596,10 @@ export default function SchoolEquipment({ groupId }: Props) {
           <DialogHeader>
             <DialogTitle>{t("school.equipment.lendTitle", { name: assignTarget?.name || "" })}</DialogTitle>
           </DialogHeader>
+          {maintenanceError && <p role="alert" className="text-sm text-destructive">{t("school.maintenance.loadFailed")}</p>}
+          {assignTarget && equipmentHasOverdueMaintenance(assignTarget, maintenance) && (
+            <p role="alert" className="text-sm text-destructive">{t("school.maintenance.loanWarning")}</p>
+          )}
           <div className="space-y-3">
             <div>
               <Label>{t("school.equipment.person")}</Label>

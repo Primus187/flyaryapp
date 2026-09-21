@@ -13,6 +13,7 @@ import EventProgram from "@/components/EventProgram";
 import EventCarpools from "@/components/EventCarpools";
 import EventAttendance from "@/components/school/EventAttendance";
 import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
+import StudentEquipmentHint from "@/components/school/StudentEquipmentHint";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -33,6 +34,7 @@ export default function EventDetail() {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
+  const [isStudent, setIsStudent] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<{ id: string; url: string; storage_path: string }[]>([]);
@@ -50,7 +52,7 @@ export default function EventDetail() {
   useEffect(() => {
     if (!id || !user) return;
     const fetchData = async () => {
-      const { data: ev } = await supabase.from("flight_events").select("*, groups(name)").eq("id", id).single();
+      const { data: ev } = await supabase.from("flight_events").select("*, groups(name, group_type)").eq("id", id).single();
       if (!ev) { navigate("/events"); return; }
       setEvent(ev);
       setGroupName(ev.groups?.name || "");
@@ -65,6 +67,7 @@ export default function EventDetail() {
         setIsAdmin(me?.role === "admin");
         const { data: myFuncs } = await supabase.from("group_member_functions" as any).select("function").eq("group_id", ev.group_id).eq("user_id", user.id);
         const staffRoles = ((myFuncs as any[]) || []).map((f) => f.function);
+        setIsStudent(ev.groups?.group_type === "school" && (staffRoles.includes("student") || (staffRoles.length === 0 && me?.role === "member")));
         setIsStaff(me?.role === "admin" || staffRoles.includes("instructor") || staffRoles.includes("school_lead"));
         const allUserIds = [...new Set([...(sups || []).map((s: any) => s.user_id), ...members.map(m => m.user_id)])];
         if (allUserIds.length > 0) {
@@ -232,6 +235,9 @@ export default function EventDetail() {
 
       {!isPast && event.status !== "cancelled" && (
         <>
+          {isStudent && event.event_category === "height_flight" && user && (
+            <StudentEquipmentHint key={`${event.group_id}:${user.id}`} groupId={event.group_id} studentUserId={user.id} />
+          )}
           <Button
             className={`w-full gap-2 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
             variant={isSignedUp ? "default" : "outline"}

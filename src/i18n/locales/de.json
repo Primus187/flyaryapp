@@ -895,6 +895,12 @@
     "noSchool": "Du bist kein Admin einer Flugschule. Erstelle eine Gruppe vom Typ «Flugschule», um dieses Dashboard zu nutzen.",
     "overview": "Übersicht",
     "students": "Schüler",
+    "studentStatus": {
+      "title": "Status",
+      "active": "Aktiv",
+      "paused": "Pausiert",
+      "cancelled": "Abgebrochen"
+    },
     "flightDays": "Flugtage",
     "activeStudents": "Aktive Schüler",
     "openReviews": "Offene Bewertungen",
@@ -1195,6 +1201,14 @@
       "warnDays": "{{name}}: erst {{days}} von {{min}} Unterrichtstagen in {{year}}"
     },
     "maintenance": {
+      "noMatches": "Keine Fristen in dieser Auswahl.",
+      "overdue": "Wartung ?berf?llig",
+      "loanWarning": "F?r dieses Ger?t ist eine Wartung oder Pr?fung ?berf?llig. Pr?fe die Einsatzf?higkeit vor der Ausgabe.",
+      "loadFailed": "Wartungsfristen konnten nicht geladen werden. Der Wartungsstatus ist unbekannt.",
+      "retry": "Erneut laden",
+      "filter": "Wartungsfristen filtern",
+      "all": "Alle Fristen",
+      "dueSoon": "F?llig in den n?chsten 30 Tagen",
       "tab": "Wartung",
       "add": "Frist erfassen",
       "saved": "Frist erfasst",
@@ -1216,6 +1230,11 @@
       "dueSoonCount": "{{count}} Frist in den nächsten 30 Tagen fällig"
     },
     "gear": {
+      "loading": "Ausr?stungscheck wird geladen ?",
+      "signupWarning": "Noch nicht best?tigt: {{items}}. Bitte kl?re deine Ausr?stung oder ben?tigtes Leihmaterial vor dem H?henflug mit der Flugschule. Du kannst dich trotzdem anmelden.",
+      "loadFailed": "Der Ausr?stungscheck konnte nicht geladen werden. Der Pr?fstatus ist unbekannt.",
+      "saveFailed": "Ausr?stungscheck nicht gespeichert. Bitte pr?fe die Verbindung und versuche es erneut.",
+      "retry": "Erneut laden",
       "tab": "Ausrüstung",
       "hint": "Markiere, was beim Schüler vorhanden ist. Fehlendes kann mit Leihmaterial abgedeckt werden.",
       "empty": "Noch keine Schüler in dieser Gruppe.",

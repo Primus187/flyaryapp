@@ -4,8 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronRight, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import StudentEquipmentCheck from "@/components/school/StudentEquipmentCheck";
+
+type StudentStatus = "active" | "paused" | "cancelled";
 
 interface StudentInfo {
   userId: string;
@@ -14,10 +20,15 @@ interface StudentInfo {
   flightCount: number;
   examProgress: number; // 0-100
   lastSummary: string | null;
+  status?: StudentStatus;
+  statusReason?: string | null;
+  statusUpdatedAt?: string | null;
 }
 
 interface Props {
+  groupId?: string;
   students: StudentInfo[];
+  onStatusChange?: (userId: string, status: StudentStatus) => void | Promise<void>;
 }
 
 function csvEscape(value: string | number | null | undefined) {
@@ -27,10 +38,23 @@ function csvEscape(value: string | number | null | undefined) {
   return s;
 }
 
-export default function SchoolStudents({ students }: Props) {
+export default function SchoolStudents({ groupId, students, onStatusChange }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [equipmentStudent, setEquipmentStudent] = useState<StudentInfo | null>(null);
+
+  const statusClasses: Record<StudentStatus, string> = {
+    active: "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20",
+    paused: "bg-amber-500/10 text-amber-700 border border-amber-500/20",
+    cancelled: "bg-rose-500/10 text-rose-700 border border-rose-500/20",
+  };
+
+  const handleStatusChange = async (userId: string, nextStatus: StudentStatus) => {
+    if (groupId && onStatusChange) {
+      await onStatusChange(userId, nextStatus);
+    }
+  };
 
   const handleExport = () => {
     if (students.length === 0) return;
@@ -77,44 +101,77 @@ export default function SchoolStudents({ students }: Props) {
           {t("school.csv.export")}
         </Button>
       </div>
-      {students.map((s) => (
-        <Card
-          key={s.userId}
-          className="border-0 shadow-sm cursor-pointer hover:bg-muted/30 active:scale-[0.99] transition-all"
-          onClick={() => navigate(`/pilot/${s.userId}`)}
-        >
-          <CardContent className="p-3 flex items-center gap-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                {(s.pilotName || "?").slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-sm truncate">{s.pilotName || t("common.unknown")}</p>
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+      {students.map((s) => {
+        const status = s.status ?? "active";
+        return (
+          <Card
+            key={s.userId}
+            className="border-0 shadow-sm hover:bg-muted/30 active:scale-[0.99] transition-all"
+          >
+            <CardContent className="p-3 flex items-center gap-3">
+              <button type="button" onClick={() => navigate(`/pilot/${s.userId}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    {(s.pilotName || "?").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm truncate">{s.pilotName || t("common.unknown")}</p>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {s.trainingLevel && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                        {s.trainingLevel}
+                      </span>
+                    )}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusClasses[status]}`}>
+                      {t(`school.studentStatus.${status}`)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">{s.flightCount} {t("school.flights")}</span>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <Progress value={s.examProgress} className="h-1.5 flex-1" />
+                    <span className="text-[10px] text-muted-foreground w-8 text-right">{s.examProgress}%</span>
+                  </div>
+                  {s.lastSummary && (
+                    <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 italic">
+                      "{s.lastSummary}"
+                    </p>
+                  )}
+                </div>
+              </button>
+
+              <Select
+                value={status}
+                onValueChange={(value) => void handleStatusChange(s.userId, value as StudentStatus)}
+                disabled={!groupId || !onStatusChange}
+              >
+                <SelectTrigger className="h-7 w-28 rounded-full text-[10px] border-0 bg-muted/60 px-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">{t("school.studentStatus.active")}</SelectItem>
+                  <SelectItem value="paused">{t("school.studentStatus.paused")}</SelectItem>
+                  <SelectItem value="cancelled">{t("school.studentStatus.cancelled")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+            {groupId && (
+              <div className="px-3 pb-3">
+                <Button size="sm" variant="outline" onClick={() => setEquipmentStudent(s)}>{t("school.gear.tab")}</Button>
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                {s.trainingLevel && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                    {s.trainingLevel}
-                  </span>
-                )}
-                <span className="text-[10px] text-muted-foreground">{s.flightCount} {t("school.flights")}</span>
-              </div>
-              <div className="mt-1.5 flex items-center gap-2">
-                <Progress value={s.examProgress} className="h-1.5 flex-1" />
-                <span className="text-[10px] text-muted-foreground w-8 text-right">{s.examProgress}%</span>
-              </div>
-              {s.lastSummary && (
-                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 italic">
-                  "{s.lastSummary}"
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            )}
+          </Card>
+        );
+      })}
+      <Dialog open={!!equipmentStudent} onOpenChange={(open) => { if (!open) setEquipmentStudent(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>{t("school.gear.tab")} · {equipmentStudent?.pilotName}</DialogTitle></DialogHeader>
+          {groupId && equipmentStudent && <StudentEquipmentCheck key={`${groupId}:${equipmentStudent.userId}`} groupId={groupId} studentUserId={equipmentStudent.userId} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

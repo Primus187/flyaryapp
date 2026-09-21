@@ -1,5 +1,33 @@
 # Flyary
 
+## Flugschule: Ausrüstungscheck (Planung 5.1)
+
+In der Schülerübersicht öffnet **Ausrüstung** die persönliche Checkliste für Helm,
+Schuhwerk, Gurtzeug mit Protektor und Rettungsgerät. Änderungen werden erst nach
+Bestätigung durch die Datenbank angezeigt; bei Fehlern bleibt der vorherige Stand
+erhalten. Offline werden Änderungen nicht zwischengespeichert und nicht als erledigt
+angezeigt. Fehlgeschlagene Abfragen lassen sich erneut laden.
+
+Schüler sehen bei Höhenflug-Terminen ihrer Schule vor der Anmeldung einen Hinweis
+auf fehlende Bestätigungen mit den betroffenen Gegenständen. Die Anmeldung bleibt
+möglich, damit Leihmaterial berücksichtigt werden kann. Die vorhandene
+`equipment_checks`-Tabelle und deren RLS-Regeln bleiben unverändert (Schüler lesen
+ihre eigenen Checks, das Schulteam bearbeitet sie).
+
+## Flugschule: Wartungsfristen (Planung 9.1)
+
+Unter **Material → Wartung** lassen sich mehrere Prüf- und Wartungsfristen pro Gerät
+erfassen und erledigen. Filter zeigen überfällige Fristen oder die nächsten 30 Tage.
+Am Fälligkeitstag gilt eine Prüfung noch nicht als überfällig. Im Lager und bei der
+Ausgabe erscheint eine Warnung für offene überfällige Wartungen sowie für das bisherige
+Feld „Nächster Check“. Die Warnung verhindert die Ausgabe nicht.
+
+Speicherfehler beim Erledigen bleiben sichtbar; der Eintrag wird erst nach bestätigter
+Speicherung als erledigt angezeigt. Ohne Verbindung wird kein lokaler Wartungsabschluss
+vorgemerkt. Ladefehler werden als unbekannter Wartungsstatus angezeigt.
+Voraussetzung ist die bestehende Phase-1-Tabelle `equipment_maintenance` mit ihren
+RLS-Regeln. Diese Ergänzung ändert keine Datenbankrechte.
+
 Ich möchte eine PWA mobile App, welche als Tagebuch für meine Gleitschirmflüge dient. Damit sollen Flugdaten (.ics) eingelesen werden. Orte (Startplätze und Landeplätze) erfasst werden können. Diese auf einer Karte anzeigen. Zu den einzelnen Flügen, sollen alle wichtigen Daten erfasst werden können und auch Fotos angehängt und YouTube Videos verlinkt werden.
 
 This project was built with [Lovable](https://lovable.dev).

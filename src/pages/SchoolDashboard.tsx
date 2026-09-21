@@ -26,6 +26,13 @@ interface SchoolGroup {
   name: string;
 }
 
+type StudentStatus = "active" | "paused" | "cancelled";
+
+const normalizeStudentStatus = (value: unknown): StudentStatus => {
+  if (value === "paused" || value === "cancelled") return value;
+  return "active";
+};
+
 type Section = "days" | "chat" | "people" | "students" | "safety" | "equipment" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
@@ -75,6 +82,99 @@ export default function SchoolDashboard() {
   const [flights, setFlights] = useState<any[]>([]);
   const [trainingProgress, setTrainingProgress] = useState<any[]>([]);
   const [examItemCount, setExamItemCount] = useState(0);
+  const [studentStatuses, setStudentStatuses] = useState<Record<string, { status: StudentStatus; reason: string | null; changed_at: string | null }>>({});
+
+  const loadStudentStatusMap = async (groupId: string) => {
+    const localKey = `flyary-school-student-statuses-${groupId}`;
+    const fallback = (() => {
+      try {
+        const raw = localStorage.getItem(localKey);
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    })();
+
+    try {
+      const { data, error } = await supabase
+        .from("student_status_history" as any)
+        .select("student_id, status, reason, changed_at")
+        .eq("group_id", groupId)
+        .order("changed_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const latest: Record<string, { status: StudentStatus; reason: string | null; changed_at: string | null }> = {};
+      (data || []).forEach((row: any) => {
+        const userId = row.student_id ?? row.student_user_id ?? row.user_id;
+        if (!userId || latest[userId]) return;
+        latest[userId] = {
+          status: normalizeStudentStatus(row.status),
+          reason: row.reason ?? null,
+          changed_at: row.changed_at ?? null,
+        };
+      });
+
+      try {
+        localStorage.setItem(localKey, JSON.stringify(latest));
+      } catch {
+        // Ignore storage issues in privacy-focused browsers.
+      }
+      return latest;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const handleStudentStatusChange = async (userId: string, status: StudentStatus) => {
+    if (!selectedGroupId) return;
+    const updated = {
+      status,
+      reason: null,
+      changed_at: new Date().toISOString(),
+    };
+    setStudentStatuses((prev) => ({ ...prev, [userId]: updated }));
+
+    const timestamp = updated.changed_at;
+    const payload = {
+      group_id: selectedGroupId,
+      student_id: userId,
+      status,
+      reason: null,
+      changed_by: user?.id ?? null,
+      changed_at: timestamp,
+    };
+
+    try {
+      const { error } = await supabase.from("student_status_history" as any).insert(payload as any);
+      if (error) {
+        throw error;
+      }
+      const localKey = `flyary-school-student-statuses-${selectedGroupId}`;
+      const existing = (() => {
+        try {
+          const raw = localStorage.getItem(localKey);
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
+        }
+      })();
+      localStorage.setItem(localKey, JSON.stringify({ ...existing, [userId]: updated }));
+    } catch {
+      const localKey = `flyary-school-student-statuses-${selectedGroupId}`;
+      const existing = (() => {
+        try {
+          const raw = localStorage.getItem(localKey);
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
+        }
+      })();
+      localStorage.setItem(localKey, JSON.stringify({ ...existing, [userId]: updated }));
+    }
+  };
 
   // Load school groups where the user is admin, instructor or school lead
   useEffect(() => {
@@ -135,18 +235,21 @@ export default function SchoolDashboard() {
       const eventIds = eventList.map((e) => e.id);
 
       if (studentUserIds.length > 0) {
-        const [profilesRes, flightsRes, progressRes] = await Promise.all([
+        const [profilesRes, flightsRes, progressRes, statusMap] = await Promise.all([
           supabase.from("profiles").select("user_id, pilot_name, training_level").in("user_id", studentUserIds),
           supabase.from("flights").select("id, user_id, date").eq("group_id", selectedGroupId).in("user_id", studentUserIds),
           supabase.from("training_progress").select("user_id, item_id, rating").in("user_id", studentUserIds),
+          loadStudentStatusMap(selectedGroupId),
         ]);
         setProfiles(profilesRes.data || []);
         setFlights(flightsRes.data || []);
         setTrainingProgress(progressRes.data || []);
+        setStudentStatuses(statusMap);
       } else {
         setProfiles([]);
         setFlights([]);
         setTrainingProgress([]);
+        setStudentStatuses({});
       }
 
       if (eventIds.length > 0) {
@@ -175,6 +278,7 @@ export default function SchoolDashboard() {
       const examProgress = examItemCount > 0 ? Math.round((studentProgress.length / examItemCount) * 100) : 0;
       const summaries = dayNotes.filter((n: any) => n.student_user_id === m.user_id && n.flight_number === null && n.note);
       const lastSummary = summaries.length > 0 ? summaries[0].note : null;
+      const statusEntry = studentStatuses[m.user_id] ?? { status: "active" as StudentStatus, reason: null, changed_at: null };
 
       return {
         userId: m.user_id,
@@ -183,9 +287,12 @@ export default function SchoolDashboard() {
         flightCount: studentFlights.length,
         examProgress: Math.min(examProgress, 100),
         lastSummary,
+        status: statusEntry.status,
+        statusReason: statusEntry.reason,
+        statusUpdatedAt: statusEntry.changed_at,
       };
     });
-  }, [studentMembers, profiles, flights, trainingProgress, dayNotes, examItemCount]);
+  }, [studentMembers, profiles, flights, trainingProgress, dayNotes, examItemCount, studentStatuses]);
 
   const eventInfos = useMemo(() => {
     return events.map((ev) => {
@@ -235,7 +342,7 @@ export default function SchoolDashboard() {
       case "people":
         return <SchoolPeople groupId={selectedGroupId} canManage={true} />;
       case "students":
-        return <SchoolStudents students={studentInfos} />;
+       return <SchoolStudents groupId={selectedGroupId} students={studentInfos} onStatusChange={handleStudentStatusChange} />;
       case "safety":
         return <SchoolSafety groupId={selectedGroupId} />;
       case "equipment":
@@ -288,7 +395,7 @@ export default function SchoolDashboard() {
 
       <SchoolOverview
         groupId={selectedGroupId}
-        studentCount={studentMembers.length}
+        studentCount={studentInfos.filter((s) => s.status !== "paused" && s.status !== "cancelled").length}
         nextEvent={nextEvent}
         openNotesCount={openNotesCount}
       />

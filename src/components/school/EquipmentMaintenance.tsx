@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import EmptyState from "@/components/layout/EmptyState";
 import { Wrench, Plus, Check, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { maintenanceStatus } from "@/lib/equipment-maintenance";
 
 const MAINTENANCE_TYPES = ["reserve_repack", "harness_check", "glider_check", "other"] as const;
 
@@ -38,6 +40,9 @@ export default function EquipmentMaintenance({ groupId }: Props) {
   const [equipment, setEquipment] = useState<{ id: string; name: string }[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [completing, setCompleting] = useState<string | null>(null);
+  const [filter, setFilter] = useState("all");
   const [form, setForm] = useState({ equipment_id: "", maintenance_type: "reserve_repack", due_at: "", note: "" });
 
   const load = async () => {
@@ -48,9 +53,10 @@ export default function EquipmentMaintenance({ groupId }: Props) {
         .select("id, equipment_id, maintenance_type, due_at, completed_at, note")
         .eq("group_id", groupId)
         .order("due_at", { ascending: true }),
-      supabase.from("school_equipment").select("id, name").eq("group_id", groupId).neq("status", "retired").order("name"),
+      supabase.from("school_equipment").select("id, name").eq("group_id", groupId).order("name"),
     ]);
     setRows((mRes.data || []) as Row[]);
+    setLoadError(!!mRes.error || !!eRes.error);
     setEquipment(eRes.data || []);
     setLoading(false);
   };
@@ -64,9 +70,10 @@ export default function EquipmentMaintenance({ groupId }: Props) {
 
   const open = useMemo(() => rows.filter((r) => !r.completed_at), [rows]);
   const dueSoon = useMemo(() => {
-    const limit = Date.now() + 30 * 86400000;
-    return open.filter((r) => new Date(r.due_at).getTime() <= limit);
+    return open.filter((r) => maintenanceStatus(r.due_at, r.completed_at) === "dueSoon");
   }, [open]);
+  const overdueRows = open.filter((r) => maintenanceStatus(r.due_at, r.completed_at) === "overdue");
+  const visibleRows = filter === "dueSoon" ? dueSoon : filter === "overdue" ? overdueRows : rows;
 
   const save = async () => {
     if (!form.equipment_id || !form.due_at) return;
@@ -90,15 +97,25 @@ export default function EquipmentMaintenance({ groupId }: Props) {
   };
 
   const complete = async (row: Row) => {
-    const today = new Date().toISOString().slice(0, 10);
-    await supabase
+    if (!user || completing) return;
+    setCompleting(row.id);
+    const today = format(new Date(), "yyyy-MM-dd");
+    const { error } = await supabase
       .from("equipment_maintenance")
       .update({ completed_at: today, completed_by: user?.id ?? null })
-      .eq("id", row.id);
+      .eq("id", row.id)
+      .eq("group_id", groupId)
+      .select("id").single();
+    setCompleting(null);
+    if (error) {
+      toast({ title: t("school.maintenance.saveFailed"), description: error.message, variant: "destructive" });
+      return;
+    }
     setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, completed_at: today } : r)));
   };
 
   if (loading) return <Skeleton className="h-40 w-full rounded-2xl" />;
+  if (loadError) return <div role="alert" className="space-y-2 pt-3"><p>{t("school.maintenance.loadFailed")}</p><Button onClick={() => void load()}>{t("school.maintenance.retry")}</Button></div>;
 
   return (
     <div className="space-y-3 pt-3">
@@ -114,23 +131,32 @@ export default function EquipmentMaintenance({ groupId }: Props) {
         </p>
       )}
 
-      {rows.length === 0 ? (
+      <Select value={filter} onValueChange={setFilter}>
+        <SelectTrigger aria-label={t("school.maintenance.filter")}><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t("school.maintenance.all")}</SelectItem>
+          <SelectItem value="dueSoon">{t("school.maintenance.dueSoon")}</SelectItem>
+          <SelectItem value="overdue">{t("school.maintenance.overdue")} ({overdueRows.length})</SelectItem>
+        </SelectContent>
+      </Select>
+      {visibleRows.length === 0 ? (
         <EmptyState
           icon={Wrench}
-          title={t("school.maintenance.empty")}
-          description={t("school.maintenance.emptyHint")}
-          actionLabel={equipment.length > 0 ? t("school.maintenance.add") : undefined}
-          onAction={equipment.length > 0 ? () => setFormOpen(true) : undefined}
+          title={t(filter === "all" ? "school.maintenance.empty" : "school.maintenance.noMatches")}
+          description={filter === "all" ? t("school.maintenance.emptyHint") : undefined}
+          actionLabel={filter === "all" && equipment.length > 0 ? t("school.maintenance.add") : undefined}
+          onAction={filter === "all" && equipment.length > 0 ? () => setFormOpen(true) : undefined}
         />
       ) : (
-        rows.map((r) => {
-          const overdue = !r.completed_at && new Date(r.due_at).getTime() < Date.now();
+        visibleRows.map((r) => {
+          const overdue = maintenanceStatus(r.due_at, r.completed_at) === "overdue";
           return (
             <Card key={r.id} className="border-border/60 bg-card/80">
               <CardContent className="p-3 flex items-center gap-2">
                 <Wrench className={`h-4 w-4 shrink-0 ${overdue ? "text-destructive" : "text-primary"}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{equipmentName(r.equipment_id)}</p>
+                  {overdue && <p className="text-xs text-destructive">{t("school.maintenance.overdue")}</p>}
                   <p className="text-xs text-muted-foreground truncate">
                     {t(`school.maintenance.types.${r.maintenance_type}`, { defaultValue: r.maintenance_type })} · {r.due_at}
                   </p>
@@ -140,7 +166,7 @@ export default function EquipmentMaintenance({ groupId }: Props) {
                     {t("school.maintenance.done")} {r.completed_at}
                   </Badge>
                 ) : (
-                  <Button size="sm" variant="secondary" onClick={() => complete(r)}>
+                  <Button size="sm" variant="secondary" disabled={!!completing} onClick={() => complete(r)}>
                     <Check className="h-3.5 w-3.5 mr-1" />
                     {t("school.maintenance.markDone")}
                   </Button>

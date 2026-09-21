@@ -1062,7 +1062,13 @@
     "noSchool": "You are not an admin of any flight school. Create a group of type «Flight School» to use this dashboard.",
     "overview": "Overview",
     "students": "Students",
-    "flightDays": "Flight Days",
+    "studentStatus": {
+      "title": "Status",
+      "active": "Active",
+      "paused": "Paused",
+      "cancelled": "Cancelled"
+    },
+    "flightDays": "Flight days",
     "activeStudents": "Active Students",
     "openReviews": "Open Reviews",
     "nextFlightDay": "Next Flight Day",
@@ -1362,6 +1368,14 @@
       "warnDays": "{{name}}: only {{days}} of {{min}} teaching days in {{year}}"
     },
     "maintenance": {
+      "noMatches": "No deadlines match this filter.",
+      "overdue": "Maintenance overdue",
+      "loanWarning": "Maintenance or inspection is overdue for this equipment. Check its serviceability before lending it.",
+      "loadFailed": "Maintenance deadlines could not be loaded. Maintenance status is unknown.",
+      "retry": "Retry",
+      "filter": "Filter maintenance deadlines",
+      "all": "All deadlines",
+      "dueSoon": "Due in the next 30 days",
       "tab": "Maintenance",
       "add": "Add due date",
       "saved": "Due date saved",
@@ -1383,6 +1397,11 @@
       "dueSoonCount": "{{count}} due within the next 30 days"
     },
     "gear": {
+      "loading": "Loading equipment check ?",
+      "signupWarning": "Not yet confirmed: {{items}}. Please arrange your equipment or any loan equipment with the school before the altitude flight. You can still sign up.",
+      "loadFailed": "The equipment check could not be loaded. The check status is unknown.",
+      "saveFailed": "Equipment check was not saved. Please check your connection and try again.",
+      "retry": "Retry",
       "tab": "Gear",
       "hint": "Mark what the student already has. Missing items can be covered with rental gear.",
       "empty": "No students in this group yet.",

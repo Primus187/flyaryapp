@@ -1062,6 +1062,12 @@
     "noSchool": "Vous n'êtes administrateur d'aucune école de vol. Créez un groupe de type «École de vol» pour utiliser ce tableau de bord.",
     "overview": "Aperçu",
     "students": "Élèves",
+    "studentStatus": {
+      "title": "Statut",
+      "active": "Actif",
+      "paused": "En pause",
+      "cancelled": "Résilié"
+    },
     "flightDays": "Jours de vol",
     "activeStudents": "Élèves actifs",
     "openReviews": "Évaluations en attente",
@@ -1362,6 +1368,14 @@
       "warnDays": "{{name}} : seulement {{days}} jours d'enseignement sur {{min}} en {{year}}"
     },
     "maintenance": {
+      "noMatches": "Aucune ?ch?ance pour ce filtre.",
+      "overdue": "Entretien en retard",
+      "loanWarning": "Un entretien ou un contr?le de ce mat?riel est en retard. V?rifiez son ?tat avant le pr?t.",
+      "loadFailed": "Impossible de charger les ?ch?ances. L??tat de maintenance est inconnu.",
+      "retry": "R?essayer",
+      "filter": "Filtrer les ?ch?ances",
+      "all": "Toutes les ?ch?ances",
+      "dueSoon": "? ?ch?ance dans les 30 prochains jours",
       "tab": "Entretien",
       "add": "Ajouter une échéance",
       "saved": "Échéance enregistrée",
@@ -1383,6 +1397,11 @@
       "dueSoonCount": "{{count}} échéance dans les 30 prochains jours"
     },
     "gear": {
+      "loading": "Chargement du contr?le du mat?riel ?",
+      "signupWarning": "Pas encore confirm? : {{items}}. Veuillez convenir de votre ?quipement ou du mat?riel de pr?t avec l??cole avant le grand vol. Vous pouvez tout de m?me vous inscrire.",
+      "loadFailed": "Le contr?le du mat?riel n?a pas pu ?tre charg?. Son ?tat est inconnu.",
+      "saveFailed": "Le contr?le du mat?riel n?a pas ?t? enregistr?. V?rifiez votre connexion et r?essayez.",
+      "retry": "R?essayer",
       "tab": "Équipement",
       "hint": "Marque ce que l'élève possède déjà. Le manquant peut être couvert par du matériel de location.",
       "empty": "Aucun élève dans ce groupe.",

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, ArrowLeft, MapPin, CheckCircle2, RefreshCw } from "lucide-react";
 import { parseLocationsCsv, type ParsedLocation } from "@/lib/csv-location-import";
 import { Badge } from "@/components/ui/badge";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 
 type ImportState = "idle" | "preview" | "importing" | "done";
 
@@ -73,7 +74,7 @@ export default function ImportLocations() {
           };
           if (loc.existingId) {
             // Update existing — only overwrite non-empty values
-            const updates: Record<string, any> = {};
+            const updates: TablesUpdate<"locations"> = {};
             if (loc.latitude !== 0 || loc.longitude !== 0) { updates.latitude = loc.latitude; updates.longitude = loc.longitude; }
             if (loc.altitude) updates.altitude = loc.altitude;
             if (row.description) updates.description = row.description;
