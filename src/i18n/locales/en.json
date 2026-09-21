@@ -769,6 +769,7 @@
   },
   "training": {
     "title": "Training Checklist",
+    "locked": "Recommended only after \"{{category}}\"",
     "goal": "Goal",
     "content": "Content",
     "mistakes": "Common Mistakes",

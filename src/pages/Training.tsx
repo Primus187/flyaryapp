@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Star, Shield, ExternalLink, FileText } from "lucide-react";
+import { Star, Shield, ExternalLink, FileText, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,12 +9,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { cn } from "@/lib/utils";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
+import { isCategoryLocked, prerequisiteName } from "@/lib/training-categories";
 
 interface Category {
   id: string;
   name: string;
   sort_order: number;
   training_level: string | null;
+  unlocks_after_category_id: string | null;
 }
 
 interface TrainingItem {
@@ -87,6 +89,8 @@ export default function Training() {
     return Math.round((total / (catItems.length * 3)) * 100);
   };
 
+  const progressByCategory = Object.fromEntries(categories.map((c) => [c.id, categoryProgress(c.id)]));
+
   const filteredCategories = activeLevel === "all"
     ? categories
     : categories.filter((c) => (c.training_level || "").includes(activeLevel) || !c.training_level);
@@ -150,6 +154,7 @@ export default function Training() {
       <Accordion type="multiple" className="space-y-2">
         {filteredCategories.map((cat) => {
           const pct = categoryProgress(cat.id);
+          const locked = isCategoryLocked(cat, progressByCategory);
           return (
             <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-amber-500/50 bg-amber-500/5")}>
               <AccordionTrigger className="px-4 py-3 hover:no-underline">
@@ -158,6 +163,12 @@ export default function Training() {
                   <span className="font-semibold text-sm truncate">{cat.name}</span>
                   {cat.training_level && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{levelLabels[cat.training_level as Level] || cat.training_level}</Badge>
+                  )}
+                  {locked && (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 gap-1 border-muted-foreground/40 text-muted-foreground">
+                      <Lock className="h-2.5 w-2.5" />
+                      {t("training.locked", { category: prerequisiteName(cat, categories) })}
+                    </Badge>
                   )}
                   <span className="ml-auto text-xs text-muted-foreground shrink-0">{pct}%</span>
                 </div>

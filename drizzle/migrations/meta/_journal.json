@@ -50,6 +50,13 @@
       "when": 1789996200000,
       "tag": "0006_student_status_history",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789996800000,
+      "tag": "0007_training_category_prerequisites",
+      "breakpoints": true
     }
   ]
 }

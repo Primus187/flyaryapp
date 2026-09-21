@@ -769,6 +769,7 @@
   },
   "training": {
     "title": "Fiche de contrôle",
+    "locked": "Recommandé seulement après « {{category}} »",
     "goal": "Objectif",
     "content": "Contenu",
     "mistakes": "Erreurs fréquentes",

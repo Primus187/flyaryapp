@@ -1,5 +1,21 @@
 # Flyary
 
+## Kontrollblatt: Meilenstein-Freigaben (Planung 5.3)
+
+Ausbildungskategorien können eine Voraussetzungs-Kategorie referenzieren
+(`training_categories.unlocks_after_category_id`); ist diese nicht zu 100 % abgeschlossen,
+zeigt das Kontrollblatt ([Training.tsx](src/pages/Training.tsx)) eine Kategorie mit einem
+dezenten Schloss-Badge samt Name der Voraussetzung. Wie im Plan explizit gefordert ("kein
+hartes Blockieren") verhindert das nichts: Sterne-Bewertung und Navigation in die
+Übungsdetails bleiben für gesperrte Kategorien uneingeschränkt möglich – der Fluglehrer
+behält die fachliche Entscheidungshoheit, es gibt daher auch keinen separaten
+"Freigabe aufheben"-Mechanismus, weil nichts aufzuheben ist.
+
+`training_categories` ist ein globales, schulübergreifendes Curriculum ohne `group_id` und
+wird wie bisher direkt per Migration gepflegt, nicht über eine App-UI. Migration
+`0007_training_category_prerequisites.sql` setzt dafür das im Plan genannte Beispiel:
+Höhenflüge erst nach abgeschlossenem Übungshang.
+
 ## Flugschule: Ersatztermin-Vorschlag bei Absage (Planung 7.2)
 
 Termine einer Flugschulgruppe mit Status "abgesagt" zeigen dem Team einen Vorschlag für bis zu

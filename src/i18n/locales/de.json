@@ -747,6 +747,7 @@
   },
   "training": {
     "title": "Kontrollblatt",
+    "locked": "Erst nach „{{category}}“ empfohlen",
     "goal": "Ziel",
     "content": "Inhalt",
     "mistakes": "Häufige Fehler",
