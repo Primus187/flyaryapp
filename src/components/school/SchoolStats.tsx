@@ -180,6 +180,8 @@ export default function SchoolStats({ groupId }: Props) {
       <RankedList title={t("school.stats.launchHelperDays")} items={launchHelperDays} />
       <RankedList title={t("school.stats.areaRanking")} items={areaRanking} />
       <RankedList title={t("school.stats.categoryRanking")} items={categoryRanking} />
+
+      <AnnualReport groupId={groupId} />
     </div>
   );
 }
