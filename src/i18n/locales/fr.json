@@ -1101,7 +1101,10 @@
       "ground": "Niveau sol",
       "altitude": "Vols d'altitude",
       "exam_ready": "Prêt pour l'examen",
-      "licensed": "Breveté"
+      "licensed": "Breveté",
+      "grundkurs": "Cours de base",
+      "brevetkurs": "Cours de brevet",
+      "siku": "Stage de sécurité (SIV)"
     },
     "people": {
       "title": "Équipe",
@@ -1436,8 +1439,9 @@
     "annual": {
       "title": "Rapport annuel FSVL",
       "operatingDays": "Jours d'exploitation",
-      "licensed": "Brevets",
-      "unknownLevel": "Sans niveau de formation",
+      "licensedInYear": "Breveté(s) {{year}}",
+      "unknownLevel": "Niveau de formation inconnu",
+      "historyHint": "Pour les années passées, le niveau de formation est reconstitué à partir de l'historique des modifications. Les changements antérieurs à la mise en place de ce suivi ne sont pas connus.",
       "month": "Mois",
       "key": "Indicateur",
       "value": "Valeur",

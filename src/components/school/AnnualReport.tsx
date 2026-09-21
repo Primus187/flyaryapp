@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText, Printer, Download, Check, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { levelCountsAtYearEnd, licensedCompletionsInYear } from "@/lib/annual-report";
 
 interface Props {
   groupId: string;
@@ -19,15 +20,15 @@ interface Submission {
   submitted_at: string | null;
 }
 
-const LEVELS = ["ground", "altitude", "exam_ready", "licensed"] as const;
-
 export default function AnnualReport({ groupId }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(String(currentYear - 1));
-  const [levels, setLevels] = useState<Record<string, number>>({});
+  const [levelCounts, setLevelCounts] = useState<Record<string, number>>({});
+  const [unresolvedLevels, setUnresolvedLevels] = useState(0);
+  const [licensedInYear, setLicensedInYear] = useState(0);
   const [monthDays, setMonthDays] = useState<number[]>(Array(12).fill(0));
   const [team, setTeam] = useState<{ name: string; functions: string[]; validUntil: string | null }[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -36,7 +37,7 @@ export default function AnnualReport({ groupId }: Props) {
     if (!groupId) return;
     let cancelled = false;
     const load = async () => {
-      const [membersRes, eventsRes, funcRes, certRes, subsRes] = await Promise.all([
+      const [membersRes, eventsRes, funcRes, certRes, subsRes, historyRes] = await Promise.all([
         supabase.from("group_members").select("user_id, role").eq("group_id", groupId),
         supabase
           .from("flight_events")
@@ -48,6 +49,8 @@ export default function AnnualReport({ groupId }: Props) {
         supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
         supabase.from("instructor_certifications").select("user_id, cert_type, valid_until").eq("group_id", groupId),
         supabase.from("annual_report_submissions").select("id, year, submitted_at").eq("group_id", groupId),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+        supabase.from("training_level_history" as any).select("user_id, training_level, changed_at").eq("group_id", groupId),
       ]);
 
       const studentIds = (membersRes.data || []).filter((m) => m.role === "member").map((m) => m.user_id);
@@ -55,7 +58,7 @@ export default function AnnualReport({ groupId }: Props) {
       const teamIds = Array.from(new Set(funcs.map((f) => f.user_id)));
 
       const nameMap: Record<string, string> = {};
-      const levelCounts: Record<string, number> = {};
+      const currentLevels: { user_id: string; training_level: string | null }[] = [];
       const allIds = Array.from(new Set([...studentIds, ...teamIds]));
       if (allIds.length > 0) {
         const { data: profs } = await supabase
@@ -64,12 +67,12 @@ export default function AnnualReport({ groupId }: Props) {
           .in("user_id", allIds);
         (profs || []).forEach((p) => {
           nameMap[p.user_id] = p.pilot_name || "—";
-          if (studentIds.includes(p.user_id)) {
-            const key = p.training_level || "unknown";
-            levelCounts[key] = (levelCounts[key] || 0) + 1;
-          }
+          if (studentIds.includes(p.user_id)) currentLevels.push({ user_id: p.user_id, training_level: p.training_level });
         });
       }
+
+      const history = (historyRes.data || []) as { user_id: string; training_level: string; changed_at: string }[];
+      const { counts, unresolved } = levelCountsAtYearEnd(studentIds, history, currentLevels, Number(year), currentYear);
 
       const months = Array(12).fill(0);
       (eventsRes.data || []).forEach((e) => {
@@ -77,7 +80,9 @@ export default function AnnualReport({ groupId }: Props) {
       });
 
       if (cancelled) return;
-      setLevels(levelCounts);
+      setLevelCounts(counts);
+      setUnresolvedLevels(unresolved);
+      setLicensedInYear(licensedCompletionsInYear(history, Number(year)));
       setMonthDays(months);
       setTeam(
         teamIds
@@ -92,7 +97,7 @@ export default function AnnualReport({ groupId }: Props) {
     };
     load();
     return () => { cancelled = true; };
-  }, [groupId, year]);
+  }, [groupId, year, currentYear]);
 
   const years = useMemo(
     () => [currentYear, currentYear - 1, currentYear - 2, currentYear - 3].map(String),
@@ -127,8 +132,9 @@ export default function AnnualReport({ groupId }: Props) {
   const rowsForExport = () => {
     const rows: [string, string][] = [
       [t("school.annual.operatingDays"), String(totalDays)],
-      ...LEVELS.map((l) => [t(`school.levels.${l}`), String(levels[l] || 0)] as [string, string]),
-      [t("school.annual.unknownLevel"), String(levels["unknown"] || 0)],
+      [t("school.annual.licensedInYear", { year }), String(licensedInYear)],
+      ...Object.entries(levelCounts).map(([l, count]) => [t(`school.levels.${l}`, { defaultValue: l }), String(count)] as [string, string]),
+      [t("school.annual.unknownLevel"), String(unresolvedLevels)],
       ...monthDays.map((d, i) => [`${t("school.annual.month")} ${i + 1}`, String(d)] as [string, string]),
       ...team.map((m) => [
         m.name,
@@ -197,18 +203,27 @@ export default function AnnualReport({ groupId }: Props) {
             <p className="text-lg font-bold tabular-nums">{totalDays}</p>
           </div>
           <div className="rounded-xl bg-muted/40 p-2">
-            <p className="text-muted-foreground">{t("school.annual.licensed")}</p>
-            <p className="text-lg font-bold tabular-nums">{levels["licensed"] || 0}</p>
+            <p className="text-muted-foreground">{t("school.annual.licensedInYear", { year })}</p>
+            <p className="text-lg font-bold tabular-nums">{licensedInYear}</p>
           </div>
         </div>
 
         <div className="space-y-1">
-          {LEVELS.map((l) => (
+          {Object.entries(levelCounts).map(([l, count]) => (
             <div key={l} className="flex justify-between text-xs">
-              <span className="text-muted-foreground">{t(`school.levels.${l}`)}</span>
-              <span className="tabular-nums">{levels[l] || 0}</span>
+              <span className="text-muted-foreground">{t(`school.levels.${l}`, { defaultValue: l })}</span>
+              <span className="tabular-nums">{count}</span>
             </div>
           ))}
+          {unresolvedLevels > 0 && (
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">{t("school.annual.unknownLevel")}</span>
+              <span className="tabular-nums">{unresolvedLevels}</span>
+            </div>
+          )}
+          {year !== String(currentYear) && (
+            <p className="text-[11px] text-muted-foreground pt-1">{t("school.annual.historyHint")}</p>
+          )}
         </div>
 
         <div className="space-y-1">

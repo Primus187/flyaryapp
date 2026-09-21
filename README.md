@@ -67,6 +67,28 @@ vorgemerkt. Ladefehler werden als unbekannter Wartungsstatus angezeigt.
 Voraussetzung ist die bestehende Phase-1-Tabelle `equipment_maintenance` mit ihren
 RLS-Regeln. Diese Ergänzung ändert keine Datenbankrechte.
 
+## Flugschule: Jahresbericht – Ausbildungsstand pro Jahr (Planung 4.4)
+
+`profiles.training_level` ist ein Live-Wert ohne Zeitbezug; für vergangene Berichtsjahre
+liess sich daraus weder die Kursart-Verteilung noch „abgeschlossene Brevetierungen im
+Berichtsjahr" korrekt rekonstruieren – der Jahresfilter wirkte sich nur auf die
+Betriebstage/Monat aus, alle anderen Zahlen zeigten immer den heutigen Stand. Neue Tabelle
+`training_level_history` protokolliert ab sofort jede Änderung mit Zeitstempel (ergänzt in
+`set_member_training_level`). Für das aktuelle Jahr wird ohne Historieneintrag weiterhin auf
+den Live-Wert zurückgegriffen; für vergangene Jahre ohne Historieneintrag gilt der
+Ausbildungsstand als unbekannt statt geraten – sichtbar als eigene Zeile „Ausbildungsstand
+unbekannt" mit Hinweistext. Änderungen vor Einführung dieser Erfassung bleiben unbekannt.
+
+„Brevetiert {{Jahr}}" zählt neu Personen mit einem Wechsel zu `training_level = licensed`
+innerhalb des gewählten Jahres (Zufluss), nicht mehr den aktuellen Bestand an Brevetierten.
+Zusätzlich behebt dies einen Vokabular-Mismatch: `profiles.training_level` enthält sowohl
+das ältere Schema (`grundkurs`/`brevetkurs`/`siku`, siehe Migration
+`20260917075246_...sql`) als auch das neuere aus [SchoolPeople.tsx](src/components/school/SchoolPeople.tsx)
+(`ground`/`altitude`/`exam_ready`/`licensed`) – die Kursart-Aufschlüsselung zeigt jetzt beide
+Wertebereiche mit Übersetzung statt nur die neueren Werte zu zählen und den Rest stillschweigend
+als „unbekannt" zu verbuchen. Diese beiden Vokabulare selbst sind nicht vereinheitlicht;
+das bleibt eine offene, separate Aufräumarbeit im Bestandscode.
+
 Ich möchte eine PWA mobile App, welche als Tagebuch für meine Gleitschirmflüge dient. Damit sollen Flugdaten (.ics) eingelesen werden. Orte (Startplätze und Landeplätze) erfasst werden können. Diese auf einer Karte anzeigen. Zu den einzelnen Flügen, sollen alle wichtigen Daten erfasst werden können und auch Fotos angehängt und YouTube Videos verlinkt werden.
 
 This project was built with [Lovable](https://lovable.dev).

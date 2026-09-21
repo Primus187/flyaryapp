@@ -934,7 +934,10 @@
       "ground": "Grundstufe",
       "altitude": "Höhenflugstufe",
       "exam_ready": "Prüfungsreif",
-      "licensed": "Brevetiert"
+      "licensed": "Brevetiert",
+      "grundkurs": "Grundkurs",
+      "brevetkurs": "Brevetkurs",
+      "siku": "Sicherheitstraining"
     },
     "people": {
       "title": "Team",
@@ -1269,8 +1272,9 @@
     "annual": {
       "title": "SHV-Jahresbericht",
       "operatingDays": "Betriebstage",
-      "licensed": "Brevetierungen",
-      "unknownLevel": "Ohne Ausbildungsstand",
+      "licensedInYear": "Brevetiert {{year}}",
+      "unknownLevel": "Ausbildungsstand unbekannt",
+      "historyHint": "Für vergangene Jahre wird der Ausbildungsstand aus dem Änderungsverlauf rekonstruiert. Änderungen vor Einführung dieser Erfassung sind nicht bekannt.",
       "month": "Monat",
       "key": "Kennzahl",
       "value": "Wert",
