@@ -193,6 +193,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       purchase_date: form.purchase_date || null,
       next_check_date: form.next_check_date || null,
       notes: form.notes.trim() || null,
+      shv_type_approved: form.shv_type_approved,
     };
     const count = Math.max(1, Math.min(50, parseInt(quantity, 10) || 1));
     const rows =
