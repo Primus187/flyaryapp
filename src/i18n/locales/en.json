@@ -1346,6 +1346,17 @@
       }
     },
     "certs": {
+      "warnIssueDate": "{{name}}: issue/renewal date missing; teaching days cannot be calculated",
+      "daysUnknown": "Teaching days unknown",
+      "daysExplanation": "Counts distinct calendar days with confirmed events that have already started and an instructor assignment, since issue/renewal and within the last three years. Target from the plan: 15 days.",
+      "loadFailed": "Certificates or teaching days could not be fully loaded.",
+      "retry": "Retry",
+      "saveFailed": "Certificates were not fully saved",
+      "partialSaveHint": "Changes already saved are retained. Your entries remain open; check the connection and try again.",
+      "invalidDates": "The expiry date must not precede the issue date.",
+      "issuedAt": "Issued / renewed on",
+      "validUntil": "Valid until",
+      "certificateWarning": {"none":"{{name}}: validity date missing for {{type}}","expired":"{{name}}: {{type}} has expired","soon":"{{name}}: {{type}} expires on {{date}}"},
       "tab": "Certificates",
       "types": {
         "instructor": "Instructor",
@@ -1355,7 +1366,7 @@
         "biplace_3": "Biplace 3",
         "first_aid": "First aid"
       },
-      "teachingDays": "{{count}} teaching days {{year}}",
+      "teachingDays": "{{count}} teaching days in the period",
       "none": "No certificates recorded",
       "edit": "Edit certificates",
       "saved": "Certificates saved",
@@ -1365,7 +1376,7 @@
       "warnMissing": "{{name}}: instructor certificate missing",
       "warnExpired": "{{name}}: instructor certificate has expired",
       "warnSoon": "{{name}}: instructor certificate expires on {{date}}",
-      "warnDays": "{{name}}: only {{days}} of {{min}} teaching days in {{year}}"
+      "warnDays": "{{name}}: {{days}} of {{min}} teaching days since {{date}} (at most three years)"
     },
     "maintenance": {
       "noMatches": "No deadlines match this filter.",
@@ -1416,6 +1427,10 @@
       }
     },
     "quota": {
+      "loading": "Checking equipment availability …",
+      "loadFailed": "The equipment quota could not be fully checked. Availability is unknown.",
+      "retry": "Check again",
+      "explanation": "Calculated for {{count}} students in their first three recorded basic-course days. Personal equipment may reduce the requirement; this warning does not prevent sign-up.",
       "warning": "Equipment quota: {{available}} of {{needed}} type-approved systems available."
     },
     "annual": {

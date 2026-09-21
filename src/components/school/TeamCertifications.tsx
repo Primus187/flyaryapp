@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,12 +11,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import EmptyState from "@/components/layout/EmptyState";
 import { BadgeCheck, AlertTriangle, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { startOfDay, subYears } from "date-fns";
+import { certificationExpiry, countTeachingDays, MIN_TEACHING_DAYS, teachingWindowStart } from "@/lib/instructor-certifications";
 
 const CERT_TYPES = ["instructor", "launch_leader", "biplace_1", "biplace_2", "biplace_3", "first_aid"] as const;
 const TEAM_FUNCTIONS = ["school_lead", "instructor", "launch_helper"] as const;
-/** SHV: mindestens 15 Unterrichtstage pro Jahr. */
-const MIN_TEACHING_DAYS = 15;
-const WARN_DAYS = 90;
 
 interface Props {
   groupId: string;
@@ -35,7 +34,7 @@ interface Person {
   userId: string;
   name: string;
   functions: string[];
-  teachingDays: number;
+  teachingDates: string[];
 }
 
 export default function TeamCertifications({ groupId, canManage = true }: Props) {
@@ -47,83 +46,94 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
   const [editUser, setEditUser] = useState<Person | null>(null);
   const [draft, setDraft] = useState<Record<string, { issued_at: string; valid_until: string }>>({});
   const [saving, setSaving] = useState(false);
-  const year = new Date().getFullYear();
+  const [loadError, setLoadError] = useState(false);
+  const loadVersion = useRef(0);
+  const savingRef = useRef(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    const version = ++loadVersion.current;
     setLoading(true);
-    const [funcRes, certRes, eventRes] = await Promise.all([
-      supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
-      supabase.from("instructor_certifications").select("id, user_id, cert_type, issued_at, valid_until").eq("group_id", groupId),
-      supabase
-        .from("flight_events")
-        .select("id, event_date")
-        .eq("group_id", groupId)
-        .gte("event_date", `${year}-01-01`)
-        .neq("status", "cancelled"),
-    ]);
+    setLoadError(false);
+    try {
+      const now = new Date();
+      const [funcRes, certRes, staffRes] = await Promise.all([
+        supabase.from("group_member_functions").select("user_id, function", { count: "exact" }).eq("group_id", groupId),
+        supabase.from("instructor_certifications").select("id, user_id, cert_type, issued_at, valid_until", { count: "exact" }).eq("group_id", groupId),
+        supabase
+          .from("event_staff")
+          .select("user_id, flight_events!inner(event_date)", { count: "exact" })
+          .eq("role", "instructor")
+          .eq("flight_events.group_id", groupId)
+          .gte("flight_events.event_date", startOfDay(subYears(now, 3)).toISOString())
+          .lte("flight_events.event_date", now.toISOString())
+          .eq("flight_events.status", "confirmed"),
+      ]);
+      if ([funcRes, certRes, staffRes].some((result) => result.error || result.data === null || (result.count != null && result.count > result.data.length))) {
+        throw new Error("Incomplete certification data");
+      }
 
-    const funcs = (funcRes.data || []).filter((f) => (TEAM_FUNCTIONS as readonly string[]).includes(f.function));
-    const userIds = Array.from(new Set(funcs.map((f) => f.user_id)));
+      const funcs = (funcRes.data || []).filter((f) => (TEAM_FUNCTIONS as readonly string[]).includes(f.function));
+      const userIds = Array.from(new Set(funcs.map((f) => f.user_id)));
 
-    const eventIds = (eventRes.data || []).map((e) => e.id);
-    let staffRows: { user_id: string; event_id: string }[] = [];
-    if (eventIds.length > 0) {
-      const { data } = await supabase.from("event_staff").select("user_id, event_id").in("event_id", eventIds);
-      staffRows = data || [];
+      const nameMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profs, error } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
+        if (error) throw error;
+        (profs || []).forEach((p) => { nameMap[p.user_id] = p.pilot_name || "—"; });
+      }
+
+      if (version !== loadVersion.current) return;
+      setPeople(
+        userIds
+          .map((uid) => ({
+            userId: uid,
+            name: nameMap[uid] || "—",
+            functions: funcs.filter((f) => f.user_id === uid).map((f) => f.function),
+            teachingDates: (staffRes.data || []).filter((s) => s.user_id === uid).map((s) => s.flight_events.event_date),
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      setCerts((certRes.data || []) as Cert[]);
+    } catch {
+      if (version === loadVersion.current) setLoadError(true);
+    } finally {
+      if (version === loadVersion.current) setLoading(false);
     }
-
-    const nameMap: Record<string, string> = {};
-    if (userIds.length > 0) {
-      const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
-      (profs || []).forEach((p) => { nameMap[p.user_id] = p.pilot_name || "—"; });
-    }
-
-    setPeople(
-      userIds
-        .map((uid) => ({
-          userId: uid,
-          name: nameMap[uid] || "—",
-          functions: funcs.filter((f) => f.user_id === uid).map((f) => f.function),
-          teachingDays: new Set(staffRows.filter((s) => s.user_id === uid).map((s) => s.event_id)).size,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    );
-    setCerts((certRes.data || []) as Cert[]);
-    setLoading(false);
-  };
+  }, [groupId]);
 
   useEffect(() => {
-    if (groupId) load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId]);
+    setEditUser(null);
+    if (groupId) void load();
+    return () => { loadVersion.current += 1; };
+  }, [groupId, load]);
 
   const certFor = (userId: string, type: string) => certs.find((c) => c.user_id === userId && c.cert_type === type);
 
-  const expiryState = (valid_until: string | null) => {
-    if (!valid_until) return "none" as const;
-    const diff = Math.ceil((new Date(valid_until).getTime() - Date.now()) / 86400000);
-    if (diff < 0) return "expired" as const;
-    if (diff <= WARN_DAYS) return "soon" as const;
-    return "valid" as const;
-  };
-
-  const warnings = useMemo(() => {
+  const warnings = (() => {
     const list: string[] = [];
     people.forEach((p) => {
+      certs.filter((cert) => cert.user_id === p.userId && (cert.cert_type !== "instructor" || !p.functions.includes("instructor"))).forEach((cert) => {
+        const state = certificationExpiry(cert.valid_until);
+        if (state !== "valid") list.push(t(`school.certs.certificateWarning.${state}`, {
+          name: p.name, type: t(`school.certs.types.${cert.cert_type}`), date: cert.valid_until,
+        }));
+      });
       const isInstructor = p.functions.includes("instructor");
       if (isInstructor) {
         const cert = certFor(p.userId, "instructor");
-        const state = expiryState(cert?.valid_until ?? null);
+        const state = certificationExpiry(cert?.valid_until ?? null);
         if (!cert || state === "none") list.push(t("school.certs.warnMissing", { name: p.name }));
         else if (state === "expired") list.push(t("school.certs.warnExpired", { name: p.name }));
         else if (state === "soon") list.push(t("school.certs.warnSoon", { name: p.name, date: cert!.valid_until }));
-        if (p.teachingDays < MIN_TEACHING_DAYS) {
-          list.push(t("school.certs.warnDays", { name: p.name, days: p.teachingDays, min: MIN_TEACHING_DAYS, year }));
+        const days = countTeachingDays(cert?.issued_at ?? null, p.teachingDates);
+        if (days === null) list.push(t("school.certs.warnIssueDate", { name: p.name }));
+        else if (days < MIN_TEACHING_DAYS) {
+          list.push(t("school.certs.warnDays", { name: p.name, days, min: MIN_TEACHING_DAYS, date: teachingWindowStart(cert?.issued_at ?? null) }));
         }
       }
     });
     return list;
-  }, [people, certs, t, year]);
+  })();
 
   const openEdit = (p: Person) => {
     const d: Record<string, { issued_at: string; valid_until: string }> = {};
@@ -136,34 +146,53 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
   };
 
   const saveEdit = async () => {
-    if (!editUser) return;
-    setSaving(true);
-    for (const ty of CERT_TYPES) {
-      const entry = draft[ty];
-      const existing = certFor(editUser.userId, ty);
-      const hasValue = entry.issued_at || entry.valid_until;
-      if (hasValue) {
-        await supabase.from("instructor_certifications").upsert(
-          {
-            group_id: groupId,
-            user_id: editUser.userId,
-            cert_type: ty,
-            issued_at: entry.issued_at || null,
-            valid_until: entry.valid_until || null,
-          },
-          { onConflict: "group_id,user_id,cert_type" },
-        );
-      } else if (existing) {
-        await supabase.from("instructor_certifications").delete().eq("id", existing.id);
-      }
+    if (!editUser || !canManage || savingRef.current) return;
+    if (CERT_TYPES.some((ty) => draft[ty].issued_at && draft[ty].valid_until && draft[ty].issued_at > draft[ty].valid_until)) {
+      toast({ title: t("school.certs.invalidDates"), variant: "destructive" });
+      return;
     }
-    setSaving(false);
-    setEditUser(null);
-    toast({ title: t("school.certs.saved") });
-    load();
+    savingRef.current = true;
+    setSaving(true);
+    const version = loadVersion.current;
+    try {
+      for (const ty of CERT_TYPES) {
+        const entry = draft[ty];
+        const existing = certFor(editUser.userId, ty);
+        if (entry.issued_at === (existing?.issued_at || "") && entry.valid_until === (existing?.valid_until || "")) continue;
+        const hasValue = entry.issued_at || entry.valid_until;
+        if (hasValue) {
+          const { data, error } = await supabase.from("instructor_certifications").upsert(
+            {
+              group_id: groupId,
+              user_id: editUser.userId,
+              cert_type: ty,
+              issued_at: entry.issued_at || null,
+              valid_until: entry.valid_until || null,
+            },
+            { onConflict: "group_id,user_id,cert_type" },
+          ).select("id, user_id, cert_type, issued_at, valid_until").single();
+          if (version !== loadVersion.current) return;
+          if (error) throw error;
+          setCerts((previous) => [...previous.filter((cert) => !(cert.user_id === data.user_id && cert.cert_type === data.cert_type)), data]);
+        } else if (existing) {
+          const { error } = await supabase.from("instructor_certifications").delete().eq("id", existing.id).eq("group_id", groupId).select("id").single();
+          if (version !== loadVersion.current) return;
+          if (error) throw error;
+          setCerts((previous) => previous.filter((cert) => cert.id !== existing.id));
+        }
+      }
+      setEditUser(null);
+      toast({ title: t("school.certs.saved") });
+    } catch {
+      toast({ title: t("school.certs.saveFailed"), description: t("school.certs.partialSaveHint"), variant: "destructive" });
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   if (loading) return <Skeleton className="h-40 w-full rounded-2xl" />;
+  if (loadError) return <div role="alert" className="space-y-2 pt-3"><p className="text-sm">{t("school.certs.loadFailed")}</p><Button onClick={() => void load()}>{t("school.certs.retry")}</Button></div>;
 
   if (people.length === 0) {
     return <EmptyState icon={Users} title={t("school.certs.noTeam")} description={t("school.certs.noTeamHint")} />;
@@ -171,6 +200,7 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
 
   return (
     <div className="space-y-3 pt-3">
+      <p className="text-xs text-muted-foreground">{t("school.certs.daysExplanation")}</p>
       {warnings.length > 0 && (
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="p-3 space-y-1">
@@ -195,18 +225,20 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
                 </p>
               </div>
               <Badge variant="outline" className="text-[10px] shrink-0">
-                {t("school.certs.teachingDays", { count: p.teachingDays, year })}
+                {countTeachingDays(certFor(p.userId, "instructor")?.issued_at ?? null, p.teachingDates) === null
+                  ? t("school.certs.daysUnknown")
+                  : t("school.certs.teachingDays", { count: countTeachingDays(certFor(p.userId, "instructor")?.issued_at ?? null, p.teachingDates) })}
               </Badge>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {CERT_TYPES.map((ty) => {
                 const c = certFor(p.userId, ty);
                 if (!c) return null;
-                const state = expiryState(c.valid_until);
+                const state = certificationExpiry(c.valid_until);
                 return (
                   <Badge
                     key={ty}
-                    variant={state === "expired" ? "destructive" : state === "soon" ? "secondary" : "default"}
+                    variant={state === "expired" ? "destructive" : state === "soon" ? "secondary" : state === "none" ? "outline" : "default"}
                     className="text-[10px] gap-1"
                   >
                     <BadgeCheck className="h-3 w-3" />
@@ -228,7 +260,7 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
         </Card>
       ))}
 
-      <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
+      <Dialog open={!!editUser} onOpenChange={(o) => { if (!o && !saving) setEditUser(null); }}>
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editUser?.name}</DialogTitle>
@@ -240,11 +272,15 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     type="date"
+                    disabled={saving}
+                    aria-label={`${t(`school.certs.types.${ty}`)}: ${t("school.certs.issuedAt")}`}
                     value={draft[ty]?.issued_at || ""}
                     onChange={(e) => setDraft({ ...draft, [ty]: { ...draft[ty], issued_at: e.target.value } })}
                   />
                   <Input
                     type="date"
+                    disabled={saving}
+                    aria-label={`${t(`school.certs.types.${ty}`)}: ${t("school.certs.validUntil")}`}
                     value={draft[ty]?.valid_until || ""}
                     onChange={(e) => setDraft({ ...draft, [ty]: { ...draft[ty], valid_until: e.target.value } })}
                   />

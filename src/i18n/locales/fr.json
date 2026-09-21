@@ -1346,6 +1346,17 @@
       }
     },
     "certs": {
+      "warnIssueDate": "{{name}} : date de délivrance/renouvellement manquante ; jours d'enseignement non calculables",
+      "daysUnknown": "Jours d'enseignement inconnus",
+      "daysExplanation": "Compte les jours calendaires distincts avec des événements confirmés déjà commencés et une affectation comme moniteur, depuis la délivrance/le renouvellement et au maximum sur les trois dernières années. Objectif du plan : 15 jours.",
+      "loadFailed": "Les certificats ou jours d'enseignement n'ont pas pu être entièrement chargés.",
+      "retry": "Réessayer",
+      "saveFailed": "Les certificats n'ont pas été entièrement enregistrés",
+      "partialSaveHint": "Les modifications déjà enregistrées sont conservées. Vos saisies restent ouvertes ; vérifiez la connexion et réessayez.",
+      "invalidDates": "La date d'expiration ne doit pas précéder la date de délivrance.",
+      "issuedAt": "Délivré / renouvelé le",
+      "validUntil": "Valable jusqu'au",
+      "certificateWarning": {"none":"{{name}} : date de validité manquante pour {{type}}","expired":"{{name}} : {{type}} a expiré","soon":"{{name}} : {{type}} expire le {{date}}"},
       "tab": "Certificats",
       "types": {
         "instructor": "Moniteur",
@@ -1355,7 +1366,7 @@
         "biplace_3": "Biplace 3",
         "first_aid": "Premiers secours"
       },
-      "teachingDays": "{{count}} jours d'enseignement {{year}}",
+      "teachingDays": "{{count}} jours d?enseignement sur la p?riode",
       "none": "Aucun certificat enregistré",
       "edit": "Modifier les certificats",
       "saved": "Certificats enregistrés",
@@ -1365,7 +1376,7 @@
       "warnMissing": "{{name}} : certificat de moniteur manquant",
       "warnExpired": "{{name}} : certificat de moniteur échu",
       "warnSoon": "{{name}} : certificat de moniteur échoit le {{date}}",
-      "warnDays": "{{name}} : seulement {{days}} jours d'enseignement sur {{min}} en {{year}}"
+      "warnDays": "{{name}} : {{days}} jours d?enseignement sur {{min}} depuis le {{date}} (trois ans au maximum)"
     },
     "maintenance": {
       "noMatches": "Aucune ?ch?ance pour ce filtre.",
@@ -1416,6 +1427,10 @@
       }
     },
     "quota": {
+      "loading": "Vérification du matériel …",
+      "loadFailed": "Le quota de matériel n'a pas pu être entièrement vérifié. La disponibilité est inconnue.",
+      "retry": "Vérifier à nouveau",
+      "explanation": "Calcul pour {{count}} élèves durant leurs trois premiers jours de cours de base enregistrés. Le matériel personnel peut réduire le besoin ; cet avertissement ne bloque pas l'inscription.",
       "warning": "Quota matériel : {{available}} systèmes homologués sur {{needed}} disponibles."
     },
     "annual": {

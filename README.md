@@ -1,5 +1,44 @@
 # Flyary
 
+## Flugschule: Zertifikate und Unterrichtstage (Planung 4.2)
+
+Unter **Sicherheit → Zertifikate** zählt die Übersicht unterschiedliche lokale
+Kalendertage mit bestätigten, bereits begonnenen Terminen und Einteilung als
+Fluglehrer. Der Zeitraum beginnt mit dem erfassten Ausstellungs-/Rezertifizierungsdatum,
+frühestens vor drei Jahren. Mehrere Termine am selben Tag zählen einmal. Ohne
+Ausstellungsdatum bleibt die Zahl unbekannt. Der Zielwert von 15 Tagen innerhalb
+von drei Jahren stammt aus der Planung; die Einteilung dient als Datengrundlage,
+nicht als separater Anwesenheitsnachweis.
+
+Ablaufwarnungen berücksichtigen alle erfassten Zertifikatsarten und die nächsten
+90 Kalendertage. Ein Zertifikat gilt am Ablaufdatum noch nicht als abgelaufen.
+Ladefehler werden sichtbar angezeigt. Beim Speichern werden nur geänderte Einträge
+geschrieben; Fehler lassen den Dialog mit den Eingaben offen. Änderungen werden pro
+Zertifikat gespeichert: Bereits erfolgreiche Änderungen bleiben bei einem späteren
+Fehler erhalten und werden beim Wiederholen übersprungen. Offline gibt es keine
+lokale Speicherwarteschlange. Die bestehenden Datenbankrechte bleiben unverändert.
+
+## Flugschule: Materialquote (Planung 4.3)
+
+Grundkurs-Termine zeigen dem Schulteam eine Warnung bei weniger als zwei verfügbaren,
+typengeprüften Schulschirmen pro drei Schüler (aufgerundet). Gezählt werden angemeldete
+Schüler ohne Wartelistenplatz, die in dieser Schule weniger als drei unterschiedliche
+Grundkurstage mit erfasster Anwesenheit vor dem Termin haben. Fehlende historische
+Anwesenheiten führen vorsichtshalber dazu, dass Schüler weiter mitgezählt werden.
+
+Als Inventareinheit dient `school_equipment.equipment_type = glider`; Zubehör zählt
+nicht als zusätzliches Schirmsystem. Schirme im Service oder ausser Betrieb werden
+nicht berücksichtigt. Offene Ausgaben an andere Personen werden abgezogen, Ausgaben
+an die gezählten Teilnehmer werden einmal mitgezählt. Ein geplantes Rückgabedatum
+allein gilt nicht als erfolgte Rückgabe; am Rückgabetag zählt das Gerät konservativ
+noch als ausgegeben. Es handelt sich um eine Bestandsprüfung, keine Reservierung
+oder Prüfung kompletter Ausrüstungssets.
+
+Die Berechnung aktualisiert sich nach Änderungen der Anmeldeliste. Fehlgeschlagene
+oder abgeschnittene Abfragen werden als unbekannter Status mit Wiederholen-Button
+angezeigt. Eigenes Material kann die Schule weiterhin berücksichtigen; der Hinweis
+blockiert keine Anmeldung. Datenbankstruktur und Zugriffsrechte bleiben unverändert.
+
 ## Flugschule: Ausrüstungscheck (Planung 5.1)
 
 In der Schülerübersicht öffnet **Ausrüstung** die persönliche Checkliste für Helm,

@@ -1179,6 +1179,17 @@
       }
     },
     "certs": {
+      "warnIssueDate": "{{name}}: Ausstellungs-/Rezertifizierungsdatum fehlt; Unterrichtstage nicht berechenbar",
+      "daysUnknown": "Unterrichtstage unbekannt",
+      "daysExplanation": "Gezählt werden unterschiedliche Kalendertage mit bestätigten, bereits begonnenen Terminen und Einteilung als Fluglehrer – seit Ausstellung/Rezertifizierung, höchstens in den letzten drei Jahren. Ziel gemäss Planung: 15 Tage.",
+      "loadFailed": "Zertifikate oder Unterrichtstage konnten nicht vollständig geladen werden.",
+      "retry": "Erneut laden",
+      "saveFailed": "Zertifikate nicht vollständig gespeichert",
+      "partialSaveHint": "Bereits gespeicherte Änderungen bleiben erhalten. Deine Eingaben bleiben offen; prüfe die Verbindung und versuche es erneut.",
+      "invalidDates": "Das Ablaufdatum darf nicht vor dem Ausstellungsdatum liegen.",
+      "issuedAt": "Ausgestellt / rezertifiziert am",
+      "validUntil": "Gültig bis",
+      "certificateWarning": {"none":"{{name}}: Gültigkeitsdatum für {{type}} fehlt","expired":"{{name}}: {{type}} ist abgelaufen","soon":"{{name}}: {{type}} läuft am {{date}} ab"},
       "tab": "Zertifikate",
       "types": {
         "instructor": "Fluglehrer",
@@ -1188,7 +1199,7 @@
         "biplace_3": "Biplace 3",
         "first_aid": "Nothelfer"
       },
-      "teachingDays": "{{count}} Unterrichtstage {{year}}",
+      "teachingDays": "{{count}} Unterrichtstage im Zeitraum",
       "none": "Keine Zertifikate erfasst",
       "edit": "Zertifikate bearbeiten",
       "saved": "Zertifikate gespeichert",
@@ -1198,7 +1209,7 @@
       "warnMissing": "{{name}}: Fluglehrer-Zertifikat fehlt",
       "warnExpired": "{{name}}: Fluglehrer-Zertifikat ist abgelaufen",
       "warnSoon": "{{name}}: Fluglehrer-Zertifikat läuft am {{date}} ab",
-      "warnDays": "{{name}}: erst {{days}} von {{min}} Unterrichtstagen in {{year}}"
+      "warnDays": "{{name}}: {{days}} von {{min}} Unterrichtstagen seit {{date}} (maximal drei Jahre)"
     },
     "maintenance": {
       "noMatches": "Keine Fristen in dieser Auswahl.",
@@ -1249,6 +1260,10 @@
       }
     },
     "quota": {
+      "loading": "Materialquote wird geprüft …",
+      "loadFailed": "Die Materialquote konnte nicht vollständig geprüft werden. Die Verfügbarkeit ist unbekannt.",
+      "retry": "Erneut prüfen",
+      "explanation": "Berechnet für {{count}} Schüler in den ersten drei erfassten Grundkurstagen. Eigenes Material kann den Bedarf reduzieren; dieser Hinweis blockiert keine Anmeldung.",
       "warning": "Materialquote: {{available}} von {{needed}} typengeprüften Systemen verfügbar."
     },
     "annual": {
