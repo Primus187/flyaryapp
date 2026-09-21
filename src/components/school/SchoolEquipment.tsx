@@ -170,6 +170,7 @@ export default function SchoolEquipment({ groupId }: Props) {
         purchase_date: item.purchase_date || "",
         next_check_date: item.next_check_date || "",
         notes: item.notes || "",
+        shv_type_approved: !!item.shv_type_approved,
       });
     } else {
       setEditing(null);
