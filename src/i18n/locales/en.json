@@ -1069,7 +1069,10 @@
       "title": "Status",
       "active": "Active",
       "paused": "Paused",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "saveFailed": "Could not save status",
+      "noneInFilter": "No students match this filter.",
+      "reasonPlaceholder": "Reason (optional)"
     },
     "flightDays": "Flight days",
     "activeStudents": "Active Students",

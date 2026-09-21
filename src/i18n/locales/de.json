@@ -902,7 +902,10 @@
       "title": "Status",
       "active": "Aktiv",
       "paused": "Pausiert",
-      "cancelled": "Abgebrochen"
+      "cancelled": "Abgebrochen",
+      "saveFailed": "Status konnte nicht gespeichert werden",
+      "noneInFilter": "Keine Schüler in dieser Auswahl.",
+      "reasonPlaceholder": "Grund (optional)"
     },
     "flightDays": "Flugtage",
     "activeStudents": "Aktive Schüler",

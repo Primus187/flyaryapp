@@ -10,6 +10,8 @@ import SectionHeading from "@/components/layout/SectionHeading";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { latestStatusPerStudent, type StudentStatus } from "@/lib/student-status";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
 import SchoolDays from "@/components/school/SchoolDays";
@@ -26,13 +28,6 @@ interface SchoolGroup {
   id: string;
   name: string;
 }
-
-type StudentStatus = "active" | "paused" | "cancelled";
-
-const normalizeStudentStatus = (value: unknown): StudentStatus => {
-  if (value === "paused" || value === "cancelled") return value;
-  return "active";
-};
 
 type Section = "days" | "chat" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
 
@@ -68,6 +63,7 @@ export default function SchoolDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { section } = useParams<{ section?: string }>();
   const activeSection = (SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === section)?.key ?? null) as Section | null;
 
@@ -87,94 +83,38 @@ export default function SchoolDashboard() {
   const [studentStatuses, setStudentStatuses] = useState<Record<string, { status: StudentStatus; reason: string | null; changed_at: string | null }>>({});
 
   const loadStudentStatusMap = async (groupId: string) => {
-    const localKey = `flyary-school-student-statuses-${groupId}`;
-    const fallback = (() => {
-      try {
-        const raw = localStorage.getItem(localKey);
-        return raw ? JSON.parse(raw) : {};
-      } catch {
-        return {};
-      }
-    })();
-
-    try {
-      const { data, error } = await supabase
-        .from("student_status_history" as any)
-        .select("student_id, status, reason, changed_at")
-        .eq("group_id", groupId)
-        .order("changed_at", { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      const latest: Record<string, { status: StudentStatus; reason: string | null; changed_at: string | null }> = {};
-      (data || []).forEach((row: any) => {
-        const userId = row.student_id ?? row.student_user_id ?? row.user_id;
-        if (!userId || latest[userId]) return;
-        latest[userId] = {
-          status: normalizeStudentStatus(row.status),
-          reason: row.reason ?? null,
-          changed_at: row.changed_at ?? null,
-        };
-      });
-
-      try {
-        localStorage.setItem(localKey, JSON.stringify(latest));
-      } catch {
-        // Ignore storage issues in privacy-focused browsers.
-      }
-      return latest;
-    } catch {
-      return fallback;
-    }
+    const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+      .from("student_status_history" as any)
+      .select("student_id, status, reason, changed_at")
+      .eq("group_id", groupId)
+      .order("changed_at", { ascending: false });
+    // A failed load leaves everyone at the "active" default rather than showing a stale or
+    // device-local guess; the change history itself remains the single source of truth.
+    if (error) return {};
+    return latestStatusPerStudent((data as { student_id: string; status: unknown; reason: string | null; changed_at: string | null }[]) || []);
   };
 
-  const handleStudentStatusChange = async (userId: string, status: StudentStatus) => {
+  const handleStudentStatusChange = async (userId: string, status: StudentStatus, reason: string | null) => {
     if (!selectedGroupId) return;
-    const updated = {
-      status,
-      reason: null,
-      changed_at: new Date().toISOString(),
-    };
-    setStudentStatuses((prev) => ({ ...prev, [userId]: updated }));
+    const previous = studentStatuses[userId] ?? { status: "active" as StudentStatus, reason: null, changed_at: null };
+    const changedAt = new Date().toISOString();
+    setStudentStatuses((prev) => ({ ...prev, [userId]: { status, reason, changed_at: changedAt } }));
 
-    const timestamp = updated.changed_at;
-    const payload = {
-      group_id: selectedGroupId,
-      student_id: userId,
-      status,
-      reason: null,
-      changed_by: user?.id ?? null,
-      changed_at: timestamp,
-    };
-
-    try {
-      const { error } = await supabase.from("student_status_history" as any).insert(payload as any);
-      if (error) {
-        throw error;
-      }
-      const localKey = `flyary-school-student-statuses-${selectedGroupId}`;
-      const existing = (() => {
-        try {
-          const raw = localStorage.getItem(localKey);
-          return raw ? JSON.parse(raw) : {};
-        } catch {
-          return {};
-        }
-      })();
-      localStorage.setItem(localKey, JSON.stringify({ ...existing, [userId]: updated }));
-    } catch {
-      const localKey = `flyary-school-student-statuses-${selectedGroupId}`;
-      const existing = (() => {
-        try {
-          const raw = localStorage.getItem(localKey);
-          return raw ? JSON.parse(raw) : {};
-        } catch {
-          return {};
-        }
-      })();
-      localStorage.setItem(localKey, JSON.stringify({ ...existing, [userId]: updated }));
+    const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+      .from("student_status_history" as any)
+      .insert({
+        group_id: selectedGroupId,
+        student_id: userId,
+        status,
+        reason,
+        changed_by: user?.id ?? null,
+        changed_at: changedAt,
+      });
+    if (error) {
+      setStudentStatuses((prev) => ({ ...prev, [userId]: previous }));
+      toast({ title: t("school.studentStatus.saveFailed"), description: error.message, variant: "destructive" });
     }
   };
 

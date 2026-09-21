@@ -5,13 +5,13 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ChevronRight, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import StudentEquipmentCheck from "@/components/school/StudentEquipmentCheck";
-
-type StudentStatus = "active" | "paused" | "cancelled";
+import type { StudentStatus } from "@/lib/student-status";
 
 interface StudentInfo {
   userId: string;
@@ -28,7 +28,7 @@ interface StudentInfo {
 interface Props {
   groupId?: string;
   students: StudentInfo[];
-  onStatusChange?: (userId: string, status: StudentStatus) => void | Promise<void>;
+  onStatusChange?: (userId: string, status: StudentStatus, reason: string | null) => void | Promise<void>;
 }
 
 function csvEscape(value: string | number | null | undefined) {
@@ -43,6 +43,10 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
   const navigate = useNavigate();
   const { toast } = useToast();
   const [equipmentStudent, setEquipmentStudent] = useState<StudentInfo | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"active" | "all">("active");
+  const [statusChange, setStatusChange] = useState<{ student: StudentInfo; nextStatus: StudentStatus } | null>(null);
+  const [reasonDraft, setReasonDraft] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const statusClasses: Record<StudentStatus, string> = {
     active: "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20",
@@ -50,11 +54,21 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
     cancelled: "bg-rose-500/10 text-rose-700 border border-rose-500/20",
   };
 
-  const handleStatusChange = async (userId: string, nextStatus: StudentStatus) => {
-    if (groupId && onStatusChange) {
-      await onStatusChange(userId, nextStatus);
-    }
+  const openStatusChange = (student: StudentInfo, nextStatus: StudentStatus) => {
+    if (!groupId || !onStatusChange) return;
+    setReasonDraft("");
+    setStatusChange({ student, nextStatus });
   };
+
+  const confirmStatusChange = async () => {
+    if (!statusChange || !onStatusChange) return;
+    setSaving(true);
+    await onStatusChange(statusChange.student.userId, statusChange.nextStatus, reasonDraft.trim() || null);
+    setSaving(false);
+    setStatusChange(null);
+  };
+
+  const visibleStudents = statusFilter === "active" ? students.filter((s) => (s.status ?? "active") === "active") : students;
 
   const handleExport = () => {
     if (students.length === 0) return;
@@ -95,13 +109,23 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-2">
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as "active" | "all")}>
+          <SelectTrigger className="h-7 w-32 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">{t("school.equipment.filterActive")}</SelectItem>
+            <SelectItem value="all">{t("school.equipment.filterAll")}</SelectItem>
+          </SelectContent>
+        </Select>
         <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleExport}>
           <Download className="h-3.5 w-3.5" />
           {t("school.csv.export")}
         </Button>
       </div>
-      {students.map((s) => {
+      {visibleStudents.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground text-sm">{t("school.studentStatus.noneInFilter")}</div>
+      )}
+      {visibleStudents.map((s) => {
         const status = s.status ?? "active";
         return (
           <Card
@@ -140,12 +164,18 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
                       "{s.lastSummary}"
                     </p>
                   )}
+                  {status !== "active" && (s.statusReason || s.statusUpdatedAt) && (
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {s.statusUpdatedAt ? new Date(s.statusUpdatedAt).toLocaleDateString("de-CH") : ""}
+                      {s.statusReason ? ` · ${s.statusReason}` : ""}
+                    </p>
+                  )}
                 </div>
               </button>
 
               <Select
                 value={status}
-                onValueChange={(value) => void handleStatusChange(s.userId, value as StudentStatus)}
+                onValueChange={(value) => openStatusChange(s, value as StudentStatus)}
                 disabled={!groupId || !onStatusChange}
               >
                 <SelectTrigger className="h-7 w-28 rounded-full text-[10px] border-0 bg-muted/60 px-2">
@@ -170,6 +200,26 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{t("school.gear.tab")} · {equipmentStudent?.pilotName}</DialogTitle></DialogHeader>
           {groupId && equipmentStudent && <StudentEquipmentCheck key={`${groupId}:${equipmentStudent.userId}`} groupId={groupId} studentUserId={equipmentStudent.userId} />}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!statusChange} onOpenChange={(open) => { if (!open && !saving) setStatusChange(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {statusChange?.student.pilotName} · {statusChange ? t(`school.studentStatus.${statusChange.nextStatus}`) : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={reasonDraft}
+            onChange={(e) => setReasonDraft(e.target.value)}
+            placeholder={t("school.studentStatus.reasonPlaceholder")}
+            rows={3}
+            disabled={saving}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStatusChange(null)} disabled={saving}>{t("common.cancel")}</Button>
+            <Button onClick={confirmStatusChange} disabled={saving}>{t("common.save")}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

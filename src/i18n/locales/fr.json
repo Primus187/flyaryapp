@@ -1069,7 +1069,10 @@
       "title": "Statut",
       "active": "Actif",
       "paused": "En pause",
-      "cancelled": "Résilié"
+      "cancelled": "Résilié",
+      "saveFailed": "Le statut n'a pas pu être enregistré",
+      "noneInFilter": "Aucun élève dans cette sélection.",
+      "reasonPlaceholder": "Motif (facultatif)"
     },
     "flightDays": "Jours de vol",
     "activeStudents": "Élèves actifs",

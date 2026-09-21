@@ -1,5 +1,24 @@
 # Flyary
 
+## Flugschule: Pausierungs-Status (Planung 5.2)
+
+Die Statusverwaltung (aktiv/pausiert/abgebrochen mit Grund und Datum) griff bereits auf eine
+Tabelle `student_status_history` zu, die als Migration fehlte – jede Statusänderung landete
+dadurch nur im Browser-localStorage (nicht geräte-/sitzungsübergreifend) statt in der Datenbank,
+und ein "Grund" wurde nirgends erfasst (immer `null`, obwohl in der UI-Datenstruktur bereits
+vorgesehen). Migration `0006_student_status_history.sql` ergänzt die Tabelle; die
+localStorage-Umgehung entfällt zugunsten des im Projekt etablierten Musters: eine
+Statusänderung erscheint erst nach bestätigter Speicherung, bei einem Fehler springt die
+Anzeige auf den vorherigen Stand zurück und ein Toast informiert. Beim Ändern des Status fragt
+ein Dialog neu nach einem optionalen Grund; Grund und Datum der letzten Änderung werden bei
+pausierten/abgebrochenen Schülern in der Personenübersicht angezeigt.
+
+Die Personenübersicht zeigt standardmässig nur aktive Schüler (Filter aktiv/alle, analog zum
+bestehenden Muster im Material-Bereich); pausierte/abgebrochene bleiben über "Alle" weiterhin
+erreichbar und damit im Kontrollblatt/Flugbuch nachvollziehbar, verschwinden aber aus der
+Standardansicht der aktiven Terminplanung. Der CSV-Export bleibt bewusst ungefiltert (exportiert
+immer alle Schüler unabhängig vom Bildschirmfilter).
+
 ## Flugschule: Verfügbarkeitsplanung Team (Planung 6.1)
 
 Unter **Verfügbarkeit** trägt das Team (Schulleitung, Fluglehrer, Starthelfer) pro Tag eine

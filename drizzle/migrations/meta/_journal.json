@@ -43,6 +43,13 @@
       "when": 1789995600000,
       "tag": "0005_instructor_availability",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789996200000,
+      "tag": "0006_student_status_history",
+      "breakpoints": true
     }
   ]
 }
