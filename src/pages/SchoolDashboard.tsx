@@ -12,6 +12,7 @@ import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Packa
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { latestStatusPerStudent, type StudentStatus } from "@/lib/student-status";
+import { latestNextStepPerStudent } from "@/lib/handoff-notes";
 import SchoolOverview from "@/components/school/SchoolOverview";
 import SchoolStudents from "@/components/school/SchoolStudents";
 import SchoolDays from "@/components/school/SchoolDays";
@@ -197,7 +198,7 @@ export default function SchoolDashboard() {
       if (eventIds.length > 0) {
         const [signupsRes, notesRes] = await Promise.all([
           supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds).eq("signed_up", true),
-          supabase.from("student_day_notes" as any).select("event_id, student_user_id, flight_number, note").in("event_id", eventIds),
+          supabase.from("student_day_notes" as any).select("event_id, student_user_id, flight_number, note, is_next_step").in("event_id", eventIds),
         ]);
         setSignups(signupsRes.data || []);
         setDayNotes((notesRes.data as any[]) || []);
@@ -211,6 +212,9 @@ export default function SchoolDashboard() {
 
   // Derived data
   const studentMembers = useMemo(() => members.filter((m) => m.role === "member"), [members]);
+
+  const eventDateById = useMemo(() => Object.fromEntries(events.map((e) => [e.id, e.event_date])), [events]);
+  const nextStepByStudent = useMemo(() => latestNextStepPerStudent(dayNotes, eventDateById), [dayNotes, eventDateById]);
 
   const studentInfos = useMemo(() => {
     return studentMembers.map((m) => {
@@ -229,12 +233,13 @@ export default function SchoolDashboard() {
         flightCount: studentFlights.length,
         examProgress: Math.min(examProgress, 100),
         lastSummary,
+        nextStep: nextStepByStudent[m.user_id] ?? null,
         status: statusEntry.status,
         statusReason: statusEntry.reason,
         statusUpdatedAt: statusEntry.changed_at,
       };
     });
-  }, [studentMembers, profiles, flights, trainingProgress, dayNotes, examItemCount, studentStatuses]);
+  }, [studentMembers, profiles, flights, trainingProgress, dayNotes, examItemCount, studentStatuses, nextStepByStudent]);
 
   const eventInfos = useMemo(() => {
     return events.map((ev) => {

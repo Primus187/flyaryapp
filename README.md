@@ -1,5 +1,26 @@
 # Flyary
 
+## Flugschule: Übergabenotizen zwischen Fluglehrern (Planung 6.2)
+
+Der Plan nennt `flight_coach_notes.is_next_step` als Datenmodell – diese Tabelle ist aber die
+allgemeine, gruppenunabhängige Flug-Coaching-Notiz (ein Eintrag pro geloggtem Flug, RLS über
+Gruppen-Admin), nicht die Flugschul-spezifische Tagesnotiz. Diese existiert bereits als
+`student_day_notes` (pro Termin und Schüler, inkl. Sichtbarkeits-Toggle für den Schüler und
+Carry-over der Zusammenfassung vom letzten Flugtag in [CoachDayView.tsx](src/components/CoachDayView.tsx))
+und ist schon Quelle der bisherigen "letzten Zusammenfassung" in der Schüler-Übersicht – die
+naheliegendere Erweiterungsstelle, ausdrücklich im Sinne von Abschnitt 14 des Plans ("fachliches
+Zielbild, keine verbindliche DDL"). `is_next_step` wurde daher dort ergänzt (Migration 0008).
+
+Die Zusammenfassungs-Notiz eines Termins lässt sich als „Nächster Schritt" markieren (Icon-Toggle
+neben dem bestehenden Sichtbarkeits-Toggle). In der kompakten Terminansicht von CoachDayView
+erscheint dafür ein Indikator-Icon je Schüler, ohne die Karte öffnen zu müssen. In der
+Personenübersicht ([SchoolStudents.tsx](src/components/school/SchoolStudents.tsx)) wird die
+zuletzt markierte Notiz hervorgehoben angezeigt – ermittelt über das tatsächliche Datum des
+zugehörigen Termins (nicht die Abfragereihenfolge, die bei Supabase ohne `ORDER BY` nicht
+garantiert ist), damit bei mehreren markierten Notizen über die Zeit zuverlässig die aktuellste
+erscheint. Frühere Notizen bleiben unverändert in `student_day_notes` erhalten (ein Eintrag pro
+Termin), es wird nichts überschrieben.
+
 ## Kontrollblatt: Meilenstein-Freigaben (Planung 5.3)
 
 Ausbildungskategorien können eine Voraussetzungs-Kategorie referenzieren

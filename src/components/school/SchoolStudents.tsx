@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronRight, Download } from "lucide-react";
+import { ChevronRight, Download, ArrowRightCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,6 +20,7 @@ interface StudentInfo {
   flightCount: number;
   examProgress: number; // 0-100
   lastSummary: string | null;
+  nextStep?: string | null;
   status?: StudentStatus;
   statusReason?: string | null;
   statusUpdatedAt?: string | null;
@@ -159,6 +160,12 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
                     <Progress value={s.examProgress} className="h-1.5 flex-1" />
                     <span className="text-[10px] text-muted-foreground w-8 text-right">{s.examProgress}%</span>
                   </div>
+                  {s.nextStep && (
+                    <p className="text-[10px] text-primary mt-1 flex items-start gap-1 font-medium">
+                      <ArrowRightCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span className="line-clamp-2">{s.nextStep}</span>
+                    </p>
+                  )}
                   {s.lastSummary && (
                     <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 italic">
                       "{s.lastSummary}"

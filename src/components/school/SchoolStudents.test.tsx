@@ -48,3 +48,10 @@ it("does not leak a paused student's reason into the default active-only view", 
   ]);
   expect(screen.queryByText(/Verletzung/)).not.toBeInTheDocument();
 });
+
+it("shows a flagged next-step handoff note prominently", () => {
+  renderStudents([
+    { ...baseStudent, userId: "s1", status: "active", nextStep: "Höhenflüge starten" },
+  ]);
+  expect(screen.getByText("Höhenflüge starten")).toBeInTheDocument();
+});

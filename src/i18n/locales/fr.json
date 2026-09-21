@@ -238,6 +238,7 @@
     "flightSlot": "Vol",
     "summary": "Résumé",
     "summaryCarryOver": "Repris du dernier jour de vol",
+    "nextStepToggle": "Prochaine étape",
     "visibleToStudent": "Visible pour l'élève",
     "hiddenFromStudent": "Instructeurs uniquement",
     "pauseStudent": "Pause",

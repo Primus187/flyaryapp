@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Eye, EyeOff, Plane, FileText, Check, PauseCircle, ChevronRight,
+  Eye, EyeOff, Plane, FileText, Check, PauseCircle, ChevronRight, ArrowRightCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ interface DayNote {
   flight_number: number | null;
   note: string;
   visible_to_student: boolean;
+  is_next_step?: boolean;
   dirty?: boolean;
   saving?: boolean;
   saved?: boolean;
@@ -137,6 +138,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
         flight_number: null,
         note: summaryNote?.note || carryOver || "",
         visible_to_student: summaryNote?.visible_to_student ?? false,
+        is_next_step: summaryNote?.is_next_step ?? false,
         carryOver: !!carryOver,
       });
 
@@ -179,12 +181,13 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       flight_number: note.flight_number,
       note: note.note,
       visible_to_student: note.visible_to_student,
+      is_next_step: note.is_next_step ?? false,
       instructor_id: user.id,
     };
 
     if (note.id) {
       await supabase.from("student_day_notes" as any)
-        .update({ note: note.note, visible_to_student: note.visible_to_student, instructor_id: user.id } as any)
+        .update({ note: note.note, visible_to_student: note.visible_to_student, is_next_step: note.is_next_step ?? false, instructor_id: user.id } as any)
         .eq("id", note.id);
     } else if (note.note.trim()) {
       const { data } = await supabase.from("student_day_notes" as any)
@@ -280,6 +283,29 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     }
   };
 
+  const toggleNextStep = async (studentId: string) => {
+    const student = students.find(s => s.user_id === studentId);
+    if (!student) return;
+    const note = student.notes[6];
+    const newNextStep = !note.is_next_step;
+
+    setStudents(prev => prev.map(s =>
+      s.user_id === studentId ? {
+        ...s,
+        notes: s.notes.map((n, ni) => ni === 6 ? { ...n, is_next_step: newNextStep } : n),
+      } : s
+    ));
+
+    if (note.id) {
+      await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- column not in generated types.ts yet
+        .from("student_day_notes" as any)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- column not in generated types.ts yet
+        .update({ is_next_step: newNextStep } as any)
+        .eq("id", note.id);
+    }
+  };
+
   const togglePaused = async (studentId: string) => {
     if (!user) return;
     const student = students.find(s => s.user_id === studentId);
@@ -369,6 +395,12 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                 {student.flight_count}<Plane className="h-3 w-3" />
               </span>
 
+              {student.notes[6].is_next_step && (
+                <span title={t("events.nextStepToggle")}>
+                  <ArrowRightCircle className="h-3.5 w-3.5 text-primary shrink-0" />
+                </span>
+              )}
+
               {student.paused && (
                 <PauseCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               )}
@@ -444,6 +476,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                       placeholder={t("events.coachNotePlaceholder")}
                       onChange={(val) => handleNoteChange(student.user_id, 6, val)}
                       onToggleVisibility={() => toggleVisibility(student.user_id, 6)}
+                      onToggleNextStep={() => toggleNextStep(student.user_id)}
                       t={t}
                     />
                   </div>
@@ -462,17 +495,19 @@ function NoteEditor({
   placeholder,
   onChange,
   onToggleVisibility,
+  onToggleNextStep,
   t,
 }: {
   note: DayNote;
   placeholder: string;
   onChange: (val: string) => void;
   onToggleVisibility: () => void;
+  onToggleNextStep?: () => void;
   t: (key: string) => string;
 }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-1">
         <button
           onClick={onToggleVisibility}
           className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
@@ -483,6 +518,19 @@ function NoteEditor({
             : <><EyeOff className="h-3 w-3 text-muted-foreground/50" /><span>{t("events.hiddenFromStudent")}</span></>
           }
         </button>
+        {onToggleNextStep && (
+          <button
+            onClick={onToggleNextStep}
+            className={cn(
+              "flex items-center gap-1 text-[10px] transition-colors",
+              note.is_next_step ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
+            )}
+            title={t("events.nextStepToggle")}
+          >
+            <ArrowRightCircle className="h-3 w-3" />
+            <span>{t("events.nextStepToggle")}</span>
+          </button>
+        )}
         {note.saving && (
           <span className="text-[10px] text-muted-foreground animate-pulse">{t("common.saving")}...</span>
         )}

@@ -57,6 +57,13 @@
       "when": 1789996800000,
       "tag": "0007_training_category_prerequisites",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789997400000,
+      "tag": "0008_student_day_notes_next_step",
+      "breakpoints": true
     }
   ]
 }
