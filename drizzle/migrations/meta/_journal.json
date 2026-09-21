@@ -71,6 +71,13 @@
       "when": 1789998000000,
       "tag": "0009_team_channel",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789998600000,
+      "tag": "0010_event_weather_decisions",
+      "breakpoints": true
     }
   ]
 }

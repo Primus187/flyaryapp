@@ -244,6 +244,23 @@
     "notifyPreview": "Nachricht",
     "notifySend": "Push senden",
     "notifySent": "Nachricht an {{count}} Personen gesendet",
+    "weatherDecision": {
+      "title": "Wetterentscheid",
+      "status": {
+        "confirmed": "Bestätigt",
+        "weather_pending": "Wetterabhängig",
+        "cancelled": "Abgesagt"
+      },
+      "deadline": "Entscheid-Frist: {{date}}",
+      "deadlineLabel": "Entscheid-Frist (optional)",
+      "statusLabel": "Status",
+      "noteLabel": "Notiz (optional)",
+      "edit": "Entscheid erfassen",
+      "saved": "Entscheid gespeichert",
+      "saveFailed": "Entscheid konnte nicht gespeichert werden",
+      "notifyFailed": "Entscheid gespeichert, Benachrichtigung fehlgeschlagen",
+      "overdue": "Entscheid-Frist überschritten, noch kein Entscheid erfasst"
+    },
     "notifyFailed": "Nachricht konnte nicht gesendet werden",
     "studentFlights": "Schülerflüge",
     "coachDayView": "Ausbildungsblatt",

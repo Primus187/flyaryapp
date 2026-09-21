@@ -287,6 +287,23 @@
     "notifyPreview": "Message",
     "notifySend": "Send push",
     "notifySent": "Message sent to {{count}} people",
+    "weatherDecision": {
+      "title": "Weather decision",
+      "status": {
+        "confirmed": "Confirmed",
+        "weather_pending": "Weather-dependent",
+        "cancelled": "Cancelled"
+      },
+      "deadline": "Decision deadline: {{date}}",
+      "deadlineLabel": "Decision deadline (optional)",
+      "statusLabel": "Status",
+      "noteLabel": "Note (optional)",
+      "edit": "Record decision",
+      "saved": "Decision saved",
+      "saveFailed": "Could not save decision",
+      "notifyFailed": "Decision saved, notification failed",
+      "overdue": "Decision deadline passed, no decision recorded yet"
+    },
     "notifyFailed": "Message could not be sent",
     "category": "Category",
     "endDate": "End date",

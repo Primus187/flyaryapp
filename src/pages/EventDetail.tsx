@@ -16,6 +16,7 @@ import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import StudentEquipmentHint from "@/components/school/StudentEquipmentHint";
 import IncidentReportDialog from "@/components/school/IncidentReportDialog";
 import AlternativeDateSuggestion from "@/components/school/AlternativeDateSuggestion";
+import EventWeatherDecision from "@/components/school/EventWeatherDecision";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -343,6 +344,10 @@ export default function EventDetail() {
 
       {/* Briefing tasks & maneuvers */}
       <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
+
+      {event.groups?.group_type === "school" && (
+        <EventWeatherDecision eventId={id!} groupId={event.group_id} eventTitle={event.title} canManage={isStaff} />
+      )}
 
       {/* Program, staff, carpools */}
       <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />

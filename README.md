@@ -1,5 +1,31 @@
 # Flyary
 
+## Flugschule: Strukturierter Geh/Nogo-Entscheid (Planung 7.1)
+
+Neue, eigenständige Tabelle `event_weather_decisions` statt Erweiterung von
+`flight_events.status`: dessen Enum `event_status` (`announced`/`confirmed`/`cancelled`) wird
+app-weit für alle Gruppentypen verwendet, nicht nur Flugschulen, an vielen Stellen ausserhalb
+dieses Features. Einen vierten Wert ("wetterabhängig") dort einzuführen, hätte jede bestehende
+`status === 'confirmed'`/`'cancelled'`-Prüfung im ganzen Code auf Vollständigkeit prüfen müssen.
+Bei den beiden Statuswerten, die eine Entsprechung in `event_status` haben (bestätigt/abgesagt),
+wird `flight_events.status` beim Speichern synchron mitgesetzt, damit bestehende Logik – allen
+voran [Abschnitt 7.2](src/components/school/AlternativeDateSuggestion.tsx), das exakt auf
+`status === 'cancelled'` reagiert – unverändert weiterfunktioniert. "Wetterabhängig" hat keine
+Entsprechung und bleibt ohne Sync.
+
+Der Statuswechsel löst automatisch eine Push-Benachrichtigung an alle angemeldeten Teilnehmenden
+aus – Wiederverwendung der bestehenden `notify-event-participants`-Edge-Function (Kapitel 10, bereits genutzt von
+[EventAnnounceDialog.tsx](src/components/EventAnnounceDialog.tsx)), nicht neu gebaut. Die
+Benachrichtigung feuert nur bei einer tatsächlichen Statusänderung, nicht bei jeder Bearbeitung
+von Frist oder Notiz (sonst hätte jede kleine Korrektur unnötig erneut alle Teilnehmenden per
+Push gestört).
+
+Die "Erinnerung an die Deadline" ist als In-App-Hinweis umgesetzt (rot markiert, sobald die
+Frist verstrichen ist und noch kein Entscheid erfasst wurde), nicht als automatischer
+Erinnerungs-Push zu einem festen Zeitpunkt vor der Frist – dafür bräuchte es eine
+serverseitige Zeitplanung (z. B. `pg_cron`), die in diesem Projekt noch nicht existiert und den
+Rahmen dieses Einzelfeatures sprengen würde.
+
 ## Flugschule: Interner Team-Kanal (Planung 6.3)
 
 Der Plan schlägt eine dedizierte "Team"-Gruppe pro Schule vor (Wiederverwendung von

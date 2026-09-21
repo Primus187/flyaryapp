@@ -287,6 +287,23 @@
     "notifyPreview": "Message",
     "notifySend": "Envoyer la notification",
     "notifySent": "Message envoyé à {{count}} personnes",
+    "weatherDecision": {
+      "title": "Décision météo",
+      "status": {
+        "confirmed": "Confirmé",
+        "weather_pending": "Dépend de la météo",
+        "cancelled": "Annulé"
+      },
+      "deadline": "Délai de décision : {{date}}",
+      "deadlineLabel": "Délai de décision (facultatif)",
+      "statusLabel": "Statut",
+      "noteLabel": "Note (facultative)",
+      "edit": "Enregistrer la décision",
+      "saved": "Décision enregistrée",
+      "saveFailed": "La décision n'a pas pu être enregistrée",
+      "notifyFailed": "Décision enregistrée, notification échouée",
+      "overdue": "Délai de décision dépassé, aucune décision enregistrée"
+    },
     "notifyFailed": "Le message n'a pas pu être envoyé",
     "category": "Catégorie",
     "endDate": "Date de fin",
