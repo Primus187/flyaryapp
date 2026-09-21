@@ -1577,5 +1577,24 @@
       "failed": "Could not enable notifications",
       "resubscribe": "Please enable notifications on this device again."
     }
+  },
+  "emergency": {
+    "button": "Show emergency info",
+    "title": "Emergency info · {{name}}",
+    "loading": "Loading...",
+    "contact": "Emergency contact",
+    "noContact": "No emergency contact on file.",
+    "bloodType": "Blood type",
+    "allergies": "Allergies",
+    "medicalNotes": "Medical notes",
+    "noMedicalData": "No medical information on file.",
+    "noConsent": "This person has not consented to storing health data.",
+    "loggedHint": "This access is logged and visible to school leadership.",
+    "error": {
+      "event_not_found": "Event not found.",
+      "not_authorized": "No access to emergency info for this event.",
+      "not_participant": "This person is not signed up for this event.",
+      "unknown": "Could not load emergency info."
+    }
   }
 }

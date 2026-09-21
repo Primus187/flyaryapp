@@ -1587,5 +1587,24 @@
       "failed": "Mitteilungen konnten nicht aktiviert werden",
       "resubscribe": "Mitteilungen bitte auf diesem Gerät erneut aktivieren."
     }
+  },
+  "emergency": {
+    "button": "Notfalldaten anzeigen",
+    "title": "Notfalldaten · {{name}}",
+    "loading": "Wird geladen...",
+    "contact": "Notfallkontakt",
+    "noContact": "Kein Notfallkontakt hinterlegt.",
+    "bloodType": "Blutgruppe",
+    "allergies": "Allergien",
+    "medicalNotes": "Medizinische Hinweise",
+    "noMedicalData": "Keine medizinischen Angaben hinterlegt.",
+    "noConsent": "Diese Person hat der Speicherung von Gesundheitsdaten nicht zugestimmt.",
+    "loggedHint": "Dieser Zugriff wird protokolliert und ist für die Schulleitung einsehbar.",
+    "error": {
+      "event_not_found": "Termin nicht gefunden.",
+      "not_authorized": "Kein Zugriff auf Notfalldaten für diesen Termin.",
+      "not_participant": "Diese Person ist für diesen Termin nicht angemeldet.",
+      "unknown": "Notfalldaten konnten nicht geladen werden."
+    }
   }
 }

@@ -67,6 +67,7 @@ Logisches Modell als Ausgangspunkt – vor der Umsetzung gegen das tatsächliche
 | `group_messages` (erweitert) | Termine/Community | Interner Team-Kanal (6.3) | + Feld `is_team_only: boolean`, neue RLS-Funktion `is_group_team_member()`. **Abweichung vom Plan:** keine dedizierte „Team“-Gruppe pro Schule (siehe Abschnitt 14) | 6 | ✅ |
 | `student_day_notes` (erweitert) | Ausbildung | Übergabenotizen (6.2) | + Feld `is_next_step: boolean`. **Abweichung vom Plan:** nicht `flight_coach_notes` (das ist die allgemeine, gruppenunabhängige Flug-Coaching-Notiz), sondern die bereits bestehende schulspezifische Tagesnotiz-Tabelle (siehe Abschnitt 14) | 6 | ✅ |
 | `consent_records` | Piloten | Protokollierte Einwilligungen (Beweiskraft, siehe Abschnitt 12) | `profile_id`, `consent_type` (AGB/Haftungsausschluss/Foto/Datenbearbeitung), `version`, `accepted_at`, `accepted_by` | 10, 12 | ⬜ Phase 4 |
+| `emergency_data_access_log` | Piloten/Flugschule | Zugriffsprotokollierung Notfall-Schnellzugriff (12.3, verknüpft mit 8.3) | `profile_id`, `accessed_by`, `accessed_at`, `context_event_id`. **Zusatz gegenüber Plan:** zusätzliche `group_id`-Spalte, damit die „nur Schulleitung“-Policy stabil bleibt, auch wenn der Termin später gelöscht wird (`context_event_id` dann `ON DELETE SET NULL`) | 8, 12 | ✅ |
 | `announcement_read_receipts` | Termine (ergänzt `event_messages`) | Lesebestätigung sicherheitsrelevanter Ankündigungen | `announcement_id`, `profile_id`, `read_at` | 8 | ⬜ Phase 3 |
 | `team_polls`, `team_poll_responses` | Flugschule | Kurze Verfügbarkeitsabfragen im Team | `question`, `closes_at`; `poll_id`, `profile_id`, `response` | 8 | ⬜ Phase 3 |
 | `course_payments` | Flugschule (ergänzt `billing_items`) | Online-Zahlung pro Kursbuchung | `billing_item_id`, `amount`, `provider`, `provider_ref`, `status`, `paid_at` | 10 | ⬜ Phase 4 |
@@ -286,11 +287,11 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 
 **Datenmodell:** `locations.optimal_wind_directions` (Abschnitt 3), keine neue Tabelle
 
-## 8. Kommunikation (Phase 3) ⬜ Nicht begonnen
+## 8. Kommunikation (Phase 3) 🔶 In Arbeit
 
 **Hinweis:** 8.1 (Eltern-/Erziehungsberechtigten-Verknüpfung) und 8.2 (Digitale Einverständniserklärung mit Protokollierung) wurden entfernt – das Minderjährigen-Handling ist nicht mehr Teil dieses Plans. Die Nummerierung startet bewusst bei 8.3, um Verweise aus anderen Abschnitten (u. a. 12.3) nicht zu brechen. Ein allgemeiner (nicht minderjährigenspezifischer) Bedarf an protokollierten Einwilligungen bleibt bestehen und ist jetzt unter 10.2 eigenständig beschrieben.
 
-### 8.3 Notfall-Schnellzugriff
+### 8.3 Notfall-Schnellzugriff ✅
 
 **Ziel:** Team kann im Ernstfall sofort auf Notfallkontakt und -daten eines Schülers zugreifen, ohne durch mehrere Menués zu navigieren.
 
@@ -302,6 +303,8 @@ Alle neuen Tabellen erhalten RLS-Policies nach bestehendem Muster (Zugriff nur f
 **Datenmodell:** keine neue Tabelle, zusätzliche RLS-Policy und Zugriffs-Log auf bestehende Notfalldatenfelder in `profiles`
 
 **UI:** Teilnehmerliste im Tagestermin, prominenter Notfall-Button
+
+**Ist-Stand:** **Abweichung vom Plan:** „zusätzliche RLS-Policy“ reicht nicht aus, da eine spätere Migration (`20260417064846`) die Notfallfelder bereits per `REVOKE SELECT` auf Spaltenebene für alle ausser dem Zeileneigentümer gesperrt hat. Umgesetzt stattdessen als neue SECURITY-DEFINER-RPC `get_emergency_contact_info()`, die Berechtigung prüft, liest und protokolliert – in einem Schritt, siehe Abschnitt 12.3 (damit zusammen als ein Feature umgesetzt). UI: Notfall-Button (`EmergencyInfoDialog.tsx`) direkt in der Teilnehmerliste in `EventDetail.tsx`, sichtbar für alle Team-Rollen. `blood_type`/`allergies`/`medical_notes` werden nur bei erteilter Gesundheitsdaten-Einwilligung zurückgegeben, Notfallkontakt (Name/Telefon) davon unabhängig.
 
 ### 8.4 Lesebestätigung sicherheitsrelevanter Ankündigungen
 
@@ -463,7 +466,7 @@ Die meisten rechtlichen Punkte aus Abschnitt 10 des Anforderungskatalogs sind be
 
 **Empfohlene Umsetzung:** Kein unmittelbarer Code-Impact, aber ein kurzer Verantwortlichkeiten-Passus (Betreiber ↔ Schule) sollte vor dem Onboarding weiterer Schulen als Textbaustein in den bestehenden AGB/Datenschutzerklärungs-Unterseiten (Kapitel 3, „Rechtliches“) ergänzt werden.
 
-### 12.3 Zugriffsprotokollierung sensibler Daten
+### 12.3 Zugriffsprotokollierung sensibler Daten ✅
 
 **Ziel:** Nachvollziehbarkeit, wer wann auf Notfall-/Gesundheitsdaten zugegriffen hat (verknüpft mit Abschnitt 8.3).
 
@@ -473,6 +476,8 @@ Die meisten rechtlichen Punkte aus Abschnitt 10 des Anforderungskatalogs sind be
 - Protokoll ist nur für Schulleitung einsehbar, nicht für das übrige Team
 
 **Datenmodell:** neue Tabelle `emergency_data_access_log` (`profile_id`, `accessed_by`, `accessed_at`, `context_event_id`)
+
+**Ist-Stand:** Zusammen mit 8.3 als ein Feature umgesetzt (siehe dort), da die Protokollierung nur als integraler Teil der lesenden RPC lückenlos garantiert werden kann. „Schulleitung“ = `is_group_admin` oder Funktion `school_lead`, bewusst ohne `instructor`/`launch_helper` (die dürfen zwar selbst Notfalldaten abrufen, aber nicht das Protokoll einsehen).
 
 ## 13. Nicht-funktionale Anforderungen und Definition of Done
 

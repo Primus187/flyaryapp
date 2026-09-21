@@ -23,6 +23,7 @@ import EventStudentFlights from "@/components/EventStudentFlights";
 import CoachDayView from "@/components/CoachDayView";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
+import EmergencyInfoDialog from "@/components/EmergencyInfoDialog";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
 
@@ -396,6 +397,7 @@ export default function EventDetail() {
               <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
               <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
               {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
+              {isStaff && <EmergencyInfoDialog eventId={id!} userId={s.user_id} pilotName={profiles[s.user_id] || t("events.pilot")} />}
               {isStaff && (
                 <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 shrink-0" onClick={() => toggleSchoolConfirm(s)}>
                   {s.confirmed_by_school ? t("events.unconfirm") : t("events.confirm")}

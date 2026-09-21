@@ -1577,5 +1577,24 @@
       "failed": "Impossible d’activer les notifications",
       "resubscribe": "Réactive les notifications sur cet appareil."
     }
+  },
+  "emergency": {
+    "button": "Afficher les données d’urgence",
+    "title": "Données d’urgence · {{name}}",
+    "loading": "Chargement...",
+    "contact": "Contact d’urgence",
+    "noContact": "Aucun contact d’urgence enregistré.",
+    "bloodType": "Groupe sanguin",
+    "allergies": "Allergies",
+    "medicalNotes": "Remarques médicales",
+    "noMedicalData": "Aucune information médicale enregistrée.",
+    "noConsent": "Cette personne n’a pas consenti à l’enregistrement de données de santé.",
+    "loggedHint": "Cet accès est enregistré et visible par la direction de l’école.",
+    "error": {
+      "event_not_found": "Événement introuvable.",
+      "not_authorized": "Aucun accès aux données d’urgence pour cet événement.",
+      "not_participant": "Cette personne n’est pas inscrite à cet événement.",
+      "unknown": "Impossible de charger les données d’urgence."
+    }
   }
 }

@@ -1,5 +1,36 @@
 # Flyary
 
+## Flugschule: Notfall-Schnellzugriff & Zugriffsprotokollierung (Planung 8.3, 12.3)
+
+Naiver Ansatz (Client liest Notfallfelder aus `profiles`, Log wird separat geschrieben) scheitert:
+Migration `20260417064846` sperrt `blood_type`, `medical_notes`, `allergies`,
+`emergency_contact_name`, `emergency_contact_phone` per `REVOKE SELECT` auf Spaltenebene für
+`authenticated`/`anon` – die breite zeilenbasierte Policy "Group members can view profiles"
+greift dafür nicht mehr. Stattdessen eine neue SECURITY-DEFINER-Funktion
+`get_emergency_contact_info(_event_id, _target_user_id)`, die Berechtigung prüft (Team-Personal
+der Termin-Gruppe via `is_group_staff`, Zielperson muss für den Termin angemeldet sein), die
+Felder liest und den Zugriff protokolliert – alles in einem serverseitigen Schritt, damit keine
+Lücke zwischen Lesen und Protokollieren entstehen kann (8.3 und 12.3 wurden deshalb als ein
+Feature umgesetzt, wie im Plan selbst als "verknüpft" vermerkt).
+
+`blood_type`/`allergies`/`medical_notes` werden nur zurückgegeben, wenn die betroffene Person die
+bestehende Gesundheitsdaten-Einwilligung (`health_data_consent_at`, siehe
+[Profile.tsx](src/pages/Profile.tsx)) erteilt hat. Notfallkontakt (Name/Telefon) ist davon
+unabhängig, da er im Ernstfall unverzichtbar ist und keine Gesundheitsdaten im engeren Sinn sind.
+
+Das Zugriffsprotokoll (`emergency_data_access_log`) trägt eine eigene `group_id`-Spalte statt sich
+nur auf `context_event_id` abzustützen, damit die Sichtbarkeits-Policy ("nur für Schulleitung",
+Akzeptanzkriterium aus 12.3) auch dann stabil bleibt, wenn ein Termin später gelöscht wird
+(`context_event_id` ist deshalb `ON DELETE SET NULL`, nicht `CASCADE`). "Schulleitung" ist
+`is_group_admin` oder die Funktion `school_lead`, ohne `instructor`/`launch_helper` – enger als
+`is_group_staff`, das für den Zugriff selbst genügt.
+
+UI: neuer Notfall-Button (Siren-Icon) direkt in der Teilnehmerliste
+([EventDetail.tsx](src/pages/EventDetail.tsx)), sichtbar für alle Team-Rollen (nicht nur bei
+Flugschul-Gruppen, da `isStaff` gruppenunabhängig berechnet wird), öffnet einen Dialog statt
+mehrerer Menüs. Auswertungslogik (Konsens-/Datenverfügbarkeits-Prüfung, Fehler-Mapping der
+RPC-Exceptions) in [emergency-access.ts](src/lib/emergency-access.ts) extrahiert und getestet.
+
 ## Flugschule: CSV-Export mit Pausierungs-Status (Nachtrag zu Planung 5.2)
 
 Der CSV-Export der Personenübersicht enthielt Status, Grund und Datum der letzten Statusänderung
