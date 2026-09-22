@@ -1,5 +1,10 @@
 # Flyary
 
+## Performance-Optimierungen
+
+Messwerte, Prüfungen und Auslieferungsreihenfolge stehen in [docs/performance.md](docs/performance.md).
+Vor dem aktualisierten Frontend muss die Migration `drizzle/migrations/0015_performance_read_models.sql` angewendet werden.
+
 ## App-weiter Audit nach Phase 5: i18n-Lücken und ein echter Berechtigungsfehler
 
 Auf Wunsch des Nutzers, sicherzustellen dass „keine Bugs/Mismatches mehr“ in der App vorhanden

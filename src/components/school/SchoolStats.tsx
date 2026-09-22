@@ -91,7 +91,7 @@ export default function SchoolStats({ groupId }: Props) {
         supabase.from("student_status_history" as any).select("student_id, status, reason, changed_at").eq("group_id", groupId).order("changed_at", { ascending: false }),
       ]);
       const studentIds = (membersRes.data || []).filter((m) => m.role === "member").map((m) => m.user_id);
-      const history = (historyRes.data as { user_id: string; training_level: string; changed_at: string }[]) || [];
+      const history = (historyRes.data as unknown as { user_id: string; training_level: string; changed_at: string }[]) || [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
       const latestStatus = latestStatusPerStudent((statusRes.data as any[]) || []);
       const statusMap: Record<string, ReturnType<typeof latestStatusPerStudent>[string]["status"]> = {};

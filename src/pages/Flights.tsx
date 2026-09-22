@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { performanceRpc, type FlightListPage } from "@/lib/performance-api";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,20 +18,6 @@ import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
-
-interface Flight {
-  id: string;
-  date: string;
-  glider: string | null;
-  duration_minutes: number | null;
-  altitude_gain: number | null;
-  distance_km: number | null;
-  group_id: string | null;
-  has_track: boolean;
-  takeoff_location: { name: string } | null;
-  landing_location: { name: string } | null;
-}
-interface Group { id: string; name: string; }
 
 type QuickFilter = "all" | "season" | "track";
 
@@ -68,111 +56,63 @@ export default function Flights() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const [flights, setFlights] = useState<Flight[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [tracks, setTracks] = useState<Record<string, [number, number][]>>({});
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
-  const [loading, setLoading] = useState(true);
+  const currentYear = new Date().getFullYear();
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
-
-  const loadFlights = useCallback(async () => {
-    if (!user) return;
-    const [flightsRes, groupsRes] = await Promise.all([
-      supabase
-        .from("flights")
-        .select("id, date, glider, duration_minutes, altitude_gain, distance_km, group_id, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name), igc_tracks(id)")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false }),
-      supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id),
-    ]);
-    if (flightsRes.data) {
-      setFlights(
-        flightsRes.data.map((f: any) => ({
-          ...f,
-          takeoff_location: f.locations,
-          landing_location: f.land,
-          has_track: Array.isArray(f.igc_tracks) && f.igc_tracks.length > 0,
-        })),
-      );
-    }
-    if (groupsRes.data) setGroups(groupsRes.data.map((gm: any) => gm.groups).filter(Boolean));
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => { loadFlights(); }, [loadFlights]);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const list = useInfiniteQuery({
+    queryKey: ["flight-list", user?.id, debouncedSearch, groupFilter, quickFilter, currentYear],
+    enabled: !!user,
+    staleTime: 0,
+    initialPageParam: 0,
+    queryFn: ({ pageParam, signal }) => performanceRpc<FlightListPage>("list_flights_page", {
+      _offset: pageParam, _limit: 40, _search: debouncedSearch, _group: groupFilter, _filter: quickFilter, _year: currentYear, _viewer_id: user!.id,
+    }, signal),
+    getNextPageParam: (last, pages) => {
+      const loaded = pages.reduce((sum, page) => sum + page.rows.length, 0);
+      return last.rows.length && loaded < last.total ? loaded : undefined;
+    },
+  });
+  const groupQuery = useQuery({
+    queryKey: ["flight-groups", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user!.id);
+      if (error) throw error;
+      return (data || []).flatMap((row) => row.groups ? [row.groups] : []);
+    },
+  });
+  const groups = groupQuery.data || [];
+  const flights = useMemo(() => list.data?.pages.flatMap((page) => page.rows) || [], [list.data]);
+  const filtered = flights;
+  const counts = list.data?.pages[0].counts || { all: 0, season: 0, track: 0 };
+  const loading = list.isPending;
+  const loadFlights = async () => { await Promise.all([list.refetch(), groupQuery.refetch()]); };
 
   const handleDeleteFlight = useCallback(async (flightId: string) => {
     if (!confirm(t("flights.deleteFlight"))) return;
-    const prev = flights;
-    setFlights(p => p.filter(f => f.id !== flightId));
     const { error } = await supabase.from("flights").delete().eq("id", flightId);
     if (error) {
-      setFlights(prev);
+
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } else {
+      await queryClient.invalidateQueries({ queryKey: ["flight-list", user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard", user?.id] });
       toast({ title: t("flights.flightDeleted") });
     }
-  }, [flights, t, toast]);
+  }, [queryClient, user?.id, t, toast]);
 
   const { pullDistance, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(loadFlights);
 
-  // Batch-fetch all IGC tracks for thumbnails (heavily downsampled to 40 points each)
-  useEffect(() => {
-    const trackedFlightIds = flights.filter(f => f.has_track).map(f => f.id);
-    if (trackedFlightIds.length === 0) return;
-    let cancelled = false;
-    supabase
-      .from("igc_tracks")
-      .select("flight_id, track_data")
-      .in("flight_id", trackedFlightIds)
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        const map: Record<string, [number, number][]> = {};
-        for (const row of data as any[]) {
-          const raw = row.track_data;
-          const arr: any[] | null = Array.isArray(raw) ? raw : (raw?.points && Array.isArray(raw.points) ? raw.points : null);
-          if (!arr || arr.length < 2) continue;
-          // Downsample to ~40 points for tiny thumbnail
-          const step = Math.max(1, Math.floor(arr.length / 40));
-          const points: [number, number][] = [];
-          for (let i = 0; i < arr.length; i += step) {
-            const p = arr[i];
-            const lat = Array.isArray(p) ? p[0] : p.lat;
-            const lng = Array.isArray(p) ? p[1] : p.lng;
-            if (typeof lat === "number" && typeof lng === "number") points.push([lat, lng]);
-          }
-          if (points.length >= 2) map[row.flight_id] = points;
-        }
-        setTracks(map);
-      });
-    return () => { cancelled = true; };
-  }, [flights]);
-
-  const currentYear = new Date().getFullYear();
-
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return flights.filter((f) => {
-      const matchesSearch = !q
-        || f.takeoff_location?.name?.toLowerCase().includes(q)
-        || f.landing_location?.name?.toLowerCase().includes(q)
-        || f.glider?.toLowerCase().includes(q)
-        || f.date.includes(q);
-      const matchesGroup = groupFilter === "all" || (groupFilter === "none" ? f.group_id === null : f.group_id === groupFilter);
-      const matchesQuick =
-        quickFilter === "all" ? true
-        : quickFilter === "season" ? new Date(f.date).getFullYear() === currentYear
-        : quickFilter === "track" ? f.has_track
-        : true;
-      return matchesSearch && matchesGroup && matchesQuick;
-    });
-  }, [flights, search, groupFilter, quickFilter, currentYear]);
-
   // Group by year-month (e.g. "2026-04")
   const grouped = useMemo(() => {
-    const map = new Map<string, Flight[]>();
+    const map = new Map<string, (typeof flights)[number][]>();
     for (const f of filtered) {
       const d = new Date(f.date);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -188,13 +128,6 @@ export default function Flights() {
   };
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m}m`; };
 
-  const counts = useMemo(() => ({
-    all: flights.length,
-    season: flights.filter(f => new Date(f.date).getFullYear() === currentYear).length,
-    track: flights.filter(f => f.has_track).length,
-  }), [flights, currentYear]);
-
-  if (loading) return <FlightsSkeleton />;
 
   const chipBase = "px-3 py-1 rounded-full text-xs font-medium border transition-colors active:scale-95 whitespace-nowrap flex items-center gap-1.5";
   const chipActive = "bg-primary text-primary-foreground border-primary";
@@ -259,8 +192,10 @@ export default function Flights() {
         </button>
       </div>
 
-      {filtered.length === 0 ? (
-        flights.length === 0 ? (
+      {loading ? <FlightsSkeleton /> : list.isError && !flights.length ? (
+        <div role="alert" className="space-y-3"><p>{t("performance.loadFailed")}</p><Button onClick={() => void loadFlights()}>{t("performance.retry")}</Button></div>
+      ) : filtered.length === 0 ? (
+        counts.all === 0 ? (
           <EmptyState
             icon={Plane}
             title={t("dashboard.noFlights")}
@@ -287,7 +222,7 @@ export default function Flights() {
               </div>
               <div className="space-y-2">
                 {items.map((f) => {
-                  const thumbPoints = tracks[f.id];
+                  const thumbPoints = f.thumbnail?.length >= 2 ? f.thumbnail : null;
                   return (
                     <SwipeableFlightCard key={f.id} onDelete={() => handleDeleteFlight(f.id)}>
                     <Card className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
@@ -327,6 +262,8 @@ export default function Flights() {
           ))}
         </div>
       )}
+      {list.isError && flights.length > 0 && <p role="alert" className="text-sm text-destructive">{t("performance.loadFailed")}</p>}
+      {list.hasNextPage && <Button variant="outline" className="w-full" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>{t("performance.loadMore")}</Button>}
     </div>
   );
 }

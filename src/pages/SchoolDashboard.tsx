@@ -1,6 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { useSchoolGroups } from "@/hooks/use-school-access";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,25 +12,22 @@ import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { GraduationCap, CalendarDays, MessageCircle, Users, Users2, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { latestStatusPerStudent, type StudentStatus } from "@/lib/student-status";
-import { latestNextStepPerStudent } from "@/lib/handoff-notes";
+import { type StudentStatus } from "@/lib/student-status";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { performanceRpc, type SchoolDashboardData } from "@/lib/performance-api";
+import { Button } from "@/components/ui/button";
 import SchoolOverview from "@/components/school/SchoolOverview";
-import SchoolStudents from "@/components/school/SchoolStudents";
-import SchoolDays from "@/components/school/SchoolDays";
-import SchoolPeople from "@/components/school/SchoolPeople";
-import SchoolEquipment from "@/components/school/SchoolEquipment";
-import SchoolStats from "@/components/school/SchoolStats";
-import SchoolBilling from "@/components/school/SchoolBilling";
-import SchoolCredits from "@/components/school/SchoolCredits";
-import SchoolSafety from "@/components/school/SchoolSafety";
-import TeamAvailability from "@/components/school/TeamAvailability";
-import TeamPolls from "@/components/school/TeamPolls";
-import GroupChat from "@/components/GroupChat";
-
-interface SchoolGroup {
-  id: string;
-  name: string;
-}
+const SchoolStudents = lazy(() => import("@/components/school/SchoolStudents"));
+const SchoolDays = lazy(() => import("@/components/school/SchoolDays"));
+const SchoolPeople = lazy(() => import("@/components/school/SchoolPeople"));
+const SchoolEquipment = lazy(() => import("@/components/school/SchoolEquipment"));
+const SchoolStats = lazy(() => import("@/components/school/SchoolStats"));
+const SchoolBilling = lazy(() => import("@/components/school/SchoolBilling"));
+const SchoolCredits = lazy(() => import("@/components/school/SchoolCredits"));
+const SchoolSafety = lazy(() => import("@/components/school/SchoolSafety"));
+const TeamAvailability = lazy(() => import("@/components/school/TeamAvailability"));
+const TeamPolls = lazy(() => import("@/components/school/TeamPolls"));
+const GroupChat = lazy(() => import("@/components/GroupChat"));
 
 type Section = "days" | "chat" | "teamChat" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
 
@@ -70,204 +68,45 @@ export default function SchoolDashboard() {
   const { section } = useParams<{ section?: string }>();
   const activeSection = (SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === section)?.key ?? null) as Section | null;
 
-  const [schoolGroups, setSchoolGroups] = useState<SchoolGroup[]>([]);
+  const groupQuery = useSchoolGroups();
+  const schoolGroups = groupQuery.data || [];
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const loading = groupQuery.isPending;
 
-  // Data states
-  const [members, setMembers] = useState<any[]>([]);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [events, setEvents] = useState<any[]>([]);
-  const [signups, setSignups] = useState<any[]>([]);
-  const [dayNotes, setDayNotes] = useState<any[]>([]);
-  const [flights, setFlights] = useState<any[]>([]);
-  const [trainingProgress, setTrainingProgress] = useState<any[]>([]);
-  const [examItemCount, setExamItemCount] = useState(0);
-  const [studentStatuses, setStudentStatuses] = useState<Record<string, { status: StudentStatus; reason: string | null; changed_at: string | null }>>({});
-
-  const loadStudentStatusMap = async (groupId: string) => {
-    const { data, error } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("student_status_history" as any)
-      .select("student_id, status, reason, changed_at")
-      .eq("group_id", groupId)
-      .order("changed_at", { ascending: false });
-    // A failed load leaves everyone at the "active" default rather than showing a stale or
-    // device-local guess; the change history itself remains the single source of truth.
-    if (error) return {};
-    return latestStatusPerStudent((data as { student_id: string; status: unknown; reason: string | null; changed_at: string | null }[]) || []);
-  };
-
+  const queryClient = useQueryClient();
+  const sectionData = useQuery({
+    queryKey: ["school-dashboard", user?.id, selectedGroupId, activeSection || "overview"],
+    enabled: !!selectedGroupId && !!user,
+    staleTime: 30_000,
+    queryFn: ({ signal }) => performanceRpc<SchoolDashboardData>("school_dashboard_data", {
+      _group_id: selectedGroupId, _section: activeSection || "overview", _viewer_id: user!.id,
+    }, signal),
+  });
   const handleStudentStatusChange = async (userId: string, status: StudentStatus, reason: string | null) => {
-    if (!selectedGroupId) return;
-    const previous = studentStatuses[userId] ?? { status: "active" as StudentStatus, reason: null, changed_at: null };
-    const changedAt = new Date().toISOString();
-    setStudentStatuses((prev) => ({ ...prev, [userId]: { status, reason, changed_at: changedAt } }));
-
-    const { error } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("student_status_history" as any)
-      .insert({
-        group_id: selectedGroupId,
-        student_id: userId,
-        status,
-        reason,
-        changed_by: user?.id ?? null,
-        changed_at: changedAt,
-      });
+    if (!selectedGroupId || !user) return;
+    const { error } = await supabase.from("student_status_history" as never).insert({
+      group_id: selectedGroupId, student_id: userId, status, reason, changed_by: user.id, changed_at: new Date().toISOString(),
+    } as never);
     if (error) {
-      setStudentStatuses((prev) => ({ ...prev, [userId]: previous }));
       toast({ title: t("school.studentStatus.saveFailed"), description: error.message, variant: "destructive" });
+      throw error;
     }
+    await queryClient.invalidateQueries({ queryKey: ["school-dashboard", user.id, selectedGroupId] });
   };
 
-  // Load school groups where the user is admin, instructor or school lead
   useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      const [adminRes, functionRes] = await Promise.all([
-        supabase.from("group_members").select("group_id").eq("user_id", user.id).eq("role", "admin"),
-        supabase
-          .from("group_member_functions")
-          .select("group_id, function")
-          .eq("user_id", user.id)
-          .in("function", ["instructor", "school_lead"]),
-      ]);
+    if (groupQuery.data && !groupQuery.data.some((group) => group.id === selectedGroupId)) {
+      setSelectedGroupId(groupQuery.data[0]?.id || "");
+    }
+  }, [groupQuery.data, selectedGroupId]);
 
-      const groupIds = Array.from(new Set([
-        ...(adminRes.data || []).map((m) => m.group_id),
-        ...(functionRes.data || []).map((m) => m.group_id),
-      ]));
+  const isSchoolAdmin = sectionData.data?.isAdmin ?? false;
+  const studentInfos = sectionData.data?.students || [];
+  const eventInfos = sectionData.data?.events || [];
+  const nextEvent = sectionData.data?.nextEvent ?? null;
+  const openNotesCount = sectionData.data?.openNotesCount ?? 0;
 
-      if (!groupIds.length) {
-        setLoading(false);
-        return;
-      }
-
-      const { data: groups } = await supabase
-        .from("groups")
-        .select("id, name, group_type")
-        .in("id", groupIds)
-        .eq("group_type", "school");
-
-      const schoolGrps = (groups || []).map((g) => ({ id: g.id, name: g.name }));
-      setSchoolGroups(schoolGrps);
-      if (schoolGrps.length > 0) {
-        setSelectedGroupId(schoolGrps[0].id);
-      }
-      setLoading(false);
-    };
-    load();
-  }, [user]);
-
-  // Load group data when selected group changes
-  useEffect(() => {
-    if (!selectedGroupId || !user) return;
-    const load = async () => {
-      const [membersRes, eventsRes, examItems] = await Promise.all([
-        supabase.from("group_members").select("user_id, role").eq("group_id", selectedGroupId),
-        supabase.from("flight_events").select("id, title, event_date, status").eq("group_id", selectedGroupId).order("event_date", { ascending: false }),
-        supabase.from("training_items").select("id").eq("is_exam_maneuver", true),
-      ]);
-
-      const memberList = membersRes.data || [];
-      const eventList = eventsRes.data || [];
-      setMembers(memberList);
-      setEvents(eventList);
-      setExamItemCount((examItems.data || []).length);
-
-      const studentUserIds = memberList.filter((m) => m.role === "member").map((m) => m.user_id);
-      const eventIds = eventList.map((e) => e.id);
-
-      if (studentUserIds.length > 0) {
-        const [profilesRes, flightsRes, progressRes, statusMap] = await Promise.all([
-          supabase.from("profiles").select("user_id, pilot_name, training_level").in("user_id", studentUserIds),
-          supabase.from("flights").select("id, user_id, date").eq("group_id", selectedGroupId).in("user_id", studentUserIds),
-          supabase.from("training_progress").select("user_id, item_id, rating").in("user_id", studentUserIds),
-          loadStudentStatusMap(selectedGroupId),
-        ]);
-        setProfiles(profilesRes.data || []);
-        setFlights(flightsRes.data || []);
-        setTrainingProgress(progressRes.data || []);
-        setStudentStatuses(statusMap);
-      } else {
-        setProfiles([]);
-        setFlights([]);
-        setTrainingProgress([]);
-        setStudentStatuses({});
-      }
-
-      if (eventIds.length > 0) {
-        const [signupsRes, notesRes] = await Promise.all([
-          supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds).eq("signed_up", true),
-          supabase.from("student_day_notes" as any).select("event_id, student_user_id, flight_number, note, is_next_step").in("event_id", eventIds),
-        ]);
-        setSignups(signupsRes.data || []);
-        setDayNotes((notesRes.data as any[]) || []);
-      } else {
-        setSignups([]);
-        setDayNotes([]);
-      }
-    };
-    load();
-  }, [selectedGroupId, user]);
-
-  // Derived data
-  const studentMembers = useMemo(() => members.filter((m) => m.role === "member"), [members]);
-  // group_member_functions (Funktionszuweisung in SchoolPeople) ist per RLS admin-only, nicht
-  // is_group_staff - Instruktoren/Schulleitung dürfen die Seite sehen, aber keine Funktionen
-  // zuweisen. canManage muss deshalb echten Admin-Status widerspiegeln, nicht "true" annehmen.
-  const isSchoolAdmin = useMemo(() => members.some((m) => m.user_id === user?.id && m.role === "admin"), [members, user]);
-
-  const eventDateById = useMemo(() => Object.fromEntries(events.map((e) => [e.id, e.event_date])), [events]);
-  const nextStepByStudent = useMemo(() => latestNextStepPerStudent(dayNotes, eventDateById), [dayNotes, eventDateById]);
-
-  const studentInfos = useMemo(() => {
-    return studentMembers.map((m) => {
-      const profile = profiles.find((p) => p.user_id === m.user_id);
-      const studentFlights = flights.filter((f) => f.user_id === m.user_id);
-      const studentProgress = trainingProgress.filter((tp) => tp.user_id === m.user_id && tp.rating >= 3);
-      const examProgress = examItemCount > 0 ? Math.round((studentProgress.length / examItemCount) * 100) : 0;
-      const summaries = dayNotes.filter((n: any) => n.student_user_id === m.user_id && n.flight_number === null && n.note);
-      const lastSummary = summaries.length > 0 ? summaries[0].note : null;
-      const statusEntry = studentStatuses[m.user_id] ?? { status: "active" as StudentStatus, reason: null, changed_at: null };
-
-      return {
-        userId: m.user_id,
-        pilotName: profile?.pilot_name || "",
-        trainingLevel: profile?.training_level,
-        flightCount: studentFlights.length,
-        examProgress: Math.min(examProgress, 100),
-        lastSummary,
-        nextStep: nextStepByStudent[m.user_id] ?? null,
-        status: statusEntry.status,
-        statusReason: statusEntry.reason,
-        statusUpdatedAt: statusEntry.changed_at,
-      };
-    });
-  }, [studentMembers, profiles, flights, trainingProgress, dayNotes, examItemCount, studentStatuses, nextStepByStudent]);
-
-  const eventInfos = useMemo(() => {
-    return events.map((ev) => {
-      const participantCount = signups.filter((s) => s.event_id === ev.id).length;
-      const notesCount = dayNotes.filter((n: any) => n.event_id === ev.id).length;
-      return { ...ev, participantCount, notesCount };
-    });
-  }, [events, signups, dayNotes]);
-
-  const nextEvent = useMemo(() => {
-    const upcoming = events.filter((e) => new Date(e.event_date) >= new Date() && e.status !== "cancelled");
-    return upcoming.length > 0 ? upcoming[upcoming.length - 1] : null;
-  }, [events]);
-
-  const openNotesCount = useMemo(() => {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentEvents = events.filter((e) => new Date(e.event_date) >= thirtyDaysAgo && new Date(e.event_date) <= new Date());
-    return recentEvents.filter((e) => !dayNotes.some((n: any) => n.event_id === e.id)).length;
-  }, [events, dayNotes]);
-
-  if (loading) {
+  if (loading || (selectedGroupId && sectionData.isPending)) {
     return (
       <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
         <Skeleton className="h-8 w-48" />
@@ -275,6 +114,8 @@ export default function SchoolDashboard() {
       </div>
     );
   }
+
+  if (groupQuery.isError) return <PageContainer><p role="alert">{t("performance.loadFailed")}</p><Button onClick={() => void groupQuery.refetch()}>{t("performance.retry")}</Button></PageContainer>;
 
   if (schoolGroups.length === 0) {
     return (
@@ -285,6 +126,8 @@ export default function SchoolDashboard() {
       </div>
     );
   }
+
+  if (sectionData.isError) return <PageContainer><PageHeader back="/school" title={t("school.title")} /><div role="alert" className="space-y-3"><p>{t("performance.loadFailed")}</p><Button onClick={() => void sectionData.refetch()}>{t("performance.retry")}</Button></div></PageContainer>;
 
   const renderSection = () => {
     switch (activeSection) {
@@ -330,7 +173,7 @@ export default function SchoolDashboard() {
           title={t(item.labelKey)}
           subtitle={schoolGroups.find((g) => g.id === selectedGroupId)?.name}
         />
-        {renderSection()}
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-2xl" />}><div key={selectedGroupId}>{renderSection()}</div></Suspense>
       </PageContainer>
     );
   }
@@ -358,9 +201,12 @@ export default function SchoolDashboard() {
 
       <SchoolOverview
         groupId={selectedGroupId}
-        studentCount={studentInfos.filter((s) => s.status !== "paused" && s.status !== "cancelled").length}
+        studentCount={sectionData.data?.studentCount ?? 0}
         nextEvent={nextEvent}
         openNotesCount={openNotesCount}
+        openBilling={sectionData.data?.openBilling ?? 0}
+        licensedCount={sectionData.data?.licensedCount ?? 0}
+        nextSignups={sectionData.data?.nextSignups ?? 0}
       />
 
       {SECTION_GROUPS.map((group) => (

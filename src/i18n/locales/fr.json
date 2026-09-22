@@ -1,4 +1,5 @@
 {
+  "performance": {"loadFailed":"Impossible de charger les donn?es. V?rifiez la connexion et r?essayez.","retry":"R?essayer","loadMore":"Charger plus de vols"},
   "nav": {
     "dashboard": "Tableau de bord",
     "home": "Accueil",

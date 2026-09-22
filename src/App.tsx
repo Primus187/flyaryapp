@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import SplashScreen from "@/components/SplashScreen";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -88,7 +88,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 function SplashGate({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const [showSplash, setShowSplash] = useState(true);
+  const { pathname } = useLocation();
+  const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem("flyary-splash-seen") !== "1");
   const [progress, setProgress] = useState(5);
   const [dataReady, setDataReady] = useState(false);
 
@@ -100,7 +101,7 @@ function SplashGate({ children }: { children: React.ReactNode }) {
   // Prefetch dashboard once we know who the user is (or that there is none)
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
+    if (!showSplash || !user || pathname !== "/") {
       setProgress(100);
       setDataReady(true);
       return;
@@ -123,21 +124,13 @@ function SplashGate({ children }: { children: React.ReactNode }) {
           setDataReady(true);
         }
       });
-    // Warm the Feed chunk + prefetch its data so the Feed tab opens instantly
-    feedImport()
-      .then(mod => {
-        if (cancelled) return;
-        return queryClient.prefetchQuery({
-          queryKey: mod.FEED_QUERY_KEY(user.id),
-          queryFn: () => mod.fetchInitialFeedPage(user.id),
-          staleTime: 2 * 60 * 1000,
-        });
-      })
-      .catch(() => {});
     return () => { cancelled = true; clearTimeout(safety); };
-  }, [user, authLoading]);
+  }, [user, authLoading, pathname, showSplash]);
 
-  const handleSplashFinished = useCallback(() => setShowSplash(false), []);
+  const handleSplashFinished = useCallback(() => {
+    sessionStorage.setItem("flyary-splash-seen", "1");
+    setShowSplash(false);
+  }, []);
 
   return (
     <>

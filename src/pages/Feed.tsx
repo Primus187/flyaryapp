@@ -14,6 +14,7 @@ import PilotSuggestions from "@/components/PilotSuggestions";
 import { Users, X } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 
 const PAGE_SIZE = 10;
 
@@ -157,6 +158,7 @@ export default function Feed() {
   const fetchFeed = useCallback(async (cursor?: string) => {
     if (!user) return;
 
+    try {
     let gIds = groupIdsRef.current;
     let groupMap: Record<string, string> = {};
 
@@ -243,9 +245,15 @@ export default function Feed() {
     }
 
     setHasMore(dedupedFlights.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
-    setLoading(false);
-    setLoadingMore(false);
-  }, [user]);
+    } catch {
+      setHasMore(false);
+      toast({ title: t("performance.loadFailed"), variant: "destructive" });
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+      setRefreshing(false);
+    }
+  }, [user, t, toast]);
 
   // Skip initial fetch if we already have prefetched data; otherwise fetch now
   const didInitialFetch = useRef(!!cached);
@@ -811,22 +819,23 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
 
   const validAchievements = achievements.filter(a => challengeMap[a.challenge_id]);
 
-  const goalIds = validAchievements.filter(a => a.goal_id).map(a => a.goal_id!);
-  const goalMap: Record<string, string> = {};
-  if (goalIds.length > 0) {
-    const { data: goals } = await supabase.from("challenge_goals").select("id, label").in("id", goalIds);
-    goals?.forEach(g => { goalMap[g.id] = g.label || ""; });
-  }
-
-  const progressMap: Record<string, { total: number; completed: number }> = {};
-  for (const cId of challengeIds) {
-    if (!challengeMap[cId]) continue;
-    const { data: goals } = await supabase.from("challenge_goals").select("id").eq("challenge_id", cId);
-    const total = goals?.length || 0;
-    progressMap[cId] = { total, completed: 0 };
-  }
-
   const pilotIds = [...new Set(validAchievements.map(a => a.user_id))];
+  const [goals, progressRows] = await Promise.all([
+    fetchAllPages((from, to) => supabase.from("challenge_goals").select("id, challenge_id, label", { count: "exact" }).in("challenge_id", challengeIds).order("id").range(from, to)),
+    fetchAllPages((from, to) => supabase.from("challenge_progress").select("challenge_id, user_id, goal_id", { count: "exact" }).in("challenge_id", challengeIds).in("user_id", pilotIds).order("id").range(from, to)),
+  ]);
+  const goalMap: Record<string, string> = {};
+  const totals: Record<string, number> = {};
+  const completed: Record<string, Set<string>> = {};
+  for (const goal of goals) {
+    goalMap[goal.id] = goal.label || "";
+    totals[goal.challenge_id] = (totals[goal.challenge_id] || 0) + 1;
+  }
+  for (const progress of progressRows) {
+    const key = progress.challenge_id + ":" + progress.user_id;
+    (completed[key] ??= new Set()).add(progress.goal_id);
+  }
+
   const profileMap: Record<string, { pilot_name: string; avatar_url: string }> = {};
   if (pilotIds.length > 0) {
     const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", pilotIds);
@@ -844,13 +853,6 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
         }
         profileMap[p.user_id] = { pilot_name: p.pilot_name || "Pilot", avatar_url: avatarUrl };
       }
-    }
-  }
-
-  for (const a of validAchievements) {
-    if (progressMap[a.challenge_id]) {
-      const { data: prog } = await supabase.from("challenge_progress").select("id").eq("challenge_id", a.challenge_id).eq("user_id", a.user_id);
-      progressMap[a.challenge_id].completed = prog?.length || 0;
     }
   }
 
@@ -881,8 +883,8 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
     challenge_title: challengeMap[a.challenge_id]?.title || "",
     goal_label: a.goal_id ? (goalMap[a.goal_id] || null) : null,
     group_name: groupMap[challengeMap[a.challenge_id]?.group_id] || "",
-    total_goals: progressMap[a.challenge_id]?.total || 0,
-    completed_goals: progressMap[a.challenge_id]?.completed || 0,
+    total_goals: totals[a.challenge_id] || 0,
+    completed_goals: completed[a.challenge_id + ":" + a.user_id]?.size || 0,
     likes: (likes || []).filter(l => l.achievement_id === a.id).map(l => ({ user_id: l.user_id, reaction_type: (l as any).reaction_type || "heart" })),
     comments: (comments || []).filter(c => c.achievement_id === a.id).map(c => ({
       id: c.id, user_id: c.user_id, message: c.message, created_at: c.created_at,

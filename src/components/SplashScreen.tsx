@@ -11,7 +11,7 @@ export default function SplashScreen({
   onFinished,
   progress = 0,
   ready = true,
-  minDurationMs = 800,
+  minDurationMs = 300,
 }: SplashScreenProps) {
   const [phase, setPhase] = useState<"enter" | "hold" | "exit">("enter");
   const [minElapsed, setMinElapsed] = useState(false);
@@ -23,18 +23,18 @@ export default function SplashScreen({
   }, [minDurationMs]);
 
   useEffect(() => {
-    if (minElapsed && ready && phase !== "exit") {
+    if (minElapsed && ready) {
       setPhase("exit");
-      const t = setTimeout(onFinished, 400);
+      const t = setTimeout(onFinished, 150);
       return () => clearTimeout(t);
     }
-  }, [minElapsed, ready, phase, onFinished]);
+  }, [minElapsed, ready, onFinished]);
 
   const pct = Math.min(100, Math.max(0, progress));
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-400 ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-150 ${
         phase === "exit" ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       aria-hidden={phase === "exit"}

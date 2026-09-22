@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globIgnores: ["**/stats.html"],
         navigateFallbackDenylist: [/^\/~oauth/],
         runtimeCaching: [
           {
@@ -51,8 +52,8 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-    // Bundle-Audit: nach `npm run build` öffne dist/stats.html für die Treemap
-    mode !== "development" && visualizer({
+    // Bundle-Audit: `npm run build:analyze` erzeugt dist/stats.html.
+    mode === "analyze" && visualizer({
       filename: "dist/stats.html",
       template: "treemap",
       gzipSize: true,
@@ -69,13 +70,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        // Separate große Libs in eigene Chunks → bessere HTTP-Cache-Trefferquote
-        manualChunks: {
-          maplibre: ["maplibre-gl"],
-          leaflet: ["leaflet", "react-leaflet", "@react-leaflet/core"],
-          recharts: ["recharts"],
-          
-        },
+        onlyExplicitManualChunks: true,
+        // Automatic splitting keeps shared helpers out of eager map/chart chunks.
       },
     },
   },

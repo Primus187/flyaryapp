@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
-import "./i18n";
+import { i18nReady } from "./i18n";
 
 // Never let an older installed build cache the editable preview.
 if (import.meta.env.DEV && "serviceWorker" in navigator) {
@@ -70,4 +70,4 @@ window.addEventListener("unhandledrejection", (event) => {
   }
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+void i18nReady.then(() => createRoot(document.getElementById("root")!).render(<App />));

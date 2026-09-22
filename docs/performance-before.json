@@ -1,0 +1,24 @@
+{
+  "measuredAt": "2026-09-21T20:53:07.949Z",
+  "initialScripts": [
+    {
+      "name": "assets/index-DGLy1K8a.js",
+      "bytes": 789889,
+      "gzipBytes": 241308
+    },
+    {
+      "name": "assets/leaflet-nJzYjesz.js",
+      "bytes": 297218,
+      "gzipBytes": 90881
+    },
+    {
+      "name": "assets/recharts-BxYqvlcG.js",
+      "bytes": 394761,
+      "gzipBytes": 107350
+    }
+  ],
+  "initialGzipBytes": 439539,
+  "analysisReportPrecached": true,
+  "analysisReportBytes": 1597055,
+  "note": "Static HTML entry/preload JS only; selected-language and route chunks are loaded additionally. Gzip is simulated, not a mobile network timing."
+}

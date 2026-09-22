@@ -1,19 +1,20 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, ClipboardList, Plus, Send, Receipt, Gauge } from "lucide-react";
 import SchoolSetupCard from "./SchoolSetupCard";
 import SchoolInvite from "./SchoolInvite";
-import { licensedCompletionsInWindow, shvMinimumPerformanceStatus, type ShvMinimumPerformanceStatus } from "@/lib/annual-report";
+import { shvMinimumPerformanceStatus, type ShvMinimumPerformanceStatus } from "@/lib/annual-report";
 
 interface Props {
   groupId: string;
   studentCount: number;
   nextEvent: { id: string; title: string; event_date: string } | null;
   openNotesCount: number;
+  openBilling: number;
+  nextSignups: number;
+  licensedCount: number;
 }
 
 const SHV_AMPEL_STYLES: Record<ShvMinimumPerformanceStatus, string> = {
@@ -22,59 +23,10 @@ const SHV_AMPEL_STYLES: Record<ShvMinimumPerformanceStatus, string> = {
   critical: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
 };
 
-export default function SchoolOverview({ groupId, studentCount, nextEvent, openNotesCount }: Props) {
+export default function SchoolOverview({ groupId, studentCount, nextEvent, openNotesCount, openBilling, nextSignups, licensedCount }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [openBilling, setOpenBilling] = useState(0);
-  const [nextSignups, setNextSignups] = useState<number | null>(null);
-  const [shvStatus, setShvStatus] = useState<{ status: ShvMinimumPerformanceStatus; count: number } | null>(null);
-
-  useEffect(() => {
-    if (!groupId) return;
-    let cancelled = false;
-    const load = async () => {
-      const { data } = await supabase
-        .from("billing_items" as any)
-        .select("amount, paid_at")
-        .eq("group_id", groupId);
-      if (cancelled) return;
-      const total = ((data as any[]) || [])
-        .filter((i) => !i.paid_at)
-        .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-      setOpenBilling(Math.round(total * 100) / 100);
-    };
-    load();
-    return () => { cancelled = true; };
-  }, [groupId]);
-
-  useEffect(() => {
-    if (!nextEvent) { setNextSignups(null); return; }
-    let cancelled = false;
-    supabase
-      .from("event_signups")
-      .select("id", { count: "exact", head: true })
-      .eq("event_id", nextEvent.id)
-      .eq("signed_up", true)
-      .then(({ count }) => { if (!cancelled) setNextSignups(count || 0); });
-    return () => { cancelled = true; };
-  }, [nextEvent?.id]);
-
-  useEffect(() => {
-    if (!groupId) return;
-    let cancelled = false;
-    supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("training_level_history" as any)
-      .select("user_id, training_level, changed_at")
-      .eq("group_id", groupId)
-      .then(({ data }) => {
-        if (cancelled) return;
-        const history = (data as { user_id: string; training_level: string; changed_at: string }[]) || [];
-        const count = licensedCompletionsInWindow(history, new Date().getFullYear());
-        setShvStatus({ status: shvMinimumPerformanceStatus(count), count });
-      });
-    return () => { cancelled = true; };
-  }, [groupId]);
+  const shvStatus = { status: shvMinimumPerformanceStatus(licensedCount), count: licensedCount };
 
   const kpis = [
     { icon: Users, label: t("school.activeStudents"), value: studentCount },

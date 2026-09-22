@@ -120,7 +120,7 @@ export default function TeamAvailability({ groupId, canManage = true }: Props) {
       .select("id, status, note")
       .single();
     if (error || !data) return;
-    setEntries((prev) => ({ ...prev, [key(userId, date)]: data as Entry }));
+    setEntries((prev) => ({ ...prev, [key(userId, date)]: data as unknown as Entry }));
   };
 
   const saveNote = async (userId: string, date: string, note: string) => {

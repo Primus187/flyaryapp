@@ -71,7 +71,7 @@ export default function AnnualReport({ groupId }: Props) {
         });
       }
 
-      const history = (historyRes.data || []) as { user_id: string; training_level: string; changed_at: string }[];
+      const history = (historyRes.data || []) as unknown as { user_id: string; training_level: string; changed_at: string }[];
       const { counts, unresolved } = levelCountsAtYearEnd(studentIds, history, currentLevels, Number(year), currentYear);
 
       const months = Array(12).fill(0);

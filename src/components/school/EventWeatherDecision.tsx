@@ -55,7 +55,7 @@ export default function EventWeatherDecision({ eventId, groupId, eventTitle, can
       .select("decision_deadline, status, decided_at, note")
       .eq("event_id", eventId)
       .maybeSingle();
-    const row = data as Decision | null;
+    const row = data as unknown as Decision | null;
     setDecision(row);
     setDeadlineDraft(row?.decision_deadline ? toLocalDatetimeInputValue(row.decision_deadline) : "");
     setStatusDraft(row?.status ?? "weather_pending");

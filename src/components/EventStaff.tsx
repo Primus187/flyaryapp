@@ -116,7 +116,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
         .eq("group_id", groupId)
         .eq("date", day);
       const map: Record<string, AvailabilityStatus> = {};
-      ((data as { user_id: string; status: AvailabilityStatus }[]) || []).forEach((row) => { map[row.user_id] = row.status; });
+      ((data as unknown as { user_id: string; status: AvailabilityStatus }[]) || []).forEach((row) => { map[row.user_id] = row.status; });
       setAvailability(map);
     };
     loadAvailability();

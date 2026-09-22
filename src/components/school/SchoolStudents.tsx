@@ -58,9 +58,14 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
   const confirmStatusChange = async () => {
     if (!statusChange || !onStatusChange) return;
     setSaving(true);
-    await onStatusChange(statusChange.student.userId, statusChange.nextStatus, reasonDraft.trim() || null);
-    setSaving(false);
-    setStatusChange(null);
+    try {
+      await onStatusChange(statusChange.student.userId, statusChange.nextStatus, reasonDraft.trim() || null);
+      setStatusChange(null);
+    } catch {
+      // The caller reports the failure; retain the draft for retry.
+    } finally {
+      setSaving(false);
+    }
   };
 
   const visibleStudents = statusFilter === "active" ? students.filter((s) => (s.status ?? "active") === "active") : students;

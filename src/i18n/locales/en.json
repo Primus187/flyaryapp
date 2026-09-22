@@ -1,4 +1,5 @@
 {
+  "performance": {"loadFailed":"Data could not be loaded. Please check your connection and try again.","retry":"Retry","loadMore":"Load more flights"},
   "nav": {
     "dashboard": "Dashboard",
     "home": "Home",

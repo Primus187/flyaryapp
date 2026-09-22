@@ -1,4 +1,5 @@
 {
+  "performance": {"loadFailed":"Daten konnten nicht geladen werden. Bitte pr?fe die Verbindung und versuche es erneut.","retry":"Erneut laden","loadMore":"Weitere Fl?ge laden"},
   "nav": {
     "dashboard": "Dashboard",
     "home": "Home",
