@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import { isCategoryLocked, prerequisiteName } from "@/lib/training-categories";
+import { trainingFilter, matchesTrainingFilter } from "@/lib/training-level";
+import { useToast } from "@/hooks/use-toast";
 
 interface Category {
   id: string;
@@ -38,6 +40,8 @@ type Level = typeof LEVELS[number];
 export default function Training() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [savingItem, setSavingItem] = useState<string | null>(null);
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<TrainingItem[]>([]);
@@ -64,7 +68,7 @@ export default function Training() {
       if (profileRes.data) {
         const lvl = (profileRes.data as any).training_level || "grundkurs";
         setUserLevel(lvl);
-        setActiveLevel(lvl === "pilot" ? "all" : lvl);
+        setActiveLevel(trainingFilter(lvl));
       }
       setLoading(false);
     });
@@ -72,14 +76,17 @@ export default function Training() {
 
   const handleRate = async (e: React.MouseEvent, itemId: string, rating: number) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!user || savingItem) return;
     const currentRating = progress.get(itemId) || 0;
     const newRating = currentRating === rating ? rating - 1 : rating;
-    setProgress((prev) => { const next = new Map(prev); next.set(itemId, newRating); return next; });
-    await supabase.from("training_progress").upsert(
+    setSavingItem(itemId);
+    const { error } = await supabase.from("training_progress").upsert(
       { user_id: user.id, item_id: itemId, rating: newRating, updated_at: new Date().toISOString() },
       { onConflict: "user_id,item_id" }
     );
+    setSavingItem(null);
+    if (error) { toast({ title: t("journeys.saveFailed"), variant: "destructive" }); return; }
+    setProgress((prev) => { const next = new Map(prev); next.set(itemId, newRating); return next; });
   };
 
   const categoryProgress = (catId: string) => {
@@ -93,7 +100,7 @@ export default function Training() {
 
   const filteredCategories = activeLevel === "all"
     ? categories
-    : categories.filter((c) => (c.training_level || "").includes(activeLevel) || !c.training_level);
+    : categories.filter((c) => matchesTrainingFilter(c.training_level, activeLevel));
 
   const levelLabels: Record<Level, string> = {
     grundkurs: t("training.grundkurs"),
@@ -182,19 +189,19 @@ export default function Training() {
                   {items.filter((i) => i.category_id === cat.id).map((item) => {
                     const rating = progress.get(item.id) || 0;
                     return (
-                      <button key={item.id} onClick={() => navigate(`/training/${item.id}`)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left">
-                        <span className="text-sm truncate pr-2 flex items-center gap-1.5">
+                      <div key={item.id} className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left">
+                        <button type="button" onClick={() => navigate(`/training/${item.id}`)} className="text-sm min-w-0 flex-1 text-left pr-2 flex items-center gap-1.5">
                           {item.name}
                           {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600 shrink-0">SHV</Badge>}
-                        </span>
+                        </button>
                         <div className="flex gap-0.5 shrink-0">
                           {[1, 2, 3].map((star) => (
-                            <button key={star} onClick={(e) => handleRate(e, item.id, star)} className="p-0.5 active:scale-90 transition-transform">
+                            <button key={star} type="button" disabled={savingItem !== null} aria-label={t("journeys.rate", { name: item.name, count: star })} aria-pressed={star <= rating} onClick={(e) => handleRate(e, item.id, star)} className="p-1.5 disabled:opacity-50 active:scale-90 transition-transform">
                               <Star className={cn("h-5 w-5 transition-colors", star <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
                             </button>
                           ))}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>

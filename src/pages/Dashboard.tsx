@@ -51,7 +51,7 @@ export default function Dashboard() {
     profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
   } = useDashboardData();
   const { streak } = usePilotStreak(user?.id);
-  const { mode } = useRoleMode();
+  const { mode, loading: roleLoading } = useRoleMode();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -91,6 +91,7 @@ export default function Dashboard() {
   const statusColor = (s: string) => s === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : s === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
   const initials = profile.pilot_name ? profile.pilot_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : user?.email?.[0]?.toUpperCase() || "?";
 
+  if (roleLoading) return <DashboardSkeleton />;
   if (mode === "school") return <Navigate to="/school" replace />;
 
   if (loading) return <DashboardSkeleton />;

@@ -1,5 +1,31 @@
 # Flyary
 
+## UX-Fortsetzung: Rollen und Tagesabläufe
+
+Die unterbrochene UX-Arbeit wurde am 22.09.2026 ergänzt: kontobezogener Rollen- und
+Schulwechsel, eigene Schulnavigation, Team-Einstieg für Starthelfer, passende
+Ausbildungsfilter und Coaching-Notizen mit geordnetem Autosave und Fehleranzeige.
+Neue Texte sind in DE/FR/EN vorhanden. Vergangene Coaching-Tage zeigen weiterhin
+auch inzwischen pausierte Schüler; bei aktuellen Teilnehmerlisten lassen sie sich
+einblenden. Ausbildungsbewertungen haben getrennte, beschriftete Bedienelemente.
+
+**Auslieferung:** Vor dem Frontend muss `drizzle/migrations/0016_role_journeys.sql`
+nach Migration 0015 angewendet werden. Sie erlaubt dem Schulpersonal das Speichern
+der Tagesnotizen, unterstützt die Tagespause und liefert inaktive Schüler-IDs.
+Die Migration wurde lokal mit PostgreSQL/PGlite getestet und am 22.09.2026 auf der
+Live-Datenbank nach Migration 0015 in einer Transaktion angewendet. Migrationseintrag,
+Notiz-Policies, Tagespause-Prüfregel und Funktionsrechte wurden anschliessend geprüft;
+der PostgREST-Schema-Cache wurde zum Neuladen benachrichtigt.
+
+**Prüfung:** 172 Tests erfolgreich, einschliesslich Autosave bei Folgeänderungen und
+Fehlern, Ausbildungsfiltern, Übersetzungsschlüsseln und SQL-Zugriffsregeln.
+TypeScript-Prüfung und Produktionsbuild erfolgreich. Der globale ESLint-Lauf ist
+wegen zahlreicher Meldungen im Repository (überwiegend `no-explicit-any`) nicht grün.
+Ein manueller Durchlauf mit echten Pilot-, Fluglehrer- und Starthelferkonten steht aus.
+Fehlgeschlagene Notizentwürfe bleiben während der Sitzung im Arbeitsspeicher;
+sie überstehen keinen Browser-Neustart. Bei offenen Änderungen warnt der Browser
+beim Verlassen, soweit die Plattform dies unterstützt.
+
 ## Performance-Optimierungen
 
 Messwerte, Prüfungen und Auslieferungsreihenfolge stehen in [docs/performance.md](docs/performance.md).

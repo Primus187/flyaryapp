@@ -2,11 +2,13 @@ import { useTranslation } from "react-i18next";
 import { GraduationCap, Plane } from "lucide-react";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 /** Umschalter zwischen Pilotenbereich und Flugschulbereich. Nur für das Schulteam sichtbar. */
 export default function RoleModeSwitcher({ className }: { className?: string }) {
   const { mode, setMode, canSwitch } = useRoleMode();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   if (!canSwitch) return null;
 
@@ -17,7 +19,7 @@ export default function RoleModeSwitcher({ className }: { className?: string }) 
 
   return (
     <div
-      role="tablist"
+      role="group"
       aria-label={t("roleMode.label")}
       className={cn("flex items-center gap-1 p-1 rounded-full bg-muted/60 border border-border/50", className)}
     >
@@ -27,9 +29,8 @@ export default function RoleModeSwitcher({ className }: { className?: string }) 
           <button
             key={key}
             type="button"
-            role="tab"
-            aria-selected={active}
-            onClick={() => setMode(key)}
+            aria-pressed={active}
+            onClick={() => { setMode(key); navigate(key === "school" ? "/school" : "/"); }}
             className={cn(
               "flex items-center justify-center gap-1.5 flex-1 h-9 px-3 rounded-full text-xs font-semibold transition-colors active:scale-[0.98]",
               active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground",

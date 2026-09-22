@@ -1,49 +1,47 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useSchoolAccess } from "@/hooks/use-school-access";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useSchoolGroups } from "@/hooks/use-school-access";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type RoleMode = "pilot" | "school";
-
 interface RoleModeValue {
   mode: RoleMode;
   setMode: (mode: RoleMode) => void;
-  /** Nur wahr, wenn die Person zum Schulteam gehört – nur dann gibt es einen Umschalter. */
   canSwitch: boolean;
+  loading: boolean;
+  schoolGroupId: string;
+  setSchoolGroupId: (id: string) => void;
+  canManageSchool: boolean;
 }
-
-const STORAGE_KEY = "flyary.roleMode";
-
-const RoleModeContext = createContext<RoleModeValue>({
-  mode: "pilot",
-  setMode: () => {},
-  canSwitch: false,
-});
-
+const RoleModeContext = createContext<RoleModeValue>({ mode: "pilot", setMode: () => {}, canSwitch: false,
+  loading: true, schoolGroupId: "", setSchoolGroupId: () => {}, canManageSchool: false });
+function saved(key: string) {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function remember(key: string, value: string) {
+  try { window.localStorage.setItem(key, value); } catch { /* Optional preference storage. */ }
+}
 export function RoleModeProvider({ children }: { children: React.ReactNode }) {
-  const { hasSchoolAccess } = useSchoolAccess();
-  const [mode, setModeState] = useState<RoleMode>(() => {
-    if (typeof window === "undefined") return "pilot";
-    return window.localStorage.getItem(STORAGE_KEY) === "school" ? "school" : "pilot";
-  });
-
-  // Ohne Schulzugang gibt es nur den Pilotmodus.
-  useEffect(() => {
-    if (!hasSchoolAccess && mode === "school") setModeState("pilot");
-  }, [hasSchoolAccess, mode]);
-
+  const { user, loading: authLoading } = useAuth();
+  const groups = useSchoolGroups();
+  const account = user?.id || "";
+  const [preference, setPreference] = useState<{ account: string; mode: RoleMode } | null>(null);
+  const [selection, setSelection] = useState<{ account: string; id: string } | null>(null);
+  const requestedMode = preference?.account === account ? preference.mode : saved(`flyary.roleMode:${account}`);
+  const requestedGroup = selection?.account === account ? selection.id : saved(`flyary.school:${account}`);
+  const group = groups.data?.find(g => g.id === requestedGroup) || groups.data?.[0];
+  const canSwitch = !!groups.data?.length;
+  const loading = authLoading || (!!user && groups.isPending);
+  const mode: RoleMode = requestedMode === "school" && (canSwitch || loading) ? "school" : "pilot";
   const setMode = useCallback((next: RoleMode) => {
-    setModeState(next);
-    try { window.localStorage.setItem(STORAGE_KEY, next); } catch { /* noop */ }
-  }, []);
-
-  const value = useMemo<RoleModeValue>(() => ({
-    mode: hasSchoolAccess ? mode : "pilot",
-    setMode,
-    canSwitch: hasSchoolAccess,
-  }), [hasSchoolAccess, mode, setMode]);
-
+    setPreference({ account, mode: next });
+    remember(`flyary.roleMode:${account}`, next);
+  }, [account]);
+  const setSchoolGroupId = useCallback((id: string) => {
+    setSelection({ account, id });
+    remember(`flyary.school:${account}`, id);
+  }, [account]);
+  const value = useMemo(() => ({ mode, setMode, canSwitch, loading, schoolGroupId: group?.id || "",
+    setSchoolGroupId, canManageSchool: group?.canManage ?? false }), [mode, setMode, canSwitch, loading, group, setSchoolGroupId]);
   return <RoleModeContext.Provider value={value}>{children}</RoleModeContext.Provider>;
 }
-
-export function useRoleMode() {
-  return useContext(RoleModeContext);
-}
+export const useRoleMode = () => useContext(RoleModeContext);

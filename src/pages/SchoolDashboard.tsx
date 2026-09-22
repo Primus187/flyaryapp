@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSchoolGroups } from "@/hooks/use-school-access";
@@ -9,6 +9,9 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
+import { useRoleMode } from "@/contexts/RoleModeContext";
+import { canOpenSchoolSection } from "@/lib/school-sections";
+import TeamHome from "@/components/school/TeamHome";
 import { GraduationCap, CalendarDays, MessageCircle, Users, Users2, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -70,13 +73,14 @@ export default function SchoolDashboard() {
 
   const groupQuery = useSchoolGroups();
   const schoolGroups = groupQuery.data || [];
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const { schoolGroupId: selectedGroupId, setSchoolGroupId: setSelectedGroupId, canManageSchool, setMode } = useRoleMode();
+  useEffect(() => { if (selectedGroupId) setMode("school"); }, [selectedGroupId, setMode]);
   const loading = groupQuery.isPending;
 
   const queryClient = useQueryClient();
   const sectionData = useQuery({
     queryKey: ["school-dashboard", user?.id, selectedGroupId, activeSection || "overview"],
-    enabled: !!selectedGroupId && !!user,
+    enabled: !!selectedGroupId && !!user && canManageSchool,
     staleTime: 30_000,
     queryFn: ({ signal }) => performanceRpc<SchoolDashboardData>("school_dashboard_data", {
       _group_id: selectedGroupId, _section: activeSection || "overview", _viewer_id: user!.id,
@@ -92,13 +96,14 @@ export default function SchoolDashboard() {
       throw error;
     }
     await queryClient.invalidateQueries({ queryKey: ["school-dashboard", user.id, selectedGroupId] });
+    await queryClient.invalidateQueries({ queryKey: ["inactive-students", user.id, selectedGroupId] });
   };
 
   useEffect(() => {
     if (groupQuery.data && !groupQuery.data.some((group) => group.id === selectedGroupId)) {
       setSelectedGroupId(groupQuery.data[0]?.id || "");
     }
-  }, [groupQuery.data, selectedGroupId]);
+  }, [groupQuery.data, selectedGroupId, setSelectedGroupId]);
 
   const isSchoolAdmin = sectionData.data?.isAdmin ?? false;
   const studentInfos = sectionData.data?.students || [];
@@ -106,7 +111,7 @@ export default function SchoolDashboard() {
   const nextEvent = sectionData.data?.nextEvent ?? null;
   const openNotesCount = sectionData.data?.openNotesCount ?? 0;
 
-  if (loading || (selectedGroupId && sectionData.isPending)) {
+  if (loading || (selectedGroupId && canManageSchool && sectionData.isPending)) {
     return (
       <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
         <Skeleton className="h-8 w-48" />
@@ -130,17 +135,18 @@ export default function SchoolDashboard() {
   if (sectionData.isError) return <PageContainer><PageHeader back="/school" title={t("school.title")} /><div role="alert" className="space-y-3"><p>{t("performance.loadFailed")}</p><Button onClick={() => void sectionData.refetch()}>{t("performance.retry")}</Button></div></PageContainer>;
 
   const renderSection = () => {
+    if (!canOpenSchoolSection(activeSection, canManageSchool)) return <p role="alert">{t("journeys.staffOnly")}</p>;
     switch (activeSection) {
       case "days":
-        return <SchoolDays events={eventInfos} />;
+        return canManageSchool ? <SchoolDays events={eventInfos} /> : <TeamHome groupId={selectedGroupId} />;
       case "chat":
         return <GroupChat groupId={selectedGroupId} canAnnounce={true} />;
       case "teamChat":
         return (
           <div className="space-y-4">
             <p className="text-xs text-muted-foreground">{t("school.teamChat.hint")}</p>
-            <TeamPolls groupId={selectedGroupId} />
-            <GroupChat groupId={selectedGroupId} canAnnounce={true} teamOnly />
+            <TeamPolls groupId={selectedGroupId} canManage={canManageSchool} />
+            <GroupChat groupId={selectedGroupId} canAnnounce={canManageSchool} teamOnly />
           </div>
         );
       case "people":
@@ -150,7 +156,7 @@ export default function SchoolDashboard() {
       case "safety":
         return <SchoolSafety groupId={selectedGroupId} />;
       case "availability":
-        return <TeamAvailability groupId={selectedGroupId} />;
+        return <TeamAvailability groupId={selectedGroupId} canManage={canManageSchool} />;
       case "equipment":
         return <SchoolEquipment groupId={selectedGroupId} />;
       case "credits":
@@ -199,7 +205,7 @@ export default function SchoolDashboard() {
         )}
       </div>
 
-      <SchoolOverview
+      {canManageSchool ? <SchoolOverview
         groupId={selectedGroupId}
         studentCount={sectionData.data?.studentCount ?? 0}
         nextEvent={nextEvent}
@@ -207,13 +213,13 @@ export default function SchoolDashboard() {
         openBilling={sectionData.data?.openBilling ?? 0}
         licensedCount={sectionData.data?.licensedCount ?? 0}
         nextSignups={sectionData.data?.nextSignups ?? 0}
-      />
+      /> : <TeamHome groupId={selectedGroupId} />}
 
-      {SECTION_GROUPS.map((group) => (
+      {SECTION_GROUPS.filter(group => group.items.some(item => canOpenSchoolSection(item.key, canManageSchool))).map((group) => (
         <section key={group.titleKey}>
           <SectionHeading title={t(group.titleKey)} />
           <div className="grid grid-cols-2 gap-3">
-            {group.items.map(({ key, icon: Icon, labelKey }) => (
+            {group.items.filter(item => canOpenSchoolSection(item.key, canManageSchool)).map(({ key, icon: Icon, labelKey }) => (
               <button
                 key={key}
                 type="button"

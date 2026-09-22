@@ -7,6 +7,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
 import ListRow from "@/components/layout/ListRow";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
+import { canOpenSchoolSection } from "@/lib/school-sections";
 import {
   User, Users, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search,
   CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell,
@@ -49,6 +50,8 @@ const schoolGroups: Group[] = [
     tiles: [
       { path: "/school/days", icon: Calendar, labelKey: "school.flightDays" },
       { path: "/school/chat", icon: MessageCircle, labelKey: "events.chat" },
+      { path: "/school/teamChat", icon: MessageCircle, labelKey: "school.teamChat.title" },
+      { path: "/school/availability", icon: Calendar, labelKey: "school.availability.title" },
     ],
   },
   {
@@ -73,9 +76,11 @@ export default function More() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { signOut } = useAuth();
-  const { mode, canSwitch } = useRoleMode();
+  const { mode, canSwitch, canManageSchool, setMode } = useRoleMode();
 
-  const groups = mode === "school" ? schoolGroups : pilotGroups;
+  const groups = mode === "school" ? schoolGroups.map(group => ({ ...group,
+    tiles: group.tiles.filter(tile => canOpenSchoolSection(tile.path.split("/")[2], canManageSchool)),
+  })).filter(group => group.tiles.length) : pilotGroups;
 
   const sendFeedback = () => {
     const info = [
@@ -100,7 +105,7 @@ export default function More() {
           icon={GraduationCap}
           label={t("more.school")}
           description={t("more.schoolHint")}
-          onClick={() => navigate("/school")}
+          onClick={() => { setMode("school"); navigate("/school"); }}
         />
       ) : canSwitch ? (
         <ListRow

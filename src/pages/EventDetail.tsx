@@ -26,6 +26,7 @@ import EventAnnounceDialog from "@/components/EventAnnounceDialog";
 import EmergencyInfoDialog from "@/components/EmergencyInfoDialog";
 import { compressImage } from "@/lib/image-compress";
 import { useToast } from "@/hooks/use-toast";
+import { useActiveStudents } from "@/hooks/use-active-students";
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +39,8 @@ export default function EventDetail() {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
+  const inactive = useActiveStudents(event?.group_id, isStaff && event?.groups?.group_type === "school");
   const [isStudent, setIsStudent] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -203,6 +206,11 @@ export default function EventDetail() {
   const myWaitlist = isSignedUp && mySignup?.status === "waitlist";
   const confirmedSignups = signups.filter(s => s.signed_up && s.status !== "waitlist");
   const waitlistSignups = signups.filter(s => s.signed_up && s.status === "waitlist");
+  const activeDay = event && new Date(event.event_date) >= new Date(new Date().setHours(0, 0, 0, 0)) && event.status !== "cancelled";
+  const hideInactive = activeDay && isStaff && event?.groups?.group_type === "school" && !showInactive;
+  const activeListReady = !hideInactive || (!inactive.isPending && !inactive.isError);
+  const visibleConfirmed = activeListReady ? confirmedSignups.filter(s => !hideInactive || !inactive.data?.includes(s.user_id)) : [];
+  const visibleWaitlist = activeListReady ? waitlistSignups.filter(s => !hideInactive || !inactive.data?.includes(s.user_id)) : [];
   const totalSignedUp = confirmedSignups.length;
   const deadlinePassed = !!event.signup_deadline && new Date(event.signup_deadline) < new Date();
   const statusLabel = event.status === "confirmed" ? t("events.statusConfirmed") : event.status === "cancelled" ? t("events.statusCancelled") : t("events.statusAnnounced");
@@ -382,7 +390,7 @@ export default function EventDetail() {
           eventId={id!}
           groupId={event.group_id}
           eventDate={event.event_date}
-          signups={confirmedSignups}
+          signups={visibleConfirmed}
           profiles={profiles}
           onChanged={refetchSignups}
         />
@@ -390,9 +398,15 @@ export default function EventDetail() {
 
       {/* Participants */}
       <div>
+        {isStaff && activeDay && event.groups?.group_type === "school" && <div className="mb-3 space-y-2">
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />{t("journeys.includeInactive")}</label>
+          <p className="text-xs text-muted-foreground">{t("journeys.inactiveHint")}</p>
+          {inactive.isError && <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => void inactive.refetch()}>{t("performance.retry")}</Button></div>}
+          {inactive.isPending && <p role="status">{t("common.loading")}</p>}
+        </div>}
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("events.participants")}</h2>
-        {confirmedSignups.length === 0 ? <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
-          <div className="space-y-1">{confirmedSignups.map(s => (
+        {visibleConfirmed.length === 0 ? activeListReady && <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
+          <div className="space-y-1">{visibleConfirmed.map(s => (
             <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
               <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
@@ -405,9 +419,9 @@ export default function EventDetail() {
               )}
             </CardContent></Card>))}</div>
         )}
-        {waitlistSignups.length > 0 && (
+        {visibleWaitlist.length > 0 && (
           <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
-          <div className="space-y-1">{waitlistSignups.map(s => (
+          <div className="space-y-1">{visibleWaitlist.map(s => (
             <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
               <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
               <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
@@ -419,12 +433,12 @@ export default function EventDetail() {
       <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
 
       {/* Coach batch evaluation - admin only */}
-      {isAdmin && (
-        <CoachDayView eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
+      {isStaff && event.groups?.group_type === "school" && (
+        <div id="coaching"><CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} /></div>
       )}
 
       {/* Student feedback view - non-admin only */}
-      {!isAdmin && (
+      {isStudent && (
         <StudentDayFeedback eventId={id!} />
       )}
 

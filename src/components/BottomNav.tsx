@@ -1,12 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Compass, BookOpen, LayoutGrid, Plus } from "lucide-react";
+import { Home, Compass, BookOpen, LayoutGrid, Plus, CalendarDays, Users, MessageCircle, CalendarClock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useRoleMode } from "@/contexts/RoleModeContext";
 
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { mode, canSwitch, canManageSchool } = useRoleMode();
 
   const tabs = [
     { path: "/", icon: Home, label: t("nav.home", "Home") },
@@ -21,6 +23,26 @@ export default function BottomNav() {
     }
     navigate(path);
   };
+
+  if (canSwitch && (mode === "school" || location.pathname.startsWith("/school"))) {
+    const schoolTabs = [
+      { path: "/school", icon: Home, label: t("nav.home") },
+      { path: "/school/days", icon: CalendarDays, label: t("school.flightDays") },
+      canManageSchool ? { path: "/school/students", icon: Users, label: t("school.students") }
+        : { path: "/school/availability", icon: CalendarClock, label: t("school.availability.title") },
+      { path: "/school/teamChat", icon: MessageCircle, label: t("school.teamChat.title") },
+      { path: "/more", icon: LayoutGrid, label: t("nav.more") },
+    ];
+    return <nav aria-label={t("journeys.schoolNavigation")} className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur-xl safe-area-bottom">
+      <div className="flex h-16 max-w-lg mx-auto">{schoolTabs.map(({ path, icon: Icon, label }) => {
+        const active = location.pathname === path;
+        return <button key={path} type="button" onClick={() => handleNav(path)} aria-current={active ? "page" : undefined}
+          className={cn("flex-1 min-w-0 px-1 flex flex-col items-center justify-center gap-1", active ? "text-primary" : "text-muted-foreground")}>
+          <Icon className="h-5 w-5" /><span className="text-[11px] text-center leading-tight">{label}</span>
+        </button>;
+      })}</div>
+    </nav>;
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom">

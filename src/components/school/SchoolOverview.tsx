@@ -36,8 +36,15 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
 
   return (
     <div className="space-y-4">
-      <SchoolSetupCard groupId={groupId} />
-      <SchoolInvite groupId={groupId} />
+      <section className="rounded-xl border bg-primary/5 p-4 space-y-3">
+        <h2 className="font-semibold">{t("journeys.schoolTitle")}</h2>
+        <p className="text-sm text-muted-foreground">{t("journeys.schoolHint")}</p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => navigate("/school/days")}>{t("school.flightDays")}</Button>
+          <Button variant="outline" onClick={() => navigate("/school/students")}>{t("school.students")}</Button>
+          <Button variant="outline" onClick={() => navigate("/school/teamChat")}>{t("school.teamChat.title")}</Button>
+        </div>
+      </section>
 
       <div className="grid grid-cols-3 gap-3">
         {kpis.map(({ icon: Icon, label, value }) => (
@@ -85,11 +92,13 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
           <Plus className="h-4 w-4" />
           <span className="text-xs">{t("school.newFlightDay")}</span>
         </Button>
-        <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => nextEvent ? navigate(`/events/${nextEvent.id}`) : null}>
+        <Button variant="outline" disabled={!nextEvent} className="h-auto py-3 flex-col gap-1" onClick={() => nextEvent ? navigate(`/events/${nextEvent.id}`) : null}>
           <Send className="h-4 w-4" />
           <span className="text-xs">{t("school.announce")}</span>
         </Button>
       </div>
+      <SchoolSetupCard groupId={groupId} />
+      <SchoolInvite groupId={groupId} />
     </div>
   );
 }

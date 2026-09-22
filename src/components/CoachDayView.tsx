@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+
+import { coachNoteAutosave, type NoteDraft } from "@/lib/note-autosave";
+import { useActiveStudents } from "@/hooks/use-active-students";
 
 interface Props {
   eventId: string;
@@ -26,6 +29,7 @@ interface DayNote {
   saving?: boolean;
   saved?: boolean;
   carryOver?: boolean;
+  error?: boolean;
 }
 
 interface StudentCard {
@@ -42,26 +46,40 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const { toast } = useToast();
   const [students, setStudents] = useState<StudentCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0); // 0-5 for F1-F6
-  const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [, refreshDrafts] = useState(0);
+  const prefix = `${user?.id}:${eventId}:`;
+  const keyFor = (studentId: string, index: number) => `${prefix}${studentId}:${index}`;
+  const activeDay = new Date(eventDate) >= new Date(new Date().setHours(0, 0, 0, 0));
+  const activeStudents = useActiveStudents(groupId, activeDay);
+  useEffect(() => coachNoteAutosave.subscribe(() => refreshDrafts(n => n + 1)), []);
+  useEffect(() => () => {
+    void coachNoteAutosave.flushPrefix(prefix);
+  }, [prefix]);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
+    setLoading(true);
+    setLoadError(false);
+    try {
 
     // Get signed-up students for this event
-    const { data: signupData } = await supabase
+    const { data: signupData, error: signupError } = await supabase
       .from("event_signups")
       .select("user_id")
       .eq("event_id", eventId)
       .eq("signed_up", true);
+    if (signupError) throw signupError;
 
     const signedUpIds = (signupData || []).map(s => s.user_id);
 
-    const { data: members } = await supabase
+    const { data: members, error: membersError } = await supabase
       .from("group_members")
       .select("user_id, role")
       .eq("group_id", groupId);
+    if (membersError) throw membersError;
     if (!members || members.length === 0) { setStudents([]); setLoading(false); return; }
 
     // Only show students (members) who are signed up for this event
@@ -77,6 +95,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       supabase.from("flights").select("user_id").in("user_id", studentIds).eq("date", dateStr),
       supabase.from("student_day_notes" as any).select("*").eq("event_id", eventId),
     ]);
+    if (profilesRes.error || flightsRes.error || notesRes.error) throw profilesRes.error || flightsRes.error || notesRes.error;
 
     const profileMap: Record<string, string> = {};
     profilesRes.data?.forEach(p => { profileMap[p.user_id] = p.pilot_name || "?"; });
@@ -93,7 +112,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       !existingNotes.some((n: any) => n.student_user_id === sid && n.flight_number === null)
     );
 
-    let carryOverMap: Record<string, string> = {};
+    const carryOverMap: Record<string, string> = {};
     if (studentsNeedingCarryOver.length > 0) {
       const { data: prevEvents } = await supabase
         .from("flight_events")
@@ -160,150 +179,45 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     });
 
     setStudents(cards);
-    setLoading(false);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, [eventId, eventDate, groupId, user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Cleanup debounce timers
-  useEffect(() => {
-    return () => {
-      Object.values(debounceTimers.current).forEach(clearTimeout);
-    };
-  }, []);
+  const draftNote = (studentId: string, index: number, original: DayNote): DayNote => {
+    const draft = coachNoteAutosave.get(keyFor(studentId, index));
+    return draft ? { ...original, ...draft.value, dirty: draft.revision !== draft.savedRevision,
+      saving: draft.saving, saved: draft.savedRevision === draft.revision, error: draft.error } : original;
+  };
 
-  const persistNote = useCallback(async (student: StudentCard, noteIdx: number, note: DayNote) => {
+  const editNote = (studentId: string, index: number, patch: Partial<NoteDraft>) => {
     if (!user) return;
-
-    const payload = {
-      event_id: eventId,
-      student_user_id: student.user_id,
-      flight_number: note.flight_number,
-      note: note.note,
-      visible_to_student: note.visible_to_student,
-      is_next_step: note.is_next_step ?? false,
-      instructor_id: user.id,
-    };
-
-    if (note.id) {
-      await supabase.from("student_day_notes" as any)
-        .update({ note: note.note, visible_to_student: note.visible_to_student, is_next_step: note.is_next_step ?? false, instructor_id: user.id } as any)
-        .eq("id", note.id);
-    } else if (note.note.trim()) {
-      const { data } = await supabase.from("student_day_notes" as any)
-        .insert(payload as any)
-        .select("id")
-        .single();
-      if (data) {
-        setStudents(prev => prev.map(s =>
-          s.user_id === student.user_id ? {
-            ...s,
-            notes: s.notes.map((n, ni) =>
-              ni === noteIdx ? { ...n, id: (data as any).id } : n
-            ),
-          } : s
-        ));
-      }
-    }
-
-    // Show saved indicator
-    setStudents(prev => prev.map(s =>
-      s.user_id === student.user_id ? {
-        ...s,
-        notes: s.notes.map((n, ni) =>
-          ni === noteIdx ? { ...n, dirty: false, saving: false, saved: true } : n
-        ),
-      } : s
-    ));
-
-    // Clear saved indicator after 2s
-    setTimeout(() => {
-      setStudents(prev => prev.map(s =>
-        s.user_id === student.user_id ? {
-          ...s,
-          notes: s.notes.map((n, ni) =>
-            ni === noteIdx ? { ...n, saved: false } : n
-          ),
-        } : s
-      ));
-    }, 2000);
-  }, [eventId, user]);
-
-  const handleNoteChange = (studentId: string, noteIdx: number, value: string) => {
-    setStudents(prev => prev.map(s =>
-      s.user_id === studentId ? {
-        ...s,
-        notes: s.notes.map((n, ni) =>
-          ni === noteIdx ? { ...n, note: value, dirty: true, saved: false, carryOver: false } : n
-        ),
-      } : s
-    ));
-
-    // Debounced auto-save
-    const key = `${studentId}-${noteIdx}`;
-    if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
-    debounceTimers.current[key] = setTimeout(() => {
-      setStudents(prev => {
-        const student = prev.find(s => s.user_id === studentId);
-        if (student) {
-          const note = student.notes[noteIdx];
-          persistNote(student, noteIdx, { ...note, note: value });
-        }
-        return prev.map(s =>
-          s.user_id === studentId ? {
-            ...s,
-            notes: s.notes.map((n, ni) =>
-              ni === noteIdx ? { ...n, saving: true } : n
-            ),
-          } : s
-        );
-      });
-    }, 800);
-  };
-
-  const toggleVisibility = async (studentId: string, noteIdx: number) => {
     const student = students.find(s => s.user_id === studentId);
     if (!student) return;
-    const note = student.notes[noteIdx];
-    const newVisible = !note.visible_to_student;
-
-    setStudents(prev => prev.map(s =>
-      s.user_id === studentId ? {
-        ...s,
-        notes: s.notes.map((n, ni) =>
-          ni === noteIdx ? { ...n, visible_to_student: newVisible } : n
-        ),
-      } : s
-    ));
-
-    if (note.id) {
-      await supabase.from("student_day_notes" as any)
-        .update({ visible_to_student: newVisible } as any)
-        .eq("id", note.id);
-    }
+    const original = draftNote(studentId, index, student.notes[index]);
+    const value: NoteDraft = { id: original.id || crypto.randomUUID(), note: original.note,
+      visible_to_student: original.visible_to_student, is_next_step: original.is_next_step ?? false, ...patch };
+    coachNoteAutosave.edit(keyFor(studentId, index), value, async (snapshot) => {
+      const { error } = await supabase.from("student_day_notes" as any).upsert({
+        ...snapshot, event_id: eventId, student_user_id: studentId,
+        flight_number: student.notes[index].flight_number, instructor_id: user.id,
+      } as any).select("id").single();
+      if (error) throw error;
+    });
   };
 
-  const toggleNextStep = async (studentId: string) => {
+  const handleNoteChange = (studentId: string, index: number, note: string) => editNote(studentId, index, { note });
+  const toggleVisibility = (studentId: string, index: number) => {
     const student = students.find(s => s.user_id === studentId);
-    if (!student) return;
-    const note = student.notes[6];
-    const newNextStep = !note.is_next_step;
-
-    setStudents(prev => prev.map(s =>
-      s.user_id === studentId ? {
-        ...s,
-        notes: s.notes.map((n, ni) => ni === 6 ? { ...n, is_next_step: newNextStep } : n),
-      } : s
-    ));
-
-    if (note.id) {
-      await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- column not in generated types.ts yet
-        .from("student_day_notes" as any)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- column not in generated types.ts yet
-        .update({ is_next_step: newNextStep } as any)
-        .eq("id", note.id);
-    }
+    if (student) editNote(studentId, index, { visible_to_student: !draftNote(studentId, index, student.notes[index]).visible_to_student });
+  };
+  const toggleNextStep = (studentId: string) => {
+    const student = students.find(s => s.user_id === studentId);
+    if (student) editNote(studentId, 6, { is_next_step: !draftNote(studentId, 6, student.notes[6]).is_next_step });
   };
 
   const togglePaused = async (studentId: string) => {
@@ -314,7 +228,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const newPaused = !student.paused;
 
     if (newPaused) {
-      await supabase.from("student_day_notes" as any)
+      const { error } = await supabase.from("student_day_notes" as any)
         .insert({
           event_id: eventId,
           student_user_id: studentId,
@@ -323,12 +237,14 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
           visible_to_student: false,
           instructor_id: user.id,
         } as any);
+      if (error) { toast({ title: t("journeys.saveFailed"), variant: "destructive" }); return; }
     } else {
-      await supabase.from("student_day_notes" as any)
+      const { error } = await supabase.from("student_day_notes" as any)
         .delete()
         .eq("event_id", eventId)
         .eq("student_user_id", studentId)
         .eq("flight_number", -1);
+      if (error) { toast({ title: t("journeys.saveFailed"), variant: "destructive" }); return; }
     }
 
     setStudents(prev => {
@@ -342,19 +258,22 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
       return updated;
     });
 
-    toast({ title: newPaused ? t("events.studentPaused") : t("events.studentResumed") });
+    toast({ title: newPaused ? t("journeys.pausedToday") : t("journeys.resumedToday") });
   };
 
-  if (loading) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
-  if (students.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
+  const visibleStudents = students.filter(student => !activeDay || !activeStudents.data?.includes(student.user_id));
+  if (loadError || (activeDay && activeStudents.isError)) return <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => { void fetchData(); if (activeDay) void activeStudents.refetch(); }}>{t("performance.retry")}</Button></div>;
+  if (loading || (activeDay && activeStudents.isPending)) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
+  if (visibleStudents.length === 0) return <p className="text-sm text-muted-foreground">{t("events.noStudentFlights")}</p>;
 
   return (
     <div className="space-y-1">
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-        {t("events.coachDayView")} ({students.length})
+        {t("events.coachDayView")} ({visibleStudents.length})
       </h2>
 
-      {students.map((student) => {
+      {visibleStudents.map((rawStudent) => {
+        const student = { ...rawStudent, notes: rawStudent.notes.map((note, index) => draftNote(rawStudent.user_id, index, note)) };
         const isExpanded = expandedId === student.user_id;
         const notesWithContent = student.notes.slice(0, 6).filter(n => n.note.trim()).length;
 
@@ -418,7 +337,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                     onClick={(e) => { e.stopPropagation(); togglePaused(student.user_id); }}
                   >
                     <PauseCircle className="h-3.5 w-3.5" />
-                    {student.paused ? t("events.resumeStudent") : t("events.pauseStudent")}
+                    {student.paused ? t("journeys.resumeToday") : t("journeys.pauseToday")}
                   </Button>
                 </div>
 
@@ -455,6 +374,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                     placeholder={`${t("events.flightSlot")} ${activeTab + 1}...`}
                     onChange={(val) => handleNoteChange(student.user_id, activeTab, val)}
                     onToggleVisibility={() => toggleVisibility(student.user_id, activeTab)}
+                    onSave={() => void coachNoteAutosave.flush(keyFor(student.user_id, activeTab))}
                     t={t}
                   />
 
@@ -477,6 +397,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                       onChange={(val) => handleNoteChange(student.user_id, 6, val)}
                       onToggleVisibility={() => toggleVisibility(student.user_id, 6)}
                       onToggleNextStep={() => toggleNextStep(student.user_id)}
+                      onSave={() => void coachNoteAutosave.flush(keyFor(student.user_id, 6))}
                       t={t}
                     />
                   </div>
@@ -496,6 +417,7 @@ function NoteEditor({
   onChange,
   onToggleVisibility,
   onToggleNextStep,
+  onSave,
   t,
 }: {
   note: DayNote;
@@ -503,6 +425,7 @@ function NoteEditor({
   onChange: (val: string) => void;
   onToggleVisibility: () => void;
   onToggleNextStep?: () => void;
+  onSave: () => void;
   t: (key: string) => string;
 }) {
   return (
@@ -540,11 +463,15 @@ function NoteEditor({
           </span>
         )}
       </div>
+      {note.error && <p role="alert" className="text-xs text-destructive">{t("journeys.noteFailed")}</p>}
+      {note.dirty && !note.saving && <Button size="sm" variant="outline" onClick={onSave}>{t(note.error ? "performance.retry" : "common.save")}</Button>}
       <Textarea
         className="text-xs min-h-[3rem] h-12 resize-none"
         value={note.note}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-label={placeholder}
+        onBlur={onSave}
       />
     </div>
   );
