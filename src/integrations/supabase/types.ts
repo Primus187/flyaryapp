@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_read_receipts: {
+        Row: {
+          confirmed_at: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_read_receipts_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       annual_report_submissions: {
         Row: {
           created_at: string
@@ -339,6 +368,48 @@ export type Database = {
             columns: ["comment_id"]
             isOneToOne: false
             referencedRelation: "feed_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emergency_data_access_log: {
+        Row: {
+          accessed_at: string
+          accessed_by: string
+          context_event_id: string | null
+          group_id: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          accessed_at?: string
+          accessed_by: string
+          context_event_id?: string | null
+          group_id: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          accessed_at?: string
+          accessed_by?: string
+          context_event_id?: string | null
+          group_id?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_data_access_log_context_event_id_fkey"
+            columns: ["context_event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_data_access_log_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
             referencedColumns: ["id"]
           },
         ]
@@ -819,6 +890,50 @@ export type Database = {
             foreignKeyName: "event_staff_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_weather_decisions: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_deadline: string | null
+          event_id: string
+          id: string
+          note: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_deadline?: string | null
+          event_id: string
+          id?: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_deadline?: string | null
+          event_id?: string
+          id?: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_weather_decisions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
             referencedRelation: "flight_events"
             referencedColumns: ["id"]
           },
@@ -1463,7 +1578,9 @@ export type Database = {
           group_id: string
           id: string
           is_announcement: boolean
+          is_team_only: boolean
           message: string
+          requires_confirmation: boolean
           user_id: string
         }
         Insert: {
@@ -1472,7 +1589,9 @@ export type Database = {
           group_id: string
           id?: string
           is_announcement?: boolean
+          is_team_only?: boolean
           message?: string
+          requires_confirmation?: boolean
           user_id: string
         }
         Update: {
@@ -1481,7 +1600,9 @@ export type Database = {
           group_id?: string
           id?: string
           is_announcement?: boolean
+          is_team_only?: boolean
           message?: string
+          requires_confirmation?: boolean
           user_id?: string
         }
         Relationships: [
@@ -1531,6 +1652,7 @@ export type Database = {
           id: string
           storage_path: string
           track_data: Json | null
+          track_thumbnail: Json
         }
         Insert: {
           created_at?: string
@@ -1538,6 +1660,7 @@ export type Database = {
           id?: string
           storage_path: string
           track_data?: Json | null
+          track_thumbnail?: Json
         }
         Update: {
           created_at?: string
@@ -1545,6 +1668,7 @@ export type Database = {
           id?: string
           storage_path?: string
           track_data?: Json | null
+          track_thumbnail?: Json
         }
         Relationships: [
           {
@@ -1625,6 +1749,47 @@ export type Database = {
           },
           {
             foreignKeyName: "incident_reports_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_availability: {
+        Row: {
+          created_at: string
+          date: string
+          group_id: string
+          id: string
+          note: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          group_id: string
+          id?: string
+          note?: string | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          group_id?: string
+          id?: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_availability_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
@@ -1746,6 +1911,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          optimal_wind_directions: string[]
           type: Database["public"]["Enums"]["location_type"]
           updated_at: string
           user_id: string
@@ -1759,6 +1925,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          optimal_wind_directions?: string[]
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string
           user_id: string
@@ -1772,6 +1939,7 @@ export type Database = {
           latitude?: number
           longitude?: number
           name?: string
+          optimal_wind_directions?: string[]
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string
           user_id?: string
@@ -2176,6 +2344,7 @@ export type Database = {
           flight_number: number | null
           id: string
           instructor_id: string | null
+          is_next_step: boolean
           note: string
           student_user_id: string
           updated_at: string
@@ -2187,6 +2356,7 @@ export type Database = {
           flight_number?: number | null
           id?: string
           instructor_id?: string | null
+          is_next_step?: boolean
           note?: string
           student_user_id: string
           updated_at?: string
@@ -2198,6 +2368,7 @@ export type Database = {
           flight_number?: number | null
           id?: string
           instructor_id?: string | null
+          is_next_step?: boolean
           note?: string
           student_user_id?: string
           updated_at?: string
@@ -2213,6 +2384,114 @@ export type Database = {
           },
         ]
       }
+      student_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string
+          group_id: string
+          id: string
+          reason: string | null
+          status: string
+          student_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string
+          group_id: string
+          id?: string
+          reason?: string | null
+          status: string
+          student_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string
+          group_id?: string
+          id?: string
+          reason?: string | null
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_status_history_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_poll_responses: {
+        Row: {
+          id: string
+          poll_id: string
+          responded_at: string
+          response: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          poll_id: string
+          responded_at?: string
+          response: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          poll_id?: string
+          responded_at?: string
+          response?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_poll_responses_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "team_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_polls: {
+        Row: {
+          closes_at: string | null
+          created_at: string
+          created_by: string
+          group_id: string
+          id: string
+          options: string[]
+          question: string
+        }
+        Insert: {
+          closes_at?: string | null
+          created_at?: string
+          created_by: string
+          group_id: string
+          id?: string
+          options?: string[]
+          question: string
+        }
+        Update: {
+          closes_at?: string | null
+          created_at?: string
+          created_by?: string
+          group_id?: string
+          id?: string
+          options?: string[]
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_polls_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_categories: {
         Row: {
           created_at: string
@@ -2220,6 +2499,7 @@ export type Database = {
           name: string
           sort_order: number
           training_level: string | null
+          unlocks_after_category_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2227,6 +2507,7 @@ export type Database = {
           name: string
           sort_order?: number
           training_level?: string | null
+          unlocks_after_category_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2234,8 +2515,17 @@ export type Database = {
           name?: string
           sort_order?: number
           training_level?: string | null
+          unlocks_after_category_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "training_categories_unlocks_after_category_id_fkey"
+            columns: ["unlocks_after_category_id"]
+            isOneToOne: false
+            referencedRelation: "training_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       training_items: {
         Row: {
@@ -2280,6 +2570,41 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "training_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_level_history: {
+        Row: {
+          changed_at: string
+          changed_by: string
+          group_id: string
+          id: string
+          training_level: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string
+          group_id: string
+          id?: string
+          training_level: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string
+          group_id?: string
+          id?: string
+          training_level?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_level_history_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
             referencedColumns: ["id"]
           },
         ]
@@ -2412,9 +2737,21 @@ export type Database = {
       }
     }
     Functions: {
+      build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
       check_and_award_badges_for_user: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      get_emergency_contact_info: {
+        Args: { _event_id: string; _target_user_id: string }
+        Returns: {
+          allergies: string
+          blood_type: string
+          emergency_contact_name: string
+          emergency_contact_phone: string
+          health_data_consent_at: string
+          medical_notes: string
+        }[]
       }
       get_group_push_status: {
         Args: { _group_id: string }
@@ -2479,6 +2816,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      inactive_school_students: { Args: { _group_id: string }; Returns: Json }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
@@ -2491,6 +2829,10 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_group_team_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
       join_group_by_invite_code: {
         Args: { _invite_code: string }
@@ -2499,6 +2841,35 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      list_flights_page: {
+        Args: {
+          _filter?: string
+          _group?: string
+          _limit?: number
+          _offset?: number
+          _search?: string
+          _viewer_id?: string
+          _year?: number
+        }
+        Returns: Json
+      }
+      school_dashboard_data: {
+        Args: { _group_id: string; _section?: string; _viewer_id?: string }
+        Returns: Json
+      }
+      school_student_dossier: {
+        Args: {
+          _group_id: string
+          _offset?: number
+          _section?: string
+          _student_id: string
+        }
+        Returns: Json
+      }
+      school_student_training_profile: {
+        Args: { _group_id: string; _student_id: string }
+        Returns: Json
       }
       send_push_notification: {
         Args: { _body: string; _title: string; _url?: string; _user_id: string }
