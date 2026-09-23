@@ -24,7 +24,11 @@ Die bestehende Schülerauswahl samt Aktiv-/Alle-Filter bleibt erhalten.
   bleiben Teil der späteren Phase 4.
 
 **Auslieferung:** Migration `drizzle/migrations/0017_student_dossier.sql` muss vor
-diesem Frontend angewendet werden. Sie ist vorbereitet, aber noch nicht live ausgerollt.
+diesem Frontend angewendet werden. Sie wurde am 23.09.2026 live in einer Transaktion
+ausgerollt; Migrationseintrag, Funktionsrechte und beide SELECT-Policies wurden
+verifiziert. Alle sechs Dossierbereiche wurden anschliessend mit einem bestehenden
+Schulpersonal-/Schülerkontext unter der Rolle `authenticated` lesend geprüft.
+Der PostgREST-Schema-Cache wurde zum Neuladen benachrichtigt.
 Der Dossier-RPC prüft Schule, Mitgliedschaft und Schulpersonal serverseitig und
 verwendet RLS. Neue SELECT-Policies erlauben Schulpersonal das Lesen des
 Ausbildungsfortschritts und der Flug-Coaching-Notizen. Ein separat geschützter
