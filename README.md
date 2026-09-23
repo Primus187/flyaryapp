@@ -1,5 +1,45 @@
 # Flyary
 
+## Schülerdossier
+
+Die Schülerliste öffnet ein schulbezogenes Dossier unter
+`/school/students/:groupId/:studentId` statt des öffentlichen Pilotenprofils.
+Die bestehende Schülerauswahl samt Aktiv-/Alle-Filter bleibt erhalten.
+
+- Übersicht: Schülerstatus mit Grund/Datum, Ausbildungsstand (bearbeitbar),
+  SHV-Nummer, Prüfungsdaten, Prüfungsmanöver-Fortschritt, letzter Schulflug,
+  nächster Lernschritt und nächste Anmeldungen inklusive Warteliste.
+- Ausbildung: Kontrollblatt mit Bewertungen und Notizen, nach Ausbildungsstufe filterbar.
+  Die Bewertungen sind keine formelle Prüfungsfreigabe.
+- Flüge: alle mit dieser Schule geteilten Flüge, Kommentare und Coaching-Notizen,
+  in Seiten zu 30 Einträgen nachladbar. Private Flüge und Flüge anderer Schulen
+  werden nicht in das Dossier übernommen.
+- Tagesnotizen: eigene chronologische Liste mit Verfasser, Sichtbarkeit,
+  Flugslot, Tageszusammenfassung und nächsten Schritten; ebenfalls nachladbar.
+  Die Slots F1–F6 werden nicht künstlich einzelnen Flugbucheinträgen zugeordnet.
+- Material: Ausrüstungscheck, laufende und zurückgegebene Schulausleihen mit
+  Rückgabe-/Prüfterminen sowie hinterlegte eigene Schirme und Materialangaben.
+- Abrechnung: bestehende offene/bezahlte Abrechnungsposten der Person in dieser
+  Schule, CHF-Summen und Zahlungsdatum. Formelle Rechnungen und Online-Zahlungen
+  bleiben Teil der späteren Phase 4.
+
+**Auslieferung:** Migration `drizzle/migrations/0017_student_dossier.sql` muss vor
+diesem Frontend angewendet werden. Sie ist vorbereitet, aber noch nicht live ausgerollt.
+Der Dossier-RPC prüft Schule, Mitgliedschaft und Schulpersonal serverseitig und
+verwendet RLS. Neue SELECT-Policies erlauben Schulpersonal das Lesen des
+Ausbildungsfortschritts und der Flug-Coaching-Notizen. Ein separat geschützter
+Profil-RPC gibt ausschliesslich die benötigten Ausbildungs-/Identifikationsfelder
+zurück; Gesundheitsdaten, Notfallkontakte und Zugangsdaten gehören nicht zur Antwort.
+Die internen Dossier-Abfragen laufen per POST, ohne PWA-GET-Cache, und mit
+konten-, schul- und schülerspezifischen Query-Keys.
+
+**Prüfung:** 181 Tests, Produktionsbuild, TypeScript-Prüfung und ESLint der
+neuen Dateien erfolgreich. Datenbanktests prüfen alle sechs Dossierbereiche,
+die Paginierung sowie Ablehnung fremder Schulen, Schüler und Starthelfer.
+UI-Tests prüfen den Einstieg aus der Schülerliste, Kontextbindung, Nachladen und
+Fehler-/Wiederholungszustände. Ein manueller Durchlauf mit echten Schulkonten
+steht vor der Veröffentlichung noch aus.
+
 ## UX-Fortsetzung: Rollen und Tagesabläufe
 
 Die unterbrochene UX-Arbeit wurde am 22.09.2026 ergänzt: kontobezogener Rollen- und

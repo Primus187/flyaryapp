@@ -48,6 +48,7 @@ const ChallengeDetail = lazy(() => import("@/pages/ChallengeDetail"));
 const PilotProfile = lazy(() => import("@/pages/PilotProfile"));
 const SearchPage = lazy(() => import("@/pages/Search"));
 const SchoolDashboard = lazy(() => import("@/pages/SchoolDashboard"));
+const StudentDossier = lazy(() => import("@/pages/StudentDossier"));
 const NotificationsPage = lazy(() => import("@/pages/Notifications"));
 const Weather = lazy(() => import("@/pages/Weather"));
 const SharedFlightDetail = lazy(() => import("@/pages/SharedFlightDetail"));
@@ -194,6 +195,7 @@ const App = () => {
                       <Route path="/pilot/:userId" element={<PilotProfile />} />
                       <Route path="/school" element={<SchoolDashboard />} />
                       <Route path="/school/:section" element={<SchoolDashboard />} />
+                      <Route path="/school/students/:groupId/:studentId" element={<StudentDossier />} />
                       <Route path="/weather" element={<Weather />} />
                       <Route path="/notifications" element={<NotificationsPage />} />
                     </Route>

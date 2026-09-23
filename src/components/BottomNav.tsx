@@ -35,7 +35,7 @@ export default function BottomNav() {
     ];
     return <nav aria-label={t("journeys.schoolNavigation")} className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur-xl safe-area-bottom">
       <div className="flex h-16 max-w-lg mx-auto">{schoolTabs.map(({ path, icon: Icon, label }) => {
-        const active = location.pathname === path;
+        const active = location.pathname === path || (path === "/school/students" && location.pathname.startsWith(`${path}/`));
         return <button key={path} type="button" onClick={() => handleNav(path)} aria-current={active ? "page" : undefined}
           className={cn("flex-1 min-w-0 px-1 flex flex-col items-center justify-center gap-1", active ? "text-primary" : "text-muted-foreground")}>
           <Icon className="h-5 w-5" /><span className="text-[11px] text-center leading-tight">{label}</span>

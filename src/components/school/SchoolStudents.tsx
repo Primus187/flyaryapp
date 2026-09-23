@@ -141,7 +141,7 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
             className="border-0 shadow-sm hover:bg-muted/30 active:scale-[0.99] transition-all"
           >
             <CardContent className="p-3 flex items-center gap-3">
-              <button type="button" onClick={() => navigate(`/pilot/${s.userId}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+              <button type="button" disabled={!groupId} onClick={() => navigate(`/school/students/${groupId}/${s.userId}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
                 <Avatar className="h-9 w-9">
                   <AvatarFallback className="text-xs bg-primary/10 text-primary">
                     {(s.pilotName || "?").slice(0, 2).toUpperCase()}

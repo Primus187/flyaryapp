@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, expect, it, vi } from "vitest";
 import SchoolStudents from "./SchoolStudents";
 
@@ -15,6 +15,14 @@ const baseStudent = {
   examProgress: 40,
   lastSummary: null,
 };
+
+function CurrentPath() { return <output data-testid="path">{useLocation().pathname}</output>; }
+
+it("opens the school dossier instead of the public pilot profile", () => {
+  render(<MemoryRouter><SchoolStudents groupId="school" students={[{ ...baseStudent, userId: "s1" }]} /><CurrentPath /></MemoryRouter>);
+  fireEvent.click(screen.getByRole("button", { name: /Alex/ }));
+  expect(screen.getByTestId("path")).toHaveTextContent("/school/students/school/s1");
+});
 
 function renderStudents(students: Parameters<typeof SchoolStudents>[0]["students"]) {
   return render(
