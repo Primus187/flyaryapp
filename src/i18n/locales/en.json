@@ -1996,6 +1996,44 @@
         "deleteConfirmText": "The listing and its photos are deleted permanently.",
         "deleted": "Listing deleted",
         "actionDone": "Done"
+      },
+      "browse": {
+        "searchPlaceholder": "Search, e.g. Alpha 7 or reserve",
+        "all": "All",
+        "filters": "Filters",
+        "filterTitle": "Filters and sorting",
+        "type": "Type",
+        "types": {
+          "offer": "Offers",
+          "wanted": "Wanted"
+        },
+        "priceFrom": "Price from (CHF)",
+        "priceTo": "Price to (CHF)",
+        "schoolsOnly": "Flight schools only",
+        "sort": "Sorting",
+        "sorts": {
+          "newest": "Newest first",
+          "price_asc": "Price ascending",
+          "price_desc": "Price descending"
+        },
+        "reset": "Reset",
+        "apply": "Apply",
+        "loadMore": "Load more",
+        "empty": "No matching listings",
+        "emptyHint": "Change the search or the filters – or create a listing yourself.",
+        "wantedBadge": "Wanted",
+        "school": "Flight school"
+      },
+      "detail": {
+        "details": "Details",
+        "seller": "Seller",
+        "memberSince": "Member since {{date}}",
+        "flights_one": "1 flight in Flyary",
+        "flights_other": "{{count}} flights in Flyary",
+        "quantity_one": "1 piece available",
+        "quantity_other": "{{count}} pieces available",
+        "share": "Share",
+        "linkCopied": "Link copied"
       }
     }
 }

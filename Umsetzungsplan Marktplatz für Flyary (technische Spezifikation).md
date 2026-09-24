@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.4 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.5 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -31,7 +31,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 
 | Stufe | Fokus | Enthaltene Features | Aufwand | Status |
 | --- | --- | --- | --- | --- |
-| M1 | Grundfunktion | 4.1–4.10 | L | ⬜ |
+| M1 | Grundfunktion | 4.1–4.10 | L | 🔶 |
 | M2 | Wiederkommen | 6.1–6.4 | M | ⬜ |
 | M3 | Schulen im Alltag | 7.1–7.2 | M | ⬜ |
 | M4 | Später / optional | 8.1–8.5 | L | ⏸ |
@@ -144,7 +144,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** Migration `0034_marketplace_listing_status.sql` mit den RPCs `marketplace_publish`, `_reserve`, `_mark_sold`, `_renew`, `_bump` (Fehlercodes `marketplace:<code>`), Seiten `MarketListingForm.tsx` und `MarketMine.tsx`. `marketplace_publish` prüft die Pflichtangaben aus 4.2 serverseitig; Angebote brauchen mindestens ein Foto. Der Entwurf entsteht beim «Weiter» nach Schritt 2, danach werden die gewählten Fotos hochgeladen. **Abweichungen:** Speichern beim Schrittwechsel und per Knopf statt `note-autosave.ts` (auf Notizen zugeschnitten); Push 3 Tage vor Ablauf kommt mit dem Job in 4.9; «Als Schule inserieren» erst in 4.7; die Tagesgrenze gilt nur für Privatpersonen; der Menüeintrag führt bis 4.5 auf «Meine Anzeigen». Löschen einer Anzeige entfernt zuerst die Fotodateien.
 
-### 4.5 Übersicht, Suche, Filter und Detailseite
+### 4.5 Übersicht, Suche, Filter und Detailseite ✅
 
 **Ziel:** Passendes Material schnell finden.
 
@@ -157,6 +157,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Eine RPC `marketplace_search(filters jsonb, cursor)` mit Keyset-Paginierung (Muster wie `feed-page.ts`), liefert nur die Kartenfelder und den Pfad des Vorschaubilds
 - Detailseite: Bildergalerie, Preis (bei Schulen mit «inkl. MWST», falls MWST-pflichtig), Merkmal-Tabelle, Sicherheitshinweise, Verkäufer-Karte (Name, Mitglied seit, Schulzugehörigkeit, Anzahl erfasster Flüge) sowie die Buttons «Nachricht senden», «Melden» und «Teilen» (nur App-intern, E3)
 - Bei Schul-Anzeigen zusätzlich die Pflichtangaben aus dem Shop-Profil (Abschnitt 4.7)
+
+**Ist-Stand:** Migration `0035_marketplace_search.sql` (`marketplace_search`, `marketplace_seller_cards`, `market_listing_visible`), Seiten `Market.tsx` und `MarketListingDetail.tsx`, Logik `src/lib/marketplace-search.ts`. Filter stehen in der URL. Tippfehler-Toleranz über `word_similarity` ≥ 0.5 auf Titel/Hersteller/Modell. «Gratis» sortiert als 0, «Preis auf Anfrage» immer zuletzt. Die Sichtbarkeitsregel ist jetzt eine Funktion, die RLS und SECURITY-DEFINER-Funktionen gemeinsam nutzen. **Abweichungen:** Kanton wird gewählt, nicht aus der PLZ abgeleitet; «Nachricht senden» folgt in 4.6, «Melden» in 4.8, Pflichtangaben von Schulen in 4.7; «Teilen» teilt nur den App-Link.
 
 ### 4.6 Chat zur Anzeige
 

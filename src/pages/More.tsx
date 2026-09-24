@@ -40,7 +40,7 @@ const pilotGroups: Group[] = [
     titleKey: "more.sectionCommunity",
     tiles: [
       { path: "/messages", icon: MessageCircle, labelKey: "chat.messages" },
-      { path: "/market/mine", icon: Store, labelKey: "market.title" },
+      { path: "/market", icon: Store, labelKey: "market.title" },
       { path: "/search", icon: Search, labelKey: "more.search" },
       { path: "/leaderboard", icon: Trophy, labelKey: "more.leaderboard" },
       { path: "/groups", icon: Users, labelKey: "more.groups" },

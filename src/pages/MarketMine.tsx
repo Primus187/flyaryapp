@@ -83,6 +83,9 @@ export default function MarketMine() {
     }
   };
 
+  /** Drafts open the form, everything else the listing as others see it. */
+  const open = (row: Row) => navigate(row.status === "draft" ? `/market/${row.id}/edit` : `/market/${row.id}`);
+
   if (loading) return <LoadingState />;
 
   const dateFormat = new Intl.DateTimeFormat(i18n.language, { day: "numeric", month: "short" });
@@ -102,12 +105,12 @@ export default function MarketMine() {
     return (
       <Card key={row.id} className={busy === row.id ? "opacity-60" : undefined}>
         <CardContent className="flex items-center gap-3 p-3">
-          <button type="button" className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted" onClick={() => void act(row, "edit")}>
+          <button type="button" className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted" onClick={() => open(row)}>
             {thumbs[row.id]
               ? <img src={thumbs[row.id]} alt="" className="h-full w-full object-cover" />
               : <ImageOff className="m-auto h-5 w-5 text-muted-foreground" />}
           </button>
-          <button type="button" className="min-w-0 flex-1 text-left" onClick={() => void act(row, "edit")}>
+          <button type="button" className="min-w-0 flex-1 text-left" onClick={() => open(row)}>
             <p className="truncate text-sm font-medium">{row.title}</p>
             <p className="truncate text-xs text-muted-foreground">
               {[t(`market.categories.${row.category}`), listingPriceLabel(row, t)].filter(Boolean).join(" · ")}
@@ -148,7 +151,7 @@ export default function MarketMine() {
     <PageContainer>
       <PageHeader
         title={t("market.mine.title")}
-        back="/more"
+        back="/market"
         action={<Button size="sm" className="gap-1" onClick={() => navigate("/market/new")}><Plus className="h-4 w-4" />{t("market.mine.new")}</Button>}
       />
       <Tabs value={tab} onValueChange={(v) => setTab(v as MineTab)}>

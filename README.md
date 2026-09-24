@@ -1,5 +1,32 @@
 # Flyary
 
+## Marktplatz: Übersicht, Suche und Detailseite (4.5)
+
+Migration `0035_marketplace_search.sql`, Seiten `src/pages/Market.tsx` (`/market`) und
+`src/pages/MarketListingDetail.tsx` (`/market/:id`), Logik in `src/lib/marketplace-search.ts`.
+
+- **Übersicht:** Kachelraster mit Titelbild, Preis, Titel, Ort und Alter der Anzeige; Abzeichen «Gesucht»,
+  «Reserviert», «Flugschule». Suchfeld (verzögert), Kategorie-Chips und ein Filterblatt mit Sortierung (neueste, Preis
+  auf-/absteigend), Angebot/Gesuch, Preis von/bis, Zustand, EN/LTF-Klasse (nur wenn Schirme dabei sein können), Grösse,
+  Kanton und «Nur Flugschulen». Die Filter stehen in der URL, damit «Zurück» von einer Anzeige sie wiederherstellt.
+  «Mehr laden» holt die nächsten 24 Anzeigen (Keyset-Paginierung, ohne Lücken oder Doppelte).
+- **Suche** (`marketplace_search`, läuft mit den Rechten der aufrufenden Person, RLS gilt): nur aktive/reservierte,
+  nicht abgelaufene Anzeigen. Wortanfänge in Titel, Hersteller, Modell, Grösse und Beschreibung (`tsvector 'simple'`);
+  für Tippfehler zusätzlich Trigramm-Ähnlichkeit (`pg_trgm`, im Schema `extensions`) auf Titel/Hersteller/Modell.
+  «Gratis» zählt beim Sortieren als 0, «Preis auf Anfrage» kommt immer ans Ende.
+- **Detailseite:** Bildergalerie, Preis, Ort, Übergabe, Alter, Sicherheitshinweise, Merkmal-Tabelle, Beschreibung und
+  Anbieter-Karte (Name, Profilbild, Mitglied seit, Anzahl Flüge in Flyary; bei Schulen der Schulname). Wer die Anzeige
+  verwaltet, sieht «Bearbeiten». «Teilen» teilt den App-Link (kein öffentlicher Link, Entscheid E3).
+- **Anbieter-Karte** über `marketplace_seller_cards` (SECURITY DEFINER), weil Profile und Flüge für Fremde sonst nicht
+  lesbar sind; sie liefert nur Daten zu Anzeigen, welche die aufrufende Person sehen darf.
+- Die Sichtbarkeitsregel aus 0032 ist jetzt die Funktion `market_listing_visible`; die RLS-Regel und die
+  SECURITY-DEFINER-Funktionen verwenden dieselbe Prüfung.
+- Menüeintrag «Marktplatz» führt jetzt auf die Übersicht; «Meine Anzeigen» ist oben rechts erreichbar. In «Meine
+  Anzeigen» öffnen Entwürfe das Formular, alle anderen die Detailseite.
+- **Noch nicht dabei:** «Nachricht senden» (4.6) und «Melden» (4.8).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0035), danach das Frontend.
+
 ## Marktplatz: Inserieren und «Meine Anzeigen» (4.4)
 
 Erste Oberfläche des Marktplatzes. Migration `0034_marketplace_listing_status.sql`, Seiten `src/pages/MarketListingForm.tsx`

@@ -24,7 +24,9 @@ const Feed = lazy(feedImport);
 const Stats = lazy(() => import("@/pages/Stats"));
 const Flights = lazy(() => import("@/pages/Flights"));
 const FlightForm = lazy(() => import("@/pages/FlightForm"));
+const Market = lazy(() => import("@/pages/Market"));
 const MarketMine = lazy(() => import("@/pages/MarketMine"));
+const MarketListingDetail = lazy(() => import("@/pages/MarketListingDetail"));
 const MarketListingForm = lazy(() => import("@/pages/MarketListingForm"));
 const FlightDetail = lazy(() => import("@/pages/FlightDetail"));
 const MapView = lazy(() => import("@/pages/MapView"));
@@ -185,8 +187,10 @@ const App = () => {
                       <Route path="/notifications" element={<NotificationsPage />} />
                       <Route path="/messages" element={<Messages />} />
                       <Route path="/messages/:channelId" element={<MessageChannel />} />
+                      <Route path="/market" element={<Market />} />
                       <Route path="/market/mine" element={<MarketMine />} />
                       <Route path="/market/new" element={<MarketListingForm />} />
+                      <Route path="/market/:id" element={<MarketListingDetail />} />
                       <Route path="/market/:id/edit" element={<MarketListingForm />} />
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />

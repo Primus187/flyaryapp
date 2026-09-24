@@ -1,9 +1,10 @@
 // @vitest-environment node
 import { PGlite } from "@electric-sql/pglite";
+import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0034 (marketplace listings, photos, status functions).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0035 (marketplace listings, photos, status functions, search).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -33,10 +34,11 @@ async function publish(listingId: string, expires = "now() + interval '60 days'"
 }
 
 beforeAll(async () => {
-  db = new PGlite();
+  db = new PGlite({ extensions: { pg_trgm } });
   await db.exec(`
     CREATE ROLE authenticated; CREATE ROLE anon;
     CREATE SCHEMA auth; GRANT USAGE ON SCHEMA auth TO authenticated, anon;
+    CREATE SCHEMA extensions; GRANT USAGE ON SCHEMA extensions TO authenticated;
     CREATE SCHEMA storage; GRANT USAGE ON SCHEMA storage TO authenticated;
     CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
     CREATE TABLE storage.objects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bucket_id text, name text);
@@ -47,7 +49,9 @@ beforeAll(async () => {
     CREATE TYPE public.group_type AS ENUM ('school', 'pilot_group');
     CREATE TYPE public.group_function AS ENUM ('student', 'licensed', 'launch_helper', 'instructor', 'school_lead');
     CREATE TYPE public.app_role AS ENUM ('admin', 'moderator', 'user');
-    CREATE TABLE public.groups (id uuid PRIMARY KEY, name text, group_type public.group_type);
+    CREATE TABLE public.groups (id uuid PRIMARY KEY, name text, group_type public.group_type, created_at timestamptz DEFAULT now());
+    CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, pilot_name text, avatar_url text, created_at timestamptz DEFAULT now());
+    CREATE TABLE public.flights (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid);
     CREATE TABLE public.group_members (group_id uuid, user_id uuid, role text);
     CREATE TABLE public.group_member_functions (group_id uuid, user_id uuid, function public.group_function);
     CREATE TABLE public.user_roles (user_id uuid, role public.app_role);
@@ -77,6 +81,7 @@ beforeAll(async () => {
   await db.exec(migration("0032_marketplace_listings.sql"));
   await db.exec(migration("0033_marketplace_photos.sql"));
   await db.exec(migration("0034_marketplace_listing_status.sql"));
+  await db.exec(migration("0035_marketplace_search.sql"));
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');`);
 }, 60_000);
 afterAll(async () => { await db?.close(); });
@@ -328,6 +333,102 @@ describe("status functions", () => {
   it("the helper functions are not callable directly", async () => {
     await asUser(owner);
     await expect(db.query(`SELECT public.marketplace_locked_listing('${id(1)}')`)).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("search and seller cards", () => {
+  // listings here are titled "S …" and removed afterwards
+  beforeAll(async () => {
+    await asSystem();
+    const rows: string[] = [
+      `('${stranger}', NULL, 'glider', 'S Ozone Rush 6', '', 150000, 'fixed', 'used', 'M', 'BE', '{"certification": "b"}', 'offer', 'active', 'all', 1, 1)`,
+      `('${stranger}', NULL, 'reserve', 'S Rogallo', 'Retter frisch gepackt', 40000, 'fixed', 'used', NULL, 'ZH', '{}', 'offer', 'reserved', 'all', 1, 2)`,
+      `('${instructor}', NULL, 'harness', 'S Woody Valley', '', NULL, 'free', 'used', NULL, 'BE', '{}', 'offer', 'active', 'all', 1, 3)`,
+      `(NULL, '${school}', 'glider', 'S Schulschirm', '', 90000, 'fixed', 'used', NULL, 'BE', '{"certification": "a"}', 'offer', 'active', 'school_students', 1, 4)`,
+      `('${stranger}', NULL, 'tandem', 'S Suche Tandem', '', NULL, 'on_request', NULL, NULL, 'VS', '{}', 'wanted', 'active', 'all', 1, 5)`,
+      `('${stranger}', NULL, 'helmet', 'S Helm abgelaufen', '', 5000, 'fixed', 'used', NULL, 'BE', '{}', 'offer', 'active', 'all', -1, 6)`,
+      `('${stranger}', NULL, 'helmet', 'S Entwurf', '', 5000, 'fixed', 'used', NULL, 'BE', '{}', 'offer', 'draft', 'all', 1, 7)`,
+      `('${stranger}', NULL, 'helmet', 'S Verkauft', '', 5000, 'fixed', 'used', NULL, 'BE', '{}', 'offer', 'sold', 'all', 1, 8)`,
+    ];
+    await db.exec(`
+      INSERT INTO public.marketplace_listings (seller_user_id, seller_group_id, category, title, description, price_cents, price_type,
+        condition, size, canton, attributes, listing_type, status, visibility, expires_at, bumped_at)
+      SELECT v.su::uuid, v.sg::uuid, v.cat, v.title, v.descr, v.price::integer, v.pt, v.cond, v.size, v.canton, v.attrs::jsonb, v.lt, v.status, v.vis,
+        now() + v.exp * interval '10 days', now() - v.age * interval '1 hour'
+      FROM (VALUES ${rows.join(",\n")}) AS v(su, sg, cat, title, descr, price, pt, cond, size, canton, attrs, lt, status, vis, exp, age);
+      INSERT INTO public.profiles (user_id, pilot_name) VALUES ('${stranger}', 'Sam');
+      INSERT INTO public.flights (user_id) VALUES ('${stranger}'), ('${stranger}'), ('${stranger}');
+    `);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE title LIKE 'S %'`);
+  });
+
+  const search = async (uid: string, filters: object, cursor: object | null = null, limit = 24) => {
+    await asUser(uid);
+    const r = (await db.query<{ r: { items: { title: string }[]; next_cursor: object | null } }>(
+      `SELECT public.marketplace_search($1::jsonb, $2::jsonb, $3) AS r`, [JSON.stringify(filters), cursor && JSON.stringify(cursor), limit])).rows[0].r;
+    return r;
+  };
+  const titles = async (uid: string, filters: object = {}) =>
+    (await search(uid, filters)).items.map((i) => i.title).filter((t) => t.startsWith("S "));
+
+  it("lists only live listings the viewer may see, newest first", async () => {
+    expect(await titles(otherShop)).toEqual(["S Ozone Rush 6", "S Rogallo", "S Woody Valley", "S Suche Tandem"]);
+    expect(await titles(student)).toEqual(["S Ozone Rush 6", "S Rogallo", "S Woody Valley", "S Schulschirm", "S Suche Tandem"]);
+  });
+
+  it("finds word prefixes in title and description, and tolerates typos", async () => {
+    expect(await titles(otherShop, { q: "rush" })).toEqual(["S Ozone Rush 6"]);
+    expect(await titles(otherShop, { q: "retter gepa" })).toEqual(["S Rogallo"]);
+    expect(await titles(otherShop, { q: "ozome" })).toEqual(["S Ozone Rush 6"]);
+    expect(await titles(otherShop, { q: "&|!:*" })).toEqual([]);
+    expect((await search(otherShop, { q: "alph" })).items.map((i) => i.title)).toEqual(["Advance Alpha 7 (26)"]);
+  });
+
+  it("filters by type, category, price, class, canton, size and schools", async () => {
+    expect(await titles(otherShop, { categories: ["glider", "tandem"] })).toEqual(["S Ozone Rush 6", "S Suche Tandem"]);
+    expect(await titles(otherShop, { type: "wanted" })).toEqual(["S Suche Tandem"]);
+    expect(await titles(otherShop, { price_max: 50000 })).toEqual(["S Rogallo", "S Woody Valley"]);
+    expect(await titles(otherShop, { price_min: 100000 })).toEqual(["S Ozone Rush 6"]);
+    expect(await titles(otherShop, { certifications: ["b"] })).toEqual(["S Ozone Rush 6"]);
+    expect(await titles(otherShop, { cantons: ["BE"] })).toEqual(["S Ozone Rush 6", "S Woody Valley"]);
+    expect(await titles(otherShop, { size: " m " })).toEqual(["S Ozone Rush 6"]);
+    expect(await titles(student, { schools_only: true })).toEqual(["S Schulschirm"]);
+    expect(await titles(otherShop, { categories: [], conditions: ["used"] })).toEqual(["S Ozone Rush 6", "S Rogallo", "S Woody Valley"]);
+  });
+
+  it("pages through price sorting without gaps or repeats", async () => {
+    const all = async (sort: string) => {
+      const seen: string[] = [];
+      let cursor: object | null = null;
+      do {
+        const page = await search(otherShop, { sort }, cursor, 2);
+        seen.push(...page.items.map((i) => i.title));
+        cursor = page.next_cursor;
+      } while (cursor);
+      return seen;
+    };
+    expect(await all("price_asc")).toEqual(["S Woody Valley", "S Rogallo", "S Ozone Rush 6", "Advance Alpha 7 (26)", "S Suche Tandem"]);
+    expect(await all("price_desc")).toEqual(["Advance Alpha 7 (26)", "S Ozone Rush 6", "S Rogallo", "S Woody Valley", "S Suche Tandem"]);
+    expect(await all("newest")).toEqual([...(await search(otherShop, {}, null, 50)).items.map((i) => i.title)]);
+  });
+
+  it("returns the seller card only for listings the viewer may see", async () => {
+    await asSystem();
+    const idOf = async (title: string) => (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listings WHERE title = $1`, [title])).rows[0].id;
+    const [rush, school, draft] = [await idOf("S Ozone Rush 6"), await idOf("S Schulschirm"), await idOf("S Entwurf")];
+    const cards = async (uid: string) => {
+      await asUser(uid);
+      return (await db.query(`SELECT seller_kind, name, flight_count FROM public.marketplace_seller_cards($1::uuid[]) ORDER BY name`,
+        [`{${rush},${school},${draft}}`])).rows;
+    };
+    expect(await cards(otherShop)).toEqual([{ seller_kind: "person", name: "Sam", flight_count: 3 }]);
+    expect(await cards(student)).toEqual([
+      { seller_kind: "person", name: "Sam", flight_count: 3 },
+      { seller_kind: "school", name: "Vertical", flight_count: null },
+    ]);
   });
 });
 

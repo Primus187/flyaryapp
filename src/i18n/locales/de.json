@@ -1996,6 +1996,44 @@
         "deleteConfirmText": "Die Anzeige und ihre Fotos werden endgültig gelöscht.",
         "deleted": "Anzeige gelöscht",
         "actionDone": "Erledigt"
+      },
+      "browse": {
+        "searchPlaceholder": "Suchen, z. B. Alpha 7 oder Retter",
+        "all": "Alle",
+        "filters": "Filter",
+        "filterTitle": "Filter und Sortierung",
+        "type": "Art",
+        "types": {
+          "offer": "Angebote",
+          "wanted": "Gesuche"
+        },
+        "priceFrom": "Preis ab (CHF)",
+        "priceTo": "Preis bis (CHF)",
+        "schoolsOnly": "Nur Flugschulen",
+        "sort": "Sortierung",
+        "sorts": {
+          "newest": "Neueste zuerst",
+          "price_asc": "Preis aufsteigend",
+          "price_desc": "Preis absteigend"
+        },
+        "reset": "Zurücksetzen",
+        "apply": "Anwenden",
+        "loadMore": "Mehr laden",
+        "empty": "Keine passenden Anzeigen",
+        "emptyHint": "Ändere die Suche oder die Filter – oder inseriere selbst.",
+        "wantedBadge": "Gesucht",
+        "school": "Flugschule"
+      },
+      "detail": {
+        "details": "Details",
+        "seller": "Anbieter",
+        "memberSince": "Mitglied seit {{date}}",
+        "flights_one": "1 Flug in Flyary",
+        "flights_other": "{{count}} Flüge in Flyary",
+        "quantity_one": "1 Stück verfügbar",
+        "quantity_other": "{{count}} Stück verfügbar",
+        "share": "Teilen",
+        "linkCopied": "Link kopiert"
       }
     }
 }

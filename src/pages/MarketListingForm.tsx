@@ -228,7 +228,7 @@ export default function MarketListingForm() {
 
   return (
     <PageContainer>
-      <PageHeader title={isEdit ? t("market.form.editTitle") : t("market.form.newTitle")} back="/market/mine" />
+      <PageHeader title={isEdit ? t("market.form.editTitle") : t("market.form.newTitle")} back />
       {!isEdit && (
         <div className="flex items-center gap-2">
           {[1, 2, 3].map((n) => (

@@ -1996,6 +1996,44 @@
         "deleteConfirmText": "L'annonce et ses photos seront supprimées définitivement.",
         "deleted": "Annonce supprimée",
         "actionDone": "C'est fait"
+      },
+      "browse": {
+        "searchPlaceholder": "Rechercher, p. ex. Alpha 7 ou secours",
+        "all": "Tout",
+        "filters": "Filtres",
+        "filterTitle": "Filtres et tri",
+        "type": "Type",
+        "types": {
+          "offer": "Offres",
+          "wanted": "Recherches"
+        },
+        "priceFrom": "Prix dès (CHF)",
+        "priceTo": "Prix jusqu'à (CHF)",
+        "schoolsOnly": "Seulement les écoles",
+        "sort": "Tri",
+        "sorts": {
+          "newest": "Plus récentes d'abord",
+          "price_asc": "Prix croissant",
+          "price_desc": "Prix décroissant"
+        },
+        "reset": "Réinitialiser",
+        "apply": "Appliquer",
+        "loadMore": "Charger plus",
+        "empty": "Aucune annonce correspondante",
+        "emptyHint": "Modifie la recherche ou les filtres – ou publie toi-même une annonce.",
+        "wantedBadge": "Recherché",
+        "school": "École"
+      },
+      "detail": {
+        "details": "Détails",
+        "seller": "Vendeur",
+        "memberSince": "Membre depuis {{date}}",
+        "flights_one": "1 vol dans Flyary",
+        "flights_other": "{{count}} vols dans Flyary",
+        "quantity_one": "1 pièce disponible",
+        "quantity_other": "{{count}} pièces disponibles",
+        "share": "Partager",
+        "linkCopied": "Lien copié"
       }
     }
 }
