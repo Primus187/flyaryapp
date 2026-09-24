@@ -436,7 +436,9 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
         </div>
       )}
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <ScrollArea className={`${fullHeight ? "h-[calc(100dvh-19rem)] min-h-[16rem]" : "h-80"} px-3 py-2`}>
+        {/* Radix wraps the content in a display:table div that grows with unbreakable content (long links,
+            one-line quotes) and pushes the chat off screen; keep it as wide as the viewport. */}
+        <ScrollArea className={`${fullHeight ? "h-[calc(100dvh-19rem)] min-h-[16rem]" : "h-80"} px-3 py-2 [&_[data-radix-scroll-area-viewport]>div]:!block`}>
           {messages.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8">{t("events.noMessages")}</p>
           )}
@@ -476,7 +478,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                         {parent ? (
                           <>
                             <span className="block font-semibold">{profiles[parent.user_id] || "Pilot"}</span>
-                            <span className="block truncate opacity-80">{replySnippet(parent.message, !!parent.attachment_path)}</span>
+                            <span className="line-clamp-2 [overflow-wrap:anywhere] opacity-80">{replySnippet(parent.message, !!parent.attachment_path)}</span>
                           </>
                         ) : (
                           <span className="italic opacity-80">{t("chat.replyUnavailable")}</span>
@@ -495,7 +497,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                       )
                     )}
                     {msg.message && (
-                      <p className="text-sm whitespace-pre-wrap break-words">
+                      <p className="text-sm whitespace-pre-wrap [overflow-wrap:anywhere]">
                         {splitMentions(msg.message, readerNames).map((part, i) => part.mention
                           ? <span key={i} className={`font-semibold ${isMe && !msg.is_announcement ? "underline" : "text-primary"}`}>{part.text}</span>
                           : <span key={i}>{part.text}</span>)}
