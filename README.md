@@ -1,5 +1,32 @@
 # Flyary
 
+## Marktplatz: Datenmodell und Zugriffsregeln (4.1)
+
+Grundlage für den Marktplatz aus dem `Umsetzungsplan Marktplatz für Flyary (technische Spezifikation).md`
+(Migrationen `0031_marketplace_group_functions.sql` und `0032_marketplace_listings.sql`, Tests in
+`src/test/marketplace-database.test.ts` und `src/lib/marketplace.test.ts`). Noch ohne Oberfläche.
+
+- **Anzeigen** (`marketplace_listings`): entweder privat (`seller_user_id`) oder von einer Flugschule
+  (`seller_group_id`, nur Gruppen vom Typ `school`, per Trigger geprüft). Schul-Anzeigen verwalten Admins, Schulleitung
+  und die neue Funktion `shop` (`market_can_manage`). Mehrere Stück (`quantity`) und «nur für unsere Schüler»
+  (`visibility = 'school_students'`) gibt es nur bei Schulen.
+- **Lesen:** aktive/reservierte, nicht abgelaufene Anzeigen sehen alle Angemeldeten (Schüler-Angebote nur Mitglieder der
+  Schule). Entwürfe, verkaufte, abgelaufene und entfernte Anzeigen sehen nur Verwaltende und die globale Moderation
+  (`app_role` admin/moderator). Nicht angemeldete Personen sehen nichts.
+- **Schreiben:** Neue Anzeigen starten immer als Entwurf. Clients dürfen nur die Inhaltsspalten ändern
+  (spaltenweises `GRANT UPDATE`); Status, Datumsfelder und Verkäufer ändern sich nur über die RPCs aus 4.4.
+- **Sperren** (`marketplace_bans`, nur Admin): Gesperrte können keine Anzeigen anlegen; eine Sperre mit `until` läuft ab.
+- **Konto löschen:** private Anzeigen verschwinden mit dem Konto; Schul-Anzeigen bleiben, `created_by` wird leer.
+- Neue Schul-Funktionen `shop` und `market_moderator` in einer eigenen Migration (0031), weil ein neuer Enum-Wert
+  nicht in derselben Transaktion verwendet werden darf, die ihn anlegt. `market_moderator` wird erst in 4.8 genutzt.
+- Volltext-Spalte `search_vector` (Konfiguration `simple`, weil Texte in DE/FR/EN gemischt sind) für die Suche in 4.5;
+  `featured_until` ist für eine spätere Bezahlfunktion reserviert.
+- Abweichung vom Plan: statt eines einzigen `seller_user_id` gibt es `seller_user_id` (nur privat, löscht mit dem
+  Konto) **und** `created_by` (wer die Anzeige erfasst hat, wird beim Löschen leer). Sonst wären Schul-Anzeigen
+  verschwunden, sobald die erfassende Person ihr Konto löscht.
+
+**Auslieferung:** `node scripts/db-migrate.mjs --apply` (0031, 0032). Kein Frontend-Deploy nötig.
+
 ## Chats: Kanäle (Etappe 1)
 
 Ein Kanal-Modell für alle Unterhaltungen (Migration `0025_chat_channels.sql`, Tests in

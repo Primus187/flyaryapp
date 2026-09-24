@@ -218,6 +218,20 @@
       "when": 1791244800000,
       "tag": "0030_chat_edit_message",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1791331200000,
+      "tag": "0031_marketplace_group_functions",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791417600000,
+      "tag": "0032_marketplace_listings",
+      "breakpoints": true
     }
   ]
 }
