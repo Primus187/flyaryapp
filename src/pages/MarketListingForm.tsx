@@ -28,6 +28,8 @@ import {
 import { firstFreePosition, uploadListingPhoto, ListingPhotoError, type ListingPhoto } from "@/lib/marketplace-photos";
 import { safetyHints } from "@/lib/marketplace-safety";
 import { fetchMyShops, type MyShop } from "@/lib/school-shop";
+import { hasAcceptedTerms, withPrivateSaleClause } from "@/lib/marketplace-terms";
+import MarketTermsDialog from "@/components/market/MarketTermsDialog";
 
 interface FormState {
   listing_type: ListingType;
@@ -91,6 +93,12 @@ export default function MarketListingForm() {
   const [sellerGroup, setSellerGroup] = useState<string>(searchParams.get("school") ?? "");
 
   useEffect(() => { fetchMyShops().then(setShops).catch(() => setShops([])); }, []);
+
+  /** Marketplace rules confirmed (plan 4.10)? null = still checking. Only asked when creating. */
+  const [termsOk, setTermsOk] = useState<boolean | null>(isEdit ? true : null);
+  useEffect(() => {
+    if (!isEdit && user) hasAcceptedTerms(user.id).then(setTermsOk).catch(() => setTermsOk(false));
+  }, [isEdit, user]);
 
   useEffect(() => {
     if (!id) return;
@@ -231,6 +239,9 @@ export default function MarketListingForm() {
   };
 
   if (loading) return <LoadingState />;
+  if (termsOk === false && user) {
+    return <MarketTermsDialog userId={user.id} onAccepted={() => setTermsOk(true)} onCancel={() => navigate(-1)} />;
+  }
 
   const showStep = (n: number) => isEdit || step === n;
   const field = (label: string, control: React.ReactNode, className?: string) => (
@@ -314,8 +325,16 @@ export default function MarketListingForm() {
           <ListingAttributeFields category={form.category} listingType={form.listing_type} values={form.attributes}
             errors={attributeErrors} onChange={(v) => set("attributes", v)} />
           {field(t("market.form.description"), (
-            <Textarea rows={5} maxLength={4000} value={form.description} placeholder={t("market.form.descriptionPlaceholder")}
-              onChange={(e) => set("description", e.target.value)} />
+            <>
+              <Textarea rows={5} maxLength={4000} value={form.description} placeholder={t("market.form.descriptionPlaceholder")}
+                onChange={(e) => set("description", e.target.value)} />
+              {!sellerGroup && form.listing_type === "offer" && !form.description.includes(t("market.terms.privateSaleClause")) && (
+                <Button type="button" variant="ghost" size="sm" className="h-auto px-0 text-xs underline"
+                  onClick={() => set("description", withPrivateSaleClause(form.description, t("market.terms.privateSaleClause")))}>
+                  {t("market.terms.addPrivateSale")}
+                </Button>
+              )}
+            </>
           ))}
         </CardContent></Card>
       )}

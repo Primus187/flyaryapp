@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.9 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.10 ✅ (Abnahmeprüfung folgt); inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -242,7 +242,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** Migration `0039_marketplace_cleanup.sql` (`marketplace_daily_cleanup`, `marketplace_storage_usage`, Spalte `expiry_reminded_at`), `0040_marketplace_cleanup_schedule.sql` (`pg_cron`, täglich 03:15 UTC über `pg_net` an die Edge Function), Edge Function `marketplace-cleanup` (Dateien löschen über die Storage-API), Speicheranzeige für Admins auf der Moderationsseite, `delete-account` löscht die Marktplatz-Fotos der eigenen Anzeigen. **Abweichungen:** Die Push-Erinnerung aus 4.4 (3 Tage vor Ablauf) ist hier umgesetzt; die Speicheranzeige steht auf der Moderationsseite statt in einer eigenen Admin-Ansicht; Anzeigen ohne Fotos nach dem Aufräumen lassen sich weiterhin verlängern (ohne Bilder). `pg_cron` liegt in einer eigenen Migration, weil die Test-Datenbank es nicht kennt. Meldungen gelöschter Personen verschwinden mit dem Konto (Fremdschlüssel mit Cascade).
 
-### 4.10 Nutzungsbedingungen und Hinweise
+### 4.10 Nutzungsbedingungen und Hinweise ✅
 
 **Ziel:** Klare Rollen: Flyary vermittelt nur, verkauft wird zwischen den Parteien.
 
@@ -252,6 +252,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Hinweis vor dem ersten Inserieren (einmalig bestätigen): Angaben wahrheitsgemäss, nicht flugtaugliches Material als «Für Teile» kennzeichnen
 - Hinweis bei Privatanzeigen: Privatverkauf, Gewährleistung wegbedungen, soweit gesetzlich zulässig (als Vorschlag im Beschreibungstext, nicht erzwungen)
 - Texte in DE/FR/EN, juristische Durchsicht vor dem Start empfohlen
+
+**Ist-Stand:** Migration `0041_marketplace_terms.sql` (`marketplace_terms_acceptances` mit Version und Zeitpunkt, Pflicht beim Anlegen einer Anzeige), Dialog vor dem ersten Inserieren, Abschnitt «Marktplatz» in den Nutzungsbedingungen, Link «Hinweis Privatverkauf einfügen» bei privaten Angeboten. **Abweichung:** Die Bestätigung ist in der Datenbank gespeichert und wird dort durchgesetzt (statt nur im Browser), damit sie nachweisbar ist und alte App-Versionen sie nicht umgehen. Juristische Durchsicht weiterhin offen (Abschnitt 10).
 
 ## 5. Speicherbudget (Free-Plan)
 

@@ -1,5 +1,24 @@
 # Flyary
 
+## Marktplatz: Regeln und Nutzungsbedingungen (4.10)
+
+Migration `0041_marketplace_terms.sql`, Dialog `src/components/market/MarketTermsDialog.tsx`, Logik in
+`src/lib/marketplace-terms.ts`, Abschnitt «Marktplatz» in `src/pages/LegalTerms.tsx` (Texte unter `market.terms.*`).
+
+- **Einmalige Bestätigung** vor der ersten Anzeige: wahrheitsgemässe Angaben, nicht flugtaugliches Material als
+  «Für Teile» kennzeichnen, Flyary vermittelt nur, Moderation und Sperren. Gespeichert wird die bestätigte Version mit
+  Zeitpunkt (`marketplace_terms_acceptances`); ohne Bestätigung der aktuellen Version lässt die Datenbank keine neue
+  Anzeige zu. Ändern sich die Regeln, wird die Version in Migration und `MARKET_TERMS_VERSION` erhöht, und alle
+  bestätigen vor der nächsten Anzeige neu.
+- **Nutzungsbedingungen:** neuer Abschnitt «Marktplatz» mit Rolle von Flyary, Verantwortung für Angaben und
+  Lufttüchtigkeit, verbotenen Inhalten, Moderation und Sperren, Pflichten der Flugschulen und dem Umgang mit Daten
+  (automatisches Löschen von Fotos und Entwürfen, Konto-Löschung).
+- **Privatverkauf:** Bei privaten Angeboten fügt ein Link im Formular den Vorschlag «Privatverkauf: … jede Gewährleistung
+  wird wegbedungen, soweit gesetzlich zulässig» in die Beschreibung ein. Nicht erzwungen.
+- Die Texte sind ein Vorschlag und noch nicht juristisch geprüft (offener Punkt im Umsetzungsplan, Abschnitt 10).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0041), danach das Frontend.
+
 ## Marktplatz: Aufräumen, Speicherüberwachung, Konto-Löschung (4.9)
 
 Migrationen `0039_marketplace_cleanup.sql` und `0040_marketplace_cleanup_schedule.sql`, Edge Function

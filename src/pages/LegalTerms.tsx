@@ -31,6 +31,11 @@ export default function LegalTerms() {
         <h2 className="text-base font-semibold text-foreground pt-2">{t("legal.termsContentTitle")}</h2>
         <p>{t("legal.termsContentText")}</p>
 
+        <h2 className="text-base font-semibold text-foreground pt-2">{t("market.terms.sectionTitle")}</h2>
+        {["sectionRole", "sectionResponsibility", "sectionForbidden", "sectionModeration", "sectionSchools", "sectionData"].map((key) => (
+          <p key={key}>{t(`market.terms.${key}`)}</p>
+        ))}
+
         <h2 className="text-base font-semibold text-foreground pt-2">{t("legal.termsTerminationTitle")}</h2>
         <p>{t("legal.termsTerminationText")}</p>
 

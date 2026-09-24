@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -90,11 +90,29 @@ beforeAll(async () => {
   await db.exec(migration("0037_school_shop.sql"));
   await db.exec(migration("0038_marketplace_moderation.sql"));
   await db.exec(migration("0039_marketplace_cleanup.sql"));
+  await db.exec(migration("0041_marketplace_terms.sql"));
+  // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
+  await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
     INSERT INTO public.school_shop_profiles (group_id, legal_name, street, postal_code, locality, email, warranty_text, active)
       VALUES ('${school}', 'Vertical GmbH', 'Hauptstrasse 1', '3800', 'Interlaken', 'shop@vertical.ch', 'Gewährleistung 2 Jahre', true);`);
 }, 60_000);
 afterAll(async () => { await db?.close(); });
+
+describe("marketplace rules", () => {
+  it("creating a listing needs the confirmed rules; people manage only their own confirmation", async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_terms_acceptances WHERE user_id = '${student}'`);
+    await expect(insertAs(student, `('${student}', NULL, 'helmet', 'Ohne Bestätigung', 'all', 1, 'draft')`)).rejects.toThrow();
+    await asUser(student);
+    await expect(db.exec(`INSERT INTO public.marketplace_terms_acceptances (user_id, version) VALUES ('${stranger}', 1)`)).rejects.toThrow();
+    await db.exec(`INSERT INTO public.marketplace_terms_acceptances (user_id, version) VALUES ('${student}', 1)`);
+    expect((await db.query("SELECT user_id FROM public.marketplace_terms_acceptances")).rows).toEqual([{ user_id: student }]);
+    const id = (await insertAs(student, `('${student}', NULL, 'helmet', 'Mit Bestätigung', 'all', 1, 'draft')`)).rows[0].id;
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE id = '${id}'`);
+  });
+});
 
 describe("private listings", () => {
   let draftId: string;

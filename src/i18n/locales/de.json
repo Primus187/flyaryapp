@@ -2138,6 +2138,25 @@
       "storage": {
         "title": "Speicher: {{used}} ({{percent}} % des Free-Plans)",
         "warn": "Über 700 MB belegt – Wechsel auf Supabase Pro prüfen."
+      },
+      "terms": {
+        "title": "Regeln im Marktplatz",
+        "intro": "Bevor du deine erste Anzeige erfasst, bestätige bitte diese Regeln:",
+        "rule1": "Ich mache wahrheitsgemässe Angaben zu Zustand, Alter, Prüfungen und Reparaturen.",
+        "rule2": "Material, das nicht mehr flugtauglich ist, kennzeichne ich als «Für Teile / nicht flugtauglich».",
+        "rule3": "Flyary vermittelt nur. Der Kauf kommt zwischen Käufer und Verkäufer zustande; die Verantwortung für Angaben, Zustand und Lufttüchtigkeit liegt bei uns beiden.",
+        "rule4": "Anzeigen können gemeldet und von der Moderation ausgeblendet werden; bei Missbrauch kann ich gesperrt werden.",
+        "accept": "Regeln akzeptieren",
+        "cancel": "Abbrechen",
+        "privateSaleClause": "Privatverkauf: Das Material wird verkauft wie besichtigt. Jede Gewährleistung wird wegbedungen, soweit gesetzlich zulässig.",
+        "addPrivateSale": "Hinweis «Privatverkauf» einfügen",
+        "sectionTitle": "Marktplatz",
+        "sectionRole": "Im Marktplatz können angemeldete Personen und Flugschulen Material anbieten oder suchen. Flyary stellt nur die Plattform zur Verfügung und ist nicht Vertragspartei. Kaufverträge, Zahlung und Übergabe erfolgen direkt zwischen Käufer und Verkäufer.",
+        "sectionResponsibility": "Wer inseriert, ist für die Richtigkeit der Angaben verantwortlich, insbesondere zu Zustand, Alter, Nachprüfungen, Packdaten und Reparaturen. Die Verantwortung für die Lufttüchtigkeit des Materials liegt bei Verkäufer und Käufer. Wir empfehlen, gebrauchtes Material vor dem ersten Flug von einer Fachperson prüfen zu lassen.",
+        "sectionForbidden": "Nicht erlaubt sind insbesondere: falsche oder irreführende Angaben, nicht flugtaugliches Material ohne entsprechende Kennzeichnung, gestohlene Ware, anstössige Inhalte, Anzeigen ohne Bezug zum Gleitschirmfliegen und Aufforderungen zur Vorauszahlung an Unbekannte.",
+        "sectionModeration": "Anzeigen können gemeldet werden. Die Moderation (Flyary sowie Moderatorinnen und Moderatoren von Flugschulen für private Anzeigen) kann Anzeigen ausblenden. Flyary kann Personen bei Missbrauch vom Marktplatz sperren und Anzeigen löschen.",
+        "sectionSchools": "Flugschulen verkaufen gewerblich. Sie geben Firma, Adresse, Kontakt und Gewährleistung an; MWST-pflichtige Schulen zudem ihre UID-Nummer. Für Verkäufe von Schulen gelten deren Gewährleistungsangaben.",
+        "sectionData": "Anzeigen sind für alle angemeldeten Personen sichtbar. Fotos verkaufter, ausgeblendeter oder lange abgelaufener Anzeigen werden automatisch gelöscht, ebenso liegen gebliebene Entwürfe. Beim Löschen des Kontos werden die eigenen Anzeigen samt Fotos entfernt; Chats bleiben für die Gegenseite lesbar."
       }
     }
 }

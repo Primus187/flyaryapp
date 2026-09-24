@@ -2138,6 +2138,25 @@
       "storage": {
         "title": "Storage: {{used}} ({{percent}} % of the Free plan)",
         "warn": "Over 700 MB used – consider switching to Supabase Pro."
+      },
+      "terms": {
+        "title": "Marketplace rules",
+        "intro": "Before you create your first listing, please confirm these rules:",
+        "rule1": "I describe condition, age, checks and repairs truthfully.",
+        "rule2": "I mark equipment that is no longer airworthy as \"For parts / not airworthy\".",
+        "rule3": "Flyary only connects people. The sale is between buyer and seller; responsibility for details, condition and airworthiness lies with the two of us.",
+        "rule4": "Listings can be reported and hidden by the moderators; misuse can get me banned.",
+        "accept": "Accept rules",
+        "cancel": "Cancel",
+        "privateSaleClause": "Private sale: the equipment is sold as seen. Any warranty is excluded as far as the law allows.",
+        "addPrivateSale": "Add \"private sale\" note",
+        "sectionTitle": "Marketplace",
+        "sectionRole": "In the marketplace, signed-in people and flight schools offer or look for equipment. Flyary only provides the platform and is not a party to any contract. Purchase, payment and handover take place directly between buyer and seller.",
+        "sectionResponsibility": "Whoever creates a listing is responsible for its details, in particular condition, age, checks, repack dates and repairs. Responsibility for the airworthiness of the equipment lies with seller and buyer. We recommend having second-hand equipment checked by a professional before the first flight.",
+        "sectionForbidden": "Not allowed are in particular: false or misleading details, unairworthy equipment without the corresponding note, stolen goods, offensive content, listings unrelated to paragliding, and requests for payment in advance to strangers.",
+        "sectionModeration": "Listings can be reported. The moderators (Flyary, and flight school moderators for private listings) can hide listings. Flyary can ban people from the marketplace for misuse and delete listings.",
+        "sectionSchools": "Flight schools sell commercially. They state company, address, contact and warranty; VAT-registered schools also their UID number. Sales by schools are covered by their warranty terms.",
+        "sectionData": "Listings are visible to all signed-in people. Photos of sold, hidden or long-expired listings are deleted automatically, as are abandoned drafts. Deleting your account removes your own listings and their photos; chats remain readable for the other party."
       }
     }
 }

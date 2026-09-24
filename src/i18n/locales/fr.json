@@ -2138,6 +2138,25 @@
       "storage": {
         "title": "Stockage : {{used}} ({{percent}} % du plan gratuit)",
         "warn": "Plus de 700 Mo utilisés – envisager de passer à Supabase Pro."
+      },
+      "terms": {
+        "title": "Règles du marché",
+        "intro": "Avant de créer ta première annonce, confirme s'il te plaît ces règles :",
+        "rule1": "J'indique honnêtement l'état, l'âge, les révisions et les réparations.",
+        "rule2": "Je signale le matériel qui n'est plus navigable comme « Pour pièces / non navigable ».",
+        "rule3": "Flyary ne fait que mettre en relation. La vente se conclut entre acheteur et vendeur ; la responsabilité des indications, de l'état et de la navigabilité nous incombe à tous les deux.",
+        "rule4": "Les annonces peuvent être signalées et masquées par la modération ; en cas d'abus, je peux être exclu·e.",
+        "accept": "Accepter les règles",
+        "cancel": "Annuler",
+        "privateSaleClause": "Vente privée : le matériel est vendu en l'état. Toute garantie est exclue dans la mesure permise par la loi.",
+        "addPrivateSale": "Ajouter la mention « vente privée »",
+        "sectionTitle": "Marché",
+        "sectionRole": "Sur le marché, les personnes connectées et les écoles proposent ou cherchent du matériel. Flyary met seulement la plateforme à disposition et n'est pas partie au contrat. L'achat, le paiement et la remise se font directement entre acheteur et vendeur.",
+        "sectionResponsibility": "Qui publie une annonce est responsable de l'exactitude des indications, en particulier l'état, l'âge, les révisions, les dates de pliage et les réparations. La responsabilité de la navigabilité incombe au vendeur et à l'acheteur. Nous recommandons de faire contrôler le matériel d'occasion par un professionnel avant le premier vol.",
+        "sectionForbidden": "Sont notamment interdits : les indications fausses ou trompeuses, le matériel non navigable sans indication correspondante, les objets volés, les contenus choquants, les annonces sans lien avec le parapente et les demandes de paiement d'avance à des inconnus.",
+        "sectionModeration": "Les annonces peuvent être signalées. La modération (Flyary ainsi que les modératrices et modérateurs des écoles pour les annonces privées) peut masquer des annonces. En cas d'abus, Flyary peut exclure des personnes du marché et supprimer des annonces.",
+        "sectionSchools": "Les écoles vendent à titre commercial. Elles indiquent entreprise, adresse, contact et garantie ; les écoles assujetties à la TVA aussi leur numéro IDE. Les ventes des écoles sont couvertes par leurs indications de garantie.",
+        "sectionData": "Les annonces sont visibles pour toutes les personnes connectées. Les photos d'annonces vendues, masquées ou expirées depuis longtemps sont supprimées automatiquement, tout comme les brouillons abandonnés. La suppression du compte efface ses propres annonces et leurs photos ; les chats restent lisibles pour l'autre partie."
       }
     }
 }
