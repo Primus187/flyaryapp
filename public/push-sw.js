@@ -6,8 +6,8 @@ self.addEventListener("push", (event) => {
   try { data = event.data ? event.data.json() : {}; } catch { data = { body: event.data && event.data.text() }; }
   event.waitUntil(self.registration.showNotification(data.title || "Flyary", {
     body: data.body || "",
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+    icon: "/icons/flyary-192.png",
+    badge: "/icons/flyary-192.png",
     data: { url: data.url || "/" },
   }));
 });

@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png"],
+      includeAssets: ["favicon.ico", "icons/*.png"],
       manifest: {
         id: "/?source=pwa",
         name: "Flyary",
@@ -38,10 +38,10 @@ export default defineConfig(({ mode }) => ({
         background_color: "#0a0a0a",
         theme_color: "#0a0a0a",
         icons: [
-          { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-          { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-          { src: "/icon-192-maskable.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
-          { src: "/icon-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+          { src: "/icons/flyary-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/icons/flyary-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/icons/flyary-maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+          { src: "/icons/flyary-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
       workbox: {
