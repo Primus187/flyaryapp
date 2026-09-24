@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 export async function fetchSchoolGroups(userId: string) {
   const [admins, functions] = await Promise.all([
     supabase.from("group_members").select("group_id").eq("user_id", userId).eq("role", "admin"),
-    supabase.from("group_member_functions").select("group_id, function").eq("user_id", userId).in("function", ["instructor", "school_lead", "launch_helper"]),
+    // "shop" (marketplace 4.7) is not in the generated enum type yet
+    supabase.from("group_member_functions").select("group_id, function").eq("user_id", userId)
+      .in("function", ["instructor", "school_lead", "launch_helper", "shop"] as ("instructor" | "school_lead" | "launch_helper")[]),
   ]);
   if (admins.error) throw admins.error;
   if (functions.error) throw functions.error;
@@ -13,8 +15,12 @@ export async function fetchSchoolGroups(userId: string) {
   if (!ids.length) return [];
   const { data, error } = await supabase.from("groups").select("id, name").in("id", ids).eq("group_type", "school");
   if (error) throw error;
-  return (data || []).map(group => ({ ...group, canManage: (admins.data || []).some(row => row.group_id === group.id)
-    || (functions.data || []).some(row => row.group_id === group.id && row.function !== "launch_helper") }));
+  const isAdmin = (groupId: string) => (admins.data || []).some(row => row.group_id === groupId);
+  const has = (groupId: string, fns: string[]) => (functions.data || []).some(row => row.group_id === groupId && fns.includes(row.function));
+  return (data || []).map(group => ({ ...group,
+    canManage: isAdmin(group.id) || has(group.id, ["instructor", "school_lead"]),
+    /** Runs the school shop (marketplace 4.7): admins, school leads and the shop team. */
+    canShop: isAdmin(group.id) || has(group.id, ["school_lead", "shop"]) }));
 }
 
 export function useSchoolGroups() {

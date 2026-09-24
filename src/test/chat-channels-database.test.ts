@@ -101,7 +101,7 @@ beforeAll(async () => {
       SELECT EXISTS (SELECT 1 FROM public.group_member_functions WHERE user_id = _user_id AND group_id = _group_id AND function = _function::text) $$;
   `);
   for (const name of ["0031_marketplace_group_functions", "0032_marketplace_listings", "0033_marketplace_photos",
-    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat"]) {
+    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop"]) {
     await db.exec(readFileSync(new URL(`../../drizzle/migrations/${name}.sql`, import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   }
   // Channels created by staff after the migration
@@ -447,6 +447,8 @@ describe("listing chats (marketplace 4.6)", () => {
       INSERT INTO public.profiles (user_id, pilot_name) VALUES ('${outsider}', 'Olivia'), ('${pilotMember}', 'Paula')
         ON CONFLICT (user_id) DO UPDATE SET pilot_name = excluded.pilot_name;
       INSERT INTO public.group_member_functions VALUES ('${school}', '${shopMember}', 'shop');
+      INSERT INTO public.school_shop_profiles (group_id, legal_name, street, postal_code, locality, email, warranty_text, active)
+      VALUES ('${school}', 'Vertical GmbH', 'Hauptstrasse 1', '3800', 'Interlaken', 'shop@vertical.ch', 'Gewährleistung 2 Jahre', true);
       DELETE FROM public.pushes;
     `);
     privateListing = await listing(pilotMember, null, "Advance Alpha 7");

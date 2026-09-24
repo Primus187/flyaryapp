@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0035 (marketplace listings, photos, status functions, search).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0037 (marketplace listings, photos, status functions, search, school shop).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -82,7 +82,10 @@ beforeAll(async () => {
   await db.exec(migration("0033_marketplace_photos.sql"));
   await db.exec(migration("0034_marketplace_listing_status.sql"));
   await db.exec(migration("0035_marketplace_search.sql"));
-  await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');`);
+  await db.exec(migration("0037_school_shop.sql"));
+  await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
+    INSERT INTO public.school_shop_profiles (group_id, legal_name, street, postal_code, locality, email, warranty_text, active)
+      VALUES ('${school}', 'Vertical GmbH', 'Hauptstrasse 1', '3800', 'Interlaken', 'shop@vertical.ch', 'Gewährleistung 2 Jahre', true);`);
 }, 60_000);
 afterAll(async () => { await db?.close(); });
 
@@ -429,6 +432,70 @@ describe("search and seller cards", () => {
       { seller_kind: "person", name: "Sam", flight_count: 3 },
       { seller_kind: "school", name: "Vertical", flight_count: null },
     ]);
+  });
+});
+
+describe("school shop", () => {
+  const profile = async (uid: string, sql: string) => { await asUser(uid); return db.query(sql); };
+  const shops = async (uid: string) => {
+    await asUser(uid);
+    return (await db.query<{ name: string; ready: boolean; can_admin: boolean }>("SELECT name, ready, can_admin FROM public.marketplace_my_shops()")).rows;
+  };
+
+  it("only admins and school leads edit the legal details; active shops are public", async () => {
+    await expect(profile(shop, `UPDATE public.school_shop_profiles SET phone = '033 000 00 00' WHERE group_id = '${school}' RETURNING group_id`))
+      .resolves.toMatchObject({ rows: [] });
+    await expect(profile(instructor, `UPDATE public.school_shop_profiles SET phone = '033 000 00 00' WHERE group_id = '${school}' RETURNING group_id`))
+      .resolves.toMatchObject({ rows: [] });
+    await expect(profile(schoolAdmin, `UPDATE public.school_shop_profiles SET phone = '033 000 00 00' WHERE group_id = '${school}' RETURNING group_id`))
+      .resolves.toMatchObject({ rows: [{ group_id: school }] });
+    await expect(profile(otherShop, `INSERT INTO public.school_shop_profiles (group_id) VALUES ('${otherSchool}')`)).rejects.toThrow();
+    expect((await profile(stranger, "SELECT group_id FROM public.school_shop_profiles")).rows).toEqual([{ group_id: school }]);
+    expect((await profile(shop, "SELECT phone FROM public.school_shop_profiles")).rows).toEqual([{ phone: "033 000 00 00" }]);
+  });
+
+  it("a shop can only be active with complete details; VAT needs a valid UID", async () => {
+    await asSystem();
+    await db.exec(`INSERT INTO public.group_members VALUES ('${otherSchool}', '${flyaryAdmin}', 'admin')`);
+    await profile(flyaryAdmin, `INSERT INTO public.school_shop_profiles (group_id, legal_name) VALUES ('${otherSchool}', 'Andere GmbH')`);
+    await expect(profile(flyaryAdmin, `UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${otherSchool}'`)).rejects.toThrow(/complete/);
+    await expect(profile(flyaryAdmin, `UPDATE public.school_shop_profiles SET vat_registered = true WHERE group_id = '${otherSchool}'`)).rejects.toThrow(/vat_uid/);
+    await expect(profile(flyaryAdmin, `UPDATE public.school_shop_profiles SET uid_number = 'CHE-123' WHERE group_id = '${otherSchool}'`)).rejects.toThrow();
+    await profile(flyaryAdmin, `UPDATE public.school_shop_profiles SET street = 'Weg 1', postal_code = '3800', locality = 'Interlaken',
+      email = 'shop@andere.ch', warranty_text = 'Gewährleistung 2 Jahre', uid_number = 'CHE-123.456.789', vat_registered = true, active = true
+      WHERE group_id = '${otherSchool}'`);
+    expect((await shops(otherShop))).toEqual([{ name: "Andere Schule", ready: true, can_admin: false }]);
+    await expect(profile(owner, `INSERT INTO public.school_shop_profiles (group_id) VALUES ('${pilotGroup}')`)).rejects.toThrow();
+  });
+
+  it("lists the schools a person sells for", async () => {
+    expect(await shops(shop)).toEqual([{ name: "Vertical", ready: true, can_admin: false }]);
+    expect(await shops(schoolAdmin)).toEqual([{ name: "Vertical", ready: true, can_admin: true }]);
+    expect(await shops(instructor)).toEqual([]);
+    expect(await shops(stranger)).toEqual([]);
+  });
+
+  it("without an active shop, school listings are hidden and cannot be published or renewed", async () => {
+    const l = (await insertAs(shop, `(NULL, '${school}', 'helmet', 'Shop Helm', 'all', 2, 'draft')`)).rows[0].id;
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET postal_code = '3800', locality = 'Interlaken', price_cents = 9000, condition = 'new'
+      WHERE id = '${l}';
+      INSERT INTO public.marketplace_listing_photos (listing_id, path, thumb_path, position) VALUES ('${l}', '${l}/a.webp', '${l}/a_thumb.webp', 0);`);
+    await profile(schoolAdmin, `UPDATE public.school_shop_profiles SET active = false WHERE group_id = '${school}'`);
+    await asUser(shop);
+    await expect(db.query(`SELECT public.marketplace_publish('${l}')`)).rejects.toThrow("marketplace:shop_not_ready");
+    await profile(schoolAdmin, `UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${school}'`);
+    await asUser(shop);
+    await db.query(`SELECT public.marketplace_publish('${l}')`);
+    expect(await visibleTitles(stranger)).toContain("Shop Helm");
+    await profile(schoolAdmin, `UPDATE public.school_shop_profiles SET active = false WHERE group_id = '${school}'`);
+    expect(await visibleTitles(stranger)).not.toContain("Shop Helm");
+    expect(await visibleTitles(shop)).toContain("Shop Helm");
+    await asUser(shop);
+    await expect(db.query(`SELECT public.marketplace_renew('${l}')`)).rejects.toThrow("marketplace:shop_not_ready");
+    await profile(schoolAdmin, `UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${school}'`);
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE id = '${l}'`);
   });
 });
 

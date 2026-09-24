@@ -12,7 +12,7 @@ import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import { canOpenSchoolSection } from "@/lib/school-sections";
 import TeamHome from "@/components/school/TeamHome";
-import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock, Store } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { type StudentStatus } from "@/lib/student-status";
@@ -31,8 +31,9 @@ const SchoolSafety = lazy(() => import("@/components/school/SchoolSafety"));
 const TeamAvailability = lazy(() => import("@/components/school/TeamAvailability"));
 const TeamPolls = lazy(() => import("@/components/school/TeamPolls"));
 const GroupChannels = lazy(() => import("@/components/chat/GroupChannels"));
+const SchoolShop = lazy(() => import("@/components/school/SchoolShop"));
 
-type Section = "days" | "communication" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
+type Section = "days" | "communication" | "people" | "students" | "safety" | "availability" | "equipment" | "shop" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
   {
@@ -55,6 +56,7 @@ const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labe
     titleKey: "school.hub.admin",
     items: [
       { key: "equipment", icon: Package, labelKey: "school.equipment.title" },
+      { key: "shop", icon: Store, labelKey: "market.shop.title" },
       { key: "credits", icon: Coins, labelKey: "school.credits.title" },
       { key: "billing", icon: Receipt, labelKey: "school.billing.title" },
       { key: "stats", icon: BarChart3, labelKey: "school.stats.title" },
@@ -74,7 +76,7 @@ export default function SchoolDashboard() {
 
   const groupQuery = useSchoolGroups();
   const schoolGroups = groupQuery.data || [];
-  const { schoolGroupId: selectedGroupId, setSchoolGroupId: setSelectedGroupId, canManageSchool, setMode } = useRoleMode();
+  const { schoolGroupId: selectedGroupId, setSchoolGroupId: setSelectedGroupId, canManageSchool, canShopSchool, setMode } = useRoleMode();
   useEffect(() => { if (selectedGroupId) setMode("school"); }, [selectedGroupId, setMode]);
   const loading = groupQuery.isPending;
 
@@ -136,7 +138,7 @@ export default function SchoolDashboard() {
   if (sectionData.isError) return <PageContainer><PageHeader back="/school" title={t("school.title")} /><div role="alert" className="space-y-3"><p>{t("performance.loadFailed")}</p><Button onClick={() => void sectionData.refetch()}>{t("performance.retry")}</Button></div></PageContainer>;
 
   const renderSection = () => {
-    if (!canOpenSchoolSection(activeSection, canManageSchool)) return <p role="alert">{t("journeys.staffOnly")}</p>;
+    if (!canOpenSchoolSection(activeSection, canManageSchool, canShopSchool)) return <p role="alert">{t("journeys.staffOnly")}</p>;
     switch (activeSection) {
       case "days":
         return canManageSchool ? <SchoolDays events={eventInfos} /> : <TeamHome groupId={selectedGroupId} />;
@@ -157,6 +159,8 @@ export default function SchoolDashboard() {
         return <TeamAvailability groupId={selectedGroupId} canManage={canManageSchool} />;
       case "equipment":
         return <SchoolEquipment groupId={selectedGroupId} />;
+      case "shop":
+        return <SchoolShop groupId={selectedGroupId} />;
       case "credits":
         return <SchoolCredits groupId={selectedGroupId} />;
       case "billing":
@@ -213,11 +217,11 @@ export default function SchoolDashboard() {
         nextSignups={sectionData.data?.nextSignups ?? 0}
       /> : <TeamHome groupId={selectedGroupId} />}
 
-      {SECTION_GROUPS.filter(group => group.items.some(item => canOpenSchoolSection(item.key, canManageSchool))).map((group) => (
+      {SECTION_GROUPS.filter(group => group.items.some(item => canOpenSchoolSection(item.key, canManageSchool, canShopSchool))).map((group) => (
         <section key={group.titleKey}>
           <SectionHeading title={t(group.titleKey)} />
           <div className="grid grid-cols-2 gap-3">
-            {group.items.filter(item => canOpenSchoolSection(item.key, canManageSchool)).map(({ key, icon: Icon, labelKey }) => (
+            {group.items.filter(item => canOpenSchoolSection(item.key, canManageSchool, canShopSchool)).map(({ key, icon: Icon, labelKey }) => (
               <button
                 key={key}
                 type="button"

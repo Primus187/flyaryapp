@@ -1,5 +1,31 @@
 # Flyary
 
+## Marktplatz: Schul-Shop mit Neuware (4.7)
+
+Migration `0037_school_shop.sql`, Kachel «Shop» im Flugschul-Bereich (`src/components/school/SchoolShop.tsx`), Logik in
+`src/lib/school-shop.ts`. Die Verwaltungsliste aus «Meine Anzeigen» ist jetzt die Komponente
+`src/components/market/ManagedListings.tsx` und dient auch dem Shop.
+
+- **Shop-Profil** (`school_shop_profiles`): Firma, Adresse, UID (Format `CHE-123.456.789`, Pflicht bei MWST-Pflicht),
+  MWST-pflichtig, E-Mail, Telefon, Gewährleistungstext, «aktiv». Aktiv geht nur mit vollständigen Angaben (CHECK in der
+  Datenbank, dieselbe Prüfung zeigt das Formular vorher an). Bearbeiten: Admins und Schulleitung; das Shop-Team liest mit.
+  Aktive Profile sind für alle Angemeldeten lesbar, weil jede Schul-Anzeige die Anbieterangaben zeigt.
+- **Ohne aktiven Shop** lassen sich Schul-Anzeigen nicht veröffentlichen oder verlängern (`marketplace:shop_not_ready`),
+  und bereits veröffentlichte sind für andere unsichtbar (`market_listing_visible`), bis der Shop wieder aktiv ist.
+- **Neue Funktionen** im Personen-Dialog: «Shop» (inseriert für die Schule, beantwortet die Anfragen) und
+  «Marktplatz-Moderation» (wird in 4.8 genutzt). Wer «Shop» hat, erhält den Flugschul-Bereich mit der Kachel «Shop»;
+  Instruktoren sehen die Kachel nicht (`canOpenSchoolSection(…, canShop)`).
+- **Inserieren:** Wer für eine Schule verkaufen darf, wählt im Formular «Verkaufen als» (ich privat oder die Schule;
+  `marketplace_my_shops`). Schul-Anzeigen haben zusätzlich «Sichtbar für» (alle / nur unsere Schüler) und «Anzahl Stück».
+  Neuware von Schulen läuft nicht ab und zählt beim Verkauf herunter (seit 4.4).
+- **Detailseite:** Bei Schul-Anzeigen die Anbieterangaben (Firma, Adresse, UID, Kontakt, Gewährleistung) und «inkl. MWST»
+  beim Preis, wenn die Schule MWST-pflichtig ist.
+- Abweichungen vom Plan: Funktionen vergeben weiterhin nur Admins (die bestehende Regel für `group_member_functions`),
+  nicht zusätzlich die Schulleitung. Wer nur «Shop» hat, sieht im Flugschul-Bereich neben dem Shop dieselben Kacheln wie
+  Starthelfer (Flugtage, Kommunikation, Verfügbarkeit).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0037), danach das Frontend.
+
 ## Marktplatz: Chat zur Anzeige (4.6)
 
 Migration `0036_marketplace_listing_chat.sql`, Logik in `src/lib/marketplace-chat.ts`, Anzeigenkarte

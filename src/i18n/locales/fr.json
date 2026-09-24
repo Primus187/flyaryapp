@@ -1186,7 +1186,9 @@
       "licensed": "Breveté",
       "launch_helper": "Aide au décollage",
       "instructor": "Moniteur·trice",
-      "school_lead": "Direction de l'école"
+      "school_lead": "Direction de l'école",
+      "shop": "Boutique",
+      "market_moderator": "Modération du marché"
     },
     "levels": {
       "ground": "Niveau sol",
@@ -1910,7 +1912,8 @@
         "limit_daily": "Au maximum 5 nouvelles annonces par jour.",
         "bump_too_soon": "On peut remonter une annonce une fois par semaine.",
         "unknown": "Un problème est survenu.",
-        "own_listing": "C'est ta propre annonce."
+        "own_listing": "C'est ta propre annonce.",
+        "shop_not_ready": "La boutique de l'école n'est pas encore active (profil incomplet)."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2046,6 +2049,44 @@
         "safety": "Ne jamais payer d'avance à des inconnus. Voir le matériel sur place et payer à la remise.",
         "paymentWarningTitle": "Prudence avec le paiement d'avance",
         "paymentWarning": "Des coordonnées de paiement dans un chat sont une arnaque fréquente. Paie seulement après avoir vu le matériel."
+      },
+      "shop": {
+        "title": "Boutique",
+        "tabs": {
+          "listings": "Annonces",
+          "profile": "Profil de la boutique"
+        },
+        "ready": "La boutique est active. Les annonces de l'école sont visibles sur le marché.",
+        "notReady": "La boutique n'est pas encore active. Les annonces de l'école ne seront visibles qu'une fois le profil complété et activé par un admin ou la direction.",
+        "noAccess": "La boutique est gérée par les admins, la direction et les personnes ayant la fonction « Boutique ».",
+        "newListing": "Annonce pour l'école",
+        "readOnly": "Seuls les admins et la direction modifient ces indications.",
+        "fields": {
+          "legal_name": "Entreprise / nom",
+          "street": "Rue et n°",
+          "postal_code": "NPA",
+          "locality": "Localité",
+          "email": "E-mail",
+          "phone": "Téléphone (facultatif)",
+          "uid_number": "Numéro IDE",
+          "vat_registered": "Assujetti à la TVA (prix TVA incl.)",
+          "warranty_text": "Garantie",
+          "active": "Boutique active"
+        },
+        "uidHint": "Format CHE-123.456.789 – obligatoire si assujetti à la TVA.",
+        "warrantyPlaceholder": "p. ex. 2 ans de garantie sur le neuf, occasions sans garantie.",
+        "activeHint": "Possible seulement avec des indications complètes.",
+        "stillMissing": "Il manque encore pour l'activation :",
+        "incomplete": "Indications incomplètes – la boutique ne peut pas encore être activée.",
+        "saved": "Profil de la boutique enregistré",
+        "saveFailed": "Échec de l'enregistrement",
+        "sellAs": "Vendre en tant que",
+        "sellAsMe": "Moi (privé)",
+        "visibility": "Visible pour",
+        "quantity": "Nombre de pièces",
+        "notReadyForm": "La boutique de cette école n'est pas encore active. Tu peux préparer l'annonce ; la publication n'est possible qu'avec une boutique active.",
+        "sellerDetails": "Indications du vendeur",
+        "inclVat": "TVA incl."
       }
     }
 }

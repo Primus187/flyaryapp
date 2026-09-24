@@ -69,6 +69,7 @@ const schoolGroups: Group[] = [
     titleKey: "school.hub.admin",
     tiles: [
       { path: "/school/equipment", icon: Package, labelKey: "school.equipment.title" },
+      { path: "/school/shop", icon: Store, labelKey: "market.shop.title" },
       { path: "/school/credits", icon: Wallet, labelKey: "school.credits.title" },
       { path: "/school/billing", icon: Receipt, labelKey: "school.billing.title" },
       { path: "/school/stats", icon: BarChart3, labelKey: "school.stats.title" },
@@ -80,10 +81,10 @@ export default function More() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { signOut } = useAuth();
-  const { mode, canSwitch, canManageSchool, setMode } = useRoleMode();
+  const { mode, canSwitch, canManageSchool, canShopSchool, setMode } = useRoleMode();
 
   const groups = mode === "school" ? schoolGroups.map(group => ({ ...group,
-    tiles: group.tiles.filter(tile => canOpenSchoolSection(tile.path.split("/")[2], canManageSchool)),
+    tiles: group.tiles.filter(tile => canOpenSchoolSection(tile.path.split("/")[2], canManageSchool, canShopSchool)),
   })).filter(group => group.tiles.length) : pilotGroups;
 
   const sendFeedback = () => {

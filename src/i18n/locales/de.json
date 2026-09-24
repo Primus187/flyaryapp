@@ -1011,7 +1011,9 @@
       "licensed": "Brevetiert",
       "launch_helper": "Starthelfer:in",
       "instructor": "Fluglehrer:in",
-      "school_lead": "Schulleitung"
+      "school_lead": "Schulleitung",
+      "shop": "Shop",
+      "market_moderator": "Marktplatz-Moderation"
     },
     "levels": {
       "ground": "Grundstufe",
@@ -1910,7 +1912,8 @@
         "limit_daily": "Höchstens 5 neue Anzeigen pro Tag.",
         "bump_too_soon": "Hochschieben geht einmal pro Woche.",
         "unknown": "Etwas ist schiefgelaufen.",
-        "own_listing": "Das ist deine eigene Anzeige."
+        "own_listing": "Das ist deine eigene Anzeige.",
+        "shop_not_ready": "Der Shop der Schule ist noch nicht aktiv (Shop-Profil unvollständig)."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2046,6 +2049,44 @@
         "safety": "Nie im Voraus an Unbekannte überweisen. Material vor Ort ansehen und erst bei der Übergabe bezahlen.",
         "paymentWarningTitle": "Vorsicht bei Vorauszahlung",
         "paymentWarning": "Zahlungsdaten im Chat sind ein häufiger Betrugstrick. Bezahle erst, wenn du das Material gesehen hast."
+      },
+      "shop": {
+        "title": "Shop",
+        "tabs": {
+          "listings": "Anzeigen",
+          "profile": "Shop-Profil"
+        },
+        "ready": "Der Shop ist aktiv. Schul-Anzeigen sind im Marktplatz sichtbar.",
+        "notReady": "Der Shop ist noch nicht aktiv. Schul-Anzeigen werden erst sichtbar, wenn Admin oder Schulleitung das Shop-Profil vollständig ausgefüllt und aktiviert haben.",
+        "noAccess": "Den Shop führen Admins, Schulleitung und Personen mit der Funktion «Shop».",
+        "newListing": "Anzeige für die Schule",
+        "readOnly": "Nur Admins und Schulleitung ändern diese Angaben.",
+        "fields": {
+          "legal_name": "Firma / Name",
+          "street": "Strasse und Nr.",
+          "postal_code": "PLZ",
+          "locality": "Ort",
+          "email": "E-Mail",
+          "phone": "Telefon (optional)",
+          "uid_number": "UID-Nummer",
+          "vat_registered": "MWST-pflichtig (Preise inkl. MWST)",
+          "warranty_text": "Gewährleistung / Garantie",
+          "active": "Shop aktiv"
+        },
+        "uidHint": "Format CHE-123.456.789 – Pflicht, wenn MWST-pflichtig.",
+        "warrantyPlaceholder": "z. B. 2 Jahre Gewährleistung auf Neuware, Occasionen ohne Gewährleistung.",
+        "activeHint": "Nur mit vollständigen Angaben möglich.",
+        "stillMissing": "Für die Aktivierung fehlt noch:",
+        "incomplete": "Angaben unvollständig – der Shop kann noch nicht aktiviert werden.",
+        "saved": "Shop-Profil gespeichert",
+        "saveFailed": "Speichern fehlgeschlagen",
+        "sellAs": "Verkaufen als",
+        "sellAsMe": "Ich (privat)",
+        "visibility": "Sichtbar für",
+        "quantity": "Anzahl Stück",
+        "notReadyForm": "Der Shop dieser Schule ist noch nicht aktiv. Du kannst die Anzeige vorbereiten; veröffentlichen geht erst mit aktivem Shop.",
+        "sellerDetails": "Anbieterangaben",
+        "inclVat": "inkl. MWST"
       }
     }
 }

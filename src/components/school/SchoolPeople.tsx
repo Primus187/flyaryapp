@@ -11,14 +11,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown, Users } from "lucide-react";
+import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown, Users, Store, Scale } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export const GROUP_FUNCTIONS = ["student", "licensed", "launch_helper", "instructor", "school_lead"] as const;
+// shop / market_moderator: marketplace (plan 4.7/4.8) – sells for the school / handles reports on private listings
+export const GROUP_FUNCTIONS = ["student", "licensed", "launch_helper", "instructor", "school_lead", "shop", "market_moderator"] as const;
 export type GroupFunction = (typeof GROUP_FUNCTIONS)[number];
 
 // Im Team-Bereich werden nur Schulleitung, Fluglehrer und Starthelfer angezeigt
-const TEAM_FUNCTIONS: GroupFunction[] = ["school_lead", "instructor", "launch_helper"];
+const TEAM_FUNCTIONS: GroupFunction[] = ["school_lead", "instructor", "launch_helper", "shop", "market_moderator"];
 
 const FUNCTION_ICONS: Record<GroupFunction, any> = {
   student: GraduationCap,
@@ -26,6 +27,8 @@ const FUNCTION_ICONS: Record<GroupFunction, any> = {
   launch_helper: HandHelping,
   instructor: User,
   school_lead: Crown,
+  shop: Store,
+  market_moderator: Scale,
 };
 
 const TRAINING_LEVELS = ["ground", "altitude", "exam_ready", "licensed"] as const;
@@ -110,7 +113,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
   );
 
   const counts = useMemo(() => {
-    const c: Record<GroupFunction, number> = { student: 0, licensed: 0, launch_helper: 0, instructor: 0, school_lead: 0 };
+    const c = Object.fromEntries(GROUP_FUNCTIONS.map((f) => [f, 0])) as Record<GroupFunction, number>;
     teamPeople.forEach((p) => p.functions.forEach((f) => { c[f]++; }));
     return c;
   }, [teamPeople]);

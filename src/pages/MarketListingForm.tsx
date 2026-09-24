@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AlertTriangle, Info } from "lucide-react";
@@ -18,8 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
-  DELIVERY_OPTIONS, LISTING_CATEGORIES, LISTING_CONDITIONS, LISTING_TYPES, PRICE_TYPES,
-  type DeliveryOption, type ListingCategory, type ListingCondition, type ListingType, type MarketplaceListing, type PriceType,
+  DELIVERY_OPTIONS, LISTING_CATEGORIES, LISTING_CONDITIONS, LISTING_TYPES, LISTING_VISIBILITIES, PRICE_TYPES,
+  type DeliveryOption, type ListingCategory, type ListingCondition, type ListingType, type ListingVisibility, type MarketplaceListing, type PriceType,
 } from "@/lib/marketplace";
 import { CATEGORY_SPECS, validateAttributes, type AttributeError } from "@/lib/marketplace-categories";
 import {
@@ -27,6 +27,7 @@ import {
 } from "@/lib/marketplace-listing";
 import { firstFreePosition, uploadListingPhoto, ListingPhotoError, type ListingPhoto } from "@/lib/marketplace-photos";
 import { safetyHints } from "@/lib/marketplace-safety";
+import { fetchMyShops, type MyShop } from "@/lib/school-shop";
 
 interface FormState {
   listing_type: ListingType;
@@ -45,11 +46,15 @@ interface FormState {
   locality: string;
   canton: string;
   delivery: DeliveryOption;
+  /** School listings only (plan 4.7). */
+  visibility: ListingVisibility;
+  quantity: string;
 }
 
 const EMPTY: FormState = {
   listing_type: "offer", category: "glider", title: "", description: "", condition: "", manufacturer: "", model: "",
   size: "", year: "", attributes: {}, price_type: "fixed", price: "", postal_code: "", locality: "", canton: "", delivery: "pickup",
+  visibility: "all", quantity: "1",
 };
 
 const fromListing = (l: MarketplaceListing): FormState => ({
@@ -57,6 +62,7 @@ const fromListing = (l: MarketplaceListing): FormState => ({
   manufacturer: l.manufacturer ?? "", model: l.model ?? "", size: l.size ?? "", year: l.year ? String(l.year) : "",
   attributes: l.attributes ?? {}, price_type: l.price_type, price: priceInputValue(l.price_cents),
   postal_code: l.postal_code ?? "", locality: l.locality ?? "", canton: l.canton ?? "", delivery: l.delivery,
+  visibility: l.visibility, quantity: String(l.quantity),
 });
 
 const LISTING_COLUMNS = "id, seller_user_id, seller_group_id, created_by, listing_type, category, title, description, price_cents, price_type, condition, manufacturer, model, size, year, attributes, quantity, postal_code, locality, canton, delivery, visibility, status, removed_reason, published_at, expires_at, bumped_at, featured_until, created_at, updated_at";
@@ -65,6 +71,7 @@ const LISTING_COLUMNS = "id, seller_user_id, seller_group_id, created_by, listin
 export default function MarketListingForm() {
   const { id } = useParams();
   const isEdit = !!id;
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -79,6 +86,11 @@ export default function MarketListingForm() {
   const [saving, setSaving] = useState(false);
   const [attributeErrors, setAttributeErrors] = useState<AttributeError[]>([]);
   const [titleError, setTitleError] = useState(false);
+  /** Schools the person sells for; "" = privately (plan 4.7). */
+  const [shops, setShops] = useState<MyShop[]>([]);
+  const [sellerGroup, setSellerGroup] = useState<string>(searchParams.get("school") ?? "");
+
+  useEffect(() => { fetchMyShops().then(setShops).catch(() => setShops([])); }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -91,12 +103,13 @@ export default function MarketListingForm() {
       ]);
       if (!listing) {
         toast.error(t("market.errors.not_found"));
-        navigate("/market/mine", { replace: true });
+        navigate(-1);
         return;
       }
       const l = listing as unknown as MarketplaceListing;
       setForm(fromListing(l));
       setStatus(l.status);
+      setSellerGroup(l.seller_group_id ?? "");
       setPhotos((photoRows ?? []) as unknown as ListingPhoto[]);
       setLoading(false);
     })();
@@ -138,6 +151,7 @@ export default function MarketListingForm() {
       attributes: validation.cleaned, price_type: form.price_type, price_cents: needsPrice ? priceCents : null,
       postal_code: /^\d{4,5}$/.test(form.postal_code.trim()) ? form.postal_code.trim() : null,
       locality: form.locality.trim() || null, canton: form.canton || null, delivery: form.delivery,
+      ...(sellerGroup ? { visibility: form.visibility, quantity: Math.max(1, Math.min(999, Number.parseInt(form.quantity, 10) || 1)) } : {}),
     };
 
     setSaving(true);
@@ -151,7 +165,7 @@ export default function MarketListingForm() {
         const { data, error } = await supabase
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
           .from("marketplace_listings" as any)
-          .insert({ ...content, seller_user_id: user.id, created_by: user.id, status: "draft" })
+          .insert({ ...content, seller_user_id: sellerGroup ? null : user.id, seller_group_id: sellerGroup || null, created_by: user.id, status: "draft" })
           .select("id").single();
         if (error || !data) throw error ?? new Error("insert failed");
         savedId = (data as unknown as { id: string }).id;
@@ -185,10 +199,13 @@ export default function MarketListingForm() {
     setStep((s) => Math.min(3, s + 1));
   };
 
+  /** Back to where the listing is managed: the school shop or "Meine Anzeigen". */
+  const done = () => navigate(sellerGroup ? "/school/shop" : "/market/mine");
+
   const saveDraft = async () => {
     if (await save()) {
       toast.success(t("market.form.saved"));
-      navigate("/market/mine");
+      done();
     }
   };
 
@@ -197,14 +214,14 @@ export default function MarketListingForm() {
     if (!savedId) return;
     if (status !== "draft") {
       toast.success(t("market.form.saved"));
-      navigate("/market/mine");
+      done();
       return;
     }
     setSaving(true);
     try {
       await runListingAction("publish", savedId);
       toast.success(t("market.form.published"));
-      navigate("/market/mine");
+      done();
     } catch (e) {
       const code = (e as { code?: MarketErrorCode }).code ?? "unknown";
       toast.error(t(`market.errors.${code}`));
@@ -252,6 +269,18 @@ export default function MarketListingForm() {
       {showStep(2) && (
         <Card><CardContent className="p-4 space-y-3">
           <p className="text-sm font-medium">{t("market.form.step2")}</p>
+          {!isEdit && shops.length > 0 && field(t("market.shop.sellAs"), (
+            <Select value={sellerGroup || "me"} onValueChange={(v) => setSellerGroup(v === "me" ? "" : v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="me">{t("market.shop.sellAsMe")}</SelectItem>
+                {shops.map((s) => <SelectItem key={s.group_id} value={s.group_id}>{s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          ))}
+          {sellerGroup && shops.some((s) => s.group_id === sellerGroup && !s.ready) && (
+            <p className="rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">{t("market.shop.notReadyForm")}</p>
+          )}
           <div className="grid grid-cols-2 gap-2">
             {LISTING_TYPES.map((type) => (
               <Button key={type} type="button" variant={form.listing_type === type ? "default" : "outline"} size="sm"
@@ -313,6 +342,10 @@ export default function MarketListingForm() {
               </Select>
             ))}
             {field(t("market.form.delivery"), select(form.delivery, DELIVERY_OPTIONS, "market.delivery", (v) => set("delivery", v)))}
+            {sellerGroup && field(t("market.shop.visibility"), select(form.visibility, LISTING_VISIBILITIES, "market.visibility", (v) => set("visibility", v)))}
+            {sellerGroup && field(t("market.shop.quantity"), (
+              <Input value={form.quantity} inputMode="numeric" maxLength={3} onChange={(e) => set("quantity", e.target.value.replace(/\D/g, ""))} />
+            ))}
           </div>
 
           {hints.length > 0 && (

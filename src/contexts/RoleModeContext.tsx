@@ -11,9 +11,10 @@ interface RoleModeValue {
   schoolGroupId: string;
   setSchoolGroupId: (id: string) => void;
   canManageSchool: boolean;
+  canShopSchool: boolean;
 }
 const RoleModeContext = createContext<RoleModeValue>({ mode: "pilot", setMode: () => {}, canSwitch: false,
-  loading: true, schoolGroupId: "", setSchoolGroupId: () => {}, canManageSchool: false });
+  loading: true, schoolGroupId: "", setSchoolGroupId: () => {}, canManageSchool: false, canShopSchool: false });
 function saved(key: string) {
   try { return window.localStorage.getItem(key); } catch { return null; }
 }
@@ -41,7 +42,7 @@ export function RoleModeProvider({ children }: { children: React.ReactNode }) {
     remember(`flyary.school:${account}`, id);
   }, [account]);
   const value = useMemo(() => ({ mode, setMode, canSwitch, loading, schoolGroupId: group?.id || "",
-    setSchoolGroupId, canManageSchool: group?.canManage ?? false }), [mode, setMode, canSwitch, loading, group, setSchoolGroupId]);
+    setSchoolGroupId, canManageSchool: group?.canManage ?? false, canShopSchool: group?.canShop ?? false }), [mode, setMode, canSwitch, loading, group, setSchoolGroupId]);
   return <RoleModeContext.Provider value={value}>{children}</RoleModeContext.Provider>;
 }
 export const useRoleMode = () => useContext(RoleModeContext);

@@ -18,6 +18,8 @@ it("allows helpers to access operational team pages only", () => {
   for (const section of [null, "days", "availability", "teamChat"]) expect(canOpenSchoolSection(section, false)).toBe(true);
   for (const section of ["students", "billing", "safety", "people", "unknown"]) expect(canOpenSchoolSection(section, false)).toBe(false);
   expect(canOpenSchoolSection("students", true)).toBe(true);
+  expect(canOpenSchoolSection("shop", true)).toBe(false);
+  expect(canOpenSchoolSection("shop", false, true)).toBe(true);
 });
 
 it("provides the same journey messages in all supported languages", () => {

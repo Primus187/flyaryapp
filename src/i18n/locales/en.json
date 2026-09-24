@@ -1186,7 +1186,9 @@
       "licensed": "Licensed",
       "launch_helper": "Launch helper",
       "instructor": "Instructor",
-      "school_lead": "School management"
+      "school_lead": "School management",
+      "shop": "Shop",
+      "market_moderator": "Marketplace moderation"
     },
     "levels": {
       "ground": "Ground level",
@@ -1910,7 +1912,8 @@
         "limit_daily": "At most 5 new listings per day.",
         "bump_too_soon": "Bumping works once a week.",
         "unknown": "Something went wrong.",
-        "own_listing": "This is your own listing."
+        "own_listing": "This is your own listing.",
+        "shop_not_ready": "The school's shop is not active yet (shop profile incomplete)."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2046,6 +2049,44 @@
         "safety": "Never transfer money to strangers in advance. See the equipment in person and pay at handover.",
         "paymentWarningTitle": "Careful with payment in advance",
         "paymentWarning": "Payment details in a chat are a common scam. Only pay once you have seen the equipment."
+      },
+      "shop": {
+        "title": "Shop",
+        "tabs": {
+          "listings": "Listings",
+          "profile": "Shop profile"
+        },
+        "ready": "The shop is active. School listings are visible in the marketplace.",
+        "notReady": "The shop is not active yet. School listings only become visible once an admin or the school lead has completed and activated the shop profile.",
+        "noAccess": "The shop is run by admins, the school lead and people with the \"Shop\" function.",
+        "newListing": "Listing for the school",
+        "readOnly": "Only admins and the school lead change these details.",
+        "fields": {
+          "legal_name": "Company / name",
+          "street": "Street and no.",
+          "postal_code": "Postcode",
+          "locality": "Town",
+          "email": "Email",
+          "phone": "Phone (optional)",
+          "uid_number": "UID number",
+          "vat_registered": "VAT registered (prices incl. VAT)",
+          "warranty_text": "Warranty",
+          "active": "Shop active"
+        },
+        "uidHint": "Format CHE-123.456.789 – required when VAT registered.",
+        "warrantyPlaceholder": "e.g. 2-year warranty on new goods, second-hand items without warranty.",
+        "activeHint": "Only possible with complete details.",
+        "stillMissing": "Still missing for activation:",
+        "incomplete": "Details incomplete – the shop cannot be activated yet.",
+        "saved": "Shop profile saved",
+        "saveFailed": "Saving failed",
+        "sellAs": "Sell as",
+        "sellAsMe": "Me (private)",
+        "visibility": "Visible to",
+        "quantity": "Number of pieces",
+        "notReadyForm": "This school's shop is not active yet. You can prepare the listing; publishing only works with an active shop.",
+        "sellerDetails": "Seller details",
+        "inclVat": "incl. VAT"
       }
     }
 }

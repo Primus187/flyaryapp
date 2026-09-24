@@ -22,6 +22,7 @@ import { listingPhotoUrls, sortPhotos, type ListingPhoto } from "@/lib/marketpla
 import { safetyHints } from "@/lib/marketplace-safety";
 import { ageLabel } from "@/lib/marketplace-search";
 import { getSignedUrl } from "@/lib/signed-url-cache";
+import { fetchShopProfile, type ShopProfile } from "@/lib/school-shop";
 
 interface SellerCard {
   seller_kind: "person" | "school";
@@ -46,6 +47,8 @@ export default function MarketListingDetail() {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [contacting, setContacting] = useState(false);
+  /** School listings: the shop's legal details (plan 4.7). */
+  const [shopProfile, setShopProfile] = useState<ShopProfile | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -68,6 +71,8 @@ export default function MarketListingDetail() {
       const card = ((s ?? []) as unknown as SellerCard[])[0] ?? null;
       setSeller(card);
       setLoading(false);
+      const listingRow = l as unknown as MarketplaceListing;
+      if (listingRow.seller_group_id) setShopProfile(await fetchShopProfile(listingRow.seller_group_id));
       setUrls(await listingPhotoUrls(sorted, "full"));
       if (card?.avatar_url) setAvatar(await getSignedUrl("flight-photos", card.avatar_url));
     })();
@@ -160,7 +165,10 @@ export default function MarketListingDetail() {
           {listing.seller_group_id && <Badge variant="outline">{t("market.browse.school")}</Badge>}
         </div>
         <h1 className="text-xl font-bold leading-tight">{listing.title}</h1>
-        <p className="text-2xl font-semibold">{listingPriceLabel(listing, t)}</p>
+        <p className="text-2xl font-semibold">
+          {listingPriceLabel(listing, t)}
+          {shopProfile?.vat_registered && listing.price_cents ? <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t("market.shop.inclVat")}</span> : null}
+        </p>
         {listing.seller_group_id && listing.quantity > 1 && (
           <p className="text-xs text-muted-foreground">{t("market.detail.quantity", { count: listing.quantity })}</p>
         )}
@@ -232,6 +240,17 @@ export default function MarketListingDetail() {
               ].filter(Boolean).join(" · ")}
             </p>
           </div>
+        </CardContent></Card>
+      )}
+
+      {shopProfile && (
+        <Card><CardContent className="space-y-1 p-3 text-xs">
+          <p className="mb-1 text-sm font-medium">{t("market.shop.sellerDetails")}</p>
+          <p>{shopProfile.legal_name}</p>
+          <p>{shopProfile.street}, {shopProfile.postal_code} {shopProfile.locality}</p>
+          {shopProfile.uid_number && <p>{t("market.shop.fields.uid_number")}: {shopProfile.uid_number}{shopProfile.vat_registered ? " MWST" : ""}</p>}
+          <p><a className="underline" href={`mailto:${shopProfile.email}`}>{shopProfile.email}</a>{shopProfile.phone ? ` · ${shopProfile.phone}` : ""}</p>
+          <p className="pt-1 whitespace-pre-wrap text-muted-foreground">{shopProfile.warranty_text}</p>
         </CardContent></Card>
       )}
     </PageContainer>

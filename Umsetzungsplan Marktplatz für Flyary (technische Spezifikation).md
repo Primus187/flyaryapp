@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.6 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.7 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -180,7 +180,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** Migration `0036_marketplace_listing_chat.sql` (Kanalart `listing` mit `listing_id`/`buyer_id`, `marketplace_open_chat`, `marketplace_chat_info`, angepasste `chat_can_read`/`chat_can_post`, Kanal-JSON, Posteingang und Push). Schul-Chats hängen über `group_id` an der Schule; lesen dürfen Admin, Schulleitung und `shop` (über `market_can_manage`). Tests im bestehenden Chat-Datenbanktest, der jetzt alle Marktplatz-Migrationen mitlädt und so auch prüft, dass das alte Chat-Verhalten unverändert ist. **Abweichungen:** Im Posteingang ist «Marktplatz» ein Filter-Chip wie «Direkt», kein eigener Bereich; der Zahlungshinweis erscheint nach dem Senden (nicht blockierend); die Abkürzung aus 0026 («Schulteam sieht alle Kanäle der Gruppe») gilt nur noch für Gruppen- und Terminkanäle, damit Instruktoren die Shop-Chats nicht sehen. Ist die Anzeige nicht mehr sichtbar, fehlt dem Käufer das Titelbild in der Karte (der Foto-Speicher folgt der Sichtbarkeit der Anzeige).
 
-### 4.7 Schul-Shop mit Neuware
+### 4.7 Schul-Shop mit Neuware ✅
 
 **Ziel:** Flugschulen verkaufen gewerblich (Neuware und Occasionen) mit den gesetzlich nötigen Angaben.
 
@@ -194,6 +194,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Sichtbarkeit wählbar: «alle» oder «nur unsere Schüler» (z. B. Schulungsmaterial mit Schülerrabatt)
 - Preise bei MWST-pflichtigen Schulen mit «inkl. MWST»
 - Verkaufsabwicklung vorerst im Chat und vor Ort. Die Buchung auf die Abrechnung folgt in M3 (7.2)
+
+**Ist-Stand:** Migration `0037_school_shop.sql` (`school_shop_profiles` mit Vollständigkeits-CHECK für «aktiv», `market_shop_ready`, `market_can_admin_shop`, `marketplace_my_shops`; `marketplace_publish`/`_renew` verlangen einen aktiven Shop), Kachel «Shop» (`SchoolShop.tsx`) mit Reitern Anzeigen und Shop-Profil, «Verkaufen als» im Formular, Anbieterangaben und «inkl. MWST» auf der Detailseite. **Abweichungen:** Schul-Anzeigen sind ohne aktiven Shop auch für andere unsichtbar (strenger als geplant, damit nie eine Schul-Anzeige ohne Pflichtangaben erscheint); die Funktionen vergeben weiterhin nur Admins (bestehende Regel), nicht die Schulleitung; die Angaben ändern Admins und Schulleitung, das Shop-Team liest mit; wer nur «Shop» hat, sieht im Flugschul-Bereich zusätzlich die Kacheln der Starthelfer.
 
 **Offen, mit Vertical zu klären:** Reichen diese Angaben aus Sicht der Schulen? Braucht es eigene AGB pro Schul-Shop oder genügt ein Gewährleistungstext? Kurze juristische Prüfung empfohlen (Preisbekanntgabeverordnung, UWG Art. 3 Abs. 1 lit. s zur Anbieterkennzeichnung im Onlinehandel).
 
