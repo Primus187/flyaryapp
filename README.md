@@ -1,5 +1,33 @@
 # Flyary
 
+## Marktplatz: Chat zur Anzeige (4.6)
+
+Migration `0036_marketplace_listing_chat.sql`, Logik in `src/lib/marketplace-chat.ts`, Anzeigenkarte
+`src/components/market/ListingChatCard.tsx`; Tests in `src/test/chat-channels-database.test.ts` (Abschnitt «listing chats»).
+
+- **Neue Kanalart `listing`:** ein Chat pro Anzeige und Käufer, eröffnet über «Nachricht senden» auf der Detailseite
+  (`marketplace_open_chat`). Direktnachrichten verlangen weiterhin eine gemeinsame Gruppe; ein Anzeige-Chat braucht das
+  nicht, weil er nur aus einer Anzeige entsteht, welche die Person sehen darf. Nicht für eigene, nicht veröffentlichte oder
+  abgelaufene Anzeigen und nicht für Gesperrte.
+- **Wer liest mit:** Käufer und (bei Privatanzeigen) Verkäufer als Kanalmitglieder. Bei Schul-Anzeigen steht die Schule im
+  Kanal (`group_id`), und alle, die ihre Anzeigen verwalten (Admin, Schulleitung, Funktion `shop`), lesen und antworten;
+  neue Shop-Mitarbeitende sehen bestehende Chats sofort. Instruktoren und Schüler sehen die Chats nicht (die
+  Abkürzung «Schulteam sieht alle Kanäle der Gruppe» aus 0026 gilt jetzt nur noch für Gruppen- und Terminkanäle).
+- **Bestehende Chat-Oberfläche** mit Antworten, Reaktionen, Anhängen und Bearbeiten. Oben eine Karte der Anzeige
+  (Titelbild, Titel, Preis, Status, Link zur Anzeige) und der feste Hinweis «Nie im Voraus an Unbekannte überweisen …».
+  Ein neuer Chat startet mit dem Vorschlag «Hallo, ist «Titel» noch verfügbar?» im Eingabefeld.
+- **Zahlungshinweis:** Enthält eine gesendete Nachricht eine IBAN, einen Zahlungslink (PayPal.me, Revolut, Wise, Stripe,
+  SumUp) oder «Western Union/MoneyGram», erscheint ein Warnhinweis. Die Nachricht wird trotzdem gesendet.
+- **Posteingang:** Anzeige-Chats erscheinen, sobald die erste Nachricht geschrieben ist, mit eigenem Filter «Marktplatz»,
+  dem Namen der Gegenseite und ohne @-Erwähnungen. Push wie bei Direktnachrichten (jede Nachricht, gebündelt).
+  Autorennamen stehen nur in Schul-Chats über den Nachrichten (dort antworten mehrere Personen).
+- Namen und Anzeigenkarte kommen aus `marketplace_chat_info` (SECURITY DEFINER), weil Profile Fremder per RLS nicht lesbar
+  sind; nur für Personen, die den Kanal lesen dürfen.
+- Der Chat bleibt lesbar, wenn die Anzeige verkauft oder gelöscht wird (dann «Anzeige nicht mehr online», Titel aus dem
+  Kanal).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0036), danach das Frontend.
+
 ## Marktplatz: Übersicht, Suche und Detailseite (4.5)
 
 Migration `0035_marketplace_search.sql`, Seiten `src/pages/Market.tsx` (`/market`) und

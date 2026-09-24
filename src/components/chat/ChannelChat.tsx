@@ -16,9 +16,10 @@ import { compressImage } from "@/lib/image-compress";
 import { hasConfirmed, summarizeReceipts } from "@/lib/announcement-receipts";
 import { CHAT_INBOX_KEY } from "@/hooks/use-chat";
 import {
-  extractMentions, groupReactions, insertMention, mentionQuery, mentionSuggestions, REACTION_EMOJIS, replySnippet, splitMentions,
-  type ChatChannel, type MentionCandidate, type Reaction,
+  extractMentions, groupReactions, insertMention, mentionQuery, mentionsEnabled, mentionSuggestions, REACTION_EMOJIS, replySnippet,
+  showsAuthorNames, splitMentions, type ChatChannel, type MentionCandidate, type Reaction,
 } from "@/lib/chat";
+import { paymentRisk } from "@/lib/marketplace-chat";
 
 interface ChatMessage {
   id: string;
@@ -45,7 +46,11 @@ const chatTable = (name: string) => supabase.from(name as any) as any;
  * `fullHeight` fills the channel page; otherwise it is embedded (e.g. the event page's chat tab).
  * `focusMessageId` scrolls to and highlights one message (search results).
  */
-export default function ChannelChat({ channel, fullHeight = false, focusMessageId }: { channel: ChatChannel; fullHeight?: boolean; focusMessageId?: string | null }) {
+export default function ChannelChat({ channel, fullHeight = false, focusMessageId, initialText }: {
+  channel: ChatChannel; fullHeight?: boolean; focusMessageId?: string | null;
+  /** Prefilled composer text (e.g. the first question about a listing). */
+  initialText?: string | null;
+}) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -54,7 +59,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText ?? "");
   const [sending, setSending] = useState(false);
   const [announcement, setAnnouncement] = useState(false);
   const [requiresConfirmation, setRequiresConfirmation] = useState(false);
@@ -292,7 +297,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
     if (!editing || sending) return;
     setSending(true);
     try {
-      const mentions = channel.kind === "direct" ? [] : extractMentions(text, readers);
+      const mentions = mentionsEnabled(channel) ? extractMentions(text, readers) : [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
       const { error } = await supabase.rpc("chat_edit_message" as any, { _message: editing.id, _text: text, _mentions: mentions } as any);
       if (error) {
@@ -336,8 +341,8 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
         user_id: user.id,
         message: text.trim(),
         // Replying notifies the replied-to author like a mention (direct channels push every message anyway).
-        mentions: [...new Set([...extractMentions(text, readers),
-          ...(replyTo && replyTo.user_id !== user.id && channel.kind !== "direct" ? [replyTo.user_id] : [])])],
+        mentions: mentionsEnabled(channel) ? [...new Set([...extractMentions(text, readers),
+          ...(replyTo && replyTo.user_id !== user.id ? [replyTo.user_id] : [])])] : [],
         reply_to: replyTo?.id ?? null,
         attachment_path: attachmentPath,
         is_announcement: isAnnouncement,
@@ -346,6 +351,10 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
       if (error) {
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       } else {
+        // Listing chats: remind (never block) when someone asks for or offers payment in advance.
+        if (channel.kind === "listing" && paymentRisk(text)) {
+          toast({ title: t("market.chat.paymentWarningTitle"), description: t("market.chat.paymentWarning") });
+        }
         setText("");
         setReplyTo(null);
         setPendingFile(null);
@@ -383,7 +392,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
 
   const onTextChange = (value: string, cursor: number | null) => {
     setText(value);
-    setMentionQ(mentionQuery(value.slice(0, cursor ?? value.length)));
+    setMentionQ(mentionsEnabled(channel) ? mentionQuery(value.slice(0, cursor ?? value.length)) : null);
     setMentionIndex(0);
   };
 
@@ -471,7 +480,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                         <Megaphone className="h-2.5 w-2.5" /> {t("chat.announcement")}
                       </Badge>
                     )}
-                    {!isMe && channel.kind !== "direct" && <p className="text-[10px] font-medium opacity-70 mb-0.5">{profiles[msg.user_id] || "Pilot"}</p>}
+                    {!isMe && showsAuthorNames(channel) && <p className="text-[10px] font-medium opacity-70 mb-0.5">{profiles[msg.user_id] || "Pilot"}</p>}
                     {msg.reply_to && (
                       <button type="button" onClick={() => parent && scrollToMessage(parent.id)}
                         className={`mb-1 block w-full rounded-md border-l-2 px-2 py-1 text-left text-[11px] ${ownBubble ? "border-primary-foreground/60 bg-primary-foreground/15" : "border-primary/60 bg-background/60"}`}>
@@ -680,7 +689,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                   </ul>
                 )}
                 <Input ref={inputRef} value={text} onChange={(e) => onTextChange(e.target.value, e.target.selectionStart)}
-                  onBlur={() => setMentionQ(null)} placeholder={channel.kind === "direct" ? t("events.typeMessage") : t("chat.typeMessageMention")}
+                  onBlur={() => setMentionQ(null)} placeholder={mentionsEnabled(channel) ? t("chat.typeMessageMention") : t("events.typeMessage")}
                   onKeyDown={onKeyDown} className="h-9 text-sm" />
               </div>
               <Button size="icon" className="h-9 w-9 shrink-0" onClick={send} disabled={(!text.trim() && !pendingFile) || sending} aria-label={t("chat.send")}>

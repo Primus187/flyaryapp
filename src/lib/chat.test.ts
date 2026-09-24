@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { audienceSummary, availableFilters, channelTitle, filterChannels, formatUnread, totalUnread, type ChatChannel } from "./chat";
+import {
+  audienceSummary, availableFilters, channelTitle, filterChannels, formatUnread, mentionsEnabled, showsAuthorNames, totalUnread, type ChatChannel,
+} from "./chat";
 
 const base: ChatChannel = {
   id: "x", kind: "group", name: "Allgemein", description: null, group_id: "g", group_name: "Vertical", group_type: "school",
@@ -118,5 +120,30 @@ describe("direct messages, reactions, replies", () => {
     expect(replySnippet("  Hallo\n  Welt ", false)).toBe("Hallo Welt");
     expect(replySnippet("", true)).toBe("📎");
     expect(replySnippet("abcdefghij", false, 5)).toBe("abcd…");
+  });
+});
+
+describe("listing chats (marketplace 4.6)", () => {
+  const info = { listing_id: "l", title: "Alpha 7", price_cents: 150000, price_type: "fixed" as const, listing_type: "offer" as const,
+    status: "active" as const, thumb_path: null, is_school: false, i_am_buyer: true, buyer_id: "b", peer_name: "Paula" };
+  const privateChat = ch({ id: "m", kind: "listing", name: "Alpha 7", group_id: null, group_name: null, group_type: null, listing: info,
+    last_message_at: "2026-09-19T10:00:00Z" });
+  const schoolChat = ch({ id: "n", kind: "listing", name: "Schulschirm", listing: { ...info, is_school: true, peer_name: "Vertical" } });
+
+  it("gets its own inbox filter and is found by the other party's name", () => {
+    expect(availableFilters([school, privateChat])).toEqual(["all", "market", "school"]);
+    expect(filterChannels([school, privateChat], "market").map((c) => c.id)).toEqual(["m"]);
+    expect(filterChannels([school, privateChat], "school").map((c) => c.id)).toEqual(["s"]);
+    expect(filterChannels([school, privateChat], "all", "paula").map((c) => c.id)).toEqual(["m"]);
+    expect(channelTitle(privateChat)).toBe("Alpha 7");
+  });
+
+  it("shows author names only when a school team answers; no @mentions", () => {
+    expect(showsAuthorNames(privateChat)).toBe(false);
+    expect(showsAuthorNames(schoolChat)).toBe(true);
+    expect(showsAuthorNames(school)).toBe(true);
+    expect(showsAuthorNames(ch({ kind: "direct" }))).toBe(false);
+    expect(mentionsEnabled(privateChat)).toBe(false);
+    expect(mentionsEnabled(school)).toBe(true);
   });
 });

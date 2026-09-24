@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { PGlite } from "@electric-sql/pglite";
+import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -24,10 +25,10 @@ async function visibleChannelNames(uid: string) {
 }
 
 beforeAll(async () => {
-  db = new PGlite();
+  db = new PGlite({ extensions: { pg_trgm } });
   await db.exec(`
     CREATE ROLE authenticated; CREATE ROLE anon;
-    CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE PUBLICATION supabase_realtime;
+    CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE SCHEMA extensions; CREATE PUBLICATION supabase_realtime;
     GRANT USAGE ON SCHEMA auth, storage TO authenticated;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id', true), '')::uuid $$;
     CREATE TABLE auth.users (id uuid PRIMARY KEY);
@@ -35,10 +36,10 @@ beforeAll(async () => {
     ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
     CREATE FUNCTION storage.foldername(name text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$ SELECT (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1] $$;
     CREATE TYPE public.group_type AS ENUM ('school', 'pilot_group');
-    CREATE TABLE public.groups (id uuid PRIMARY KEY, name text, group_type public.group_type, created_by uuid);
+    CREATE TABLE public.groups (id uuid PRIMARY KEY, name text, group_type public.group_type, created_by uuid, created_at timestamptz DEFAULT now());
     CREATE TABLE public.group_members (group_id uuid, user_id uuid, role text, joined_at timestamptz DEFAULT now());
     CREATE TABLE public.group_member_functions (group_id uuid, user_id uuid, function text);
-    CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, pilot_name text, training_level text);
+    CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, pilot_name text, training_level text, avatar_url text, created_at timestamptz DEFAULT now());
     CREATE TABLE public.flight_events (id uuid PRIMARY KEY, group_id uuid, title text, event_date timestamptz, created_by uuid);
     CREATE TABLE public.event_signups (event_id uuid, user_id uuid, signed_up boolean);
     CREATE TABLE public.event_staff (event_id uuid, user_id uuid);
@@ -85,6 +86,24 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0028_chat_notifications.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0029_chat_direct_replies_reactions.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0030_chat_edit_message.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
+  // Marketplace up to the listing chat (0036), which changes chat_can_read/_post, the channel JSON, inbox and push.
+  // Everything above keeps running against the changed functions.
+  await db.exec(`
+    CREATE TYPE public.group_function AS ENUM ('student', 'licensed', 'launch_helper', 'instructor', 'school_lead');
+    CREATE TYPE public.app_role AS ENUM ('admin', 'moderator', 'user');
+    CREATE TABLE public.user_roles (user_id uuid, role public.app_role);
+    CREATE TABLE public.flights (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid);
+    CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
+    CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
+      SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role) $$;
+    CREATE FUNCTION public.has_group_function(_user_id uuid, _group_id uuid, _function public.group_function)
+      RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
+      SELECT EXISTS (SELECT 1 FROM public.group_member_functions WHERE user_id = _user_id AND group_id = _group_id AND function = _function::text) $$;
+  `);
+  for (const name of ["0031_marketplace_group_functions", "0032_marketplace_listings", "0033_marketplace_photos",
+    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat"]) {
+    await db.exec(readFileSync(new URL(`../../drizzle/migrations/${name}.sql`, import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
+  }
   // Channels created by staff after the migration
   await asAdminDb();
   await db.exec(`
@@ -391,5 +410,111 @@ describe("editing messages", () => {
     await expect(db.exec(`UPDATE public.chat_messages SET message = 'direkt' WHERE id = '${msg}'`)).resolves.toBeDefined();
     await asAdminDb();
     expect((await db.query<{ message: string }>(`SELECT message FROM public.chat_messages WHERE id = '${msg}'`)).rows[0].message).toBe("Tippfehler");
+  });
+});
+
+describe("listing chats (marketplace 4.6)", () => {
+  // licensed runs the school shop; outsider shares no group with anyone and still may ask about listings
+  const shopMember = licensed;
+  let privateListing: string, schoolListing: string, draftListing: string;
+  const listing = async (seller: string | null, group: string | null, title: string, status = "active") => {
+    await asAdminDb();
+    return (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, seller_group_id, created_by, category, title,
+      price_cents, status, published_at, bumped_at, expires_at) VALUES ($1, $2, $3, 'glider', $4, 150000, $5, now(), now(), now() + interval '60 days')
+      RETURNING id`, [seller, group, seller ?? admin, title, status])).rows[0].id;
+  };
+  const openChat = async (uid: string, l: string) => {
+    await asUser(uid);
+    return (await db.query<{ id: string }>(`SELECT public.marketplace_open_chat('${l}') AS id`)).rows[0].id;
+  };
+  const post = async (uid: string, channel: string, message: string) => {
+    await asUser(uid);
+    await db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message) VALUES ('${channel}', '${uid}', '${message}')`);
+  };
+  const canRead = async (uid: string, channel: string) => {
+    await asUser(uid);
+    return (await db.query(`SELECT 1 FROM public.chat_messages WHERE channel_id = '${channel}'`)).rows.length > 0;
+  };
+  const json = async (uid: string, channel: string) => {
+    await asUser(uid);
+    return (await db.query<{ c: { kind: string; can_post: boolean; listing: Record<string, unknown> | null } }>(
+      `SELECT public.chat_channel_json('${channel}') AS c`)).rows[0].c;
+  };
+
+  beforeAll(async () => {
+    await asAdminDb();
+    await db.exec(`
+      INSERT INTO public.profiles (user_id, pilot_name) VALUES ('${outsider}', 'Olivia'), ('${pilotMember}', 'Paula')
+        ON CONFLICT (user_id) DO UPDATE SET pilot_name = excluded.pilot_name;
+      INSERT INTO public.group_member_functions VALUES ('${school}', '${shopMember}', 'shop');
+      DELETE FROM public.pushes;
+    `);
+    privateListing = await listing(pilotMember, null, "Advance Alpha 7");
+    schoolListing = await listing(null, school, "Schulschirm Occasion");
+    draftListing = await listing(pilotMember, null, "Entwurf", "draft");
+  });
+
+  it("opens one chat per listing and buyer, without a shared group", async () => {
+    const chat = await openChat(outsider, privateListing);
+    expect(await openChat(outsider, privateListing)).toBe(chat);
+    await asUser(pilotMember);
+    await expect(db.query(`SELECT public.marketplace_open_chat('${privateListing}')`)).rejects.toThrow("marketplace:own_listing");
+    await asUser(outsider);
+    await expect(db.query(`SELECT public.marketplace_open_chat('${draftListing}')`)).rejects.toThrow("marketplace:not_found");
+    await asUser(outsider);
+    await expect(db.exec(`INSERT INTO public.chat_channels (kind, name, listing_id, buyer_id) VALUES ('listing', 'x', '${privateListing}', '${outsider}')`)).rejects.toThrow();
+  });
+
+  it("private listing: buyer and seller talk, nobody else reads; pushes like a direct message", async () => {
+    const chat = await openChat(outsider, privateListing);
+    await post(outsider, chat, "Ist der Schirm noch da?");
+    await post(pilotMember, chat, "Ja, gerne vorbeikommen");
+    expect(await canRead(outsider, chat)).toBe(true);
+    expect(await canRead(pilotMember, chat)).toBe(true);
+    expect(await canRead(groundStudent, chat)).toBe(false);
+    expect(await canRead(admin, chat)).toBe(false);
+    await asAdminDb();
+    expect((await db.query<{ title: string }>(`SELECT title FROM public.pushes WHERE user_id = '${pilotMember}'`)).rows.map((r) => r.title))
+      .toEqual(["Advance Alpha 7"]);
+    expect(await json(outsider, chat)).toMatchObject({ kind: "listing", can_post: true,
+      listing: { title: "Advance Alpha 7", i_am_buyer: true, peer_name: "Paula", status: "active", is_school: false } });
+    expect((await json(pilotMember, chat)).listing).toMatchObject({ i_am_buyer: false, peer_name: "Olivia" });
+  });
+
+  it("school listing: the shop team answers; instructors and students do not see the chat", async () => {
+    const chat = await openChat(outsider, schoolListing);
+    await post(outsider, chat, "Welche Grösse?");
+    await post(shopMember, chat, "Grösse M");
+    expect(await canRead(admin, chat)).toBe(true);
+    expect(await canRead(instructor, chat)).toBe(false);
+    expect(await canRead(groundStudent, chat)).toBe(false);
+    await asUser(instructor);
+    expect((await db.query(`SELECT 1 FROM public.chat_channels WHERE id = '${chat}'`)).rows).toHaveLength(0);
+    expect((await json(outsider, chat)).listing).toMatchObject({ peer_name: "Vertical", is_school: true });
+    await asUser(shopMember);
+    const readers = (await db.query<{ pilot_name: string }>(`SELECT pilot_name FROM public.chat_channel_readers('${chat}') ORDER BY pilot_name`)).rows;
+    expect(readers.map((r) => r.pilot_name)).toEqual(["Admin", "Olivia", "Tim"]);
+  });
+
+  it("keeps empty listing chats out of the inbox", async () => {
+    const empty = await openChat(groundStudent, privateListing);
+    const inbox = async (uid: string) => {
+      await asUser(uid);
+      return (await db.query<{ i: { id: string; kind: string }[] }>("SELECT public.chat_inbox() AS i")).rows[0].i.filter((c) => c.kind === "listing").map((c) => c.id);
+    };
+    expect(await inbox(groundStudent)).not.toContain(empty);
+    expect(await inbox(pilotMember)).toHaveLength(1);
+  });
+
+  it("banned people cannot write; the chat outlives the listing", async () => {
+    const chat = await openChat(outsider, privateListing);
+    await asAdminDb();
+    await db.exec(`INSERT INTO public.marketplace_bans (user_id) VALUES ('${outsider}')`);
+    await expect(post(outsider, chat, "Hallo?")).rejects.toThrow();
+    expect((await json(outsider, chat)).can_post).toBe(false);
+    await asAdminDb();
+    await db.exec(`DELETE FROM public.marketplace_bans; DELETE FROM public.marketplace_listings WHERE id = '${privateListing}'`);
+    expect(await canRead(pilotMember, chat)).toBe(true);
+    expect((await json(pilotMember, chat)).listing).toMatchObject({ title: "Advance Alpha 7", status: "removed", listing_id: null });
   });
 });

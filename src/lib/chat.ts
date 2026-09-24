@@ -1,8 +1,8 @@
 /** Chat channels (migration 0025): shapes returned by chat_inbox()/chat_channel_json() and the
  *  pure helpers the inbox, channel page and channel form share. */
-export type ChannelKind = "group" | "event" | "direct";
+export type ChannelKind = "group" | "event" | "direct" | "listing";
 export type ChannelAudience = "all" | "team" | "students" | "custom";
-export type InboxFilter = "all" | "direct" | "school" | "groups" | "events";
+export type InboxFilter = "all" | "direct" | "market" | "school" | "groups" | "events";
 export type NotifyLevel = "all" | "mentions" | "none";
 
 export interface ChatChannel {
@@ -29,21 +29,48 @@ export interface ChatChannel {
   notify_level?: NotifyLevel;
   /** Direct channels only: the other person. */
   peer?: { user_id: string; pilot_name: string } | null;
+  /** Listing chats only (marketplace 4.6): the listing and the other party. */
+  listing?: ListingChatInfo | null;
   last_message: { message: string; has_attachment: boolean; is_announcement: boolean; created_at: string; user_id: string; author: string } | null;
   unread: number;
 }
+
+/** marketplace_chat_info(): the listing card of a listing chat (the listing may be gone: status "removed"). */
+export interface ListingChatInfo {
+  listing_id: string | null;
+  title: string;
+  price_cents: number | null;
+  price_type: "fixed" | "negotiable" | "free" | "on_request" | null;
+  listing_type: "offer" | "wanted" | null;
+  status: "draft" | "active" | "reserved" | "sold" | "expired" | "removed";
+  thumb_path: string | null;
+  is_school: boolean;
+  i_am_buyer: boolean;
+  buyer_id: string | null;
+  /** Buyer side: seller or school name; seller side: the buyer's name. */
+  peer_name: string | null;
+}
+
+/** Author names above messages: not in one-to-one conversations (direct, private listing chat). */
+export const showsAuthorNames = (c: Pick<ChatChannel, "kind" | "listing">) =>
+  c.kind !== "direct" && !(c.kind === "listing" && !c.listing?.is_school);
+
+/** @mentions only where a group reads along. */
+export const mentionsEnabled = (c: Pick<ChatChannel, "kind">) => c.kind !== "direct" && c.kind !== "listing";
 
 /** Training levels a students channel can be limited to (school stages without "licensed"). */
 export const STUDENT_LEVELS = ["ground", "altitude", "exam_ready"] as const;
 
 export function channelTitle(channel: Pick<ChatChannel, "kind" | "name" | "event_title"> & { peer?: ChatChannel["peer"] }): string {
   if (channel.kind === "direct") return channel.peer?.pilot_name || "Pilot";
+  if (channel.kind === "listing") return channel.name || "";
   return channel.kind === "event" ? channel.event_title || "" : channel.name || "";
 }
 
 export function matchesFilter(channel: ChatChannel, filter: InboxFilter): boolean {
   switch (filter) {
     case "direct": return channel.kind === "direct";
+    case "market": return channel.kind === "listing";
     case "school": return channel.kind === "group" && channel.group_type === "school";
     case "groups": return channel.kind === "group" && channel.group_type !== "school";
     case "events": return channel.kind === "event";
@@ -60,7 +87,7 @@ export function sortChannels(channels: ChatChannel[]): ChatChannel[] {
 export function filterChannels(channels: ChatChannel[], filter: InboxFilter, query = ""): ChatChannel[] {
   const q = query.trim().toLowerCase();
   return sortChannels(channels.filter((c) => matchesFilter(c, filter)
-    && (!q || `${channelTitle(c)} ${c.group_name ?? ""}`.toLowerCase().includes(q))));
+    && (!q || `${channelTitle(c)} ${c.group_name ?? ""} ${c.listing?.peer_name ?? ""}`.toLowerCase().includes(q))));
 }
 
 /** Unread messages across channels; archived and muted channels do not count. */
@@ -74,7 +101,7 @@ export function formatUnread(count: number): string {
 
 /** Which filter chips are worth showing (only those with at least one channel). */
 export function availableFilters(channels: ChatChannel[]): InboxFilter[] {
-  return (["all", "direct", "school", "groups", "events"] as InboxFilter[]).filter((f) => f === "all" || channels.some((c) => matchesFilter(c, f)));
+  return (["all", "direct", "market", "school", "groups", "events"] as InboxFilter[]).filter((f) => f === "all" || channels.some((c) => matchesFilter(c, f)));
 }
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -82,6 +109,7 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 export function audienceSummary(channel: Pick<ChatChannel, "kind" | "audience" | "audience_levels">, t: Translate): string {
   if (channel.kind === "event") return t("chat.audience.event");
   if (channel.kind === "direct") return t("chat.audience.direct");
+  if (channel.kind === "listing") return t("chat.audience.listing");
   const base = t(`chat.audience.${channel.audience}`);
   const levels = channel.audience === "students" ? channel.audience_levels || [] : [];
   return levels.length ? `${base} · ${levels.map((l) => t(`chat.levels.${l}`)).join(", ")}` : base;

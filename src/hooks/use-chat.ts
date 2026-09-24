@@ -88,7 +88,7 @@ export async function openDirectChannel(otherUserId: string): Promise<string> {
 
 export interface ChatSearchHit {
   id: string; channel_id: string; message: string; created_at: string; author: string;
-  channel: string | null; kind: "group" | "event" | "direct"; group_name: string | null;
+  channel: string | null; kind: "group" | "event" | "direct" | "listing"; group_name: string | null;
 }
 
 /** Messages containing the query across every readable channel (at least 2 characters). */

@@ -1621,7 +1621,8 @@
       "students": "Schüler",
       "custom": "Ausgewählte Personen",
       "event": "Angemeldete und Team",
-      "direct": "Direktnachricht"
+      "direct": "Direktnachricht",
+      "listing": "Marktplatz-Anfrage"
     },
     "audienceHint": {
       "all": "Jedes Gruppenmitglied",
@@ -1649,6 +1650,7 @@
     "filters": {
       "all": "Alle",
       "direct": "Direkt",
+      "market": "Marktplatz",
       "school": "Schule",
       "groups": "Gruppen",
       "events": "Termine"
@@ -1907,7 +1909,8 @@
         "limit_active": "Höchstzahl aktiver Anzeigen erreicht (10 pro Person, 50 pro Schule).",
         "limit_daily": "Höchstens 5 neue Anzeigen pro Tag.",
         "bump_too_soon": "Hochschieben geht einmal pro Woche.",
-        "unknown": "Etwas ist schiefgelaufen."
+        "unknown": "Etwas ist schiefgelaufen.",
+        "own_listing": "Das ist deine eigene Anzeige."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2034,6 +2037,15 @@
         "quantity_other": "{{count}} Stück verfügbar",
         "share": "Teilen",
         "linkCopied": "Link kopiert"
+      },
+      "chat": {
+        "contact": "Nachricht senden",
+        "firstQuestion": "Hallo, ist «{{title}}» noch verfügbar?",
+        "openListing": "Anzeige öffnen",
+        "listingGone": "Anzeige nicht mehr online",
+        "safety": "Nie im Voraus an Unbekannte überweisen. Material vor Ort ansehen und erst bei der Übergabe bezahlen.",
+        "paymentWarningTitle": "Vorsicht bei Vorauszahlung",
+        "paymentWarning": "Zahlungsdaten im Chat sind ein häufiger Betrugstrick. Bezahle erst, wenn du das Material gesehen hast."
       }
     }
 }

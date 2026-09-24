@@ -1621,7 +1621,8 @@
       "students": "Élèves",
       "custom": "Personnes choisies",
       "event": "Inscrits et équipe",
-      "direct": "Message direct"
+      "direct": "Message direct",
+      "listing": "Demande sur le marché"
     },
     "audienceHint": {
       "all": "Chaque membre du groupe",
@@ -1649,6 +1650,7 @@
     "filters": {
       "all": "Tous",
       "direct": "Directs",
+      "market": "Marché",
       "school": "École",
       "groups": "Groupes",
       "events": "Événements"
@@ -1907,7 +1909,8 @@
         "limit_active": "Nombre maximal d'annonces actives atteint (10 par personne, 50 par école).",
         "limit_daily": "Au maximum 5 nouvelles annonces par jour.",
         "bump_too_soon": "On peut remonter une annonce une fois par semaine.",
-        "unknown": "Un problème est survenu."
+        "unknown": "Un problème est survenu.",
+        "own_listing": "C'est ta propre annonce."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2034,6 +2037,15 @@
         "quantity_other": "{{count}} pièces disponibles",
         "share": "Partager",
         "linkCopied": "Lien copié"
+      },
+      "chat": {
+        "contact": "Envoyer un message",
+        "firstQuestion": "Bonjour, « {{title}} » est-il encore disponible ?",
+        "openListing": "Ouvrir l'annonce",
+        "listingGone": "Annonce plus en ligne",
+        "safety": "Ne jamais payer d'avance à des inconnus. Voir le matériel sur place et payer à la remise.",
+        "paymentWarningTitle": "Prudence avec le paiement d'avance",
+        "paymentWarning": "Des coordonnées de paiement dans un chat sont une arnaque fréquente. Paie seulement après avoir vu le matériel."
       }
     }
 }

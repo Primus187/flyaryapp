@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle, ImageOff, Info, MapPin, Pencil, School, Share2, Truck } from "lucide-react";
+import { AlertTriangle, ImageOff, Info, MapPin, MessageCircle, Pencil, School, Share2, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/layout/PageContainer";
@@ -16,7 +16,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import type { MarketplaceListing } from "@/lib/marketplace";
 import { CATEGORY_SPECS, parseMonthDate, type AttributeField } from "@/lib/marketplace-categories";
-import { effectiveStatus } from "@/lib/marketplace-listing";
+import { effectiveStatus, marketErrorCode } from "@/lib/marketplace-listing";
+import { openListingChat } from "@/lib/marketplace-chat";
 import { listingPhotoUrls, sortPhotos, type ListingPhoto } from "@/lib/marketplace-photos";
 import { safetyHints } from "@/lib/marketplace-safety";
 import { ageLabel } from "@/lib/marketplace-search";
@@ -44,6 +45,7 @@ export default function MarketListingDetail() {
   const [avatar, setAvatar] = useState("");
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [contacting, setContacting] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -117,6 +119,16 @@ export default function MarketListingDetail() {
     } catch { /* share sheet closed */ }
   };
 
+  const contact = async () => {
+    setContacting(true);
+    try {
+      navigate(await openListingChat(listing.id, t("market.chat.firstQuestion", { title: listing.title })));
+    } catch (e) {
+      toast.error(t(`market.errors.${marketErrorCode(e)}`));
+      setContacting(false);
+    }
+  };
+
   const place = [listing.postal_code, listing.locality].filter(Boolean).join(" ") + (listing.canton && listing.canton !== "other" ? ` (${listing.canton})` : "");
 
   return (
@@ -159,9 +171,13 @@ export default function MarketListingDetail() {
         </div>
       </div>
 
-      {canManage && (
+      {canManage ? (
         <Button variant="outline" className="w-full gap-2" onClick={() => navigate(`/market/${listing.id}/edit`)}>
           <Pencil className="h-4 w-4" /> {t("market.mine.edit")}
+        </Button>
+      ) : (status === "active" || status === "reserved") && (
+        <Button className="w-full gap-2" disabled={contacting} onClick={() => void contact()}>
+          <MessageCircle className="h-4 w-4" /> {t("market.chat.contact")}
         </Button>
       )}
 

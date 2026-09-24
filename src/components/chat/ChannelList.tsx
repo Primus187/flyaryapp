@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Archive, BellOff, CalendarDays, Hash, Lock, Megaphone, MessageCircle, Users } from "lucide-react";
-import { channelTitle, formatUnread, initials, type ChatChannel } from "@/lib/chat";
+import { Archive, BellOff, CalendarDays, Hash, Lock, Megaphone, MessageCircle, Store, Users } from "lucide-react";
+import { channelTitle, formatUnread, initials, showsAuthorNames, type ChatChannel } from "@/lib/chat";
 
 function ChannelIcon({ channel }: { channel: ChatChannel }) {
   if (channel.kind === "direct") {
@@ -11,7 +11,7 @@ function ChannelIcon({ channel }: { channel: ChatChannel }) {
       </div>
     );
   }
-  const Icon = channel.archived_at ? Archive : channel.kind === "event" ? CalendarDays : channel.audience === "team" ? Users
+  const Icon = channel.archived_at ? Archive : channel.kind === "listing" ? Store : channel.kind === "event" ? CalendarDays : channel.audience === "team" ? Users
     : channel.staff_only_posting ? Megaphone : channel.audience === "custom" ? Lock : channel.is_default ? MessageCircle : Hash;
   return (
     <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
@@ -39,7 +39,7 @@ export default function ChannelList({ channels, showGroup = true, emptyText }: {
       {channels.map((c) => {
         const last = c.last_message;
         const preview = last
-          ? `${last.author && c.kind !== "direct" ? `${last.author}: ` : ""}${last.message || (last.has_attachment ? t("chat.attachmentPreview") : "")}`
+          ? `${last.author && showsAuthorNames(c) ? `${last.author}: ` : ""}${last.message || (last.has_attachment ? t("chat.attachmentPreview") : "")}`
           : c.kind === "event" && c.event_date
             ? new Date(c.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })
             : c.description || t("chat.noMessagesYet");
@@ -50,7 +50,9 @@ export default function ChannelList({ channels, showGroup = true, emptyText }: {
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
                 <p className={`truncate text-sm ${c.unread > 0 ? "font-semibold" : "font-medium"}`}>{channelTitle(c)}</p>
-                {showGroup && c.group_name && <span className="truncate text-[11px] text-muted-foreground">{c.group_name}</span>}
+                {c.kind === "listing"
+                  ? c.listing?.peer_name && <span className="truncate text-[11px] text-muted-foreground">{c.listing.peer_name}</span>
+                  : showGroup && c.group_name && <span className="truncate text-[11px] text-muted-foreground">{c.group_name}</span>}
                 <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{relativeTime(c.last_message_at || c.created_at, locale)}</span>
               </div>
               <div className="flex items-center gap-2">

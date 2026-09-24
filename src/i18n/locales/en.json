@@ -1621,7 +1621,8 @@
       "students": "Students",
       "custom": "Selected people",
       "event": "Participants and team",
-      "direct": "Direct message"
+      "direct": "Direct message",
+      "listing": "Marketplace enquiry"
     },
     "audienceHint": {
       "all": "Every group member",
@@ -1649,6 +1650,7 @@
     "filters": {
       "all": "All",
       "direct": "Direct",
+      "market": "Marketplace",
       "school": "School",
       "groups": "Groups",
       "events": "Events"
@@ -1907,7 +1909,8 @@
         "limit_active": "Maximum of active listings reached (10 per person, 50 per school).",
         "limit_daily": "At most 5 new listings per day.",
         "bump_too_soon": "Bumping works once a week.",
-        "unknown": "Something went wrong."
+        "unknown": "Something went wrong.",
+        "own_listing": "This is your own listing."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2034,6 +2037,15 @@
         "quantity_other": "{{count}} pieces available",
         "share": "Share",
         "linkCopied": "Link copied"
+      },
+      "chat": {
+        "contact": "Send message",
+        "firstQuestion": "Hi, is \"{{title}}\" still available?",
+        "openListing": "Open listing",
+        "listingGone": "Listing no longer online",
+        "safety": "Never transfer money to strangers in advance. See the equipment in person and pay at handover.",
+        "paymentWarningTitle": "Careful with payment in advance",
+        "paymentWarning": "Payment details in a chat are a common scam. Only pay once you have seen the equipment."
       }
     }
 }
