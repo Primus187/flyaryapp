@@ -14,6 +14,8 @@
     "more": "More"
   },
   "common": {
+    "updateAvailable": "New version available",
+    "reloadNow": "Reload",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",

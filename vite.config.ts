@@ -40,10 +40,18 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        importScripts: ["/push-sw.js"],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        globIgnores: ["**/stats.html"],
+        // Heavy, rarely used chunks (3D map ~1 MB, XLSX import ~340 KB) are not precached on
+        // install; they are cached at runtime on first use instead (see runtimeCaching).
+        globIgnores: ["**/stats.html", "**/push-sw.js", "**/assets/Flight3DMap-*.js", "**/assets/ImportFlights-*.js"],
         navigateFallbackDenylist: [/^\/~oauth/],
         runtimeCaching: [
+          {
+            urlPattern: /\/assets\/(Flight3DMap|ImportFlights)-.*\.js$/,
+            handler: "CacheFirst",
+            options: { cacheName: "lazy-heavy-chunks", expiration: { maxEntries: 10 } },
+          },
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: "NetworkFirst",

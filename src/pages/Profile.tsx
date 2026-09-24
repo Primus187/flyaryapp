@@ -74,7 +74,12 @@ export default function Profile() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("*").eq("user_id", user.id).single().then(({ data }) => {
+    // Sensitive columns are not selectable directly (column grants); the owner reads them via RPC.
+    Promise.all([
+      supabase.from("profiles").select("pilot_name, glider_info, bio, avatar_url, cover_photo_url, flight_school").eq("user_id", user.id).single(),
+      supabase.rpc("get_own_profile_private"),
+    ]).then(([{ data: base }, { data: privateRows }]) => {
+      const data = base ? { ...base, ...(privateRows?.[0] || {}) } : null;
       if (data) {
         setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);

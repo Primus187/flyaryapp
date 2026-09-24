@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +35,7 @@ export default function EventDetail() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [event, setEvent] = useState<any>(null);
   const [signups, setSignups] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
@@ -189,6 +191,7 @@ export default function EventDetail() {
       toast({ title: t("common.error"), description: error.message.includes("deadline") ? t("events.deadlinePassed") : error.message, variant: "destructive" });
       return;
     }
+    void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
     await refetchSignups();
   };
 
@@ -232,13 +235,13 @@ export default function EventDetail() {
             <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}><Pencil className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={async () => {
               if (!confirm(t("events.deleteEventConfirm"))) return;
-              await supabase.from("event_signups").delete().eq("event_id", id!);
-              await supabase.from("event_briefing_tasks").delete().eq("event_id", id!);
-              await supabase.from("event_maneuvers").delete().eq("event_id", id!);
-              await supabase.from("event_messages").delete().eq("event_id", id!);
-              await supabase.from("student_day_notes").delete().eq("event_id", id!);
-              await supabase.from("event_photos").delete().eq("event_id", id!);
-              await supabase.from("flight_events").delete().eq("id", id!);
+              // Child rows (signups, chat, briefing, day notes, photos) cascade in the database;
+              // deleting them one by one first lost them whenever the event delete itself failed.
+              const { error: deleteError } = await supabase.from("flight_events").delete().eq("id", id!);
+              if (deleteError) {
+                toast({ title: t("common.error"), description: deleteError.message, variant: "destructive" });
+                return;
+              }
               toast({ title: t("events.eventDeleted") });
               navigate("/events");
             }}><Trash2 className="h-4 w-4" /></Button>

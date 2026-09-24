@@ -145,10 +145,22 @@ Deno.serve(async (req) => {
       return json({ error: "Missing user_id or title" }, 400);
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
+
+    // Allowed callers: other edge functions (service-role key), the database trigger
+    // (shared x-push-secret), or a signed-in user sending a test push to themselves.
+    const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    const internalSecret = Deno.env.get("PUSH_INTERNAL_SECRET");
+    let authorized = token === serviceKey ||
+      (!!internalSecret && req.headers.get("x-push-secret") === internalSecret);
+    if (!authorized && token) {
+      const { data: { user } } = await supabase.auth.getUser(token);
+      authorized = !!user && user.id === user_id;
+    }
+    if (!authorized) {
+      return json({ error: "Forbidden" }, 403);
+    }
 
     const { data: subscriptions } = await supabase
       .from("push_subscriptions")

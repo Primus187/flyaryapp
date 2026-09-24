@@ -2,7 +2,8 @@ import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
-import { i18nReady } from "./i18n";
+import i18n, { i18nReady } from "./i18n";
+import { toast } from "sonner";
 
 // Never let an older installed build cache the editable preview.
 if (import.meta.env.DEV && "serviceWorker" in navigator) {
@@ -22,8 +23,23 @@ if (import.meta.env.DEV && "serviceWorker" in navigator) {
 
 const updateSW = registerSW({
   immediate: true,
-  onNeedRefresh() {
-    updateSW(true);
+  // autoUpdate mode: the new service worker is already active; only the page reload is ours.
+  // Never reload under the user's fingers (half-filled flight form, coach notes): reload while
+  // the app is in the background, otherwise offer a button. Lazy chunks that vanished with the
+  // old precache are covered by recoverFromStaleChunk below.
+  onNeedReload() {
+    const reload = () => window.location.reload();
+    if (document.visibilityState === "hidden") { reload(); return; }
+    const reloadWhenHidden = () => {
+      if (document.visibilityState !== "hidden") return;
+      document.removeEventListener("visibilitychange", reloadWhenHidden);
+      reload();
+    };
+    document.addEventListener("visibilitychange", reloadWhenHidden);
+    toast(i18n.t("common.updateAvailable"), {
+      duration: Infinity,
+      action: { label: i18n.t("common.reloadNow"), onClick: reload },
+    });
   },
   onRegisteredSW(_swUrl, registration) {
     if (!registration) return;
@@ -39,12 +55,6 @@ const updateSW = registerSW({
     });
   },
   onOfflineReady() {},
-});
-
-navigator.serviceWorker?.addEventListener("controllerchange", () => {
-  if (sessionStorage.getItem("service-worker-reloaded") === "1") return;
-  sessionStorage.setItem("service-worker-reloaded", "1");
-  window.location.reload();
 });
 
 const recoverFromStaleChunk = () => {

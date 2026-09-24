@@ -33,19 +33,34 @@ Deno.serve(async (req) => {
     // Service-role client to delete the auth user (cascades to public tables)
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // Best-effort cleanup of storage objects owned by the user
-    try {
-      const { data: igc } = await admin.storage.from("igc-files").list(user.id, { limit: 1000 });
-      if (igc?.length) {
-        await admin.storage.from("igc-files").remove(igc.map(o => `${user.id}/${o.name}`));
+    // Best-effort cleanup of storage objects owned by the user. Files live in nested
+    // folders (`<user>/<flight>/<file>`), so list recursively: list() only returns one level
+    // and remove() on a folder name deletes nothing.
+    const listRecursive = async (bucket: string, prefix: string): Promise<string[]> => {
+      const files: string[] = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data } = await admin.storage.from(bucket).list(prefix, { limit: 1000, offset });
+        if (!data?.length) break;
+        for (const entry of data) {
+          const path = `${prefix}/${entry.name}`;
+          // Folders have no id in the storage list API.
+          if (entry.id) files.push(path);
+          else files.push(...await listRecursive(bucket, path));
+        }
+        if (data.length < 1000) break;
       }
-    } catch (_) {}
-    try {
-      const { data: photos } = await admin.storage.from("flight-photos").list(user.id, { limit: 1000 });
-      if (photos?.length) {
-        await admin.storage.from("flight-photos").remove(photos.map(o => `${user.id}/${o.name}`));
+      return files;
+    };
+    for (const bucket of ["igc-files", "flight-photos", "flight-videos"]) {
+      try {
+        const paths = await listRecursive(bucket, user.id);
+        for (let i = 0; i < paths.length; i += 500) {
+          await admin.storage.from(bucket).remove(paths.slice(i, i + 500));
+        }
+      } catch (e) {
+        console.error(`Storage cleanup failed for ${bucket}`, e);
       }
-    } catch (_) {}
+    }
 
     const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
     if (delErr) {

@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { clearSignedUrlCache } from "@/lib/signed-url-cache";
 
 interface AuthContextType {
   session: Session | null;
@@ -44,14 +45,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Supabase hands out a new user object on every token refresh (hourly, and on app resume).
+  // Many effects depend on `user`; keep its identity stable unless the account really changed,
+  // otherwise open forms (e.g. editing a flight) were reloaded and lost unsaved input.
+  const sessionUser = session?.user ?? null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- identity keyed on id + updated_at on purpose
+  const user = useMemo(() => sessionUser, [sessionUser?.id, sessionUser?.updated_at]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     queryClient.clear();
+    clearSignedUrlCache();
     if ("caches" in window) await caches.delete("supabase-api");
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,47 @@
 # Flyary
 
+## Pre-Launch-Audit (vor dem Start mit Vertical)
+
+Tiefenprüfung vor dem ersten Einsatz mit Schülerinnen und Schülern. Behobene Befunde:
+
+- **Gesundheitsdaten lesbar für alle Gruppenmitglieder (kritisch).** Das spaltenweise
+  `REVOKE SELECT (medical_notes, …)` aus Migration 20260417064846 wirkt in Postgres nicht,
+  solange die Rolle das tabellenweite SELECT-Recht hat (Supabase-Standard). Migration
+  `0018` entzieht das Tabellenrecht und vergibt nur noch die unkritischen Spalten.
+  Profil und XContest-Sync lesen die eigenen privaten Felder über `get_own_profile_private()`;
+  die SHV-Nummer wird im fremden Pilotenprofil nicht mehr angezeigt.
+- **Push-Funktion ohne Zugriffsprüfung.** `send-push` akzeptierte beliebige `user_id` mit dem
+  öffentlichen Anon-Key. Jetzt erlaubt: Service-Role-Key, eigener Test-Push, oder das
+  gemeinsame Secret aus dem Datenbank-Trigger.
+- **Push-Nachrichten wurden nie angezeigt.** Der Service Worker hatte keinen `push`-Handler;
+  neu `public/push-sw.js` (öffnet nur App-interne Links).
+- **Event löschen** löschte zuerst Anmeldungen, Chat und Tagesnotizen und scheiterte dann an
+  verknüpften Flügen. Jetzt ein einziger Delete (Kaskaden in der DB), `flights.event_id`
+  wird auf `NULL` gesetzt.
+- **Warteliste:** Abmeldung einer Person auf der Warteliste liess die nächste über das
+  Maximum nachrücken; die Feed-Abmeldung umging die Warteliste ganz (Row-Delete).
+- **Feed-Paginierung** übersprang Flüge, sobald eine ältere Challenge-Errungenschaft auf der
+  ersten Seite lag (`src/lib/feed-paging.ts`, getestet).
+- **Offline-Sync** konnte denselben Flug doppelt hochladen (Parallelaufruf, verlorene Antwort);
+  jetzt Sperre + Client-UUID als Primärschlüssel.
+- **Flug-Zwischenstand** wurde bei jedem Öffnen gespeichert und Tage später samt altem Datum
+  wiederhergestellt; jetzt nur nach Eingabe, max. 12 h, nie über einen IGC-Import.
+- **Anmeldeschluss** endete um 02:00 des gewählten Tages (UTC); jetzt Ende des lokalen Tages.
+  Event-Datum und Tagesansichten rechnen mit dem lokalen Kalendertag.
+- **Konto löschen** entfernte Fotos/IGC/Videos in Unterordnern nicht (nDSG).
+- **Token-Refresh** erzeugte ein neues `user`-Objekt und lud offene Formulare neu;
+  **App-Updates** luden die Seite mitten in der Eingabe neu (jetzt Hinweis bzw. im Hintergrund).
+- Dashboard-Cache wird nach Flug-Speichern, Offline-Sync und Anmeldungen invalidiert;
+  3D-Karte und XLSX-Import (1,4 MB) werden nicht mehr beim Installieren vorab geladen.
+
+**Auslieferung (Reihenfolge beachten):**
+1. Secret erzeugen und doppelt hinterlegen: im SQL-Editor
+   `select vault.create_secret('<zufälliger Wert>', 'push_internal_secret');` und als
+   Edge-Function-Secret `PUSH_INTERNAL_SECRET` mit demselben Wert.
+2. Migration `drizzle/migrations/0018_prelaunch_audit_fixes.sql` anwenden.
+3. Edge Functions `send-push` und `delete-account` deployen, dann das Frontend.
+   Ältere geöffnete Clients laden das Profil erst nach dem Update wieder korrekt.
+
 ## Schülerdossier
 
 Die Schülerliste öffnet ein schulbezogenes Dossier unter

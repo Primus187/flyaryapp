@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -8,8 +9,13 @@ import {
   type OfflineFlight,
 } from "@/lib/offline-queue";
 
+// Module-level lock: the mount effect, the "online" event and the manual button can fire
+// together, and a state flag read from a stale closure let them upload the same flight twice.
+let syncInFlight = false;
+
 export function useOfflineSync() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [pendingCount, setPendingCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
 
@@ -23,26 +29,32 @@ export function useOfflineSync() {
   }, []);
 
   const syncAll = useCallback(async () => {
-    if (!user || syncing) return;
+    if (!user || syncInFlight) return;
+    syncInFlight = true;
+    let synced = 0;
+    try {
     const pending = await getPendingFlights();
     if (pending.length === 0) return;
 
     setSyncing(true);
-    let synced = 0;
 
     for (const flight of pending) {
       try {
         await updateOfflineFlightStatus(flight.id, "syncing");
 
-        // Insert flight
-        const { data, error } = await supabase
+        // Insert flight with the queue id as primary key, so a retry after a lost response
+        // (insert committed, reply never arrived) cannot create a duplicate flight.
+        const { error } = await supabase
           .from("flights")
-          .insert(flight.flightData as any)
-          .select("id")
-          .single();
+          .insert({ ...flight.flightData, id: flight.id } as any);
+        if (error?.code === "23505") {
+          await removeOfflineFlight(flight.id);
+          synced++;
+          continue;
+        }
         if (error) throw error;
 
-        const flightId = data.id;
+        const flightId = flight.id;
 
         // Insert YouTube videos
         if (flight.youtubeUrls.length > 0) {
@@ -69,10 +81,14 @@ export function useOfflineSync() {
       }
     }
 
-    setSyncing(false);
-    await refreshCount();
+    } finally {
+      syncInFlight = false;
+      setSyncing(false);
+      if (synced > 0) void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
+      await refreshCount();
+    }
     return synced;
-  }, [user, syncing]);
+  }, [user, refreshCount, queryClient]);
 
   // Auto-sync when coming online
   useEffect(() => {
@@ -85,12 +101,14 @@ export function useOfflineSync() {
     return () => window.removeEventListener("online", handleOnline);
   }, [user, syncAll, refreshCount]);
 
-  // Also try sync on mount if online
+  // Also try sync on mount if online (keyed on the user id, not the user object, which
+  // changes on every token refresh)
+  const userId = user?.id;
   useEffect(() => {
-    if (navigator.onLine && user) {
+    if (navigator.onLine && userId) {
       syncAll();
     }
-  }, [user]);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps -- run once per signed-in user
 
   return { pendingCount, syncing, syncAll, refreshCount };
 }

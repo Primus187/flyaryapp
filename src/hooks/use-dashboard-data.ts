@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useQuery, QueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSignedUrl, getSignedUrls } from "@/lib/signed-url-cache";
@@ -257,8 +256,7 @@ export function prefetchDashboard(userId: string, queryClient: QueryClient, onPr
 
 export function useDashboardData() {
   const { user } = useAuth();
-  
-  const [signups, setSignups] = useState<SignupRow[]>([]);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["dashboard", user?.id],
@@ -267,9 +265,11 @@ export function useDashboardData() {
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (data?.signups) setSignups(data.signups);
-  }, [data?.signups]);
+  const signups = data?.signups || [];
+  // Signup changes go into the query cache (not component state), so they survive navigation
+  // while the cached dashboard is still considered fresh.
+  const setSignups = (update: (prev: SignupRow[]) => SignupRow[]) =>
+    queryClient.setQueryData<DashboardData>(["dashboard", user?.id], old => old && { ...old, signups: update(old.signups) });
 
   const toggleSignup = async (eventId: string) => {
     if (!user) return;

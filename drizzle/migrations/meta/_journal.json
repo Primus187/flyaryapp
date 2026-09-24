@@ -127,6 +127,13 @@
       "when": 1790121600000,
       "tag": "0017_student_dossier",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790208000000,
+      "tag": "0018_prelaunch_audit_fixes",
+      "breakpoints": true
     }
   ]
 }

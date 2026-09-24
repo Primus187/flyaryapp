@@ -20,13 +20,10 @@ export function useXcontestAutoSync() {
 
     (async () => {
       try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("xcontest_username, xcontest_password_encrypted")
-          .eq("user_id", user.id)
-          .single();
+        const { data: privateRows } = await supabase.rpc("get_own_profile_private");
+        const profile = privateRows?.[0];
 
-        if (!profile?.xcontest_username || !(profile as any).xcontest_password_encrypted) return;
+        if (!profile?.xcontest_username || !profile.xcontest_password_encrypted) return;
 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;

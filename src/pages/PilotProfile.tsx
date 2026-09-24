@@ -22,7 +22,6 @@ interface PilotData {
   avatar_url: string | null;
   cover_photo_url: string | null;
   flight_school: string | null;
-  shv_number: string | null;
 }
 
 interface GliderData {
@@ -66,7 +65,7 @@ export default function PilotProfile() {
     setLoading(true);
     try {
       const [profileRes, xpRes, badgesRes, glidersRes, flightsRes, photosRes] = await Promise.all([
-        supabase.from("profiles").select("pilot_name, bio, avatar_url, cover_photo_url, flight_school, shv_number").eq("user_id", userId!).single(),
+        supabase.from("profiles").select("pilot_name, bio, avatar_url, cover_photo_url, flight_school").eq("user_id", userId!).single(),
         supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", userId!).single(),
         supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", userId!),
         supabase.from("pilot_gliders").select("manufacturer, model, size, is_default").eq("user_id", userId!),
@@ -295,23 +294,15 @@ export default function PilotProfile() {
         </div>
       )}
 
-      {/* Flight school / SHV */}
-      {(profile.flight_school || profile.shv_number) && (
+      {/* Flight school (the SHV number is private to the pilot, see migration 0018) */}
+      {profile.flight_school && (
         <div className="px-4 mb-4">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4 space-y-2">
-              {profile.flight_school && (
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("pilotProfile.flightSchool")}</p>
-                  <p className="text-sm font-medium">{profile.flight_school}</p>
-                </div>
-              )}
-              {profile.shv_number && (
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("pilotProfile.shvNumber")}</p>
-                  <p className="text-sm font-medium">{profile.shv_number}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("pilotProfile.flightSchool")}</p>
+                <p className="text-sm font-medium">{profile.flight_school}</p>
+              </div>
             </CardContent>
           </Card>
         </div>

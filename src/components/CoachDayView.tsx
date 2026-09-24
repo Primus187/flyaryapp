@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -88,7 +89,8 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const studentIds = memberIds.filter(id => signedUpIds.includes(id));
     if (studentIds.length === 0) { setStudents([]); setLoading(false); return; }
 
-    const dateStr = new Date(eventDate).toISOString().split("T")[0];
+    // Local calendar day of the event (flights store a local date); toISOString() gave the UTC day.
+    const dateStr = format(new Date(eventDate), "yyyy-MM-dd");
 
     const [profilesRes, flightsRes, notesRes] = await Promise.all([
       supabase.from("profiles").select("user_id, pilot_name").in("user_id", studentIds),

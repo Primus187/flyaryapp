@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,7 +41,8 @@ export default function EventStudentFlights({ eventId, eventDate, groupId, isAdm
       const userIds = members.map(m => m.user_id);
 
       // Get flights on the event date by group members
-      const dateStr = new Date(eventDate).toISOString().split("T")[0];
+      // Local calendar day of the event (flights store a local date); toISOString() gave the UTC day.
+      const dateStr = format(new Date(eventDate), "yyyy-MM-dd");
       const { data: flightsData } = await supabase.from("flights")
         .select("id, user_id, date, duration_minutes, glider, takeoff_location_id, landing_location_id")
         .in("user_id", userIds)

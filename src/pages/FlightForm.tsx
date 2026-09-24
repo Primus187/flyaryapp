@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +27,8 @@ import PageHeader from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
 
 const DRAFT_KEY = "flyary.flightDraft";
+// Older drafts are dropped: restoring them silently backdated new flights to the draft day.
+const DRAFT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
@@ -41,6 +44,7 @@ export default function FlightForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [gliders, setGliders] = useState<GliderOption[]>([]);
@@ -65,6 +69,8 @@ export default function FlightForm() {
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const [draftRestored, setDraftRestored] = useState(false);
+  // Only persist a draft once the pilot actually typed/tapped something in the form.
+  const userEditedRef = useRef(false);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
@@ -132,8 +138,13 @@ export default function FlightForm() {
     if (isEdit || draftRestored) return;
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const draft = JSON.parse(raw);
+      const draft = raw ? JSON.parse(raw) : null;
+      const fresh = typeof draft?.savedAt === "number" && Date.now() - draft.savedAt < DRAFT_MAX_AGE_MS;
+      // A recorded IGC flight brings its own data; never overlay an older draft on it.
+      const importingRecording = !!(locationState?.igcFile && locationState?.igcContent);
+      if (raw && (!fresh || importingRecording)) localStorage.removeItem(DRAFT_KEY);
+      if (draft && fresh && !importingRecording) {
+        userEditedRef.current = true;
         if (draft?.form) setForm((prev) => ({ ...prev, ...draft.form }));
         if (Array.isArray(draft?.tags)) setTags(draft.tags);
         if (Array.isArray(draft?.selectedTrainingIds)) setSelectedTrainingIds(draft.selectedTrainingIds);
@@ -146,10 +157,10 @@ export default function FlightForm() {
 
   // Zwischenstand laufend speichern
   useEffect(() => {
-    if (isEdit || !draftRestored) return;
+    if (isEdit || !draftRestored || !userEditedRef.current) return;
     const timer = setTimeout(() => {
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, tags, selectedTrainingIds, step }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, tags, selectedTrainingIds, step, savedAt: Date.now() }));
       } catch { /* ignore */ }
     }, 400);
     return () => clearTimeout(timer);
@@ -463,6 +474,7 @@ export default function FlightForm() {
       } catch (e) { console.error("Badge check failed:", e); }
 
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+      void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
     } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
@@ -548,7 +560,7 @@ export default function FlightForm() {
                   <Button type="button" variant="outline" size="sm" className="h-7 text-xs pr-6" onClick={() => loadTemplate(tpl)}>
                     {tpl.name}
                   </Button>
-                  <button type="button" onClick={() => deleteTemplate(tpl.id)} className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button type="button" onClick={() => deleteTemplate(tpl.id)} aria-label={t("common.delete")} className="absolute right-1 top-1/2 -translate-y-1/2 opacity-60 hover:opacity-100 transition-opacity">
                     <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                   </button>
                 </div>
@@ -557,7 +569,7 @@ export default function FlightForm() {
           </CardContent>
         </Card>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} onInputCapture={() => { userEditedRef.current = true; }} onClickCapture={() => { userEditedRef.current = true; }} className="space-y-4">
         {showStep(1) && (<>
         <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
           <CardContent className="p-4">

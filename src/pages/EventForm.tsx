@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -135,9 +136,9 @@ export default function EventForm() {
       const d = new Date(data.event_date);
       setForm({
         group_id: data.group_id, title: data.title, description: data.description || "",
-        status: duplicateId ? "announced" : data.status, event_date: duplicateId ? (suggestedDate || "") : d.toISOString().split("T")[0],
+        status: duplicateId ? "announced" : data.status, event_date: duplicateId ? (suggestedDate || "") : format(d, "yyyy-MM-dd"),
         event_time: duplicateId ? "09:00" : d.toTimeString().slice(0, 5),
-        signup_deadline: data.signup_deadline ? new Date(data.signup_deadline).toISOString().split("T")[0] : "",
+        signup_deadline: data.signup_deadline ? format(new Date(data.signup_deadline), "yyyy-MM-dd") : "",
         event_type: data.event_type || "", meeting_point: data.meeting_point || "",
         instructor: data.instructor || "", launch_helper: data.launch_helper || "",
         max_participants: data.max_participants?.toString() || "",
@@ -195,7 +196,8 @@ export default function EventForm() {
     const payload: any = {
       group_id: form.group_id, title: form.title, description: form.description || null,
       status: form.status, event_date: eventDate,
-      signup_deadline: form.signup_deadline ? new Date(form.signup_deadline).toISOString() : null,
+      // Deadline day is inclusive: sign-ups stay open until the end of that local day.
+      signup_deadline: form.signup_deadline ? new Date(`${form.signup_deadline}T23:59:59`).toISOString() : null,
       event_type: isExperienced ? form.event_type || null : null, meeting_point: meetingPoint || null,
       instructor: form.instructor || null, launch_helper: isHeight ? form.launch_helper || null : null,
       max_participants: form.max_participants ? parseInt(form.max_participants) : null,

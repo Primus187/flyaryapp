@@ -15,6 +15,7 @@ import { Users, X } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { fetchAllPages } from "@/lib/fetch-all-pages";
+import { feedPageCutoff, newPage, type SourcePage } from "@/lib/feed-paging";
 
 const PAGE_SIZE = 10;
 
@@ -22,87 +23,6 @@ export type FeedItem =
   | { type: "flight"; date: string; data: FeedFlight }
   | { type: "event"; date: string; data: FeedEvent }
   | { type: "achievement"; date: string; data: FeedAchievement };
-
-export interface FeedPageResult {
-  items: FeedItem[];
-  groupIds: string[];
-  groupMembers: { user_id: string; pilot_name: string }[];
-  hasMore: boolean;
-}
-
-export const FEED_QUERY_KEY = (userId: string) => ["feed-initial", userId] as const;
-
-export async function fetchInitialFeedPage(userId: string): Promise<FeedPageResult> {
-  const { data: memberships } = await supabase
-    .from("group_members")
-    .select("group_id")
-    .eq("user_id", userId);
-  const gIds = memberships?.map(m => m.group_id) || [];
-
-  let groupMembers: { user_id: string; pilot_name: string }[] = [];
-  if (gIds.length > 0) {
-    const { data: members } = await supabase
-      .from("group_members")
-      .select("user_id")
-      .in("group_id", gIds);
-    if (members) {
-      const memberIds = [...new Set(members.map(m => m.user_id))];
-      const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
-      groupMembers = (profs || []).map(p => ({ user_id: p.user_id, pilot_name: p.pilot_name || "Pilot" }));
-    }
-  }
-
-  const groupMap: Record<string, string> = {};
-  if (gIds.length > 0) {
-    const { data: groups } = await supabase.from("groups").select("id, name").in("id", gIds);
-    groups?.forEach(g => { groupMap[g.id] = g.name; });
-  }
-
-  const { data: followsData } = await supabase
-    .from("follows" as any)
-    .select("following_id")
-    .eq("follower_id", userId);
-  const followedIds: string[] = (followsData || []).map((f: any) => f.following_id);
-
-  const [flightsRes, followedFlightsRes, eventsRes, achievementsRes] = await Promise.all([
-    gIds.length > 0 ? fetchFlights(userId, gIds, groupMap) : Promise.resolve([]),
-    followedIds.length > 0 ? fetchFollowedFlights(userId, followedIds) : Promise.resolve([]),
-    gIds.length > 0 ? fetchEvents(userId, gIds, groupMap) : Promise.resolve([]),
-    gIds.length > 0 ? fetchAchievements(userId, gIds, groupMap) : Promise.resolve([]),
-  ]);
-
-  const allFlights = [...flightsRes, ...followedFlightsRes];
-  const seenIds = new Set<string>();
-  const dedupedFlights = allFlights.filter(f => { if (seenIds.has(f.id)) return false; seenIds.add(f.id); return true; });
-
-  const allFlightIds = dedupedFlights.map(f => f.id);
-  const allEventIds = eventsRes.map(e => e.id);
-  const allAchIds = achievementsRes.map(a => a.id);
-
-  const bookmarkQueries = await Promise.all([
-    allFlightIds.length > 0 ? supabase.from("bookmarks").select("flight_id").eq("user_id", userId).in("flight_id", allFlightIds) : { data: [] },
-    allEventIds.length > 0 ? supabase.from("bookmarks").select("event_id").eq("user_id", userId).in("event_id", allEventIds) : { data: [] },
-    allAchIds.length > 0 ? supabase.from("bookmarks").select("achievement_id").eq("user_id", userId).in("achievement_id", allAchIds) : { data: [] },
-  ]);
-
-  const bookmarkedFlights = new Set((bookmarkQueries[0].data || []).map((b: any) => b.flight_id));
-  const bookmarkedEvents = new Set((bookmarkQueries[1].data || []).map((b: any) => b.event_id));
-  const bookmarkedAchs = new Set((bookmarkQueries[2].data || []).map((b: any) => b.achievement_id));
-
-  const items: FeedItem[] = [
-    ...dedupedFlights.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: { ...f, isBookmarked: bookmarkedFlights.has(f.id) } })),
-    ...eventsRes.map(e => ({ type: "event" as const, date: e.published_at || e.created_at || e.event_date, data: { ...e, isBookmarked: bookmarkedEvents.has(e.id) } })),
-    ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: { ...a, isBookmarked: bookmarkedAchs.has(a.id) } })),
-  ];
-  items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  return {
-    items,
-    groupIds: gIds,
-    groupMembers,
-    hasMore: dedupedFlights.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE,
-  };
-}
 
 function FeedSkeleton() {
   return (
@@ -137,18 +57,16 @@ export default function Feed() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tagFilter = searchParams.get("tag");
 
-  // Seed initial state from React Query cache (prefetched during splash)
-  const cached = user ? queryClient.getQueryData<FeedPageResult>(FEED_QUERY_KEY(user.id)) : undefined;
-
-  const [items, setItems] = useState<FeedItem[]>(cached?.items || []);
-  const [loading, setLoading] = useState(!cached);
+  const [items, setItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const nextCursorRef = useRef<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-  const [hasMore, setHasMore] = useState(cached?.hasMore ?? true);
+  const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [groupIds, setGroupIds] = useState<string[]>(cached?.groupIds || []);
-  const groupIdsRef = useRef<string[]>(cached?.groupIds || []);
-  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>(cached?.groupMembers || []);
+  const [groupIds, setGroupIds] = useState<string[]>([]);
+  const groupIdsRef = useRef<string[]>([]);
+  const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
@@ -203,12 +121,18 @@ export default function Feed() {
       .eq("follower_id", user.id);
     const followedIds: string[] = (followsData || []).map((f: any) => f.following_id);
 
+    const pages = { flights: newPage(), followed: newPage(), achievements: newPage() };
     const [flightsRes, followedFlightsRes, eventsRes, achievementsRes] = await Promise.all([
-      gIds.length > 0 ? fetchFlights(user.id, gIds, groupMap, cursor) : Promise.resolve([]),
-      followedIds.length > 0 ? fetchFollowedFlights(user.id, followedIds, cursor) : Promise.resolve([]),
+      gIds.length > 0 ? fetchFlights(user.id, gIds, groupMap, cursor, pages.flights) : Promise.resolve([]),
+      followedIds.length > 0 ? fetchFollowedFlights(user.id, followedIds, cursor, pages.followed) : Promise.resolve([]),
       !cursor && gIds.length > 0 ? fetchEvents(user.id, gIds, groupMap) : Promise.resolve([]),
-      gIds.length > 0 ? fetchAchievements(user.id, gIds, groupMap, cursor) : Promise.resolve([]),
+      gIds.length > 0 ? fetchAchievements(user.id, gIds, groupMap, cursor, pages.achievements) : Promise.resolve([]),
     ]);
+    // Continue the next page where every source is still complete, otherwise a source with
+    // older items (e.g. one old achievement) made the next page skip newer flights.
+    const cutoff = feedPageCutoff([pages.flights, pages.followed, pages.achievements]);
+    const cutoffTime = cutoff ? new Date(cutoff).getTime() : null;
+    const inPage = (date: string) => cutoffTime === null || new Date(date).getTime() >= cutoffTime;
 
     const allFlights = [...flightsRes, ...followedFlightsRes];
     // Deduplicate by id
@@ -231,9 +155,9 @@ export default function Feed() {
     const bookmarkedAchs = new Set((bookmarkQueries[2].data || []).map((b: any) => b.achievement_id));
 
     const allItems: FeedItem[] = [
-      ...dedupedFlights.map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: { ...f, isBookmarked: bookmarkedFlights.has(f.id) } })),
+      ...dedupedFlights.filter(f => inPage((f as any).published_at || f.created_at)).map(f => ({ type: "flight" as const, date: (f as any).published_at || f.created_at, data: { ...f, isBookmarked: bookmarkedFlights.has(f.id) } })),
       ...eventsRes.map(e => ({ type: "event" as const, date: e.published_at || e.created_at || e.event_date, data: { ...e, isBookmarked: bookmarkedEvents.has(e.id) } })),
-      ...achievementsRes.map(a => ({ type: "achievement" as const, date: a.created_at, data: { ...a, isBookmarked: bookmarkedAchs.has(a.id) } })),
+      ...achievementsRes.filter(a => inPage(a.created_at)).map(a => ({ type: "achievement" as const, date: a.created_at, data: { ...a, isBookmarked: bookmarkedAchs.has(a.id) } })),
     ];
 
     allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -244,7 +168,8 @@ export default function Feed() {
       setItems(allItems);
     }
 
-    setHasMore(dedupedFlights.length >= PAGE_SIZE || achievementsRes.length >= PAGE_SIZE);
+    nextCursorRef.current = cutoff;
+    setHasMore(cutoff !== null);
     } catch {
       setHasMore(false);
       toast({ title: t("performance.loadFailed"), variant: "destructive" });
@@ -255,8 +180,7 @@ export default function Feed() {
     }
   }, [user, t, toast]);
 
-  // Skip initial fetch if we already have prefetched data; otherwise fetch now
-  const didInitialFetch = useRef(!!cached);
+  const didInitialFetch = useRef(false);
   useEffect(() => {
     if (didInitialFetch.current) return;
     didInitialFetch.current = true;
@@ -269,9 +193,9 @@ export default function Feed() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && items.length > 0) {
-          const lastDate = items[items.length - 1].date;
+          if (!nextCursorRef.current) return;
           setLoadingMore(true);
-          fetchFeed(lastDate);
+          fetchFeed(nextCursorRef.current);
         }
       },
       { threshold: 0.1 }
@@ -378,17 +302,22 @@ export default function Feed() {
     const item = items.find(i => i.type === "event" && i.data.id === eventId);
     if (!item || item.type !== "event") return;
 
-    if (item.data.user_signed_up) {
-      await supabase.from("event_signups").delete().eq("event_id", eventId).eq("user_id", user.id);
-      setItems(prev => prev.map(i => i.type === "event" && i.data.id === eventId
-        ? { ...i, data: { ...i.data, user_signed_up: false, signup_count: i.data.signup_count - 1 } }
-        : i));
-    } else {
-      await supabase.from("event_signups").upsert({ event_id: eventId, user_id: user.id, signed_up: true });
-      setItems(prev => prev.map(i => i.type === "event" && i.data.id === eventId
-        ? { ...i, data: { ...i.data, user_signed_up: true, signup_count: i.data.signup_count + 1 } }
-        : i));
+    // Same write pattern as Events/EventDetail: sign-off is an UPDATE (signed_up=false) so the
+    // waitlist trigger can promote the next person; deleting the row bypassed it.
+    const signingUp = !item.data.user_signed_up;
+    const { data: existing } = await supabase.from("event_signups").select("id")
+      .eq("event_id", eventId).eq("user_id", user.id).maybeSingle();
+    const { error } = existing
+      ? await supabase.from("event_signups").update({ signed_up: signingUp, updated_at: new Date().toISOString() }).eq("id", existing.id)
+      : await supabase.from("event_signups").insert({ event_id: eventId, user_id: user.id, signed_up: true });
+    if (error) {
+      toast({ title: t("common.error"), description: /deadline/i.test(error.message) ? t("events.deadlinePassed") : error.message, variant: "destructive" });
+      return;
     }
+    void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
+    setItems(prev => prev.map(i => i.type === "event" && i.data.id === eventId
+      ? { ...i, data: { ...i.data, user_signed_up: signingUp, signup_count: i.data.signup_count + (signingUp ? 1 : -1) } }
+      : i));
   };
 
   // ── Bookmark toggle ──
@@ -547,7 +476,7 @@ export default function Feed() {
 
 // ── helpers ──
 
-async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedFlight[]> {
+async function fetchFlights(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string, page?: SourcePage): Promise<FeedFlight[]> {
   let query = supabase
     .from("flights")
     .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, tags, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
@@ -562,6 +491,7 @@ async function fetchFlights(userId: string, groupIds: string[], groupMap: Record
   }
 
   const { data: groupFlights } = await query;
+  if (page && groupFlights) { page.full = groupFlights.length >= PAGE_SIZE; page.oldest = groupFlights[groupFlights.length - 1]?.published_at ?? null; }
 
   if (!groupFlights || groupFlights.length === 0) return [];
 
@@ -790,7 +720,7 @@ async function fetchEvents(userId: string, groupIds: string[], groupMap: Record<
   }));
 }
 
-async function fetchAchievements(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string): Promise<FeedAchievement[]> {
+async function fetchAchievements(userId: string, groupIds: string[], groupMap: Record<string, string>, cursor?: string, page?: SourcePage): Promise<FeedAchievement[]> {
   let query = supabase
     .from("feed_achievements")
     .select("id, user_id, challenge_id, goal_id, achievement_type, created_at")
@@ -802,6 +732,8 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
   }
 
   const { data: achievements } = await query;
+  // Paging state from the raw rows: the group filter below can shrink a full page.
+  if (page && achievements) { page.full = achievements.length >= PAGE_SIZE; page.oldest = achievements[achievements.length - 1]?.created_at ?? null; }
 
   if (!achievements || achievements.length === 0) return [];
 
@@ -893,7 +825,7 @@ async function fetchAchievements(userId: string, groupIds: string[], groupMap: R
   }));
 }
 
-async function fetchFollowedFlights(userId: string, followedIds: string[], cursor?: string): Promise<FeedFlight[]> {
+async function fetchFollowedFlights(userId: string, followedIds: string[], cursor?: string, page?: SourcePage): Promise<FeedFlight[]> {
   let query = supabase
     .from("flights")
     .select("id, date, glider, duration_minutes, altitude_gain, distance_km, comments, user_id, group_id, created_at, published_at, feed_photo_ids, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, latitude, longitude), land:locations!flights_landing_location_id_fkey(name, latitude, longitude)")
@@ -908,6 +840,7 @@ async function fetchFollowedFlights(userId: string, followedIds: string[], curso
   }
 
   const { data: flights } = await query;
+  if (page && flights) { page.full = flights.length >= PAGE_SIZE; page.oldest = flights[flights.length - 1]?.published_at ?? null; }
   if (!flights || flights.length === 0) return [];
 
   const pilotIds = [...new Set(flights.map(f => f.user_id))];
