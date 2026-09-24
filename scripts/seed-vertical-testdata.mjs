@@ -357,8 +357,11 @@ for (const [k, [from, to]] of Object.entries(flyingDays)) {
       if (f === n && si === 0) coachNotes.push({ id: nid(), flight_id: fid, coach_id: instructor.id, note: "Gute Entscheidung, bei aufkommendem Talwind früher zu landen.", visible_to_student: true });
     }
     if (s !== P.tim) {
-      dayNotes.push({ id: nid(), event_id: EV[k].id, student_user_id: s.id, flight_number: null, note: SUMMARIES[si % 3], visible_to_student: true, instructor_id: instructor.id, is_next_step: false });
-      if (k === "height3") dayNotes.push({ id: nid(), event_id: EV[k].id, student_user_id: s.id, flight_number: null, note: NEXT_STEPS[si % 3], visible_to_student: true, instructor_id: instructor.id, is_next_step: true });
+      // One summary per student and day (unique index); on the latest day it is flagged as next step,
+      // exactly like the coach view does it.
+      const latest = k === "height3";
+      dayNotes.push({ id: nid(), event_id: EV[k].id, student_user_id: s.id, flight_number: null,
+        note: latest ? `${SUMMARIES[si % 3]} ${NEXT_STEPS[si % 3]}` : SUMMARIES[si % 3], visible_to_student: true, instructor_id: instructor.id, is_next_step: latest });
     }
   });
 }
