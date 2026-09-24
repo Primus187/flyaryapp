@@ -933,6 +933,8 @@
     "licensesIntro": "Flyary utilise de nombreuses bibliothèques open-source. Merci aux mainteneurs pour leur travail."
   },
   "feed": {
+    "noPostsTitle": "Pas encore de publications dans vos groupes",
+    "noPostsDesc": "Publiez un vol ou un événement dans le fil : tous les membres de vos groupes le verront ici.",
     "title": "Fil",
     "noFlights": "Pas encore de vols dans votre fil",
     "noFlightsDesc": "Quand les membres du groupe enregistrent des vols avec un groupe, ils apparaîtront ici.",

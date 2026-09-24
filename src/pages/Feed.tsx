@@ -340,13 +340,16 @@ export default function Feed() {
         if (visible.length === 0) {
           return (
             <div className="space-y-4">
-              <EmptyState
-                icon={Users}
-                title={tagFilter ? t("feed.noFlightsForTag", { defaultValue: "Keine Flüge für diesen Tag" }) : t("feed.noFlights")}
-                description={tagFilter ? "" : t("feed.noFlightsDesc")}
-                actionLabel={tagFilter ? undefined : t("groups.joinGroup")}
-                onAction={tagFilter ? undefined : () => navigate("/groups")}
-              />
+              {tagFilter ? (
+                <EmptyState icon={Users} title={t("feed.noFlightsForTag", { defaultValue: "Keine Flüge für diesen Tag" })} description="" />
+              ) : stableGroupIds.length > 0 ? (
+                // Member of a group whose feed is still empty: explain publishing, do not suggest joining.
+                <EmptyState icon={Users} title={t("feed.noPostsTitle")} description={t("feed.noPostsDesc")}
+                  actionLabel={t("flights.newFlight")} onAction={() => navigate("/flights/new")} />
+              ) : (
+                <EmptyState icon={Users} title={t("feed.noFlights")} description={t("feed.noFlightsDesc")}
+                  actionLabel={t("groups.joinGroup")} onAction={() => navigate("/groups")} />
+              )}
               {!tagFilter && <PilotSuggestions />}
             </div>
           );

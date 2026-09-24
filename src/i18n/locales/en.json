@@ -933,6 +933,8 @@
     "licensesIntro": "Flyary uses numerous open-source libraries. We thank the maintainers for their work."
   },
   "feed": {
+    "noPostsTitle": "No posts in your groups yet",
+    "noPostsDesc": "Publish a flight or an event to the feed and all members of your groups will see it here.",
     "title": "Feed",
     "noFlights": "No flights in your feed yet",
     "noFlightsDesc": "When group members log flights with a group, they'll show up here.",
