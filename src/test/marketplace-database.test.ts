@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031/0032 (marketplace listings).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0033 (marketplace listings and photos).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -37,6 +37,11 @@ beforeAll(async () => {
   await db.exec(`
     CREATE ROLE authenticated; CREATE ROLE anon;
     CREATE SCHEMA auth; GRANT USAGE ON SCHEMA auth TO authenticated, anon;
+    CREATE SCHEMA storage; GRANT USAGE ON SCHEMA storage TO authenticated;
+    CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
+    CREATE TABLE storage.objects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bucket_id text, name text);
+    ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+    GRANT SELECT, INSERT, DELETE ON storage.objects TO authenticated;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id', true), '')::uuid $$;
     CREATE TABLE auth.users (id uuid PRIMARY KEY);
     CREATE TYPE public.group_type AS ENUM ('school', 'pilot_group');
@@ -70,6 +75,7 @@ beforeAll(async () => {
   // the new enum values exist only after 0031 is committed – same as on the real database
   await db.exec(`INSERT INTO public.group_member_functions VALUES ('${school}', '${shop}', 'shop'), ('${otherSchool}', '${otherShop}', 'shop');`);
   await db.exec(migration("0032_marketplace_listings.sql"));
+  await db.exec(migration("0033_marketplace_photos.sql"));
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');`);
 }, 60_000);
 afterAll(async () => { await db?.close(); });
@@ -122,6 +128,96 @@ describe("private listings", () => {
   it("a free listing cannot carry a price", async () => {
     await asUser(owner);
     await expect(db.exec(`UPDATE public.marketplace_listings SET price_type = 'free' WHERE id = '${draftId}'`)).rejects.toThrow();
+  });
+});
+
+describe("photos", () => {
+  let listingId: string;
+  const file = (listing: string, n: number) => `${listing}/${id(900 + n)}.webp`;
+  async function uploadAs(uid: string, name: string) {
+    await asUser(uid);
+    await db.exec(`INSERT INTO storage.objects (bucket_id, name) VALUES ('marketplace-photos', '${name}')`);
+  }
+  async function visibleFiles(uid: string, listing: string) {
+    await asUser(uid);
+    return (await db.query(`SELECT name FROM storage.objects WHERE name LIKE '${listing}/%'`)).rows.length;
+  }
+
+  beforeAll(async () => {
+    await asSystem();
+    listingId = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listings WHERE seller_user_id = '${owner}'`)).rows[0].id;
+  });
+
+  it("creates a private bucket for compressed images only", async () => {
+    await asSystem();
+    const bucket = (await db.query("SELECT public, file_size_limit, allowed_mime_types FROM storage.buckets WHERE id = 'marketplace-photos'")).rows[0];
+    expect(bucket).toEqual({ public: false, file_size_limit: 2097152, allowed_mime_types: ["image/webp", "image/jpeg"] });
+  });
+
+  it("only the seller uploads; files follow the listing's visibility", async () => {
+    await uploadAs(owner, file(listingId, 1));
+    await expect(uploadAs(stranger, file(listingId, 2))).rejects.toThrow();
+    await expect(uploadAs(owner, `not-a-uuid/${id(999)}.webp`)).rejects.toThrow();
+    expect(await visibleFiles(stranger, listingId)).toBe(1);
+
+    const draft = (await insertAs(stranger, `('${stranger}', NULL, 'helmet', 'Entwurf Helm', 'all', 1, 'draft')`)).rows[0].id;
+    await uploadAs(stranger, file(draft, 1));
+    expect(await visibleFiles(stranger, draft)).toBe(1);
+    expect(await visibleFiles(owner, draft)).toBe(0);
+    await asSystem();
+    await db.exec(`DELETE FROM storage.objects WHERE name LIKE '${draft}/%'; DELETE FROM public.marketplace_listings WHERE id = '${draft}'`);
+  });
+
+  it("stops at 12 files (6 photos with thumbnails)", async () => {
+    for (let n = 2; n <= 12; n++) await uploadAs(owner, file(listingId, n));
+    await expect(uploadAs(owner, file(listingId, 13))).rejects.toThrow();
+  });
+
+  it("the seller and the moderation delete files, others cannot", async () => {
+    await asUser(stranger);
+    expect((await db.query(`DELETE FROM storage.objects WHERE name = '${file(listingId, 12)}' RETURNING id`)).rows).toHaveLength(0);
+    await asUser(moderator);
+    expect((await db.query(`DELETE FROM storage.objects WHERE name = '${file(listingId, 12)}' RETURNING id`)).rows).toHaveLength(1);
+    await asUser(owner);
+    expect((await db.query(`DELETE FROM storage.objects WHERE name LIKE '${listingId}/%' RETURNING id`)).rows).toHaveLength(11);
+  });
+
+  it("records at most 6 photos with paths inside the listing folder", async () => {
+    await asUser(owner);
+    const row = (n: number) => `('${id(800 + n)}', '${listingId}', '${listingId}/p${n}.webp', '${listingId}/p${n}_thumb.webp', ${n})`;
+    await db.exec(`INSERT INTO public.marketplace_listing_photos (id, listing_id, path, thumb_path, position) VALUES
+      ${[0, 1, 2, 3, 4, 5].map(row).join(", ")}`);
+    await expect(db.exec(`INSERT INTO public.marketplace_listing_photos (listing_id, path, thumb_path, position)
+      VALUES ('${listingId}', '${listingId}/x.webp', '${listingId}/x_thumb.webp', 5)`)).rejects.toThrow(/at most 6 photos/);
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listing_photos WHERE id = '${id(805)}'`);
+    await asUser(owner);
+    await expect(db.exec(`INSERT INTO public.marketplace_listing_photos (listing_id, path, thumb_path, position)
+      VALUES ('${listingId}', 'other/x.webp', '${listingId}/x_thumb.webp', 5)`)).rejects.toThrow();
+    await asUser(stranger);
+    await expect(db.exec(`INSERT INTO public.marketplace_listing_photos (listing_id, path, thumb_path, position)
+      VALUES ('${listingId}', '${listingId}/y.webp', '${listingId}/y_thumb.webp', 5)`)).rejects.toThrow();
+    expect((await db.query(`SELECT id FROM public.marketplace_listing_photos WHERE listing_id = '${listingId}'`)).rows).toHaveLength(5);
+  });
+
+  it("reorders all photos at once, only for the seller and only with the complete list", async () => {
+    const ids = [4, 3, 2, 1, 0].map((n) => id(800 + n));
+    const call = (list: string[]) => db.query(`SELECT public.marketplace_reorder_photos('${listingId}', ARRAY[${list.map((x) => `'${x}'`).join(",")}]::uuid[])`);
+    await asUser(stranger);
+    await expect(call(ids)).rejects.toThrow(/not allowed/);
+    await asUser(owner);
+    await expect(call(ids.slice(1))).rejects.toThrow(/exactly once/);
+    await call(ids);
+    const order = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listing_photos WHERE listing_id = '${listingId}' ORDER BY position`)).rows;
+    expect(order.map((r) => r.id)).toEqual(ids);
+  });
+
+  it("sold listings take no new photos", async () => {
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'sold' WHERE id = '${listingId}'`);
+    await expect(uploadAs(owner, file(listingId, 20))).rejects.toThrow();
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'active' WHERE id = '${listingId}'`);
   });
 });
 

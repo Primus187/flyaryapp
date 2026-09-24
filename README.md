@@ -1,5 +1,29 @@
 # Flyary
 
+## Marktplatz: Fotos (4.3)
+
+Migration `0033_marketplace_photos.sql`, App-Logik in `src/lib/marketplace-photos.ts`, Tests in
+`src/test/marketplace-database.test.ts` (Abschnitt «photos») und `src/lib/marketplace-photos.test.ts`. Noch ohne Oberfläche.
+
+- **Privater Bucket `marketplace-photos`**, nur WebP/JPEG, max. 2 MB pro Datei. Pfade
+  `<anzeige>/<foto>.webp` und `<anzeige>/<foto>_thumb.webp`.
+- Pro Foto werden im Browser zwei Dateien erzeugt: 1280 px für die Galerie, 320 px als Vorschaubild für Listen (spart
+  Speicher und Datentransfer im Free-Plan). Kann der Browser ein Bild nicht umwandeln (z. B. HEIC ausserhalb von
+  Safari), wird nichts hochgeladen und der Fehler `unsupported_format` gemeldet.
+- **Zugriff:** Fotos sieht, wer die Anzeige sehen darf (die Speicher-Regel fragt die Anzeige ab, deren eigene RLS
+  entscheidet). Hochladen und Löschen: wer die Anzeige verwaltet; löschen darf auch die globale Moderation. Keine neuen
+  Fotos bei verkauften, abgelaufenen oder entfernten Anzeigen.
+- **Obergrenze:** max. 6 Fotos pro Anzeige in der Tabelle `marketplace_listing_photos` (Trigger sperrt die Anzeige, damit
+  zwei gleichzeitige Uploads nicht beide als 7. Foto durchkommen) und max. 12 Dateien im Ordner der Anzeige.
+- **Reihenfolge** über die RPC `marketplace_reorder_photos` (alle Positionen in einem Schritt, erstes Foto = Titelbild).
+- Beim Hochladen werden bereits hochgeladene Dateien wieder entfernt, wenn ein späterer Schritt scheitert. Beim Löschen
+  zuerst die Dateien, dann der Eintrag.
+- Abweichung vom Plan: Das gewählte Originalbild darf bis 20 MB gross sein statt 5 MB (Handyfotos sind oft grösser); in
+  den Speicher kommen nur die komprimierten Dateien. Dateien gelöschter Anzeigen bleiben vorerst liegen; der
+  Aufräum-Job in 4.9 entfernt verwaiste Ordner.
+
+**Auslieferung:** `node scripts/db-migrate.mjs --apply` (0033). Kein Frontend-Deploy nötig.
+
 ## Marktplatz: Kategorien, Merkmale und Sicherheitshinweise (4.2)
 
 Reine App-Logik, noch ohne Oberfläche und ohne Migration (`src/lib/marketplace-categories.ts`,

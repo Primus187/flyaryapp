@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1 ✅, 4.2 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1 ✅, 4.2 ✅, 4.3 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -108,7 +108,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** `src/lib/marketplace-categories.ts` (`CATEGORY_SPECS`, `validateAttributes`, `parseMonthDate`) und `src/lib/marketplace-safety.ts` (`safetyHints`), Texte unter `market.*`. EN- und LTF-Klasse sind in einem Feld zusammengefasst (A/B/C/D/CCC/ohne Zulassung). Pflichtfelder: Klasse bei Schirmen, Typ bei Gurtzeug und Instrumenten, Typ und max. Anhängelast bei Rettern; nur für Angebote. Prüf- und Packdaten als Monat oder Tag. **Abweichungen:** keine Hinweise «Nachprüfung fehlt»/«Packdatum unbekannt» bei neuem Material; Such-Anzeigen bekommen keine Hinweise; Tandemschirme haben dieselben Merkmale wie Soloschirme (ein eigenes Feld «Tandem-Zulassung» entfällt, weil die Kategorie das schon aussagt). Die serverseitige Prüfung der Pflichtfelder folgt mit der Veröffentlichungs-RPC (4.4).
 
-### 4.3 Fotos
+### 4.3 Fotos ✅
 
 **Ziel:** Fotos hochladen, ohne den Free-Plan zu sprengen.
 
@@ -122,6 +122,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Pfad-Schema `listing_id/photo_id.webp` und `listing_id/photo_id_thumb.webp`; Storage-Policy prüft über die Anzeige, wer schreiben darf
 
 **Datenmodell:** `marketplace_listing_photos`, Bucket `marketplace-photos`
+
+**Ist-Stand:** Migration `0033_marketplace_photos.sql`, App-Logik `src/lib/marketplace-photos.ts` (Upload mit Rückbau bei Fehlern, Löschen, Reihenfolge, signierte URLs). Bucket nimmt nur WebP/JPEG bis 2 MB; die Speicher-Regel zum Lesen fragt die Anzeige ab, damit deren RLS allein über die Sichtbarkeit entscheidet. Grenze doppelt: 6 Einträge pro Anzeige (Trigger mit Zeilensperre) und 12 Dateien pro Ordner. Reihenfolge über die RPC `marketplace_reorder_photos`. **Abweichungen:** Originalbild bis 20 MB statt 5 MB (Handyfotos); keine neuen Fotos bei verkauften/abgelaufenen/entfernten Anzeigen; Dateien gelöschter Anzeigen räumt erst 4.9 auf.
 
 ### 4.4 Inserieren und «Meine Anzeigen»
 
@@ -223,6 +225,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
   - Fotos von verkauften oder entfernten Anzeigen nach **14 Tagen** löschen
   - Fotos von abgelaufenen Anzeigen nach **30 Tagen** löschen
   - Entwürfe, die älter als 30 Tage sind, samt Fotos löschen
+  - Verwaiste Foto-Ordner löschen (Anzeige gelöscht, Dateien noch im Bucket; siehe 4.3)
 - Dateien müssen über die Storage-API gelöscht werden, nicht durch Löschen von Zeilen in `storage.objects`. Darum läuft der Job als Edge Function `marketplace-cleanup`, ausgelöst täglich per `pg_cron` + `pg_net` (vor der Umsetzung prüfen, ob beide Erweiterungen im Projekt aktiv sind)
 - Speicherüberwachung: Die Admin-Ansicht zeigt den belegten Speicher pro Bucket (Summe aus `storage.objects`). Hinweis ab **700 MB** Gesamtbelegung: Wechsel auf Supabase Pro prüfen
 - `delete-account` löscht Anzeigen, Fotos, Merklisten, gespeicherte Suchen und Meldungen der Person. Anzeige-Chats bleiben für das Gegenüber lesbar, mit «Gelöschtes Konto» als Absender (gleiche Regel wie bei den übrigen Chats)
