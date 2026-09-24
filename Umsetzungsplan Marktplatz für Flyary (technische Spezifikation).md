@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1 ✅, 4.2 ✅, 4.3 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.4 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -125,7 +125,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** Migration `0033_marketplace_photos.sql`, App-Logik `src/lib/marketplace-photos.ts` (Upload mit Rückbau bei Fehlern, Löschen, Reihenfolge, signierte URLs). Bucket nimmt nur WebP/JPEG bis 2 MB; die Speicher-Regel zum Lesen fragt die Anzeige ab, damit deren RLS allein über die Sichtbarkeit entscheidet. Grenze doppelt: 6 Einträge pro Anzeige (Trigger mit Zeilensperre) und 12 Dateien pro Ordner. Reihenfolge über die RPC `marketplace_reorder_photos`. **Abweichungen:** Originalbild bis 20 MB statt 5 MB (Handyfotos); keine neuen Fotos bei verkauften/abgelaufenen/entfernten Anzeigen; Dateien gelöschter Anzeigen räumt erst 4.9 auf.
 
-### 4.4 Inserieren und «Meine Anzeigen»
+### 4.4 Inserieren und «Meine Anzeigen» ✅
 
 **Ziel:** In unter zwei Minuten eine Anzeige online stellen und die eigenen Anzeigen verwalten.
 
@@ -141,6 +141,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Grenzen (serverseitig): max. **10 aktive Anzeigen** pro Privatperson, max. **50** pro Schule, max. **5 neue Anzeigen pro 24 Stunden** pro Person
 - Einstieg «Marktplatz» unter Mehr → Community. Routen `/market`, `/market/new`, `/market/:id`, `/market/:id/edit`, `/market/mine`
 - Logik für Laufzeit, Hochschieben und Grenzen in `src/lib/marketplace-listing.ts` mit Tests
+
+**Ist-Stand:** Migration `0034_marketplace_listing_status.sql` mit den RPCs `marketplace_publish`, `_reserve`, `_mark_sold`, `_renew`, `_bump` (Fehlercodes `marketplace:<code>`), Seiten `MarketListingForm.tsx` und `MarketMine.tsx`. `marketplace_publish` prüft die Pflichtangaben aus 4.2 serverseitig; Angebote brauchen mindestens ein Foto. Der Entwurf entsteht beim «Weiter» nach Schritt 2, danach werden die gewählten Fotos hochgeladen. **Abweichungen:** Speichern beim Schrittwechsel und per Knopf statt `note-autosave.ts` (auf Notizen zugeschnitten); Push 3 Tage vor Ablauf kommt mit dem Job in 4.9; «Als Schule inserieren» erst in 4.7; die Tagesgrenze gilt nur für Privatpersonen; der Menüeintrag führt bis 4.5 auf «Meine Anzeigen». Löschen einer Anzeige entfernt zuerst die Fotodateien.
 
 ### 4.5 Übersicht, Suche, Filter und Detailseite
 

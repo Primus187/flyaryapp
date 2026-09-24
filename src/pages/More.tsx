@@ -12,7 +12,7 @@ import { APP_VERSION, forceAppUpdate } from "@/lib/app-update";
 import { toast } from "sonner";
 import {
   User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell,
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store,
 } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
@@ -40,6 +40,7 @@ const pilotGroups: Group[] = [
     titleKey: "more.sectionCommunity",
     tiles: [
       { path: "/messages", icon: MessageCircle, labelKey: "chat.messages" },
+      { path: "/market/mine", icon: Store, labelKey: "market.title" },
       { path: "/search", icon: Search, labelKey: "more.search" },
       { path: "/leaderboard", icon: Trophy, labelKey: "more.leaderboard" },
       { path: "/groups", icon: Users, labelKey: "more.groups" },

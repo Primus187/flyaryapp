@@ -1,5 +1,35 @@
 # Flyary
 
+## Marktplatz: Inserieren und «Meine Anzeigen» (4.4)
+
+Erste Oberfläche des Marktplatzes. Migration `0034_marketplace_listing_status.sql`, Seiten `src/pages/MarketListingForm.tsx`
+und `src/pages/MarketMine.tsx`, Komponenten unter `src/components/market/`, Regeln in `src/lib/marketplace-listing.ts`.
+
+- **Einstieg:** Mehr → Community → «Marktplatz» (`/market/mine`), bis die Übersicht aus 4.5 steht. Routen `/market/new`,
+  `/market/:id/edit`.
+- **Inserieren in drei Schritten:** Fotos → Details (Angebot/Suche, Kategorie, Titel, Hersteller/Modell/Baujahr/Grösse je
+  nach Kategorie, Zustand, Kategorie-Merkmale, Beschreibung) → Preis und Ort (Preisart, Betrag, PLZ, Ort, Kanton, Übergabe).
+  Schritt 3 zeigt die Sicherheitshinweise, wie Interessierte sie sehen werden, und was vor dem Veröffentlichen noch fehlt.
+  Beim Bearbeiten sind alle Abschnitte auf einer Seite (wie beim Flug).
+- **Entwurf:** Beim «Weiter» nach Schritt 2 wird die Anzeige als Entwurf gespeichert; erst dann werden die in Schritt 1
+  gewählten Fotos hochgeladen (der Speicherpfad braucht die Anzeigen-ID). Zusätzlich «Als Entwurf speichern».
+- **Statusfunktionen** (nur über RPCs, Fehler als `marketplace:<code>` übersetzt): `marketplace_publish` prüft
+  serverseitig PLZ/Ort, bei Angeboten Preis, Zustand, Pflichtmerkmale der Kategorie und mindestens ein Foto, dazu die
+  Grenzen 10 aktive Anzeigen pro Person / 50 pro Schule und 5 Veröffentlichungen pro Person in 24 Stunden.
+  `marketplace_reserve`, `marketplace_mark_sold` (Schul-Anzeigen mit mehreren Stück zählen herunter),
+  `marketplace_renew` (60 Tage; eine abgelaufene Anzeige kommt zurück und nach oben), `marketplace_bump` (einmal in 7 Tagen).
+  Laufzeit 60 Tage; Neuware von Schulen läuft nicht ab.
+- **Meine Anzeigen:** Reiter Aktiv / Entwürfe / Beendet mit Titelbild, Preis, Status und Restlaufzeit (Warnfarbe ab
+  7 Tagen). Aktionen je nach Zustand; «Hochschieben» zeigt, ab wann es wieder geht. Löschen entfernt zuerst die
+  Fotodateien, dann die Anzeige.
+- **Abweichungen vom Plan:** Kein Autosave über `note-autosave.ts` (das ist auf Notizen zugeschnitten und speichert
+  bewusst nichts im Browser); gespeichert wird beim Schrittwechsel und per Knopf. Die Push-Erinnerung 3 Tage vor Ablauf
+  kommt mit dem täglichen Job in 4.9. «Als Schule inserieren» folgt mit dem Schul-Shop in 4.7 (dort gehören die
+  Pflichtangaben dazu); die Datenbank kann es schon. Die Tagesgrenze gilt nur für Privatpersonen; Schulen begrenzt die
+  Obergrenze von 50 aktiven Anzeigen.
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0031–0034), danach das Frontend.
+
 ## Marktplatz: Fotos (4.3)
 
 Migration `0033_marketplace_photos.sql`, App-Logik in `src/lib/marketplace-photos.ts`, Tests in

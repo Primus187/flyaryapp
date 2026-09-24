@@ -1893,7 +1893,21 @@
         "out_of_range": "Ausserhalb des erlaubten Bereichs",
         "future_date": "Datum liegt in der Zukunft",
         "too_long": "Zu lang",
-        "weight_range": "«Bis» muss grösser sein als «von»"
+        "weight_range": "«Bis» muss grösser sein als «von»",
+        "missing_title": "Titel fehlt",
+        "missing_place": "PLZ und Ort fehlen",
+        "missing_price": "Preis fehlt",
+        "missing_condition": "Zustand fehlt",
+        "missing_attributes": "Pflichtangaben zur Kategorie fehlen",
+        "missing_photo": "Mindestens ein Foto",
+        "not_found": "Anzeige nicht gefunden",
+        "not_allowed": "Dafür fehlt dir die Berechtigung",
+        "banned": "Du bist für den Marktplatz gesperrt.",
+        "wrong_status": "In diesem Zustand nicht möglich",
+        "limit_active": "Höchstzahl aktiver Anzeigen erreicht (10 pro Person, 50 pro Schule).",
+        "limit_daily": "Höchstens 5 neue Anzeigen pro Tag.",
+        "bump_too_soon": "Hochschieben geht einmal pro Woche.",
+        "unknown": "Etwas ist schiefgelaufen."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -1903,6 +1917,85 @@
         "wing_check_old": "Letzte Nachprüfung vor {{months}} Monaten. Vor dem Fliegen nachprüfen lassen.",
         "expert_class": "Anspruchsvolle Klasse – nicht für Einsteiger geeignet.",
         "check_before_flight": "Material vor dem ersten Flug von einer Fachperson prüfen lassen."
+      },
+      "form": {
+        "newTitle": "Anzeige erstellen",
+        "editTitle": "Anzeige bearbeiten",
+        "step1": "Fotos",
+        "step2": "Details",
+        "step3": "Preis und Ort",
+        "category": "Kategorie",
+        "title": "Titel",
+        "titlePlaceholder": "z. B. Advance Alpha 7, Grösse 26",
+        "titleTooShort": "Titel mit mindestens 3 Zeichen",
+        "condition": "Zustand",
+        "description": "Beschreibung",
+        "descriptionPlaceholder": "Zustand, Zubehör, Grund für den Verkauf …",
+        "priceType": "Preis",
+        "price": "Betrag (CHF)",
+        "postalCode": "PLZ",
+        "locality": "Ort",
+        "canton": "Kanton",
+        "cantonOther": "Ausland",
+        "delivery": "Übergabe",
+        "choose": "Auswählen",
+        "next": "Weiter",
+        "saveDraft": "Als Entwurf speichern",
+        "publish": "Veröffentlichen",
+        "saving": "Speichert …",
+        "saved": "Gespeichert",
+        "saveFailed": "Speichern fehlgeschlagen",
+        "published": "Deine Anzeige ist online",
+        "safetyPreview": "Diese Hinweise sehen Interessierte:",
+        "stillMissing": "Vor dem Veröffentlichen fehlt noch:"
+      },
+      "photos": {
+        "add": "Fotos hinzufügen",
+        "hint": "Bis zu {{max}} Fotos. Das erste ist das Titelbild.",
+        "cover": "Titelbild",
+        "makeCover": "Als Titelbild",
+        "remove": "Entfernen",
+        "uploading": "Lädt hoch …",
+        "errors": {
+          "not_an_image": "Das ist kein Bild.",
+          "too_large": "Das Bild ist zu gross (max. 20 MB).",
+          "too_many": "Höchstens 6 Fotos pro Anzeige.",
+          "unsupported_format": "Dieses Bildformat kann dein Browser nicht umwandeln. Bitte als JPEG wählen.",
+          "upload_failed": "Hochladen fehlgeschlagen."
+        }
+      },
+      "mine": {
+        "title": "Meine Anzeigen",
+        "new": "Inserieren",
+        "actions": "Aktionen",
+        "tabs": {
+          "live": "Aktiv",
+          "drafts": "Entwürfe",
+          "ended": "Beendet"
+        },
+        "empty": {
+          "live": "Keine aktiven Anzeigen",
+          "drafts": "Keine Entwürfe",
+          "ended": "Noch nichts beendet"
+        },
+        "emptyHint": "Verkaufe Material, das du nicht mehr brauchst, oder suche gezielt nach Occasionen.",
+        "daysLeft_one": "noch 1 Tag",
+        "daysLeft_other": "noch {{count}} Tage",
+        "expiresToday": "läuft heute ab",
+        "noExpiry": "läuft nicht ab",
+        "publish": "Veröffentlichen",
+        "edit": "Bearbeiten",
+        "reserve": "Reservieren",
+        "unreserve": "Reservierung aufheben",
+        "sold": "Als verkauft markieren",
+        "renew": "Verlängern (60 Tage)",
+        "bump": "Hochschieben",
+        "bumpFrom": "Hochschieben ab {{date}}",
+        "delete": "Löschen",
+        "deleteConfirmTitle": "Anzeige löschen?",
+        "deleteConfirmText": "Die Anzeige und ihre Fotos werden endgültig gelöscht.",
+        "deleted": "Anzeige gelöscht",
+        "actionDone": "Erledigt"
       }
     }
 }

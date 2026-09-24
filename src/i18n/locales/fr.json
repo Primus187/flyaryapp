@@ -1893,7 +1893,21 @@
         "out_of_range": "Hors de la plage autorisée",
         "future_date": "La date est dans le futur",
         "too_long": "Trop long",
-        "weight_range": "« À » doit être supérieur à « de »"
+        "weight_range": "« À » doit être supérieur à « de »",
+        "missing_title": "Titre manquant",
+        "missing_place": "NPA et localité manquants",
+        "missing_price": "Prix manquant",
+        "missing_condition": "État manquant",
+        "missing_attributes": "Indications obligatoires de la catégorie manquantes",
+        "missing_photo": "Au moins une photo",
+        "not_found": "Annonce introuvable",
+        "not_allowed": "Tu n'as pas l'autorisation",
+        "banned": "Tu es exclu·e du marché.",
+        "wrong_status": "Impossible dans cet état",
+        "limit_active": "Nombre maximal d'annonces actives atteint (10 par personne, 50 par école).",
+        "limit_daily": "Au maximum 5 nouvelles annonces par jour.",
+        "bump_too_soon": "On peut remonter une annonce une fois par semaine.",
+        "unknown": "Un problème est survenu."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -1903,6 +1917,85 @@
         "wing_check_old": "Dernière révision il y a {{months}} mois. Faire réviser avant de voler.",
         "expert_class": "Classe exigeante – ne convient pas aux débutants.",
         "check_before_flight": "Faire contrôler le matériel par un professionnel avant le premier vol."
+      },
+      "form": {
+        "newTitle": "Créer une annonce",
+        "editTitle": "Modifier l'annonce",
+        "step1": "Photos",
+        "step2": "Détails",
+        "step3": "Prix et lieu",
+        "category": "Catégorie",
+        "title": "Titre",
+        "titlePlaceholder": "p. ex. Advance Alpha 7, taille 26",
+        "titleTooShort": "Titre d'au moins 3 caractères",
+        "condition": "État",
+        "description": "Description",
+        "descriptionPlaceholder": "État, accessoires, raison de la vente …",
+        "priceType": "Prix",
+        "price": "Montant (CHF)",
+        "postalCode": "NPA",
+        "locality": "Localité",
+        "canton": "Canton",
+        "cantonOther": "Étranger",
+        "delivery": "Remise",
+        "choose": "Choisir",
+        "next": "Suivant",
+        "saveDraft": "Enregistrer comme brouillon",
+        "publish": "Publier",
+        "saving": "Enregistrement …",
+        "saved": "Enregistré",
+        "saveFailed": "Échec de l'enregistrement",
+        "published": "Ton annonce est en ligne",
+        "safetyPreview": "Les personnes intéressées voient ces remarques :",
+        "stillMissing": "Il manque encore avant la publication :"
+      },
+      "photos": {
+        "add": "Ajouter des photos",
+        "hint": "Jusqu'à {{max}} photos. La première est la photo de couverture.",
+        "cover": "Couverture",
+        "makeCover": "Choisir comme couverture",
+        "remove": "Retirer",
+        "uploading": "Téléversement …",
+        "errors": {
+          "not_an_image": "Ce n'est pas une image.",
+          "too_large": "L'image est trop grande (max. 20 Mo).",
+          "too_many": "Au maximum 6 photos par annonce.",
+          "unsupported_format": "Ton navigateur ne peut pas convertir ce format. Choisis un JPEG.",
+          "upload_failed": "Échec du téléversement."
+        }
+      },
+      "mine": {
+        "title": "Mes annonces",
+        "new": "Publier une annonce",
+        "actions": "Actions",
+        "tabs": {
+          "live": "Actives",
+          "drafts": "Brouillons",
+          "ended": "Terminées"
+        },
+        "empty": {
+          "live": "Aucune annonce active",
+          "drafts": "Aucun brouillon",
+          "ended": "Rien de terminé pour l'instant"
+        },
+        "emptyHint": "Vends le matériel dont tu n'as plus besoin ou cherche du matériel d'occasion.",
+        "daysLeft_one": "encore 1 jour",
+        "daysLeft_other": "encore {{count}} jours",
+        "expiresToday": "se termine aujourd'hui",
+        "noExpiry": "sans échéance",
+        "publish": "Publier",
+        "edit": "Modifier",
+        "reserve": "Réserver",
+        "unreserve": "Annuler la réservation",
+        "sold": "Marquer comme vendue",
+        "renew": "Prolonger (60 jours)",
+        "bump": "Remonter",
+        "bumpFrom": "Remonter dès le {{date}}",
+        "delete": "Supprimer",
+        "deleteConfirmTitle": "Supprimer l'annonce ?",
+        "deleteConfirmText": "L'annonce et ses photos seront supprimées définitivement.",
+        "deleted": "Annonce supprimée",
+        "actionDone": "C'est fait"
       }
     }
 }

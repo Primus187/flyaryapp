@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0033 (marketplace listings and photos).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0034 (marketplace listings, photos, status functions).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -76,6 +76,7 @@ beforeAll(async () => {
   await db.exec(`INSERT INTO public.group_member_functions VALUES ('${school}', '${shop}', 'shop'), ('${otherSchool}', '${otherShop}', 'shop');`);
   await db.exec(migration("0032_marketplace_listings.sql"));
   await db.exec(migration("0033_marketplace_photos.sql"));
+  await db.exec(migration("0034_marketplace_listing_status.sql"));
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');`);
 }, 60_000);
 afterAll(async () => { await db?.close(); });
@@ -218,6 +219,115 @@ describe("photos", () => {
     await expect(uploadAs(owner, file(listingId, 20))).rejects.toThrow();
     await asSystem();
     await db.exec(`UPDATE public.marketplace_listings SET status = 'active' WHERE id = '${listingId}'`);
+  });
+});
+
+describe("status functions", () => {
+  // every listing here is titled "RPC …" and removed afterwards, so later tests see the same data as before
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE title LIKE 'RPC %'`);
+  });
+  const call = async (uid: string, fn: string, listing: string, extra = "") => {
+    await asUser(uid);
+    return (await db.query<{ r: Record<string, unknown> }>(`SELECT public.${fn}('${listing}'${extra}) AS r`)).rows[0].r;
+  };
+  const edit = async (listing: string, set: string) => {
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET ${set} WHERE id = '${listing}'`);
+  };
+  const addPhoto = async (listing: string) => {
+    await asSystem();
+    await db.exec(`INSERT INTO public.marketplace_listing_photos (listing_id, path, thumb_path, position)
+      VALUES ('${listing}', '${listing}/a.webp', '${listing}/a_thumb.webp', 0)`);
+  };
+  const row = async (listing: string) => {
+    await asSystem();
+    return (await db.query<{ status: string; quantity: number; days: number | null; bumped_recent: boolean }>(
+      `SELECT status, quantity, round(extract(epoch FROM expires_at - now()) / 86400)::int AS days,
+        bumped_at > now() - interval '1 minute' AS bumped_recent FROM public.marketplace_listings WHERE id = '${listing}'`)).rows[0];
+  };
+
+  it("publishing checks every required field, in order, and only for the seller", async () => {
+    const l = (await insertAs(stranger, `('${stranger}', NULL, 'glider', 'RPC Schirm', 'all', 1, 'draft')`)).rows[0].id;
+    await expect(call(owner, "marketplace_publish", l)).rejects.toThrow("marketplace:not_allowed");
+    await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:missing_place");
+    await edit(l, `postal_code = '3800', locality = 'Interlaken'`);
+    await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:missing_price");
+    await edit(l, `price_cents = 150000`);
+    await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:missing_condition");
+    await edit(l, `condition = 'used'`);
+    await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:missing_attributes");
+    await edit(l, `attributes = '{"certification": "b"}'`);
+    await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:missing_photo");
+    await addPhoto(l);
+    expect(await call(stranger, "marketplace_publish", l)).toMatchObject({ status: "active" });
+    expect(await row(l)).toMatchObject({ status: "active", days: 60, bumped_recent: true });
+    await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:wrong_status");
+  });
+
+  it("a wanted listing needs only the place; more than 5 publications a day are refused", async () => {
+    for (let n = 1; n <= 5; n++) {
+      const l = (await insertAs(stranger, `('${stranger}', NULL, 'reserve', 'RPC Suche ${n}', 'all', 1, 'draft')`)).rows[0].id;
+      await asUser(stranger);
+      await db.exec(`UPDATE public.marketplace_listings SET listing_type = 'wanted', postal_code = '8000', locality = 'Zürich' WHERE id = '${l}'`);
+      if (n < 5) await call(stranger, "marketplace_publish", l);
+      else await expect(call(stranger, "marketplace_publish", l)).rejects.toThrow("marketplace:limit_daily");
+    }
+  });
+
+  it("refuses an 11th live listing of a person", async () => {
+    await asSystem();
+    await db.exec(`INSERT INTO public.marketplace_listings (seller_user_id, created_by, category, title, status, published_at, bumped_at, expires_at)
+      SELECT '${instructor}', '${instructor}', 'helmet', 'RPC Helm ' || n, 'active', now() - interval '3 days', now(), now() + interval '10 days'
+      FROM generate_series(1, 10) n`);
+    const l = (await insertAs(instructor, `('${instructor}', NULL, 'clothing', 'RPC Jacke', 'all', 1, 'draft')`)).rows[0].id;
+    await edit(l, `listing_type = 'wanted', postal_code = '3800', locality = 'Interlaken'`);
+    await expect(call(instructor, "marketplace_publish", l)).rejects.toThrow("marketplace:limit_active");
+    await edit(l, `listing_type = 'offer'`);
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'expired' WHERE title = 'RPC Helm 1'`);
+    await edit(l, `listing_type = 'wanted'`);
+    await call(instructor, "marketplace_publish", l);
+    const expired = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listings WHERE title = 'RPC Helm 1'`)).rows[0].id;
+    await expect(call(instructor, "marketplace_renew", expired)).rejects.toThrow("marketplace:limit_active");
+  });
+
+  it("reserve, sell, renew and bump", async () => {
+    const l = (await insertAs(stranger, `('${stranger}', NULL, 'helmet', 'RPC Helm', 'all', 1, 'draft')`)).rows[0].id;
+    await edit(l, `status = 'active', published_at = now() - interval '2 days', bumped_at = now() - interval '2 days', expires_at = now() + interval '5 days'`);
+    expect(await call(stranger, "marketplace_reserve", l, ", true")).toMatchObject({ status: "reserved" });
+    expect(await call(stranger, "marketplace_reserve", l, ", false")).toMatchObject({ status: "active" });
+    await expect(call(stranger, "marketplace_bump", l)).rejects.toThrow("marketplace:bump_too_soon");
+    await edit(l, `bumped_at = now() - interval '8 days'`);
+    await call(stranger, "marketplace_bump", l);
+    expect(await row(l)).toMatchObject({ bumped_recent: true, days: 5 });
+    await edit(l, `bumped_at = now() - interval '3 days'`);
+    await call(stranger, "marketplace_renew", l);
+    expect(await row(l)).toMatchObject({ status: "active", days: 60, bumped_recent: false });
+    await edit(l, `status = 'expired'`);
+    await expect(call(stranger, "marketplace_reserve", l, ", true")).rejects.toThrow("marketplace:wrong_status");
+    await call(stranger, "marketplace_renew", l);
+    expect(await row(l)).toMatchObject({ status: "active", days: 60, bumped_recent: true });
+    expect(await call(stranger, "marketplace_mark_sold", l)).toMatchObject({ status: "sold" });
+    await expect(call(stranger, "marketplace_renew", l)).rejects.toThrow("marketplace:wrong_status");
+    await expect(call(owner, "marketplace_reserve", l, ", true")).rejects.toThrow("marketplace:not_allowed");
+  });
+
+  it("school new goods do not expire and count down when sold", async () => {
+    const l = (await insertAs(shop, `(NULL, '${school}', 'harness', 'RPC Gurtzeug neu', 'all', 3, 'draft')`)).rows[0].id;
+    await edit(l, `postal_code = '3800', locality = 'Interlaken', price_cents = 90000, condition = 'new', attributes = '{"harness_type": "pod"}'`);
+    await addPhoto(l);
+    await call(shop, "marketplace_publish", l);
+    expect(await row(l)).toMatchObject({ status: "active", days: null });
+    expect(await call(schoolAdmin, "marketplace_mark_sold", l)).toMatchObject({ status: "active", quantity: 2 });
+    await call(shop, "marketplace_mark_sold", l);
+    expect(await call(shop, "marketplace_mark_sold", l)).toMatchObject({ status: "sold", quantity: 0 });
+    await expect(call(instructor, "marketplace_mark_sold", l)).rejects.toThrow("marketplace:not_allowed");
+  });
+
+  it("the helper functions are not callable directly", async () => {
+    await asUser(owner);
+    await expect(db.query(`SELECT public.marketplace_locked_listing('${id(1)}')`)).rejects.toThrow(/permission denied/);
   });
 });
 

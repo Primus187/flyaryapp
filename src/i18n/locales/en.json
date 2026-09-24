@@ -1893,7 +1893,21 @@
         "out_of_range": "Outside the allowed range",
         "future_date": "Date is in the future",
         "too_long": "Too long",
-        "weight_range": "\"To\" must be greater than \"from\""
+        "weight_range": "\"To\" must be greater than \"from\"",
+        "missing_title": "Title missing",
+        "missing_place": "Postcode and town missing",
+        "missing_price": "Price missing",
+        "missing_condition": "Condition missing",
+        "missing_attributes": "Required details of the category missing",
+        "missing_photo": "At least one photo",
+        "not_found": "Listing not found",
+        "not_allowed": "You are not allowed to do this",
+        "banned": "You are banned from the marketplace.",
+        "wrong_status": "Not possible in this state",
+        "limit_active": "Maximum of active listings reached (10 per person, 50 per school).",
+        "limit_daily": "At most 5 new listings per day.",
+        "bump_too_soon": "Bumping works once a week.",
+        "unknown": "Something went wrong."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -1903,6 +1917,85 @@
         "wing_check_old": "Last check {{months}} months ago. Have it checked before flying.",
         "expert_class": "Demanding class – not suitable for beginners.",
         "check_before_flight": "Have the equipment checked by a professional before the first flight."
+      },
+      "form": {
+        "newTitle": "Create listing",
+        "editTitle": "Edit listing",
+        "step1": "Photos",
+        "step2": "Details",
+        "step3": "Price and place",
+        "category": "Category",
+        "title": "Title",
+        "titlePlaceholder": "e.g. Advance Alpha 7, size 26",
+        "titleTooShort": "Title with at least 3 characters",
+        "condition": "Condition",
+        "description": "Description",
+        "descriptionPlaceholder": "Condition, accessories, reason for selling …",
+        "priceType": "Price",
+        "price": "Amount (CHF)",
+        "postalCode": "Postcode",
+        "locality": "Town",
+        "canton": "Canton",
+        "cantonOther": "Abroad",
+        "delivery": "Handover",
+        "choose": "Choose",
+        "next": "Next",
+        "saveDraft": "Save as draft",
+        "publish": "Publish",
+        "saving": "Saving …",
+        "saved": "Saved",
+        "saveFailed": "Saving failed",
+        "published": "Your listing is online",
+        "safetyPreview": "Interested people see these notes:",
+        "stillMissing": "Still missing before publishing:"
+      },
+      "photos": {
+        "add": "Add photos",
+        "hint": "Up to {{max}} photos. The first one is the cover photo.",
+        "cover": "Cover",
+        "makeCover": "Make cover photo",
+        "remove": "Remove",
+        "uploading": "Uploading …",
+        "errors": {
+          "not_an_image": "This is not an image.",
+          "too_large": "The image is too large (max. 20 MB).",
+          "too_many": "At most 6 photos per listing.",
+          "unsupported_format": "Your browser cannot convert this image format. Please choose a JPEG.",
+          "upload_failed": "Upload failed."
+        }
+      },
+      "mine": {
+        "title": "My listings",
+        "new": "New listing",
+        "actions": "Actions",
+        "tabs": {
+          "live": "Active",
+          "drafts": "Drafts",
+          "ended": "Ended"
+        },
+        "empty": {
+          "live": "No active listings",
+          "drafts": "No drafts",
+          "ended": "Nothing ended yet"
+        },
+        "emptyHint": "Sell equipment you no longer need, or look for second-hand gear.",
+        "daysLeft_one": "1 day left",
+        "daysLeft_other": "{{count}} days left",
+        "expiresToday": "ends today",
+        "noExpiry": "does not expire",
+        "publish": "Publish",
+        "edit": "Edit",
+        "reserve": "Reserve",
+        "unreserve": "Cancel reservation",
+        "sold": "Mark as sold",
+        "renew": "Renew (60 days)",
+        "bump": "Bump to top",
+        "bumpFrom": "Bump from {{date}}",
+        "delete": "Delete",
+        "deleteConfirmTitle": "Delete listing?",
+        "deleteConfirmText": "The listing and its photos are deleted permanently.",
+        "deleted": "Listing deleted",
+        "actionDone": "Done"
       }
     }
 }
