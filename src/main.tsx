@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import i18n, { i18nReady } from "./i18n";
 import { toast } from "sonner";
+import { captureAuthRedirectError } from "./lib/auth-redirect-error";
 
 // Never let an older installed build cache the editable preview.
 if (import.meta.env.DEV && "serviceWorker" in navigator) {
@@ -79,5 +80,8 @@ window.addEventListener("unhandledrejection", (event) => {
     recoverFromStaleChunk();
   }
 });
+
+// Keep a failed Google sign-in visible: the redirect to /auth would otherwise drop the error.
+captureAuthRedirectError();
 
 void i18nReady.then(() => createRoot(document.getElementById("root")!).render(<App />));

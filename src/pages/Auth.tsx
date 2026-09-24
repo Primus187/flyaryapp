@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { takeAuthRedirectError } from "@/lib/auth-redirect-error";
 import { Separator } from "@/components/ui/separator";
 
 export default function Auth() {
@@ -17,6 +18,10 @@ export default function Auth() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  useEffect(() => {
+    const redirectError = takeAuthRedirectError();
+    if (redirectError) toast({ title: t("common.error"), description: redirectError, variant: "destructive" });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- show once on arrival
 
   const handleGoogleSignIn = async () => { setGoogleLoading(true); try { const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } }); if (error) throw error; } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); } finally { setGoogleLoading(false); } };
 
