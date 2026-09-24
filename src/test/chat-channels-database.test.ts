@@ -47,6 +47,8 @@ beforeAll(async () => {
     CREATE TABLE public.event_messages (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), event_id uuid, user_id uuid, message text, created_at timestamptz DEFAULT now());
     CREATE TABLE public.announcement_read_receipts (message_id uuid, user_id uuid, confirmed_at timestamptz DEFAULT now());
     CREATE TABLE public.pushes (user_id uuid, title text);
+    CREATE TABLE public.notifications (id uuid DEFAULT gen_random_uuid(), user_id uuid, actor_id uuid, type text, reference_id uuid,
+      reference_type text, read boolean DEFAULT false, created_at timestamptz DEFAULT now());
     CREATE FUNCTION public.send_push_notification(u uuid, t text, b text, url text) RETURNS void LANGUAGE sql AS $$ INSERT INTO public.pushes VALUES (u, t) $$;
     CREATE FUNCTION public.is_group_member(u uuid, g uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
       SELECT EXISTS (SELECT 1 FROM public.group_members WHERE user_id = u AND group_id = g) $$;
@@ -80,6 +82,7 @@ beforeAll(async () => {
   `);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0025_chat_channels.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0026_chat_channel_returning.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0028_chat_notifications.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   // Channels created by staff after the migration
   await asAdminDb();
   await db.exec(`
@@ -204,5 +207,69 @@ describe("chat channels: writing and managing", () => {
     expect((await db.query(`SELECT name FROM storage.objects`)).rows).toHaveLength(1);
     await asUser(altStudent);
     expect((await db.query(`SELECT name FROM storage.objects`)).rows).toHaveLength(0);
+  });
+});
+
+describe("chat notifications (stage 2)", () => {
+  let team: string;
+  const pushesFor = async (uid: string) => {
+    await asAdminDb();
+    return (await db.query<{ title: string }>(`SELECT title FROM public.pushes WHERE user_id = '${uid}' ORDER BY title`)).rows.map((r) => r.title);
+  };
+  const post = async (author: string, message: string, mentions: string[] = [], announcement = false) => {
+    await asUser(author);
+    const list = mentions.map((m) => `'${m}'`).join(",");
+    await db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message, mentions, is_announcement)
+      VALUES ('${team}', '${author}', '${message}', ARRAY[${list}]::uuid[], ${announcement})`);
+  };
+  const setLevel = async (uid: string, level: string) => {
+    await asUser(uid);
+    await db.exec(`SELECT public.chat_set_notify_level('${team}', '${level}')`);
+  };
+
+  beforeAll(async () => {
+    await asAdminDb();
+    team = (await db.query<{ id: string }>(`SELECT id FROM public.chat_channels WHERE group_id = '${school}' AND name = 'Team'`)).rows[0].id;
+    await db.exec("DELETE FROM public.pushes; DELETE FROM public.notifications;");
+  });
+
+  it("pushes only mentions by default and records them in the bell", async () => {
+    await post(instructor, "Wer macht Samstag Startleiter?");
+    expect(await pushesFor(helper)).toEqual([]);
+    await post(instructor, "@Helfer kannst du?", [helper]);
+    expect(await pushesFor(helper)).toEqual(["Instruktor hat dich erwähnt · Team"]);
+    expect((await db.query(`SELECT 1 FROM public.notifications WHERE user_id = '${helper}' AND type = 'chat_mention' AND reference_id = '${team}'`)).rows).toHaveLength(1);
+  });
+
+  it("bundles 'all messages' to one push per channel within five minutes", async () => {
+    await setLevel(admin, "all");
+    await post(instructor, "Erste");
+    await post(instructor, "Zweite");
+    expect((await pushesFor(admin)).filter((title) => title === "Team")).toHaveLength(1);
+  });
+
+  it("mutes mentions but never announcements", async () => {
+    await setLevel(helper, "none");
+    await asAdminDb();
+    await db.exec("DELETE FROM public.pushes");
+    await post(instructor, "@Helfer nochmals", [helper]);
+    expect(await pushesFor(helper)).toEqual([]);
+    await post(instructor, "Briefing 7 Uhr", [], true);
+    expect(await pushesFor(helper)).toEqual(["Ankündigung: Team"]);
+  });
+
+  it("ignores mentions of people who cannot read the channel", async () => {
+    await asAdminDb();
+    await db.exec("DELETE FROM public.pushes; DELETE FROM public.notifications;");
+    await post(instructor, "@Mia ist nicht im Team", [groundStudent]);
+    expect(await pushesFor(groundStudent)).toEqual([]);
+    expect((await db.query(`SELECT 1 FROM public.notifications WHERE user_id = '${groundStudent}'`)).rows).toHaveLength(0);
+  });
+
+  it("reports the caller's push level in the channel JSON", async () => {
+    await asUser(helper);
+    expect((await db.query<{ c: { notify_level: string } }>(`SELECT public.chat_channel_json('${team}') AS c`)).rows[0].c.notify_level).toBe("none");
+    await asUser(instructor);
+    expect((await db.query<{ c: { notify_level: string } }>(`SELECT public.chat_channel_json('${team}') AS c`)).rows[0].c.notify_level).toBe("mentions");
   });
 });

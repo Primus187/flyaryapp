@@ -3,6 +3,7 @@
 export type ChannelKind = "group" | "event" | "direct";
 export type ChannelAudience = "all" | "team" | "students" | "custom";
 export type InboxFilter = "all" | "school" | "groups" | "events";
+export type NotifyLevel = "all" | "mentions" | "none";
 
 export interface ChatChannel {
   id: string;
@@ -24,6 +25,8 @@ export interface ChatChannel {
   last_message_at: string | null;
   can_manage: boolean;
   can_post: boolean;
+  /** The viewer's push level for this channel (default "mentions"). */
+  notify_level?: NotifyLevel;
   last_message: { message: string; has_attachment: boolean; is_announcement: boolean; created_at: string; user_id: string; author: string } | null;
   unread: number;
 }
@@ -56,9 +59,9 @@ export function filterChannels(channels: ChatChannel[], filter: InboxFilter, que
     && (!q || `${channelTitle(c)} ${c.group_name ?? ""}`.toLowerCase().includes(q))));
 }
 
-/** Unread messages across active channels (archived channels do not count). */
+/** Unread messages across channels; archived and muted channels do not count. */
 export function totalUnread(channels: ChatChannel[]): number {
-  return channels.reduce((sum, c) => sum + (c.archived_at ? 0 : c.unread || 0), 0);
+  return channels.reduce((sum, c) => sum + (c.archived_at || c.notify_level === "none" ? 0 : c.unread || 0), 0);
 }
 
 export function formatUnread(count: number): string {
@@ -90,4 +93,47 @@ export function managedGroups(channels: ChatChannel[]): { id: string; name: stri
     }
   }
   return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// ── @mentions ────────────────────────────────────────────────────────────────
+export interface MentionCandidate { user_id: string; name: string }
+
+/** The partial name after an "@" right before the cursor, or null when not typing a mention. */
+export function mentionQuery(textBeforeCursor: string): string | null {
+  const match = textBeforeCursor.match(/(?:^|\s)@([^\s@]*)$/);
+  return match ? match[1] : null;
+}
+
+export function mentionSuggestions(candidates: MentionCandidate[], query: string, excludeUserId?: string, limit = 5): MentionCandidate[] {
+  const q = query.toLowerCase();
+  return candidates.filter((c) => c.user_id !== excludeUserId && c.name && c.name.toLowerCase().includes(q)).slice(0, limit);
+}
+
+/** Replaces the "@query" before the cursor with "@Full Name " and returns the new text and cursor. */
+export function insertMention(text: string, cursor: number, name: string): { text: string; cursor: number } {
+  const before = text.slice(0, cursor).replace(/@([^\s@]*)$/, `@${name} `);
+  return { text: before + text.slice(cursor), cursor: before.length };
+}
+
+/** People whose "@Name" occurs in the text (longest names first, so "@Reto Brunner" beats "@Reto"). */
+export function extractMentions(text: string, candidates: MentionCandidate[]): string[] {
+  let rest = text;
+  const ids: string[] = [];
+  for (const c of [...candidates].filter((c) => c.name).sort((a, b) => b.name.length - a.name.length)) {
+    const token = `@${c.name}`;
+    if (rest.includes(token)) {
+      ids.push(c.user_id);
+      rest = rest.split(token).join(" ");
+    }
+  }
+  return [...new Set(ids)];
+}
+
+/** Splits a message into plain text and @mention parts for highlighting. */
+export function splitMentions(text: string, names: string[]): { text: string; mention: boolean }[] {
+  const tokens = [...new Set(names.filter(Boolean))].sort((a, b) => b.length - a.length).map((n) => `@${n}`);
+  if (tokens.length === 0) return [{ text, mention: false }];
+  const escaped = tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  return text.split(new RegExp(`(${escaped.join("|")})`, "g")).filter((part) => part !== "")
+    .map((part) => ({ text: part, mention: tokens.includes(part) }));
 }

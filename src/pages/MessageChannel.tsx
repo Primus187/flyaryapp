@@ -8,6 +8,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import ChannelChat from "@/components/chat/ChannelChat";
 import ChannelFormDialog from "@/components/chat/ChannelFormDialog";
+import NotifyLevelMenu from "@/components/chat/NotifyLevelMenu";
 import { useChatChannel } from "@/hooks/use-chat";
 import { audienceSummary, channelTitle } from "@/lib/chat";
 
@@ -37,6 +38,7 @@ export default function MessageChannel() {
     <PageContainer>
       <PageHeader title={channelTitle(channel)} subtitle={subtitle} back="/messages" action={
         <>
+          <NotifyLevelMenu channel={channel} />
           {channel.kind === "event" && channel.event_id && (
             <Button variant="ghost" size="icon" asChild aria-label={t("chat.openEvent")}>
               <Link to={`/events/${channel.event_id}`}><CalendarDays className="h-5 w-5" /></Link>

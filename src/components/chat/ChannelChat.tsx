@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/image-compress";
 import { hasConfirmed, summarizeReceipts } from "@/lib/announcement-receipts";
 import { CHAT_INBOX_KEY } from "@/hooks/use-chat";
-import type { ChatChannel } from "@/lib/chat";
+import { extractMentions, insertMention, mentionQuery, mentionSuggestions, splitMentions, type ChatChannel, type MentionCandidate } from "@/lib/chat";
 
 interface ChatMessage {
   id: string;
@@ -24,6 +24,7 @@ interface ChatMessage {
   attachment_path: string | null;
   is_announcement: boolean;
   requires_confirmation: boolean;
+  mentions?: string[];
   created_at: string;
 }
 
@@ -50,11 +51,14 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
   const [requiresConfirmation, setRequiresConfirmation] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [readerIds, setReaderIds] = useState<string[]>([]);
+  const [readers, setReaders] = useState<MentionCandidate[]>([]);
+  const [mentionQ, setMentionQ] = useState<string | null>(null);
+  const [mentionIndex, setMentionIndex] = useState(0);
   const [receipts, setReceipts] = useState<Record<string, string[]>>({});
   const [expandedReceipts, setExpandedReceipts] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const profilesRef = useRef(profiles);
   profilesRef.current = profiles;
 
@@ -97,7 +101,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
     supabase.rpc("chat_channel_readers" as any, { _channel: channelId } as any).then(({ data }) => {
       const rows = (data as { user_id: string; pilot_name: string }[] | null) || [];
-      setReaderIds(rows.map((r) => r.user_id));
+      setReaders(rows.map((r) => ({ user_id: r.user_id, name: r.pilot_name || "" })));
       setProfiles((prev) => ({ ...prev, ...Object.fromEntries(rows.map((r) => [r.user_id, r.pilot_name || "Pilot"])) }));
     });
   }, [channelId]);
@@ -169,6 +173,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
         channel_id: channelId,
         user_id: user.id,
         message: text.trim(),
+        mentions: extractMentions(text, readers),
         attachment_path: attachmentPath,
         is_announcement: isAnnouncement,
         requires_confirmation: isAnnouncement && requiresConfirmation,
@@ -206,6 +211,42 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
     setReceipts((prev) => ({ ...prev, [msg.id]: [...new Set([...(prev[msg.id] || []), user.id])] }));
   };
 
+  const readerIds = readers.map((r) => r.user_id);
+  const readerNames = readers.map((r) => r.name);
+  const suggestions = mentionQ === null ? [] : mentionSuggestions(readers, mentionQ, user?.id);
+
+  const onTextChange = (value: string, cursor: number | null) => {
+    setText(value);
+    setMentionQ(mentionQuery(value.slice(0, cursor ?? value.length)));
+    setMentionIndex(0);
+  };
+
+  const pickMention = (candidate: MentionCandidate) => {
+    const input = inputRef.current;
+    const next = insertMention(text, input?.selectionStart ?? text.length, candidate.name);
+    setText(next.text);
+    setMentionQ(null);
+    requestAnimationFrame(() => { input?.focus(); input?.setSelectionRange(next.cursor, next.cursor); });
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (suggestions.length > 0) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const step = e.key === "ArrowDown" ? 1 : -1;
+        setMentionIndex((i) => (i + step + suggestions.length) % suggestions.length);
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        pickMention(suggestions[Math.min(mentionIndex, suggestions.length - 1)]);
+        return;
+      }
+      if (e.key === "Escape") { setMentionQ(null); return; }
+    }
+    if (e.key === "Enter" && !e.shiftKey) void send();
+  };
+
   const formatTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString([], { day: "numeric", month: "short" });
   const isImage = (path: string) => /\.(jpe?g|png|webp|gif)$/i.test(path);
@@ -237,6 +278,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
             const showDate = msgDate !== lastDate;
             lastDate = msgDate;
             const canDelete = isMe || channel.can_manage;
+            const mentionsMe = !isMe && !!user && (msg.mentions || []).includes(user.id);
             return (
               <div key={msg.id}>
                 {showDate && (
@@ -245,7 +287,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
                   </div>
                 )}
                 <div className={`flex mb-1.5 ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`group relative max-w-[78%] rounded-xl px-3 py-1.5 ${msg.is_announcement ? "bg-primary/10 border border-primary/30" : isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}`}>
+                  <div className={`group relative max-w-[78%] rounded-xl px-3 py-1.5 ${msg.is_announcement ? "bg-primary/10 border border-primary/30" : isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}${mentionsMe ? " ring-2 ring-amber-400/70" : ""}`}>
                     {msg.is_announcement && (
                       <Badge variant="outline" className="mb-1 text-[9px] h-4 gap-1 border-primary/40 text-primary">
                         <Megaphone className="h-2.5 w-2.5" /> {t("chat.announcement")}
@@ -263,7 +305,13 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
                         </a>
                       )
                     )}
-                    {msg.message && <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>}
+                    {msg.message && (
+                      <p className="text-sm whitespace-pre-wrap break-words">
+                        {splitMentions(msg.message, readerNames).map((part, i) => part.mention
+                          ? <span key={i} className={`font-semibold ${isMe && !msg.is_announcement ? "underline" : "text-primary"}`}>{part.text}</span>
+                          : <span key={i}>{part.text}</span>)}
+                      </p>
+                    )}
                     {msg.is_announcement && msg.requires_confirmation && (
                       <div className="mt-1.5 pt-1.5 border-t border-primary/20 space-y-1">
                         {user && hasConfirmed(receipts[msg.id] || [], user.id) ? (
@@ -350,8 +398,23 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
               <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label={t("chat.attach")}>
                 <Paperclip className="h-4 w-4" />
               </Button>
-              <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("events.typeMessage")}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()} className="h-9 text-sm" />
+              <div className="relative flex-1">
+                {suggestions.length > 0 && (
+                  <ul role="listbox" aria-label={t("chat.mentionSomeone")} className="absolute bottom-full left-0 z-20 mb-1 w-full max-w-xs overflow-hidden rounded-md border bg-popover py-1 text-sm shadow-md">
+                    {suggestions.map((s, i) => (
+                      <li key={s.user_id} role="option" aria-selected={i === mentionIndex}>
+                        <button type="button" onMouseDown={(e) => { e.preventDefault(); pickMention(s); }}
+                          className={`w-full px-3 py-1.5 text-left ${i === mentionIndex ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"}`}>
+                          @{s.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Input ref={inputRef} value={text} onChange={(e) => onTextChange(e.target.value, e.target.selectionStart)}
+                  onBlur={() => setMentionQ(null)} placeholder={t("chat.typeMessageMention")}
+                  onKeyDown={onKeyDown} className="h-9 text-sm" />
+              </div>
               <Button size="icon" className="h-9 w-9 shrink-0" onClick={send} disabled={(!text.trim() && !pendingFile) || sending} aria-label={t("chat.send")}>
                 <Send className="h-4 w-4" />
               </Button>

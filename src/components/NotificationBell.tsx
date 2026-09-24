@@ -124,7 +124,8 @@ export default function NotificationBell() {
       return;
     }
     if (n.reference_id && n.reference_type) {
-      if (n.reference_type === "flight") navigate(`/flights/${n.reference_id}`);
+      if (n.reference_type === "chat") navigate(`/messages/${n.reference_id}`);
+      else if (n.reference_type === "flight") navigate(`/flights/${n.reference_id}`);
       else if (n.reference_type === "event") navigate(`/events/${n.reference_id}`);
       else if (n.reference_type === "achievement") navigate(`/feed`);
     }
@@ -134,6 +135,7 @@ export default function NotificationBell() {
     if (n.type === "like") return t("notifications.liked");
     if (n.type === "comment") return t("notifications.commented");
     if (n.type === "follow") return t("notifications.followed");
+    if (n.type === "chat_mention") return t("notifications.mentionedInChat");
     return "";
   };
 

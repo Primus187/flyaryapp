@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Archive, CalendarDays, Hash, Lock, Megaphone, MessageCircle, Users } from "lucide-react";
+import { Archive, BellOff, CalendarDays, Hash, Lock, Megaphone, MessageCircle, Users } from "lucide-react";
 import { channelTitle, formatUnread, type ChatChannel } from "@/lib/chat";
 
 function ChannelIcon({ channel }: { channel: ChatChannel }) {
@@ -50,8 +50,9 @@ export default function ChannelList({ channels, showGroup = true, emptyText }: {
                 <p className={`truncate text-xs ${c.unread > 0 ? "text-foreground" : "text-muted-foreground"}`}>
                   {last?.is_announcement && <Megaphone className="inline h-3 w-3 mr-1 text-primary" />}{preview}
                 </p>
+                {c.notify_level === "none" && <BellOff className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-label={t("chat.notify.none")} />}
                 {c.unread > 0 && (
-                  <span className="ml-auto shrink-0 min-w-[1.25rem] h-5 rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground flex items-center justify-center">
+                  <span className={`${c.notify_level === "none" ? "bg-muted-foreground/40" : "ml-auto bg-primary"} shrink-0 min-w-[1.25rem] h-5 rounded-full px-1.5 text-[11px] font-semibold text-primary-foreground flex items-center justify-center`}>
                     {formatUnread(c.unread)}
                   </span>
                 )}
