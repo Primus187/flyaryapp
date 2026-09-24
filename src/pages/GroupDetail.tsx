@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Copy, Save, Trash2, UserMinus, Users, Trophy, Plus } from "lucide-react";
 import ChallengeCard from "@/components/ChallengeCard";
-import GroupChat from "@/components/GroupChat";
+import GroupChannels from "@/components/chat/GroupChannels";
 
 interface MemberRow { id: string; user_id: string; role: string; profiles: { pilot_name: string | null } | null; }
 
@@ -171,7 +171,7 @@ export default function GroupDetail() {
         </TabsContent>
 
         <TabsContent value="chat" className="mt-4">
-          <GroupChat groupId={id!} canAnnounce={isAdmin} />
+          <GroupChannels groupId={id!} groupName={group?.name || name} groupType={group?.group_type ?? groupType} />
         </TabsContent>
       </Tabs>
     </div>

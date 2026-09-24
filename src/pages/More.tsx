@@ -37,6 +37,7 @@ const pilotGroups: Group[] = [
   {
     titleKey: "more.sectionCommunity",
     tiles: [
+      { path: "/messages", icon: MessageCircle, labelKey: "chat.messages" },
       { path: "/search", icon: Search, labelKey: "more.search" },
       { path: "/leaderboard", icon: Trophy, labelKey: "more.leaderboard" },
       { path: "/groups", icon: Users, labelKey: "more.groups" },
@@ -49,8 +50,8 @@ const schoolGroups: Group[] = [
     titleKey: "school.hub.operations",
     tiles: [
       { path: "/school/days", icon: Calendar, labelKey: "school.flightDays" },
-      { path: "/school/chat", icon: MessageCircle, labelKey: "events.chat" },
-      { path: "/school/teamChat", icon: MessageCircle, labelKey: "school.teamChat.title" },
+      { path: "/messages", icon: MessageCircle, labelKey: "chat.messages" },
+      { path: "/school/communication", icon: MessageSquare, labelKey: "chat.communication" },
       { path: "/school/availability", icon: Calendar, labelKey: "school.availability.title" },
     ],
   },

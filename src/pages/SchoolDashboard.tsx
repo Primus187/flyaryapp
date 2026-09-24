@@ -12,7 +12,7 @@ import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import { canOpenSchoolSection } from "@/lib/school-sections";
 import TeamHome from "@/components/school/TeamHome";
-import { GraduationCap, CalendarDays, MessageCircle, Users, Users2, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
+import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { type StudentStatus } from "@/lib/student-status";
@@ -30,17 +30,16 @@ const SchoolCredits = lazy(() => import("@/components/school/SchoolCredits"));
 const SchoolSafety = lazy(() => import("@/components/school/SchoolSafety"));
 const TeamAvailability = lazy(() => import("@/components/school/TeamAvailability"));
 const TeamPolls = lazy(() => import("@/components/school/TeamPolls"));
-const GroupChat = lazy(() => import("@/components/GroupChat"));
+const GroupChannels = lazy(() => import("@/components/chat/GroupChannels"));
 
-type Section = "days" | "chat" | "teamChat" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
+type Section = "days" | "communication" | "people" | "students" | "safety" | "availability" | "equipment" | "credits" | "billing" | "stats";
 
 const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
   {
     titleKey: "school.hub.operations",
     items: [
       { key: "days", icon: CalendarDays, labelKey: "school.flightDays" },
-      { key: "chat", icon: MessageCircle, labelKey: "events.chat" },
-      { key: "teamChat", icon: Users2, labelKey: "school.teamChat.title" },
+      { key: "communication", icon: MessageCircle, labelKey: "chat.communication" },
     ],
   },
   {
@@ -69,7 +68,9 @@ export default function SchoolDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { section } = useParams<{ section?: string }>();
-  const activeSection = (SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === section)?.key ?? null) as Section | null;
+  // Former "chat"/"teamChat" links open the channel overview that replaced them.
+  const sectionKey = section === "chat" || section === "teamChat" ? "communication" : section;
+  const activeSection = (SECTION_GROUPS.flatMap((g) => g.items).find((i) => i.key === sectionKey)?.key ?? null) as Section | null;
 
   const groupQuery = useSchoolGroups();
   const schoolGroups = groupQuery.data || [];
@@ -139,14 +140,11 @@ export default function SchoolDashboard() {
     switch (activeSection) {
       case "days":
         return canManageSchool ? <SchoolDays events={eventInfos} /> : <TeamHome groupId={selectedGroupId} />;
-      case "chat":
-        return <GroupChat groupId={selectedGroupId} canAnnounce={true} />;
-      case "teamChat":
+      case "communication":
         return (
           <div className="space-y-4">
-            <p className="text-xs text-muted-foreground">{t("school.teamChat.hint")}</p>
+            <GroupChannels groupId={selectedGroupId} groupName={schoolGroups.find((g) => g.id === selectedGroupId)?.name || ""} groupType="school" />
             <TeamPolls groupId={selectedGroupId} canManage={canManageSchool} />
-            <GroupChat groupId={selectedGroupId} canAnnounce={canManageSchool} teamOnly />
           </div>
         );
       case "people":

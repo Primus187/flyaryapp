@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame } from "lucide-react";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
+import MessagesButton from "@/components/chat/MessagesButton";
 import { usePilotStreak } from "@/hooks/use-pilot-streak";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -144,6 +145,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex gap-2">
+          <MessagesButton />
           <Button size="icon" variant="ghost" onClick={() => navigate("/stats")} className="h-9 w-9 rounded-full" aria-label={t("nav.stats")}><BarChart3 className="h-5 w-5" /></Button>
           <Button size="icon" onClick={() => navigate("/flights/new")} className="h-9 w-9 rounded-full" aria-label={t("dashboard.firstFlight")}><Plus className="h-5 w-5" /></Button>
         </div>

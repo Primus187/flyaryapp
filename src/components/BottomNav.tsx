@@ -3,12 +3,16 @@ import { Home, Compass, BookOpen, LayoutGrid, Plus, CalendarDays, Users, Message
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useRoleMode } from "@/contexts/RoleModeContext";
+import { useChatInbox } from "@/hooks/use-chat";
+import { totalUnread } from "@/lib/chat";
+import { UnreadDot } from "@/components/chat/MessagesButton";
 
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { mode, canSwitch, canManageSchool } = useRoleMode();
+  const unread = totalUnread(useChatInbox().data || []);
 
   const tabs = [
     { path: "/", icon: Home, label: t("nav.home", "Home") },
@@ -30,15 +34,15 @@ export default function BottomNav() {
       { path: "/school/days", icon: CalendarDays, label: t("school.flightDays") },
       canManageSchool ? { path: "/school/students", icon: Users, label: t("school.students") }
         : { path: "/school/availability", icon: CalendarClock, label: t("school.availability.title") },
-      { path: "/school/teamChat", icon: MessageCircle, label: t("school.teamChat.title") },
+      { path: "/messages", icon: MessageCircle, label: t("chat.messages") },
       { path: "/more", icon: LayoutGrid, label: t("nav.more") },
     ];
     return <nav aria-label={t("journeys.schoolNavigation")} className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur-xl safe-area-bottom">
       <div className="flex h-16 max-w-lg mx-auto">{schoolTabs.map(({ path, icon: Icon, label }) => {
-        const active = location.pathname === path || (path === "/school/students" && location.pathname.startsWith(`${path}/`));
+        const active = location.pathname === path || ((path === "/school/students" || path === "/messages") && location.pathname.startsWith(`${path}/`));
         return <button key={path} type="button" onClick={() => handleNav(path)} aria-current={active ? "page" : undefined}
           className={cn("flex-1 min-w-0 px-1 flex flex-col items-center justify-center gap-1", active ? "text-primary" : "text-muted-foreground")}>
-          <Icon className="h-5 w-5" /><span className="text-[11px] text-center leading-tight">{label}</span>
+          <span className="relative"><Icon className="h-5 w-5" />{path === "/messages" && unread > 0 && <UnreadDot count={unread} className="-top-1.5 -right-2.5" />}</span><span className="text-[11px] text-center leading-tight">{label}</span>
         </button>;
       })}</div>
     </nav>;

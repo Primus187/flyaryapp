@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,36 +9,39 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck } from "lucide-react";
+import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/image-compress";
 import { hasConfirmed, summarizeReceipts } from "@/lib/announcement-receipts";
+import { CHAT_INBOX_KEY } from "@/hooks/use-chat";
+import type { ChatChannel } from "@/lib/chat";
 
-interface GroupMessage {
+interface ChatMessage {
   id: string;
-  group_id: string;
+  channel_id: string;
   user_id: string;
   message: string;
   attachment_path: string | null;
   is_announcement: boolean;
-  is_team_only: boolean;
   requires_confirmation: boolean;
   created_at: string;
 }
 
-const TEAM_FUNCTIONS = ["school_lead", "instructor", "launch_helper"] as const;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- chat tables are not in the generated types.ts yet
+const chatTable = (name: string) => supabase.from(name as any) as any;
 
 /**
- * `teamOnly` renders the internal team channel (Abschnitt 6.3) instead of the school-wide chat:
- * separate message set (is_team_only), no attachments (storage RLS only knows group membership,
- * not is_team_only, so team-only attachments could otherwise be fetched by any group member who
- * guesses the object path).
+ * One chat channel (migration 0025): group, event or direct. Access, posting and moderation rights
+ * come from the database (chat_can_read/post/manage); this component only reflects them.
+ * `fullHeight` fills the channel page; otherwise it is embedded (e.g. the event page's chat tab).
  */
-export default function GroupChat({ groupId, canAnnounce = false, teamOnly = false }: { groupId: string; canAnnounce?: boolean; teamOnly?: boolean }) {
+export default function ChannelChat({ channel, fullHeight = false }: { channel: ChatChannel; fullHeight?: boolean }) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<GroupMessage[]>([]);
+  const queryClient = useQueryClient();
+  const channelId = channel.id;
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
   const [text, setText] = useState("");
@@ -46,7 +50,7 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
   const [requiresConfirmation, setRequiresConfirmation] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [audienceUserIds, setAudienceUserIds] = useState<string[]>([]);
+  const [readerIds, setReaderIds] = useState<string[]>([]);
   const [receipts, setReceipts] = useState<Record<string, string[]>>({});
   const [expandedReceipts, setExpandedReceipts] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -58,130 +62,92 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
     const unique = [...new Set(userIds)].filter((id) => !profilesRef.current[id]);
     if (unique.length === 0) return;
     const { data } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", unique);
-    if (data) {
-      setProfiles((prev) => {
-        const next = { ...prev };
-        data.forEach((p) => { next[p.user_id] = p.pilot_name || "Pilot"; });
-        return next;
-      });
-    }
+    if (data) setProfiles((prev) => ({ ...prev, ...Object.fromEntries(data.map((p) => [p.user_id, p.pilot_name || "Pilot"])) }));
   }, []);
 
-  const loadAttachmentUrls = useCallback(async (msgs: GroupMessage[]) => {
+  const loadAttachmentUrls = useCallback(async (msgs: ChatMessage[]) => {
     const paths = msgs.map((m) => m.attachment_path).filter(Boolean) as string[];
-    const missing = paths.filter((p) => !attachmentUrls[p]);
-    if (missing.length === 0) return;
-    const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrls(missing, 3600);
-    if (signed) {
-      setAttachmentUrls((prev) => {
-        const next = { ...prev };
-        signed.forEach((s) => { if (s.signedUrl) next[s.path] = s.signedUrl; });
-        return next;
-      });
-    }
-  }, [attachmentUrls]);
+    if (paths.length === 0) return;
+    const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrls(paths, 3600);
+    if (signed) setAttachmentUrls((prev) => ({ ...prev, ...Object.fromEntries(signed.filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl])) }));
+  }, []);
 
-  const loadReceipts = useCallback(async (msgs: GroupMessage[]) => {
+  const loadReceipts = useCallback(async (msgs: ChatMessage[]) => {
     const ids = msgs.filter((m) => m.is_announcement && m.requires_confirmation).map((m) => m.id);
     if (ids.length === 0) return;
-    const { data } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("announcement_read_receipts" as any)
-      .select("message_id, user_id")
-      .in("message_id", ids);
+    const { data } = await chatTable("chat_message_receipts").select("message_id, user_id").in("message_id", ids);
     if (data) {
       setReceipts((prev) => {
         const next = { ...prev };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        (data as any[]).forEach((r) => {
-          next[r.message_id] = [...new Set([...(next[r.message_id] || []), r.user_id])];
-        });
+        (data as { message_id: string; user_id: string }[]).forEach((r) => { next[r.message_id] = [...new Set([...(next[r.message_id] || []), r.user_id])]; });
         return next;
       });
     }
   }, []);
 
-  useEffect(() => {
-    // Empfänger-Kreis für "X von Y bestätigt": bei is_team_only nur Teamfunktionen + Admins
-    // (analog zu is_group_team_member), sonst alle Gruppenmitglieder.
-    const loadAudience = async () => {
-      const { data: members } = await supabase.from("group_members").select("user_id, role").eq("group_id", groupId);
-      if (!members) return;
-      if (!teamOnly) {
-        const ids = members.map((m) => m.user_id);
-        setAudienceUserIds(ids);
-        loadProfiles(ids);
-        return;
-      }
-      const admins = members.filter((m) => m.role === "admin").map((m) => m.user_id);
-      const { data: funcs } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        .from("group_member_functions" as any)
-        .select("user_id, function")
-        .eq("group_id", groupId)
-        .in("function", TEAM_FUNCTIONS as unknown as string[]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      const teamFuncUserIds = ((funcs as any[]) || []).map((f) => f.user_id);
-      const ids = [...new Set([...admins, ...teamFuncUserIds])];
-      setAudienceUserIds(ids);
-      loadProfiles(ids);
-    };
-    loadAudience();
-  }, [groupId, teamOnly, loadProfiles]);
+  // Opening (and reading new messages in) the channel resets its unread count.
+  const markRead = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+    await supabase.rpc("chat_mark_read" as any, { _channel: channelId } as any);
+    void queryClient.invalidateQueries({ queryKey: CHAT_INBOX_KEY(user?.id) });
+  }, [channelId, queryClient, user?.id]);
 
   useEffect(() => {
+    // Who can read the channel: for "X of Y confirmed" and author names.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+    supabase.rpc("chat_channel_readers" as any, { _channel: channelId } as any).then(({ data }) => {
+      const rows = (data as { user_id: string; pilot_name: string }[] | null) || [];
+      setReaderIds(rows.map((r) => r.user_id));
+      setProfiles((prev) => ({ ...prev, ...Object.fromEntries(rows.map((r) => [r.user_id, r.pilot_name || "Pilot"])) }));
+    });
+  }, [channelId]);
+
+  useEffect(() => {
+    let cancelled = false;
     const load = async () => {
-      const { data } = await supabase
-        .from("group_messages" as any)
-        .select("*")
-        .eq("group_id", groupId)
-        .eq("is_team_only", teamOnly)
-        .order("created_at", { ascending: true })
-        .limit(200);
-      if (data) {
-        const msgs = data as unknown as GroupMessage[];
-        setMessages(msgs);
-        loadProfiles(msgs.map((m) => m.user_id));
-        loadAttachmentUrls(msgs);
-        loadReceipts(msgs);
-      }
+      const { data } = await chatTable("chat_messages").select("*").eq("channel_id", channelId)
+        .order("created_at", { ascending: false }).limit(200);
+      if (cancelled || !data) return;
+      const msgs = (data as ChatMessage[]).reverse();
+      setMessages(msgs);
+      loadProfiles(msgs.map((m) => m.user_id));
+      loadAttachmentUrls(msgs);
+      loadReceipts(msgs);
+      void markRead();
     };
-    load();
+    void load();
 
-    const channel = supabase
-      .channel(`group-chat-${groupId}-${teamOnly ? "team" : "all"}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "group_messages", filter: `group_id=eq.${groupId}` }, (payload) => {
-        const msg = payload.new as GroupMessage;
-        if (!!msg.is_team_only !== teamOnly) return;
+    const realtime = supabase
+      .channel(`chat-channel-${channelId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `channel_id=eq.${channelId}` }, (payload) => {
+        const msg = payload.new as ChatMessage;
         setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
         loadProfiles([msg.user_id]);
         if (msg.attachment_path) loadAttachmentUrls([msg]);
+        void markRead();
       })
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "group_messages", filter: `group_id=eq.${groupId}` }, (payload) => {
-        setMessages((prev) => prev.filter((m) => m.id !== (payload.old as any).id));
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" }, (payload) => {
+        const removed = (payload.old as { id?: string }).id;
+        if (removed) setMessages((prev) => prev.filter((m) => m.id !== removed));
       })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "announcement_read_receipts" }, (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_message_receipts" }, (payload) => {
         const receipt = payload.new as { message_id: string; user_id: string };
-        setReceipts((prev) => ({
-          ...prev,
-          [receipt.message_id]: [...new Set([...(prev[receipt.message_id] || []), receipt.user_id])],
-        }));
+        setReceipts((prev) => ({ ...prev, [receipt.message_id]: [...new Set([...(prev[receipt.message_id] || []), receipt.user_id])] }));
       })
       .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [groupId, teamOnly, loadProfiles, loadAttachmentUrls, loadReceipts]);
+    return () => { cancelled = true; void supabase.removeChannel(realtime); };
+  }, [channelId, loadProfiles, loadAttachmentUrls, loadReceipts, markRead]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
   const send = async () => {
-    if ((!text.trim() && !pendingFile) || !user || sending) return;
+    if ((!text.trim() && !pendingFile) || !user || sending || !channel.can_post) return;
     setSending(true);
     try {
       let attachmentPath: string | null = null;
-      if (pendingFile && !teamOnly) {
+      if (pendingFile) {
         setUploading(true);
         let file: File | Blob = pendingFile;
         let name = pendingFile.name;
@@ -190,25 +156,23 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
           file = compressed;
           name = compressed.name;
         }
-        attachmentPath = `chat/${groupId}/${user.id}/${Date.now()}_${name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        // channel/<channel>/<user>/<file>: storage policies check the channel's read/post rights.
+        attachmentPath = `channel/${channelId}/${user.id}/${Date.now()}_${name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
         const { error: upErr } = await supabase.storage.from("chat-attachments").upload(attachmentPath, file);
         if (upErr) {
           toast({ title: t("chat.attachmentFailed"), variant: "destructive" });
-          setSending(false); setUploading(false);
           return;
         }
-        setUploading(false);
       }
-      const isAnnouncement = announcement && canAnnounce;
-      const { error } = await supabase.from("group_messages" as any).insert({
-        group_id: groupId,
+      const isAnnouncement = announcement && channel.can_manage;
+      const { error } = await chatTable("chat_messages").insert({
+        channel_id: channelId,
         user_id: user.id,
         message: text.trim(),
         attachment_path: attachmentPath,
         is_announcement: isAnnouncement,
-        is_team_only: teamOnly,
         requires_confirmation: isAnnouncement && requiresConfirmation,
-      } as any);
+      });
       if (error) {
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       } else {
@@ -224,28 +188,22 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
     }
   };
 
-  const deleteMessage = async (msg: GroupMessage) => {
-    if (msg.attachment_path) {
-      await supabase.storage.from("chat-attachments").remove([msg.attachment_path]);
-    }
-    await supabase.from("group_messages" as any).delete().eq("id", msg.id);
+  const deleteMessage = async (msg: ChatMessage) => {
+    if (msg.attachment_path) await supabase.storage.from("chat-attachments").remove([msg.attachment_path]);
+    const { error } = await chatTable("chat_messages").delete().eq("id", msg.id);
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setMessages((prev) => prev.filter((m) => m.id !== msg.id));
   };
 
-  const confirmReceipt = async (msg: GroupMessage) => {
+  const confirmReceipt = async (msg: ChatMessage) => {
     if (!user) return;
-    const receiptRow = { message_id: msg.id, user_id: user.id };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    const { error } = await supabase.from("announcement_read_receipts" as any).insert(receiptRow as any);
-    // Ein Duplicate-Key-Fehler (bereits bestätigt) ist hier kein echter Fehler.
-    if (error && !error.message?.includes("duplicate")) {
+    const { error } = await chatTable("chat_message_receipts").insert({ message_id: msg.id, user_id: user.id });
+    // A duplicate key (already confirmed) is not an error here.
+    if (error && error.code !== "23505") {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       return;
     }
-    setReceipts((prev) => ({
-      ...prev,
-      [msg.id]: [...new Set([...(prev[msg.id] || []), user.id])],
-    }));
+    setReceipts((prev) => ({ ...prev, [msg.id]: [...new Set([...(prev[msg.id] || []), user.id])] }));
   };
 
   const formatTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -254,7 +212,6 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
 
   const announcements = messages.filter((m) => m.is_announcement);
   const latestAnnouncement = announcements.length > 0 ? announcements[announcements.length - 1] : null;
-
   let lastDate = "";
 
   return (
@@ -264,21 +221,22 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
           <Megaphone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">{t("chat.announcement")}</p>
-            <p className="text-sm whitespace-pre-wrap break-words">{latestAnnouncement.message}</p>
+            <p className="text-sm whitespace-pre-wrap break-words line-clamp-3">{latestAnnouncement.message}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">{profiles[latestAnnouncement.user_id] || "Pilot"} · {formatDate(latestAnnouncement.created_at)}</p>
           </div>
         </div>
       )}
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <ScrollArea className="h-80 px-3 py-2">
+        <ScrollArea className={`${fullHeight ? "h-[calc(100dvh-19rem)] min-h-[16rem]" : "h-80"} px-3 py-2`}>
           {messages.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8">{t("events.noMessages")}</p>
           )}
           {messages.map((msg) => {
             const isMe = msg.user_id === user?.id;
             const msgDate = formatDate(msg.created_at);
-            let showDate = false;
-            if (msgDate !== lastDate) { showDate = true; lastDate = msgDate; }
+            const showDate = msgDate !== lastDate;
+            lastDate = msgDate;
+            const canDelete = isMe || channel.can_manage;
             return (
               <div key={msg.id}>
                 {showDate && (
@@ -301,7 +259,7 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
                         </a>
                       ) : (
                         <a href={attachmentUrls[msg.attachment_path]} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-1.5 text-xs underline mb-1 ${isMe && !msg.is_announcement ? "text-primary-foreground" : "text-primary"}`}>
-                          <FileText className="h-3.5 w-3.5" /> {msg.attachment_path.split("/").pop()}
+                          <FileText className="h-3.5 w-3.5" /> {msg.attachment_path.split("/").pop()?.replace(/^\d+_/, "")}
                         </a>
                       )
                     )}
@@ -318,15 +276,11 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
                           </Button>
                         )}
                         {(() => {
-                          const summary = summarizeReceipts(audienceUserIds, receipts[msg.id] || []);
+                          const summary = summarizeReceipts(readerIds.filter((id) => id !== msg.user_id), receipts[msg.id] || []);
                           const expanded = expandedReceipts === msg.id;
                           return (
                             <div>
-                              <button
-                                type="button"
-                                className="text-[10px] underline text-muted-foreground"
-                                onClick={() => setExpandedReceipts(expanded ? null : msg.id)}
-                              >
+                              <button type="button" className="text-[10px] underline text-muted-foreground" onClick={() => setExpandedReceipts(expanded ? null : msg.id)}>
                                 {t("chat.receiptSummary", { confirmed: summary.confirmedCount, total: summary.totalCount })}
                               </button>
                               {expanded && summary.pendingUserIds.length > 0 && (
@@ -341,8 +295,8 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
                     )}
                     <div className={`flex items-center gap-1.5 mt-0.5 justify-end ${isMe && !msg.is_announcement ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                       <p className="text-[9px]">{formatTime(msg.created_at)}</p>
-                      {isMe && (
-                        <button onClick={() => deleteMessage(msg)} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      {canDelete && (
+                        <button onClick={() => deleteMessage(msg)} aria-label={t("common.delete")} className="opacity-60 hover:opacity-100 transition-opacity">
                           <Trash2 className="h-3 w-3" />
                         </button>
                       )}
@@ -355,63 +309,55 @@ export default function GroupChat({ groupId, canAnnounce = false, teamOnly = fal
           <div ref={bottomRef} />
         </ScrollArea>
 
-        {pendingFile && (
-          <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border bg-muted/30">
-            {pendingFile.type.startsWith("image/") ? (
-              <img src={URL.createObjectURL(pendingFile)} alt="" className="h-10 w-10 object-cover rounded" />
-            ) : (
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            )}
-            <span className="text-xs truncate flex-1">{pendingFile.name}</span>
-            <button onClick={() => setPendingFile(null)}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
-          </div>
-        )}
-
-        {canAnnounce && (
-          <div className="flex flex-col gap-1.5 px-2 py-1.5 border-t border-border">
-            <div className="flex items-center gap-2">
-              <Switch id="announce" checked={announcement} onCheckedChange={(v) => { setAnnouncement(v); if (!v) setRequiresConfirmation(false); }} />
-              <Label htmlFor="announce" className="text-xs flex items-center gap-1 cursor-pointer">
-                <Megaphone className="h-3 w-3" /> {t("chat.asAnnouncement")}
-              </Label>
-            </div>
-            {announcement && (
-              <div className="flex items-center gap-2 pl-1">
-                <Switch id="require-confirmation" checked={requiresConfirmation} onCheckedChange={setRequiresConfirmation} />
-                <Label htmlFor="require-confirmation" className="text-xs flex items-center gap-1 cursor-pointer">
-                  <CheckCheck className="h-3 w-3" /> {t("chat.requireConfirmation")}
-                </Label>
+        {!channel.can_post ? (
+          <p className="flex items-center justify-center gap-1.5 px-3 py-3 border-t border-border text-xs text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" /> {channel.archived_at ? t("chat.archivedReadOnly") : t("chat.teamOnlyPosting")}
+          </p>
+        ) : (
+          <>
+            {pendingFile && (
+              <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border bg-muted/30">
+                {pendingFile.type.startsWith("image/") ? (
+                  <img src={URL.createObjectURL(pendingFile)} alt="" className="h-10 w-10 object-cover rounded" />
+                ) : (
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-xs truncate flex-1">{pendingFile.name}</span>
+                <button onClick={() => setPendingFile(null)} aria-label={t("common.delete")}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
               </div>
             )}
-          </div>
-        )}
-
-        <div className="flex gap-2 p-2 border-t border-border">
-          {!teamOnly && (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept="image/*,.pdf,.txt,.csv,.doc,.docx"
-                onChange={(e) => setPendingFile(e.target.files?.[0] || null)}
-              />
-              <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {channel.can_manage && (
+              <div className="flex flex-col gap-1.5 px-2 py-1.5 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Switch id={`announce-${channelId}`} checked={announcement} onCheckedChange={(v) => { setAnnouncement(v); if (!v) setRequiresConfirmation(false); }} />
+                  <Label htmlFor={`announce-${channelId}`} className="text-xs flex items-center gap-1 cursor-pointer">
+                    <Megaphone className="h-3 w-3" /> {t("chat.asAnnouncement")}
+                  </Label>
+                </div>
+                {announcement && (
+                  <div className="flex items-center gap-2 pl-1">
+                    <Switch id={`confirm-${channelId}`} checked={requiresConfirmation} onCheckedChange={setRequiresConfirmation} />
+                    <Label htmlFor={`confirm-${channelId}`} className="text-xs flex items-center gap-1 cursor-pointer">
+                      <CheckCheck className="h-3 w-3" /> {t("chat.requireConfirmation")}
+                    </Label>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex gap-2 p-2 border-t border-border">
+              <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.txt,.csv,.doc,.docx"
+                onChange={(e) => setPendingFile(e.target.files?.[0] || null)} />
+              <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label={t("chat.attach")}>
                 <Paperclip className="h-4 w-4" />
               </Button>
-            </>
-          )}
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={t("events.typeMessage")}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
-            className="h-9 text-sm"
-          />
-          <Button size="icon" className="h-9 w-9 shrink-0" onClick={send} disabled={(!text.trim() && !pendingFile) || sending}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+              <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("events.typeMessage")}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()} className="h-9 text-sm" />
+              <Button size="icon" className="h-9 w-9 shrink-0" onClick={send} disabled={(!text.trim() && !pendingFile) || sending} aria-label={t("chat.send")}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import BottomNav from "./BottomNav";
 import { WifiOff, RefreshCw, CloudUpload } from "lucide-react";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { useChatInboxLive } from "@/hooks/use-chat";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AppLayout() {
@@ -11,6 +12,7 @@ export default function AppLayout() {
   const { toast } = useToast();
   const [offline, setOffline] = useState(!navigator.onLine);
   const { pendingCount, syncing, syncAll } = useOfflineSync();
+  useChatInboxLive();
 
   useEffect(() => {
     const goOffline = () => setOffline(true);

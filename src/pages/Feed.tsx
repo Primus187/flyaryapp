@@ -9,6 +9,7 @@ import FeedEventCard, { type FeedEvent } from "@/components/FeedEventCard";
 import FeedAchievementCard, { type FeedAchievement } from "@/components/FeedAchievementCard";
 import FeedStoryBar from "@/components/FeedStoryBar";
 import NotificationBell from "@/components/NotificationBell";
+import MessagesButton from "@/components/chat/MessagesButton";
 import EmptyState from "@/components/layout/EmptyState";
 import PilotSuggestions from "@/components/PilotSuggestions";
 import { Users, X } from "lucide-react";
@@ -309,7 +310,7 @@ export default function Feed() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
-        <NotificationBell />
+        <div className="flex items-center gap-1"><MessagesButton /><NotificationBell /></div>
       </div>
 
       {tagFilter && (

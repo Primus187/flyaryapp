@@ -1,5 +1,28 @@
 # Flyary
 
+## Chats: Kanäle (Etappe 1)
+
+Ein Kanal-Modell für alle Unterhaltungen (Migration `0025_chat_channels.sql`, Tests in
+`src/test/chat-channels-database.test.ts`):
+
+- **Gruppenkanäle** mit frei wählbarem Namen und Zielgruppe: alle Mitglieder, Team (Leitung, Instruktoren,
+  Startleiter), Schüler (optional nur bestimmte Stufen) oder ausgewählte Personen. Die Mitgliedschaft wird zur
+  Lesezeit aus der Zielgruppe berechnet (`chat_can_read`), niemand pflegt Listen. Jede Gruppe hat «Allgemein»,
+  Schulen zusätzlich «Team». Anlegen/Verwalten: Admin, Schulleitung, Instruktoren (`is_group_staff`); sie sehen
+  alle Kanäle ihrer Gruppe. Optional «Nur das Team schreibt», Archivieren (nur noch lesbar).
+- **Terminkanal** automatisch pro Termin, nur für Angemeldete, das Team und die Termin-Crew.
+- **Direktnachrichten** sind im Modell vorgesehen (Etappe 3).
+- Ankündigungen mit Lesebestätigung in jedem Kanal; Push an alle Leser des Kanals. Anhänge unter
+  `chat-attachments/channel/<kanal>/<user>/…`, geschützt wie der Kanal selbst.
+- App: Bereich «Nachrichten» (`/messages`, Ungelesen-Zähler) – im Pilotenmodus oben auf Start/Feed, im Schulmodus
+  in der unteren Leiste; Kanal im Vollbild (`/messages/:id`); Gruppe → Tab Chat zeigt ihre Kanäle; Schulmodus →
+  «Kommunikation» mit Kanalverwaltung und Team-Umfragen; Termin → Tab Chat = Terminkanal.
+- Übernahme: `group_messages` (Team-Nachrichten in «Team»), Lesebestätigungen und `event_messages` wurden
+  kopiert. Alte App-Versionen schreiben weiter in die alten Tabellen; Trigger leiten das in die Kanäle weiter.
+  Die alten Tabellen werden nach der Übergangszeit entfernt.
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0025), danach das Frontend.
+
 ## Betrieb ohne Lovable (Supabase Zürich + Vercel)
 
 Seit dem 24.09.2026 läuft Flyary auf einem eigenen Supabase-Projekt `pvhxrgvhzzqcyadyksvk` (Region

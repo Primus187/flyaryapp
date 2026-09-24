@@ -45,17 +45,18 @@ function ins(table, rows, { each = false } = {}) {
 }
 
 // ── Removal ────────────────────────────────────────────────────────────────
-const SEEDED = ["feed_likes", "feed_comments", "feed_achievements", "challenge_progress", "challenge_goals", "challenges",
+// chat_* (migration 0025): copies of demo group/event messages and the demo channels.
+const SEEDED = ["chat_messages", "chat_channels", "feed_likes", "feed_comments", "feed_achievements", "challenge_progress", "challenge_goals", "challenges",
   "flight_coach_notes", "flight_training_items", "flights", "student_day_notes", "event_messages", "event_carpool_riders",
   "event_carpools", "event_staff", "event_briefing_tasks", "event_maneuvers", "event_weather_decisions", "equipment_checks",
   "equipment_assignments", "equipment_maintenance", "incident_reports", "billing_items", "launch_leader_credits",
   "event_signups", "flight_events", "school_equipment", "instructor_certifications", "instructor_availability",
   "school_rates", "team_poll_responses", "team_polls", "group_messages", "training_progress", "training_level_history",
   "student_status_history", "group_member_functions", "group_members", "locations"];
+// Tables that do not exist yet (chat_* before migration 0025) are skipped.
 const removeSql = `BEGIN;
-${SEEDED.map((t) => t === "flight_training_items"
-    ? `DELETE FROM public.flight_training_items WHERE flight_id::text LIKE '${PREFIX}%';`
-    : `DELETE FROM public.${t} WHERE id::text LIKE '${PREFIX}%';`).join("\n")}
+${SEEDED.map((t) => `DO $$ BEGIN IF to_regclass('public.${t}') IS NOT NULL THEN
+  DELETE FROM public.${t} WHERE ${t === "flight_training_items" ? "flight_id" : "id"}::text LIKE '${PREFIX}%'; END IF; END $$;`).join("\n")}
 -- Rows that triggers created for demo accounts (XP, badges, notifications, ...).
 DO $$ DECLARE r record; BEGIN
   FOR r IN SELECT c.table_name FROM information_schema.columns c JOIN information_schema.tables t
@@ -81,8 +82,9 @@ if (groups.length !== 1) throw new Error(`Erwarte genau eine Schulgruppe "Vertic
 const G = groups[0].id;
 const ADMIN = groups[0].created_by;
 const [existing] = await sql(`select count(*)::int n from auth.users where id::text like '${PREFIX}%'`);
-if (existing.n > 0) throw new Error("Testdaten sind bereits eingespielt. Zuerst: node scripts/seed-vertical-testdata.mjs --remove");
+if (existing.n > 0 && !process.argv.includes("--print")) throw new Error("Testdaten sind bereits eingespielt. Zuerst: node scripts/seed-vertical-testdata.mjs --remove");
 const exam = await sql(`select id, name from public.training_items where is_exam_maneuver order by name`);
+const [{ chat }] = await sql(`select to_regclass('public.chat_channels') is not null as chat`); // migration 0025 applied?
 const itemsByName = Object.fromEntries(exam.map((i) => [i.name.slice(0, 2), i.id])); // "a)" .. "g)"
 const examIds = exam.map((i) => i.id);
 
@@ -438,6 +440,27 @@ ins("public.group_messages", [
 const poll = { id: nid(), group_id: G, question: "Wer übernimmt am Prüfungstag die Landeplatz-Betreuung?", options: ["Lea", "Nico", "Reto"], closes_at: at(nextSat + 7, "20:00"), created_by: P.reto.id };
 ins("public.team_polls", [poll]);
 ins("public.team_poll_responses", [{ id: nid(), poll_id: poll.id, user_id: P.nico.id, response: "Nico", responded_at: at(-3, "08:00") }, { id: nid(), poll_id: poll.id, user_id: P.reto.id, response: "Nico", responded_at: at(-3, "09:15") }]);
+
+// ── Chat channels (only when migration 0025 is applied) ────────────────────
+// Group/event messages above reach the channels through the migration's forwarding triggers.
+// No announcements here: those would push to the real members of the group.
+if (chat) {
+  const channels = {
+    grundkurs: { id: nid(), kind: "group", group_id: G, name: "Grundkurs Herbst", description: "Fragen und Infos für den Grundkurs", audience: "students", audience_levels: ["ground"], created_by: P.reto.id },
+    info: { id: nid(), kind: "group", group_id: G, name: "Info Vertical", description: "Wichtige Infos der Schule – hier schreibt nur das Team", audience: "all", staff_only_posting: true, created_by: P.reto.id },
+    camp: { id: nid(), kind: "group", group_id: G, name: "Herbstcamp Tessin", description: "Organisation Camp Monte Lema", audience: "custom", created_by: P.lea.id },
+  };
+  ins("public.chat_channels", Object.values(channels));
+  ins("public.chat_channel_members", [P.jonas, P.sara, P.laura, P.tim, P.lea, P.reto].map((u) => ({ channel_id: channels.camp.id, user_id: u.id, added_by: P.lea.id })));
+  ins("public.chat_messages", [
+    { id: nid(), channel_id: channels.grundkurs.id, user_id: P.reto.id, message: "Willkommen im Grundkurs! Hier klären wir alles rund um Übungshang und erste Höhenflüge.", created_at: at(-34, "19:00") },
+    { id: nid(), channel_id: channels.grundkurs.id, user_id: P.lukas.id, message: "Brauche ich für den Übungshang schon ein Funkgerät?", created_at: at(-3, "18:12") },
+    { id: nid(), channel_id: channels.grundkurs.id, user_id: P.lea.id, message: "Nein, am Übungshang nicht. Ab dem ersten Höhenflug bekommst du eines von der Schule.", created_at: at(-3, "18:40") },
+    { id: nid(), channel_id: channels.info.id, user_id: P.reto.id, message: "Die Bahn Beatenberg fährt ab Oktober erst ab 08:30 – Treffpunkte entsprechend angepasst.", created_at: at(-4, "12:00") },
+    { id: nid(), channel_id: channels.camp.id, user_id: P.lea.id, message: "Zimmereinteilung im Ostello folgt. Bitte bis Mittwoch melden, wer mit dem Auto fährt.", created_at: at(-2, "20:05") },
+    { id: nid(), channel_id: channels.camp.id, user_id: P.tim.id, message: "Ich fahre ab Bern, 3 Plätze frei 🚗", created_at: at(-2, "20:30") },
+  ]);
+}
 
 // ── Run ────────────────────────────────────────────────────────────────────
 if (process.argv.includes("--print")) {

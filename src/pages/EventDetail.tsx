@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck, AlertTriangle, MoreHorizontal, ChevronDown } from "lucide-react";
-import EventChat from "@/components/EventChat";
+import EventChannel from "@/components/chat/EventChannel";
 import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
 import EventCarpools from "@/components/EventCarpools";
@@ -486,7 +486,7 @@ export default function EventDetail() {
         )}
 
         <TabsContent value="chat" className="mt-3">
-          <EventChat eventId={id!} groupId={event.group_id} />
+          <EventChannel eventId={id!} />
         </TabsContent>
       </Tabs>
 
