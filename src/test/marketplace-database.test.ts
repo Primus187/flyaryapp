@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039, 0041 and 0042 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0043 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -92,6 +92,7 @@ beforeAll(async () => {
   await db.exec(migration("0039_marketplace_cleanup.sql"));
   await db.exec(migration("0041_marketplace_terms.sql"));
   await db.exec(migration("0042_marketplace_favorites.sql"));
+  await db.exec(migration("0043_marketplace_saved_searches.sql"));
   // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
   await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
@@ -803,6 +804,78 @@ describe("favourites", () => {
     await db.exec(`UPDATE public.marketplace_listings SET status = 'active' WHERE id = '${alpha}'`);
     expect(await favorites(student)).toMatchObject([{ status: "active", available: true }]);
     expect(await favorites(stranger)).toEqual([]);
+  });
+});
+
+describe("saved searches", () => {
+  // listings here are titled "Q …" and removed afterwards
+  const save = async (uid: string, name: string, filters: object) => {
+    await asUser(uid);
+    return (await db.query<{ id: string }>(`INSERT INTO public.marketplace_saved_searches (user_id, name, filters, query) VALUES ($1, $2, $3, '')
+      RETURNING id`, [uid, name, JSON.stringify(filters)])).rows[0].id;
+  };
+  const goLive = async (seller: string, title: string, extra: string, from = "draft") => {
+    await asSystem();
+    const id = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, created_by, category, title, status, ${extra.split("=")[0] || "size"})
+      VALUES ('${seller}', '${seller}', 'glider', '${title}', '${from}', ${extra.split("=")[1] || "NULL"}) RETURNING id`)).rows[0].id;
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'active', published_at = now(), bumped_at = now(),
+      expires_at = now() + interval '60 days' WHERE id = '${id}'`);
+    return id;
+  };
+  const notes = async (uid: string) => {
+    await asSystem();
+    return (await db.query(`SELECT 1 FROM public.notifications WHERE user_id = '${uid}' AND type = 'market_search'`)).rows.length;
+  };
+  beforeAll(async () => {
+    await asSystem();
+    await db.exec("DELETE FROM public.notifications; DELETE FROM public.pushes;");
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec("DELETE FROM public.marketplace_listings WHERE title LIKE 'Q %'; DELETE FROM public.marketplace_saved_searches;");
+  });
+
+  it("keeps at most 5 per person, each only for its owner", async () => {
+    for (let n = 1; n <= 5; n++) await save(student, `Suche ${n}`, { q: `nix${n}` });
+    await expect(save(student, "Sechste", {})).rejects.toThrow("marketplace:limit_saved_searches");
+    await asUser(stranger);
+    expect((await db.query("SELECT 1 FROM public.marketplace_saved_searches")).rows).toHaveLength(0);
+    await expect(db.exec(`INSERT INTO public.marketplace_saved_searches (user_id, name, filters) VALUES ('${student}', 'x', '{}')`)).rejects.toThrow();
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_saved_searches WHERE user_id = '${student}'`);
+  });
+
+  it("notifies once a day per search when a matching listing goes live, not the seller, not for invisible listings", async () => {
+    const search = await save(student, "Rush M", { q: "rush", size: "M" });
+    await save(stranger, "Eigene", { q: "rush" });
+    await goLive(stranger, "Q Ozone Rush", "size='L'");
+    expect(await notes(student)).toBe(0);
+    await goLive(stranger, "Q Ozone Rush M", "size='M'");
+    expect(await notes(student)).toBe(1);
+    expect(await notes(stranger)).toBe(0);
+    await goLive(stranger, "Q Rush M zweite", "size='M'");
+    expect(await notes(student)).toBe(1);
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_saved_searches SET last_notified_at = now() - interval '25 hours' WHERE id = '${search}';
+      UPDATE public.school_shop_profiles SET active = false WHERE group_id = '${school}';`);
+    // a school listing without an active shop is invisible: no notification
+    const hidden = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_group_id, created_by, category, title, status, size)
+      VALUES ('${school}', '${shop}', 'glider', 'Q Schul-Rush M', 'draft', 'M') RETURNING id`)).rows[0].id;
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'active', bumped_at = now() WHERE id = '${hidden}';
+      UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${school}';`);
+    expect(await notes(student)).toBe(1);
+    await goLive(owner, "Q Rush M dritte", "size='M'", "expired");
+    expect(await notes(student)).toBe(2);
+  });
+
+  it("counts new matches since the search was last opened", async () => {
+    await asUser(student);
+    const overview = async () => (await db.query<{ o: { name: string; new_count: number }[] }>("SELECT public.marketplace_saved_searches_overview() AS o")).rows[0].o;
+    const before = (await overview()).find((s) => s.name === "Rush M")!;
+    expect(before.new_count).toBe(4);
+    await db.exec(`UPDATE public.marketplace_saved_searches SET last_viewed_at = now() WHERE name = 'Rush M'`);
+    expect((await overview()).find((s) => s.name === "Rush M")!.new_count).toBe(0);
+    await expect(db.exec(`UPDATE public.marketplace_saved_searches SET last_notified_at = NULL WHERE name = 'Rush M'`)).rejects.toThrow(/permission denied/);
   });
 });
 

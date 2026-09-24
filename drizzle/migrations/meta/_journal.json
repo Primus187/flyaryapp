@@ -302,6 +302,13 @@
       "when": 1792281600000,
       "tag": "0042_marketplace_favorites",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1792368000000,
+      "tag": "0043_marketplace_saved_searches",
+      "breakpoints": true
     }
   ]
 }

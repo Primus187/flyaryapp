@@ -1915,7 +1915,8 @@
         "own_listing": "C'est ta propre annonce.",
         "shop_not_ready": "La boutique de l'école n'est pas encore active (profil incomplet).",
         "already_reported": "Tu as déjà signalé cette annonce.",
-        "reason_required": "Merci d'indiquer une raison."
+        "reason_required": "Merci d'indiquer une raison.",
+        "limit_saved_searches": "Au maximum 5 recherches enregistrées. Supprime d'abord une."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2169,6 +2170,21 @@
         "notifyPrice": "Une annonce favorite a baissé de prix",
         "notifyReserved": "Une annonce favorite a été réservée",
         "notifySold": "Une annonce favorite a été vendue"
+      },
+      "saved": {
+        "save": "Enregistrer la recherche",
+        "title": "Recherches enregistrées",
+        "empty": "Aucune recherche enregistrée.",
+        "namePrompt": "Nom de la recherche :",
+        "defaultName": "Ma recherche",
+        "saved": "Recherche enregistrée – tu seras averti·e des nouveaux résultats.",
+        "newCount_one": "1 nouveau",
+        "newCount_other": "{{count}} nouveaux",
+        "newCount": "{{count}} nouveaux",
+        "notify": "Avertir des nouveaux résultats",
+        "delete": "Supprimer la recherche",
+        "deleteConfirm": "Supprimer la recherche « {{name}} » ?",
+        "notification": "Nouveaux résultats pour ta recherche enregistrée"
       }
     }
 }

@@ -1915,7 +1915,8 @@
         "own_listing": "This is your own listing.",
         "shop_not_ready": "The school's shop is not active yet (shop profile incomplete).",
         "already_reported": "You have already reported this listing.",
-        "reason_required": "Please give a reason."
+        "reason_required": "Please give a reason.",
+        "limit_saved_searches": "At most 5 saved searches. Delete one first."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2169,6 +2170,21 @@
         "notifyPrice": "A saved listing got cheaper",
         "notifyReserved": "A saved listing was reserved",
         "notifySold": "A saved listing was sold"
+      },
+      "saved": {
+        "save": "Save search",
+        "title": "Saved searches",
+        "empty": "No saved searches yet.",
+        "namePrompt": "Name of the search:",
+        "defaultName": "My search",
+        "saved": "Search saved – you'll be notified about new matches.",
+        "newCount_one": "1 new",
+        "newCount_other": "{{count}} new",
+        "newCount": "{{count}} new",
+        "notify": "Notify about new matches",
+        "delete": "Delete search",
+        "deleteConfirm": "Delete search \"{{name}}\"?",
+        "notification": "New matches for your saved search"
       }
     }
 }

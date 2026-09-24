@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ImageOff, List, Plus, Search, ShieldAlert, SlidersHorizontal, Store } from "lucide-react";
+import { Bookmark, BookmarkPlus, ImageOff, List, Plus, Search, ShieldAlert, SlidersHorizontal, Store } from "lucide-react";
+import SavedSearchesSheet from "@/components/market/SavedSearchesSheet";
+import { marketErrorCode } from "@/lib/marketplace-listing";
+import {
+  fetchSavedSearches, hasSearchCriteria, markViewed, saveSearch, savedSearchFilters, suggestName, type SavedSearch,
+} from "@/lib/marketplace-saved-searches";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchModerationQueue, isMarketModerator } from "@/lib/marketplace-moderation";
 import { fetchFavoriteIds, toggledSet } from "@/lib/marketplace-favorites";
@@ -60,6 +65,11 @@ export default function Market() {
   const [favIds, setFavIds] = useState<Set<string>>(new Set());
   useEffect(() => { if (user) fetchFavoriteIds().then(setFavIds).catch(() => undefined); }, [user]);
 
+  /** Saved searches (plan 6.2); null until loaded. */
+  const [saved, setSaved] = useState<SavedSearch[] | null>(null);
+  const [savedOpen, setSavedOpen] = useState(false);
+  useEffect(() => { if (user) fetchSavedSearches().then(setSaved).catch(() => setSaved([])); }, [user]);
+
   useEffect(() => {
     if (!user) return;
     isMarketModerator(user.id)
@@ -115,6 +125,39 @@ export default function Market() {
   };
 
   const openSheet = () => { setDraft(filters); setSheetOpen(true); };
+
+  const openSaved = useCallback((s: SavedSearch) => {
+    const next = savedSearchFilters(s);
+    setQuery(next.q);
+    setParams(new URLSearchParams(s.query), { replace: true });
+    setSaved((prev) => (prev ?? []).map((x) => (x.id === s.id ? { ...x, new_count: 0 } : x)));
+    setSavedOpen(false);
+    void markViewed(s.id);
+  }, [setParams]);
+
+  // from a push or the bell: /market?saved=<id>
+  const savedParam = params.get("saved");
+  useEffect(() => {
+    if (!savedParam || saved === null) return;
+    const s = saved.find((x) => x.id === savedParam);
+    if (s) openSaved(s);
+    else setParams(filtersToParams(filters), { replace: true });
+  }, [savedParam, saved, openSaved, setParams, filters]);
+
+  const saveCurrent = async () => {
+    if (!user) return;
+    const name = window.prompt(t("market.saved.namePrompt"),
+      suggestName(filters, (c) => t(`market.categories.${c}`), t("market.saved.defaultName")));
+    if (!name?.trim()) return;
+    try {
+      await saveSearch(user.id, name, filters);
+      toast.success(t("market.saved.saved"));
+      setSaved(await fetchSavedSearches());
+    } catch (e) {
+      toast.error(t(`market.errors.${marketErrorCode(e)}`));
+    }
+  };
+  const newMatches = (saved ?? []).reduce((sum, s) => sum + s.new_count, 0);
   const filterCount = activeFilterCount(filters);
 
   const card = (item: SearchItem) => (
@@ -176,6 +219,17 @@ export default function Market() {
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input className="pl-8" value={query} placeholder={t("market.browse.searchPlaceholder")} onChange={(e) => setQuery(e.target.value)} />
         </div>
+        {hasSearchCriteria(filters) && (
+          <Button variant="outline" size="icon" aria-label={t("market.saved.save")} onClick={() => void saveCurrent()}>
+            <BookmarkPlus className="h-4 w-4" />
+          </Button>
+        )}
+        {(saved?.length ?? 0) > 0 && (
+          <Button variant="outline" size="icon" className="relative" aria-label={t("market.saved.title")} onClick={() => setSavedOpen(true)}>
+            <Bookmark className="h-4 w-4" />
+            {newMatches > 0 && <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{newMatches}</span>}
+          </Button>
+        )}
         <Button variant="outline" className="gap-1.5" onClick={openSheet}>
           <SlidersHorizontal className="h-4 w-4" />
           {filterCount > 0 ? filterCount : <span className="sr-only">{t("market.browse.filters")}</span>}
@@ -206,6 +260,8 @@ export default function Market() {
           )}
         </>
       )}
+
+      <SavedSearchesSheet open={savedOpen} onOpenChange={setSavedOpen} searches={saved ?? []} onChange={setSaved} onOpen={openSaved} />
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">

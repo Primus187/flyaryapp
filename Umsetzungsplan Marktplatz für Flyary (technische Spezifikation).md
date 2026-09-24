@@ -9,7 +9,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
-| M2 – Wiederkommen | 🔶 In Arbeit | 6.1 ✅; gespeicherte Suchen, Vorausfüllen aus dem eigenen Material, Umkreis folgen |
+| M2 – Wiederkommen | 🔶 In Arbeit | 6.1 ✅, 6.2 ✅; Vorausfüllen aus dem eigenen Material und Umkreis folgen |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
 
@@ -276,9 +276,11 @@ Herz auf Karte und Detailseite, Liste unter «Meine Anzeigen». Mitteilung, wenn
 
 **Ist-Stand:** Migration `0042_marketplace_favorites.sql` (`marketplace_favorites`, Trigger `marketplace_notify_favorites`, `marketplace_my_favorites`), Reiter «Gemerkt» in «Meine Anzeigen». Gemerkte Anzeigen bleiben nach Verkauf oder Ausblenden mit Status in der Liste; Mitteilungen nie an die verkaufende Seite und nicht bei Preiserhöhungen. Bei Schul-Neuware mit mehreren Stück löst ein einzelner Verkauf keine Mitteilung aus (die Anzeige bleibt aktiv).
 
-### 6.2 Gespeicherte Suchen mit Push
+### 6.2 Gespeicherte Suchen mit Push ✅
 
 Aktuelle Filter als Suche speichern. Neue passende Anzeigen lösen eine Push-Mitteilung aus, gebündelt höchstens einmal pro Tag und Suche. Max. 5 gespeicherte Suchen pro Person.
+
+**Ist-Stand:** Migration `0043_marketplace_saved_searches.sql` (`marketplace_saved_searches`, `market_listing_matches` als gemeinsame Filterregel für Suche und gespeicherte Suchen, Trigger `marketplace_notify_saved_searches`, `marketplace_saved_searches_overview` mit Zähler «neu seit dem letzten Öffnen»), Knöpfe «Suche speichern» und «Gespeicherte Suchen» in der Übersicht. Mitteilung, sobald eine passende Anzeige online geht, auch nach einer Verlängerung; höchstens eine pro Suche und Tag. **Abweichung:** Statt einer gesammelten Tagesmitteilung kommt die erste Mitteilung sofort und weitere Treffer desselben Tages zeigt der Zähler «neu» an (schneller für Occasionen, die rasch weg sind).
 
 ### 6.3 Vorausfüllen aus dem eigenen Material
 

@@ -1,5 +1,23 @@
 # Flyary
 
+## Marktplatz: Gespeicherte Suchen (6.2)
+
+Migration `0043_marketplace_saved_searches.sql`, Liste `src/components/market/SavedSearchesSheet.tsx`, Logik in
+`src/lib/marketplace-saved-searches.ts`.
+
+- **Suche speichern:** In der Übersicht erscheint ein Lesezeichen-Knopf, sobald Suchtext oder Filter gesetzt sind (die
+  Sortierung allein zählt nicht). Name vorgeschlagen aus Suchtext oder Kategorien. Höchstens 5 Suchen pro Person.
+- **Gespeicherte Suchen** (Lesezeichen-Knopf mit Anzahl neuer Treffer): öffnen, Mitteilung ein/aus, löschen. «Neu» zählt
+  Treffer, die seit dem letzten Öffnen der Suche online gingen.
+- **Mitteilung** (Glocke + Push «Neu im Marktplatz: …»), wenn eine passende Anzeige online geht (veröffentlicht oder
+  nach Ablauf verlängert) und die Person sie sehen darf; höchstens eine pro Suche und Tag, nie für eigene Anzeigen.
+  Tippen öffnet `/market?saved=<id>` mit den Filtern der Suche.
+- **Eine Filterregel für beides:** `market_listing_matches(listing, filters)` enthält die Filter der Suche aus 4.5;
+  `marketplace_search` verwendet sie jetzt ebenfalls. Eine gespeicherte Suche findet damit genau, was die Suche zeigt.
+- Gespeichert werden die Filter im Format der Suche (für den Abgleich) und die URL der Übersicht (zum Öffnen).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0043), danach das Frontend.
+
 ## Marktplatz: Merkliste (6.1)
 
 Migration `0042_marketplace_favorites.sql`, Herz `src/components/market/FavoriteButton.tsx`, Liste

@@ -1915,7 +1915,8 @@
         "own_listing": "Das ist deine eigene Anzeige.",
         "shop_not_ready": "Der Shop der Schule ist noch nicht aktiv (Shop-Profil unvollständig).",
         "already_reported": "Du hast diese Anzeige bereits gemeldet.",
-        "reason_required": "Bitte einen Grund angeben."
+        "reason_required": "Bitte einen Grund angeben.",
+        "limit_saved_searches": "Höchstens 5 gespeicherte Suchen. Lösche zuerst eine."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2169,6 +2170,21 @@
         "notifyPrice": "Eine gemerkte Anzeige ist günstiger geworden",
         "notifyReserved": "Eine gemerkte Anzeige wurde reserviert",
         "notifySold": "Eine gemerkte Anzeige wurde verkauft"
+      },
+      "saved": {
+        "save": "Suche speichern",
+        "title": "Gespeicherte Suchen",
+        "empty": "Noch keine Suche gespeichert.",
+        "namePrompt": "Name der Suche:",
+        "defaultName": "Meine Suche",
+        "saved": "Suche gespeichert – du erhältst eine Mitteilung bei neuen Treffern.",
+        "newCount_one": "1 neu",
+        "newCount_other": "{{count}} neu",
+        "newCount": "{{count}} neu",
+        "notify": "Mitteilung bei neuen Treffern",
+        "delete": "Suche löschen",
+        "deleteConfirm": "Suche «{{name}}» löschen?",
+        "notification": "Neue Treffer für deine gespeicherte Suche"
       }
     }
 }
