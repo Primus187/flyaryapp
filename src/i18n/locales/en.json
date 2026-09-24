@@ -67,6 +67,7 @@
     "allTime": "All time"
   },
   "flights": {
+    "publishNeedsGroup": "To share this flight in the feed, assign it to a group when editing it.",
     "title": "Logbook",
     "searchPlaceholder": "Search by site, glider, date...",
     "noFlights": "No flights found",

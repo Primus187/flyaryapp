@@ -483,6 +483,16 @@ export default function FlightDetail() {
           </Button>
         )
       )}
+      {/* The feed is group-based: explain instead of silently hiding the publish option. */}
+      {flight.user_id === user?.id && !(flight as any).group_id && (
+        <div className="rounded-lg border border-dashed p-3 text-center space-y-2">
+          <p className="text-xs text-muted-foreground">{t("flights.publishNeedsGroup")}</p>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/flights/${id}/edit`)}>
+            <Share2 className="h-4 w-4" />
+            {t("flights.editFlight")}
+          </Button>
+        </div>
+      )}
 
       {/* Publish Preview Dialog */}
       <PublishPreviewDialog

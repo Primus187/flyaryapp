@@ -45,6 +45,7 @@
     "later": "Später"
   },
   "flights": {
+    "publishNeedsGroup": "Um diesen Flug im Feed zu teilen, ordne ihn beim Bearbeiten einer Gruppe zu.",
     "title": "Flugbuch",
     "searchPlaceholder": "Suche nach Ort, Schirm, Datum...",
     "noFlights": "Keine Flüge gefunden",

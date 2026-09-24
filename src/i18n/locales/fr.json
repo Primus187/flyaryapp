@@ -67,6 +67,7 @@
     "allTime": "Total"
   },
   "flights": {
+    "publishNeedsGroup": "Pour partager ce vol dans le fil, attribuez-le à un groupe en le modifiant.",
     "title": "Carnet de vol",
     "searchPlaceholder": "Rechercher par site, voile, date...",
     "noFlights": "Aucun vol trouvé",
