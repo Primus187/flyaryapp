@@ -1913,7 +1913,9 @@
         "bump_too_soon": "Bumping works once a week.",
         "unknown": "Something went wrong.",
         "own_listing": "This is your own listing.",
-        "shop_not_ready": "The school's shop is not active yet (shop profile incomplete)."
+        "shop_not_ready": "The school's shop is not active yet (shop profile incomplete).",
+        "already_reported": "You have already reported this listing.",
+        "reason_required": "Please give a reason."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2087,6 +2089,50 @@
         "notReadyForm": "This school's shop is not active yet. You can prepare the listing; publishing only works with an active shop.",
         "sellerDetails": "Seller details",
         "inclVat": "incl. VAT"
+      },
+      "report": {
+        "title": "Report listing",
+        "hint": "The moderators will look at the listing. The seller does not see who reported it.",
+        "reasons": {
+          "scam": "Scam or suspected scam",
+          "unsafe": "Dangerous or unairworthy equipment without a note",
+          "wrong_category": "Wrong category or details",
+          "offensive": "Offensive content",
+          "other": "Something else"
+        },
+        "notePlaceholder": "What did you notice? (optional)",
+        "send": "Report",
+        "thanks": "Thank you! The moderators will check the listing."
+      },
+      "moderation": {
+        "title": "Moderation",
+        "subtitle": "Reported listings",
+        "empty": "No open reports",
+        "reports_one": "1 report",
+        "reports_other": "{{count}} reports",
+        "hidden": "Hidden",
+        "banned": "Banned",
+        "open": "View",
+        "hide": "Hide",
+        "restore": "Restore",
+        "dismiss": "Dismiss report",
+        "ban": "Ban",
+        "unban": "Lift ban",
+        "delete": "Delete",
+        "hideReason": "Reason for hiding (the seller sees it):",
+        "banDays": "Ban {{name}} for how many days? (empty = until lifted)",
+        "unbanConfirm": "Lift the ban of {{name}}?",
+        "deleteConfirm": "Delete \"{{title}}\" for good? This cannot be undone.",
+        "done": {
+          "hide": "Listing hidden",
+          "restore": "Listing restored",
+          "dismiss": "Reports dismissed",
+          "ban": "Person banned",
+          "unban": "Ban lifted",
+          "delete": "Listing deleted"
+        },
+        "hiddenNotice": "This listing was hidden by the moderators",
+        "notification": "hid your listing"
       }
     }
 }

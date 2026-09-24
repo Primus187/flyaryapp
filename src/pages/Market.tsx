@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ImageOff, List, Plus, Search, SlidersHorizontal, Store } from "lucide-react";
+import { ImageOff, List, Plus, Search, ShieldAlert, SlidersHorizontal, Store } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchModerationQueue, isMarketModerator } from "@/lib/marketplace-moderation";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import EmptyState from "@/components/layout/EmptyState";
@@ -49,6 +51,16 @@ export default function Market() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [draft, setDraft] = useState<SearchFilters>(filters);
   const request = useRef(0);
+  const { user } = useAuth();
+  /** Open moderation cases; null = not a moderator (plan 4.8). */
+  const [cases, setCases] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    isMarketModerator(user.id)
+      .then(async (yes) => setCases(yes ? (await fetchModerationQueue()).length : null))
+      .catch(() => setCases(null));
+  }, [user]);
 
   const setFilters = useCallback((next: SearchFilters) => setParams(filtersToParams(next), { replace: true }), [setParams]);
 
@@ -137,6 +149,12 @@ export default function Market() {
       <PageHeader
         title={t("market.title")}
         action={<>
+          {cases !== null && (
+            <Button size="icon" variant="outline" className="relative" aria-label={t("market.moderation.title")} onClick={() => navigate("/market/moderation")}>
+              <ShieldAlert className="h-4 w-4" />
+              {cases > 0 && <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">{cases}</span>}
+            </Button>
+          )}
           <Button size="icon" variant="outline" aria-label={t("market.mine.title")} onClick={() => navigate("/market/mine")}><List className="h-4 w-4" /></Button>
           <Button size="sm" className="gap-1" onClick={() => navigate("/market/new")}><Plus className="h-4 w-4" />{t("market.mine.new")}</Button>
         </>}

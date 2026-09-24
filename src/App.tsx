@@ -27,6 +27,7 @@ const FlightForm = lazy(() => import("@/pages/FlightForm"));
 const Market = lazy(() => import("@/pages/Market"));
 const MarketMine = lazy(() => import("@/pages/MarketMine"));
 const MarketListingDetail = lazy(() => import("@/pages/MarketListingDetail"));
+const MarketModeration = lazy(() => import("@/pages/MarketModeration"));
 const MarketListingForm = lazy(() => import("@/pages/MarketListingForm"));
 const FlightDetail = lazy(() => import("@/pages/FlightDetail"));
 const MapView = lazy(() => import("@/pages/MapView"));
@@ -190,6 +191,7 @@ const App = () => {
                       <Route path="/market" element={<Market />} />
                       <Route path="/market/mine" element={<MarketMine />} />
                       <Route path="/market/new" element={<MarketListingForm />} />
+                      <Route path="/market/moderation" element={<MarketModeration />} />
                       <Route path="/market/:id" element={<MarketListingDetail />} />
                       <Route path="/market/:id/edit" element={<MarketListingForm />} />
                     </Route>

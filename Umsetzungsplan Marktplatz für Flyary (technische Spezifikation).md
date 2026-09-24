@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.7 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.8 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -199,7 +199,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Offen, mit Vertical zu klären:** Reichen diese Angaben aus Sicht der Schulen? Braucht es eigene AGB pro Schul-Shop oder genügt ein Gewährleistungstext? Kurze juristische Prüfung empfohlen (Preisbekanntgabeverordnung, UWG Art. 3 Abs. 1 lit. s zur Anbieterkennzeichnung im Onlinehandel).
 
-### 4.8 Melden und Moderation
+### 4.8 Melden und Moderation ✅
 
 **Ziel:** Problematische Anzeigen schnell erkennen und entfernen, verteilt auf mehrere Schultern, ohne Interessenkonflikte.
 
@@ -221,6 +221,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Moderationsansicht `/market/moderation`: offene Meldungen, gefiltert nach dem, was die Person bearbeiten darf
 - Push an die zuständige Moderation bei neuen Meldungen (gebündelt, max. einmal pro Stunde)
 - RLS-Test: Ein Schul-Moderator sieht Meldungen zu Schul-Anzeigen nachweislich nicht
+
+**Ist-Stand:** Migration `0038_marketplace_moderation.sql` (`marketplace_reports`, `marketplace_moderation_log`, `is_market_moderator`, `market_can_moderate`, RPCs `marketplace_report`, `_moderate`, `_set_ban`, `_moderation_queue`), Seite `MarketModeration.tsx`, Melde-Dialog auf der Detailseite. Ausgeblendete Anzeigen merken sich ihren vorherigen Status (`removed_from_status`) und kehren beim Freigeben dorthin zurück; «Wieder freigeben» weist offene Meldungen zugleich ab. **Abweichungen:** Das Protokoll verweist ohne Fremdschlüssel auf die betroffene Person, weil ein Eintrag sonst die Konto-Löschung blockiert hätte (Fund aus den Tests); das Löschen wird nur protokolliert, wenn ein Admin eine fremde Anzeige löscht. Bei Schul-Anzeigen geht die Mitteilung übers Ausblenden an die erfassende Person. Der Push an Moderierende ist auf einen pro Stunde und Person begrenzt, über alle Meldungen hinweg. Die globale Rolle Admin/Moderator hat noch keine Oberfläche (Eintrag in `user_roles`).
 
 ### 4.9 Aufräumen, Speicherüberwachung und Konto-Löschung
 

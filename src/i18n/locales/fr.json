@@ -1913,7 +1913,9 @@
         "bump_too_soon": "On peut remonter une annonce une fois par semaine.",
         "unknown": "Un problème est survenu.",
         "own_listing": "C'est ta propre annonce.",
-        "shop_not_ready": "La boutique de l'école n'est pas encore active (profil incomplet)."
+        "shop_not_ready": "La boutique de l'école n'est pas encore active (profil incomplet).",
+        "already_reported": "Tu as déjà signalé cette annonce.",
+        "reason_required": "Merci d'indiquer une raison."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2087,6 +2089,50 @@
         "notReadyForm": "La boutique de cette école n'est pas encore active. Tu peux préparer l'annonce ; la publication n'est possible qu'avec une boutique active.",
         "sellerDetails": "Indications du vendeur",
         "inclVat": "TVA incl."
+      },
+      "report": {
+        "title": "Signaler l'annonce",
+        "hint": "La modération examine l'annonce. Le vendeur ne voit pas qui l'a signalée.",
+        "reasons": {
+          "scam": "Arnaque ou soupçon d'arnaque",
+          "unsafe": "Matériel dangereux ou non navigable sans indication",
+          "wrong_category": "Mauvaise catégorie ou indications",
+          "offensive": "Contenu choquant",
+          "other": "Autre chose"
+        },
+        "notePlaceholder": "Qu'as-tu remarqué ? (facultatif)",
+        "send": "Signaler",
+        "thanks": "Merci ! La modération vérifie l'annonce."
+      },
+      "moderation": {
+        "title": "Modération",
+        "subtitle": "Annonces signalées",
+        "empty": "Aucun signalement ouvert",
+        "reports_one": "1 signalement",
+        "reports_other": "{{count}} signalements",
+        "hidden": "Masquée",
+        "banned": "Exclu·e",
+        "open": "Voir",
+        "hide": "Masquer",
+        "restore": "Réactiver",
+        "dismiss": "Rejeter le signalement",
+        "ban": "Exclure",
+        "unban": "Lever l'exclusion",
+        "delete": "Supprimer",
+        "hideReason": "Raison du masquage (visible pour le vendeur) :",
+        "banDays": "Exclure {{name}} pour combien de jours ? (vide = jusqu'à la levée)",
+        "unbanConfirm": "Lever l'exclusion de {{name}} ?",
+        "deleteConfirm": "Supprimer définitivement « {{title}} » ? C'est irréversible.",
+        "done": {
+          "hide": "Annonce masquée",
+          "restore": "Annonce réactivée",
+          "dismiss": "Signalements rejetés",
+          "ban": "Personne exclue",
+          "unban": "Exclusion levée",
+          "delete": "Annonce supprimée"
+        },
+        "hiddenNotice": "Cette annonce a été masquée par la modération",
+        "notification": "a masqué ton annonce"
       }
     }
 }

@@ -124,7 +124,8 @@ export default function NotificationBell() {
       return;
     }
     if (n.reference_id && n.reference_type) {
-      if (n.reference_type === "chat") navigate(`/messages/${n.reference_id}`);
+      if (n.reference_type === "listing") navigate(`/market/${n.reference_id}`);
+      else if (n.reference_type === "chat") navigate(`/messages/${n.reference_id}`);
       else if (n.reference_type === "flight") navigate(`/flights/${n.reference_id}`);
       else if (n.reference_type === "event") navigate(`/events/${n.reference_id}`);
       else if (n.reference_type === "achievement") navigate(`/feed`);
@@ -136,6 +137,7 @@ export default function NotificationBell() {
     if (n.type === "comment") return t("notifications.commented");
     if (n.type === "follow") return t("notifications.followed");
     if (n.type === "chat_mention") return t("notifications.mentionedInChat");
+    if (n.type === "market_removed") return t("market.moderation.notification");
     return "";
   };
 
@@ -188,7 +190,7 @@ export default function NotificationBell() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm">
-                        <span className="font-semibold">{n.actor_name}</span>{" "}
+                        <span className="font-semibold">{n.type === "market_removed" ? t("market.title") : n.actor_name}</span>{" "}
                         <span className="text-muted-foreground">{getNotificationText(n)}</span>{" "}
                         <span className="font-medium">{getRefLabel(n)}</span>
                       </p>

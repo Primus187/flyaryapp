@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle, ImageOff, Info, MapPin, MessageCircle, Pencil, School, Share2, Truck } from "lucide-react";
+import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, Pencil, School, Share2, Truck } from "lucide-react";
+import ReportListingDialog from "@/components/market/ReportListingDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/layout/PageContainer";
@@ -47,6 +48,7 @@ export default function MarketListingDetail() {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [contacting, setContacting] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   /** School listings: the shop's legal details (plan 4.7). */
   const [shopProfile, setShopProfile] = useState<ShopProfile | null>(null);
 
@@ -139,7 +141,18 @@ export default function MarketListingDetail() {
   return (
     <PageContainer>
       <PageHeader title={t("market.title")} back
-        action={<Button size="icon" variant="ghost" aria-label={t("market.detail.share")} onClick={() => void share()}><Share2 className="h-4 w-4" /></Button>} />
+        action={<>
+          {!canManage && (
+            <Button size="icon" variant="ghost" aria-label={t("market.report.title")} onClick={() => setReportOpen(true)}><Flag className="h-4 w-4" /></Button>
+          )}
+          <Button size="icon" variant="ghost" aria-label={t("market.detail.share")} onClick={() => void share()}><Share2 className="h-4 w-4" /></Button>
+        </>} />
+      {!canManage && <ReportListingDialog listingId={listing.id} open={reportOpen} onOpenChange={setReportOpen} />}
+      {listing.status === "removed" && (
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {t("market.moderation.hiddenNotice")}{listing.removed_reason ? `: ${listing.removed_reason}` : ""}
+        </p>
+      )}
 
       {photos.length > 0 ? (
         <Carousel className="-mx-4">

@@ -1,5 +1,30 @@
 # Flyary
 
+## Marktplatz: Melden und Moderation (4.8)
+
+Migration `0038_marketplace_moderation.sql`, Seite `src/pages/MarketModeration.tsx` (`/market/moderation`), Dialog
+`src/components/market/ReportListingDialog.tsx`, Logik in `src/lib/marketplace-moderation.ts`.
+
+- **Melden:** Fahne auf jeder fremden Anzeige. Gründe: Betrug, gefährliches Material ohne Kennzeichnung, falsche
+  Kategorie, anstössiger Inhalt, anderes; dazu eine optionale Notiz. Eine Meldung pro Person und Anzeige.
+- **Wer moderiert (Entscheid E5):** Flyary-Admins und -Moderatoren (`app_role`) alles; Schul-Moderatoren (Funktion
+  «Marktplatz-Moderation» in einer Schule mit aktivem Shop) nur Privatanzeigen anderer. Meldungen zu Schul-Anzeigen sehen
+  nur Flyary-Admins und -Moderatoren. Schul-Moderatoren sehen gemeldete Privatanzeigen auch dann, wenn sie ausgeblendet sind.
+- **Moderationsseite:** offene Meldungen pro Anzeige (Anzahl, Gründe, Notizen, Alter), Aktionen «Ausblenden» (Grund
+  Pflicht, sieht die verkaufende Person), «Wieder freigeben», «Meldung abweisen». Nur Admins: «Sperren» (Tage oder bis zur
+  Aufhebung) und «Löschen». Einstieg über das Schild-Symbol in der Marktplatz-Übersicht, sichtbar nur für Moderierende,
+  mit Anzahl offener Fälle.
+- **Automatisch ausgeblendet** ab 3 offenen Meldungen verschiedener Personen, bis jemand entscheidet.
+- **Verkaufende** erhalten beim Ausblenden eine Glocken-Mitteilung (Absender «Marktplatz») und einen Push; «Meine
+  Anzeigen» und die Detailseite zeigen den Grund. Bei Schul-Anzeigen geht die Mitteilung an die Person, die sie erfasst hat.
+- **Moderierende** erhalten bei neuen Meldungen einen Push, höchstens einmal pro Stunde.
+- **Protokoll** (`marketplace_moderation_log`): jedes Ausblenden, Freigeben, Abweisen, Sperren, Aufheben und das Löschen
+  fremder Anzeigen durch Admins. Es verweist ohne Fremdschlüssel auf die betroffene Person, damit ein Protokolleintrag
+  nie eine Konto-Löschung blockiert (Fund aus den Tests: das Löschen eines Kontos hätte sonst abgebrochen).
+- Die globale Rolle Admin/Moderator wird in `user_roles` vergeben (noch ohne Oberfläche).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0038), danach das Frontend.
+
 ## Marktplatz: Schul-Shop mit Neuware (4.7)
 
 Migration `0037_school_shop.sql`, Kachel «Shop» im Flugschul-Bereich (`src/components/school/SchoolShop.tsx`), Logik in

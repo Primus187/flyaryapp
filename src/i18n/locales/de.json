@@ -1913,7 +1913,9 @@
         "bump_too_soon": "Hochschieben geht einmal pro Woche.",
         "unknown": "Etwas ist schiefgelaufen.",
         "own_listing": "Das ist deine eigene Anzeige.",
-        "shop_not_ready": "Der Shop der Schule ist noch nicht aktiv (Shop-Profil unvollständig)."
+        "shop_not_ready": "Der Shop der Schule ist noch nicht aktiv (Shop-Profil unvollständig).",
+        "already_reported": "Du hast diese Anzeige bereits gemeldet.",
+        "reason_required": "Bitte einen Grund angeben."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2087,6 +2089,50 @@
         "notReadyForm": "Der Shop dieser Schule ist noch nicht aktiv. Du kannst die Anzeige vorbereiten; veröffentlichen geht erst mit aktivem Shop.",
         "sellerDetails": "Anbieterangaben",
         "inclVat": "inkl. MWST"
+      },
+      "report": {
+        "title": "Anzeige melden",
+        "hint": "Die Moderation schaut sich die Anzeige an. Wer meldet, bleibt für die verkaufende Person unsichtbar.",
+        "reasons": {
+          "scam": "Betrug oder Verdacht darauf",
+          "unsafe": "Gefährliches oder nicht flugtaugliches Material ohne Kennzeichnung",
+          "wrong_category": "Falsche Kategorie oder Angaben",
+          "offensive": "Anstössiger Inhalt",
+          "other": "Etwas anderes"
+        },
+        "notePlaceholder": "Was ist dir aufgefallen? (optional)",
+        "send": "Melden",
+        "thanks": "Danke! Die Moderation prüft die Anzeige."
+      },
+      "moderation": {
+        "title": "Moderation",
+        "subtitle": "Gemeldete Anzeigen",
+        "empty": "Keine offenen Meldungen",
+        "reports_one": "1 Meldung",
+        "reports_other": "{{count}} Meldungen",
+        "hidden": "Ausgeblendet",
+        "banned": "Gesperrt",
+        "open": "Ansehen",
+        "hide": "Ausblenden",
+        "restore": "Wieder freigeben",
+        "dismiss": "Meldung abweisen",
+        "ban": "Sperren",
+        "unban": "Sperre aufheben",
+        "delete": "Löschen",
+        "hideReason": "Grund fürs Ausblenden (sieht die verkaufende Person):",
+        "banDays": "{{name}} für wie viele Tage sperren? (leer = bis zur Aufhebung)",
+        "unbanConfirm": "Sperre von {{name}} aufheben?",
+        "deleteConfirm": "«{{title}}» endgültig löschen? Das lässt sich nicht rückgängig machen.",
+        "done": {
+          "hide": "Anzeige ausgeblendet",
+          "restore": "Anzeige wieder freigegeben",
+          "dismiss": "Meldungen abgewiesen",
+          "ban": "Person gesperrt",
+          "unban": "Sperre aufgehoben",
+          "delete": "Anzeige gelöscht"
+        },
+        "hiddenNotice": "Diese Anzeige wurde von der Moderation ausgeblendet",
+        "notification": "hat deine Anzeige ausgeblendet"
       }
     }
 }

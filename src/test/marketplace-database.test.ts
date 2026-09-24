@@ -4,12 +4,12 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0037 (marketplace listings, photos, status functions, search, school shop).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0038 (marketplace listings, photos, status functions, search, school shop, moderation).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const owner = id(1), stranger = id(2), schoolAdmin = id(3), shop = id(4), instructor = id(5), student = id(6),
-  otherShop = id(7), moderator = id(8), banned = id(9), flyaryAdmin = id(10);
+  otherShop = id(7), moderator = id(8), banned = id(9), flyaryAdmin = id(10), schoolMod = id(11);
 const school = id(101), otherSchool = id(102), pilotGroup = id(103);
 
 async function asUser(uid: string) {
@@ -52,6 +52,10 @@ beforeAll(async () => {
     CREATE TABLE public.groups (id uuid PRIMARY KEY, name text, group_type public.group_type, created_at timestamptz DEFAULT now());
     CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, pilot_name text, avatar_url text, created_at timestamptz DEFAULT now());
     CREATE TABLE public.flights (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid);
+    CREATE TABLE public.notifications (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid, actor_id uuid, type text,
+      reference_id uuid, reference_type text, read boolean DEFAULT false, created_at timestamptz DEFAULT now());
+    CREATE TABLE public.pushes (user_id uuid, title text);
+    CREATE FUNCTION public.send_push_notification(u uuid, t text, b text, url text) RETURNS void LANGUAGE sql AS $$ INSERT INTO public.pushes VALUES (u, t) $$;
     CREATE TABLE public.group_members (group_id uuid, user_id uuid, role text);
     CREATE TABLE public.group_member_functions (group_id uuid, user_id uuid, function public.group_function);
     CREATE TABLE public.user_roles (user_id uuid, role public.app_role);
@@ -65,12 +69,12 @@ beforeAll(async () => {
     CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
       SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role) $$;
 
-    INSERT INTO auth.users SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid FROM generate_series(1, 10) n;
+    INSERT INTO auth.users SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid FROM generate_series(1, 11) n;
     INSERT INTO public.groups VALUES ('${school}', 'Vertical', 'school'), ('${otherSchool}', 'Andere Schule', 'school'),
       ('${pilotGroup}', 'Freunde', 'pilot_group');
     INSERT INTO public.group_members VALUES ('${school}', '${schoolAdmin}', 'admin'), ('${school}', '${shop}', 'member'),
       ('${school}', '${instructor}', 'member'), ('${school}', '${student}', 'member'), ('${otherSchool}', '${otherShop}', 'member'),
-      ('${pilotGroup}', '${owner}', 'admin');
+      ('${pilotGroup}', '${owner}', 'admin'), ('${school}', '${schoolMod}', 'member');
     INSERT INTO public.group_member_functions VALUES ('${school}', '${instructor}', 'instructor'), ('${school}', '${student}', 'student');
     INSERT INTO public.user_roles VALUES ('${moderator}', 'moderator'), ('${flyaryAdmin}', 'admin');
   `);
@@ -83,6 +87,7 @@ beforeAll(async () => {
   await db.exec(migration("0034_marketplace_listing_status.sql"));
   await db.exec(migration("0035_marketplace_search.sql"));
   await db.exec(migration("0037_school_shop.sql"));
+  await db.exec(migration("0038_marketplace_moderation.sql"));
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
     INSERT INTO public.school_shop_profiles (group_id, legal_name, street, postal_code, locality, email, warranty_text, active)
       VALUES ('${school}', 'Vertical GmbH', 'Hauptstrasse 1', '3800', 'Interlaken', 'shop@vertical.ch', 'Gewährleistung 2 Jahre', true);`);
@@ -496,6 +501,143 @@ describe("school shop", () => {
     await profile(schoolAdmin, `UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${school}'`);
     await asSystem();
     await db.exec(`DELETE FROM public.marketplace_listings WHERE id = '${l}'`);
+  });
+});
+
+describe("reports and moderation", () => {
+  // listings here are titled "M …" and removed afterwards; the owner's "Advance Alpha 7 (26)" ends active again
+  let alpha: string, schoolHelmet: string;
+  const report = async (uid: string, listing: string, reason = "scam", note: string | null = null) => {
+    await asUser(uid);
+    await db.query(`SELECT public.marketplace_report($1, $2, $3)`, [listing, reason, note]);
+  };
+  const moderate = async (uid: string, listing: string, action: string, reason: string | null = null) => {
+    await asUser(uid);
+    return db.query(`SELECT public.marketplace_moderate($1, $2, $3)`, [listing, action, reason]);
+  };
+  const queue = async (uid: string) => {
+    await asUser(uid);
+    return (await db.query<{ q: { title: string; open_reports: number }[] }>("SELECT public.marketplace_moderation_queue() AS q")).rows[0].q;
+  };
+  const statusOf = async (listing: string) => {
+    await asSystem();
+    return (await db.query<{ status: string }>(`SELECT status FROM public.marketplace_listings WHERE id = $1`, [listing])).rows[0].status;
+  };
+  const mListing = async (seller: string | null, group: string | null, title: string, status = "active") => {
+    await asSystem();
+    return (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, seller_group_id, created_by, category, title,
+      status, published_at, bumped_at, expires_at) VALUES ($1, $2, $3, 'helmet', $4, $5, now(), now(), now() + interval '30 days') RETURNING id`,
+      [seller, group, seller ?? shop, title, status])).rows[0].id;
+  };
+
+  beforeAll(async () => {
+    await asSystem();
+    alpha = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listings WHERE seller_user_id = '${owner}' AND status = 'active'`)).rows[0].id;
+    schoolHelmet = await mListing(null, school, "M Schulhelm");
+    await db.exec(`INSERT INTO public.group_member_functions VALUES ('${school}', '${schoolMod}', 'market_moderator');
+      DELETE FROM public.pushes; DELETE FROM public.notifications;`);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE title LIKE 'M %';
+      UPDATE public.marketplace_listings SET status = 'active', removed_reason = NULL, removed_at = NULL, removed_from_status = NULL WHERE id = '${alpha}';`);
+  });
+
+  it("anyone who sees a listing reports it once; not one's own and not invisible ones", async () => {
+    await report(stranger, alpha, "unsafe", "Retter über 10 Jahre alt");
+    await expect(report(stranger, alpha)).rejects.toThrow("marketplace:already_reported");
+    await expect(report(owner, alpha)).rejects.toThrow("marketplace:own_listing");
+    const draft = await mListing(owner, null, "M Entwurf", "draft");
+    await expect(report(stranger, draft)).rejects.toThrow("marketplace:not_found");
+    await asUser(stranger);
+    await expect(db.exec(`INSERT INTO public.marketplace_reports (listing_id, reporter_id, reason) VALUES ('${alpha}', '${stranger}', 'other')`)).rejects.toThrow();
+  });
+
+  it("school moderators see reports on private listings only; school listings go to Flyary staff", async () => {
+    await report(stranger, schoolHelmet, "wrong_category");
+    const reportsSeenBy = async (uid: string) => {
+      await asUser(uid);
+      return (await db.query("SELECT 1 FROM public.marketplace_reports")).rows.length;
+    };
+    expect(await reportsSeenBy(stranger)).toBe(2);
+    expect(await reportsSeenBy(owner)).toBe(0);
+    expect(await reportsSeenBy(schoolMod)).toBe(1);
+    expect(await reportsSeenBy(moderator)).toBe(2);
+    expect((await queue(schoolMod)).map((q) => q.title)).toEqual(["Advance Alpha 7 (26)"]);
+    expect((await queue(moderator)).map((q) => q.title).sort()).toEqual(["Advance Alpha 7 (26)", "M Schulhelm"]);
+    expect(await queue(shop)).toEqual([]);
+    await expect(moderate(schoolMod, schoolHelmet, "hide", "Falsche Kategorie")).rejects.toThrow("marketplace:not_allowed");
+    await expect(moderate(shop, alpha, "dismiss")).rejects.toThrow("marketplace:not_allowed");
+  });
+
+  it("hiding needs a reason, tells the seller and hides the listing; restoring brings it back", async () => {
+    await expect(moderate(schoolMod, alpha, "hide", " ")).rejects.toThrow("marketplace:reason_required");
+    await moderate(schoolMod, alpha, "hide", "Nicht flugtauglich, ohne Kennzeichnung");
+    expect(await statusOf(alpha)).toBe("removed");
+    expect(await visibleTitles(stranger)).not.toContain("Advance Alpha 7 (26)");
+    expect(await visibleTitles(schoolMod)).toContain("Advance Alpha 7 (26)");
+    expect(await visibleTitles(owner)).toContain("Advance Alpha 7 (26)");
+    await asSystem();
+    expect((await db.query(`SELECT type, reference_type FROM public.notifications WHERE user_id = '${owner}'`)).rows)
+      .toEqual([{ type: "market_removed", reference_type: "listing" }]);
+    expect((await db.query(`SELECT title FROM public.pushes WHERE user_id = '${owner}'`)).rows).toEqual([{ title: "Anzeige ausgeblendet" }]);
+    expect((await db.query(`SELECT status FROM public.marketplace_reports WHERE listing_id = '${alpha}'`)).rows).toEqual([{ status: "actioned" }]);
+    await moderate(moderator, alpha, "restore");
+    expect(await statusOf(alpha)).toBe("active");
+    expect(await visibleTitles(stranger)).toContain("Advance Alpha 7 (26)");
+    await asSystem();
+    expect((await db.query<{ action: string }>(`SELECT action FROM public.marketplace_moderation_log WHERE listing_id = '${alpha}' ORDER BY created_at, action`))
+      .rows.map((r) => r.action).sort()).toEqual(["hide", "restore"]);
+  });
+
+  it("three reports hide a listing automatically; moderators get at most one push per hour", async () => {
+    const auto = await mListing(instructor, null, "M Auto");
+    await asSystem();
+    await db.exec("DELETE FROM public.pushes; DELETE FROM public.marketplace_moderator_push;");
+    await report(stranger, auto);
+    await report(student, auto);
+    expect(await statusOf(auto)).toBe("active");
+    await report(otherShop, auto);
+    expect(await statusOf(auto)).toBe("removed");
+    await asSystem();
+    expect((await db.query(`SELECT action FROM public.marketplace_moderation_log WHERE listing_id = '${auto}'`)).rows).toEqual([{ action: "auto_hide" }]);
+    expect((await db.query(`SELECT 1 FROM public.pushes WHERE user_id = '${moderator}'`)).rows).toHaveLength(1);
+    expect((await db.query(`SELECT 1 FROM public.pushes WHERE user_id = '${schoolMod}'`)).rows).toHaveLength(1);
+    await moderate(schoolMod, auto, "dismiss");
+    expect(await statusOf(auto)).toBe("removed");
+    expect(await queue(schoolMod)).toEqual([]);
+    await moderate(schoolMod, auto, "restore");
+    expect(await statusOf(auto)).toBe("active");
+  });
+
+  it("school moderators lose the role while their school has no active shop", async () => {
+    const other = await mListing(instructor, null, "M Weiterer Helm");
+    await report(stranger, other);
+    await asSystem();
+    await db.exec(`UPDATE public.school_shop_profiles SET active = false WHERE group_id = '${school}'`);
+    expect(await queue(schoolMod)).toEqual([]);
+    await expect(moderate(schoolMod, other, "dismiss")).rejects.toThrow("marketplace:not_allowed");
+    await asSystem();
+    await db.exec(`UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${school}'`);
+    await moderate(schoolMod, other, "dismiss");
+  });
+
+  it("only admins ban and delete listings of others, both logged", async () => {
+    await asUser(moderator);
+    await expect(db.query(`SELECT public.marketplace_set_ban('${student}', true)`)).rejects.toThrow("marketplace:not_allowed");
+    await asUser(flyaryAdmin);
+    await db.query(`SELECT public.marketplace_set_ban('${student}', true, NULL, 'Betrugsversuch')`);
+    await expect(insertAs(student, `('${student}', NULL, 'helmet', 'M Gesperrt', 'all', 1, 'draft')`)).rejects.toThrow();
+    await asUser(flyaryAdmin);
+    await db.query(`SELECT public.marketplace_set_ban('${student}', false)`);
+    const victim = await mListing(instructor, null, "M Löschen");
+    await asUser(moderator);
+    expect((await db.query(`DELETE FROM public.marketplace_listings WHERE id = '${victim}' RETURNING id`)).rows).toHaveLength(0);
+    await asUser(flyaryAdmin);
+    expect((await db.query(`DELETE FROM public.marketplace_listings WHERE id = '${victim}' RETURNING id`)).rows).toHaveLength(1);
+    await asSystem();
+    expect((await db.query<{ action: string }>(`SELECT action FROM public.marketplace_moderation_log WHERE target_user_id IN ('${student}', '${instructor}')
+      AND action IN ('ban', 'unban', 'delete') ORDER BY action`)).rows.map((r) => r.action)).toEqual(["ban", "delete", "unban"]);
   });
 });
 

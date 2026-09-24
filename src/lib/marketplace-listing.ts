@@ -106,10 +106,10 @@ export function availableActions(l: Pick<MarketplaceListing, "status" | "expires
 }
 
 export type MarketErrorCode =
-  | PublishProblem | "not_found" | "not_allowed" | "own_listing" | "shop_not_ready" | "banned" | "wrong_status" | "limit_active" | "limit_daily" | "bump_too_soon" | "unknown";
+  | PublishProblem | "not_found" | "not_allowed" | "own_listing" | "shop_not_ready" | "already_reported" | "reason_required" | "banned" | "wrong_status" | "limit_active" | "limit_daily" | "bump_too_soon" | "unknown";
 const KNOWN_CODES: readonly string[] = [
   "missing_title", "missing_place", "missing_price", "missing_condition", "missing_attributes", "missing_photo",
-  "not_found", "not_allowed", "own_listing", "shop_not_ready", "banned", "wrong_status", "limit_active", "limit_daily", "bump_too_soon",
+  "not_found", "not_allowed", "own_listing", "shop_not_ready", "already_reported", "reason_required", "banned", "wrong_status", "limit_active", "limit_daily", "bump_too_soon",
 ];
 /** Code from an RPC error ("marketplace:<code>"), for `market.errors.<code>`. */
 export function marketErrorCode(error: unknown): MarketErrorCode {

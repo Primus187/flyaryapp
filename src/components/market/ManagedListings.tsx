@@ -22,7 +22,7 @@ import {
 import { coverThumbnails, deleteListing } from "@/lib/marketplace-photos";
 
 type Row = Pick<MarketplaceListing, "id" | "title" | "status" | "listing_type" | "category" | "price_type" | "price_cents"
-  | "expires_at" | "bumped_at" | "updated_at">;
+  | "expires_at" | "bumped_at" | "updated_at" | "removed_reason">;
 const TABS: MineTab[] = ["live", "drafts", "ended"];
 
 interface Props {
@@ -48,7 +48,7 @@ export default function ManagedListings({ seller, newPath }: Props) {
     const { data } = await supabase
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
       .from("marketplace_listings" as any)
-      .select("id, title, status, listing_type, category, price_type, price_cents, expires_at, bumped_at, updated_at")
+      .select("id, title, status, listing_type, category, price_type, price_cents, expires_at, bumped_at, updated_at, removed_reason")
       .eq(sellerColumn, sellerId)
       .order("updated_at", { ascending: false });
     const list = (data ?? []) as unknown as Row[];
@@ -124,6 +124,7 @@ export default function ManagedListings({ seller, newPath }: Props) {
               {row.listing_type === "wanted" && <Badge variant="outline" className="text-[10px]">{t("market.listingTypes.wanted")}</Badge>}
               {runtime && <span className={runtime.warn ? "text-[11px] text-amber-600" : "text-[11px] text-muted-foreground"}>{runtime.text}</span>}
             </div>
+            {status === "removed" && row.removed_reason && <p className="mt-1 text-[11px] text-destructive">{row.removed_reason}</p>}
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
