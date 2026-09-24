@@ -5,6 +5,7 @@ import "./index.css";
 import i18n, { i18nReady } from "./i18n";
 import { toast } from "sonner";
 import { captureAuthRedirectError } from "./lib/auth-redirect-error";
+import { forceAppUpdate, isAppAsset, mayRecover } from "./lib/app-update";
 
 // Never let an older installed build cache the editable preview.
 if (import.meta.env.DEV && "serviceWorker" in navigator) {
@@ -58,19 +59,39 @@ const updateSW = registerSW({
   onOfflineReady() {},
 });
 
+// A device can end up with an old start page from the service worker whose CSS/JS files are gone on the
+// server (many deploys in a row): no styles, white page on lazy routes. A plain reload comes from the same
+// cache, so the repair drops service worker and caches (forceAppUpdate). At most once a minute.
 const recoverFromStaleChunk = () => {
-  if (sessionStorage.getItem("stale-chunk-reload") === "1") return;
-
-  sessionStorage.setItem("stale-chunk-reload", "1");
-  updateSW(true);
-  window.location.reload();
+  let last = 0;
+  try { last = Number(sessionStorage.getItem("stale-asset-recovery") || 0); } catch { /* private mode */ }
+  if (!mayRecover(last, Date.now())) return;
+  try { sessionStorage.setItem("stale-asset-recovery", String(Date.now())); } catch { /* private mode */ }
+  void forceAppUpdate().then((started) => { if (!started) updateSW(true); });
 };
 
 window.addEventListener("error", (event) => {
+  // failed <link>/<script> loads do not bubble: listened to in the capture phase
+  const target = event.target;
+  if (target instanceof HTMLLinkElement || target instanceof HTMLScriptElement) {
+    const url = target instanceof HTMLLinkElement ? target.href : target.src;
+    if (isAppAsset(url)) recoverFromStaleChunk();
+    return;
+  }
   const message = event.message || (event.error instanceof Error ? event.error.message : "");
   if (message.includes("Failed to fetch dynamically imported module")) {
     recoverFromStaleChunk();
   }
+}, true);
+
+// Vite reports failed preloads of lazy routes here.
+window.addEventListener("vite:preloadError", () => recoverFromStaleChunk());
+
+// The stylesheet in index.html may have failed before this script ran: check once the page has loaded.
+window.addEventListener("load", () => {
+  const missing = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')]
+    .some((link) => isAppAsset(link.href) && !link.sheet);
+  if (missing) recoverFromStaleChunk();
 });
 
 window.addEventListener("unhandledrejection", (event) => {
