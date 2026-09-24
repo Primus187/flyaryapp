@@ -1,5 +1,22 @@
 # Flyary
 
+## Betrieb ohne Lovable (Supabase Zürich + Vercel)
+
+Seit dem 24.09.2026 läuft Flyary auf einem eigenen Supabase-Projekt `pvhxrgvhzzqcyadyksvk` (Region
+eu-central-2, Zürich) und wird über Vercel (`flyaryapp.vercel.app`) aus `main` deployt. Lovable ist
+komplett entfernt (Google-Login direkt über Supabase, keine Lovable-Pakete, keine `lovable.app`-Adressen).
+
+- **Zugangsdaten** für Skripte stehen in `docs/.env.deploy.local` (git-ignoriert): `SUPABASE_ACCESS_TOKEN`,
+  `SUPABASE_PROJECT_REF`, `APP_URL`, `VERCEL_TOKEN`, VAPID-Schlüssel, `XCONTEST_ENCRYPTION_KEY`.
+- **Migrationen:** `node scripts/db-migrate.mjs` zeigt offene, `--apply` spielt sie ein (je eine Transaktion,
+  Buchführung in `supabase_migrations.schema_migrations` bzw. `drizzle.__drizzle_migrations`). Übersprungen
+  werden die Lovable-Testdaten `20260327072955` und `drizzle/0002` (durch `20260921113000` + `0004` abgedeckt).
+- **Einmalige Einrichtung** eines Projekts: `node scripts/setup-new-project.mjs` (Migrationen, Vault-Secrets
+  `project_url`/`push_internal_secret`, Function-Secrets, Edge Functions, Login-Adressen). Mehrfach ausführbar.
+- `.env` enthält nur öffentliche Werte (Projekt-URL, Anon-Key) und wird von Vite beim Vercel-Build gelesen.
+- Neustart ohne Altdaten: Gruppen, Events und Konten aus Lovable-Zeiten wurden nicht übernommen;
+  neue Push-Schlüssel, daher Push in der App neu aktivieren.
+
 ## Performance: Feed, Event-Detail, Start
 
 Die Datenbank ist von der Schweiz aus ~120 ms pro Anfrage entfernt (vermutlich US-Region). Teuer waren deshalb

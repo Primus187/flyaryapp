@@ -1,4 +1,4 @@
-project_id = "PROJECT_REF_PENDING"
+project_id = "pvhxrgvhzzqcyadyksvk"
 
 # Public: link previews for crawlers (WhatsApp etc.) and the shared-flight page need no login.
 [functions.get-shared-flight]

@@ -148,6 +148,13 @@
       "when": 1790380800000,
       "tag": "0020_push_without_hardcoded_project",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1790467200000,
+      "tag": "0021_chat_attachments_bucket",
+      "breakpoints": true
     }
   ]
 }
