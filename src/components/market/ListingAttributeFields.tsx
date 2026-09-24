@@ -17,10 +17,15 @@ interface Props {
 /** Category-specific inputs (plan 4.2), rendered from CATEGORY_SPECS. */
 export default function ListingAttributeFields({ category, listingType, values, errors, onChange }: Props) {
   const { t } = useTranslation();
-  const fields = CATEGORY_SPECS[category].attributes;
+  const fields = CATEGORY_SPECS[category].attributes.filter((f) => !(f.kind === "boolean" && f.hidden));
   if (fields.length === 0) return null;
 
-  const set = (key: string, value: unknown) => onChange({ ...values, [key]: value });
+  const set = (key: string, value: unknown) => {
+    const next = { ...values, [key]: value };
+    // hours typed by hand are no longer the logbook's (plan 6.3)
+    if (key === "flight_hours") delete next.hours_from_logbook;
+    onChange(next);
+  };
   const text = (v: unknown) => (v === undefined || v === null ? "" : String(v));
 
   return (

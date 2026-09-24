@@ -113,7 +113,7 @@ beforeAll(async () => {
       ('${id(403)}', 'group', '${school}', 'Experienced', 'custom', NULL, '${admin}');
     INSERT INTO public.chat_channel_members (channel_id, user_id) VALUES ('${id(403)}', '${licensed}');
   `);
-});
+}, 60_000); // loads all chat and marketplace migrations
 
 afterAll(async () => { await db.close(); });
 

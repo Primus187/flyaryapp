@@ -1,5 +1,21 @@
 # Flyary
 
+## Marktplatz: Vorausfüllen aus dem eigenen Material (6.3)
+
+Logik in `src/lib/marketplace-prefill.ts`, keine Migration.
+
+- Beim Inserieren (privat) gibt es in Schritt 2 «Aus meinem Material»: Auswahl eines eigenen Schirms aus dem Profil
+  (`pilot_gliders`). Übernommen werden Kategorie Schirm, Hersteller, Modell, Grösse und – falls noch leer – der Titel.
+- **Flugstunden aus dem Flugbuch:** Summe der eigenen Flüge mit diesem Schirm, auf ganze Stunden gerundet. Ein Flug zählt,
+  wenn Hersteller und Modell im Schirmtext des Flugs vorkommen; nennen beide eine Grösse in Klammern, muss sie
+  übereinstimmen (zwei Grössen desselben Modells sind verschiedene Schirme).
+- Solche Stunden tragen das versteckte Merkmal `hours_from_logbook`; die Detailseite zeigt «… h (laut Flyary-Flugbuch)».
+  Ändert die verkaufende Person die Stunden von Hand, fällt der Hinweis weg.
+- Abweichung vom Plan: `flights.glider` bleibt Freitext (wie ihn Flugformular und IGC-Import schreiben); eine feste
+  Verknüpfung Flug → Schirm wäre ein eigener Umbau. Der Abgleich ist deshalb ungefähr und als Vorschlag gekennzeichnet.
+- Test-Infrastruktur: Die Vorbereitung des Chat-Datenbanktests lädt inzwischen alle Chat- und Marktplatz-Migrationen und
+  hat dafür 60 statt 10 Sekunden Zeit (sie lief im vollen Lauf gelegentlich ins Zeitlimit).
+
 ## Marktplatz: Gespeicherte Suchen (6.2)
 
 Migration `0043_marketplace_saved_searches.sql`, Liste `src/components/market/SavedSearchesSheet.tsx`, Logik in

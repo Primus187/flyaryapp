@@ -1849,7 +1849,8 @@
         "max_load": "Charge max.",
         "last_repack": "Dernier pliage",
         "instrument_type": "Type",
-        "norm": "Norme"
+        "norm": "Norme",
+        "hours_from_logbook": "Heures de vol du carnet Flyary"
       },
       "options": {
         "certification": {
@@ -2043,7 +2044,8 @@
         "quantity_one": "1 pièce disponible",
         "quantity_other": "{{count}} pièces disponibles",
         "share": "Partager",
-        "linkCopied": "Lien copié"
+        "linkCopied": "Lien copié",
+        "fromLogbook": "selon le carnet de vol Flyary"
       },
       "chat": {
         "contact": "Envoyer un message",
@@ -2185,6 +2187,11 @@
         "delete": "Supprimer la recherche",
         "deleteConfirm": "Supprimer la recherche « {{name}} » ?",
         "notification": "Nouveaux résultats pour ta recherche enregistrée"
+      },
+      "prefill": {
+        "label": "Depuis mon matériel",
+        "placeholder": "Choisir une voile …",
+        "done": "Repris – {{hours}} h selon le carnet de vol. Merci de vérifier."
       }
     }
 }

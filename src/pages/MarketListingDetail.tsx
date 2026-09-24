@@ -105,7 +105,10 @@ export default function MarketListingDetail() {
       case "select": return t(`market.options.${field.key}.${value}`);
       case "boolean": return value ? t("common.yes") : t("common.no");
       case "month": { const d = parseMonthDate(value); return d ? monthFormat.format(d) : String(value); }
-      case "number": return field.unit ? `${value} ${field.unit}` : String(value);
+      case "number": {
+        const text = field.unit ? `${value} ${field.unit}` : String(value);
+        return field.key === "flight_hours" && listing.attributes.hours_from_logbook === true ? `${text} (${t("market.detail.fromLogbook")})` : text;
+      }
       default: return String(value);
     }
   };
@@ -118,6 +121,7 @@ export default function MarketListingDetail() {
     ] as [string, string | null][]) : []).filter((d): d is [string, string] => !!d[1]),
     ...(listing.size ? [[t("market.fields.size"), listing.size] as [string, string]] : []),
     ...spec.attributes
+      .filter((f) => !(f.kind === "boolean" && f.hidden))
       .map((f) => [t(`market.attributes.${f.key}`), attributeText(f, listing.attributes[f.key])] as [string, string | null])
       .filter((d): d is [string, string] => !!d[1]),
   ];

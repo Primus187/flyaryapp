@@ -1849,7 +1849,8 @@
         "max_load": "Max. load",
         "last_repack": "Last repack",
         "instrument_type": "Type",
-        "norm": "Standard"
+        "norm": "Standard",
+        "hours_from_logbook": "Flight hours from the Flyary logbook"
       },
       "options": {
         "certification": {
@@ -2043,7 +2044,8 @@
         "quantity_one": "1 piece available",
         "quantity_other": "{{count}} pieces available",
         "share": "Share",
-        "linkCopied": "Link copied"
+        "linkCopied": "Link copied",
+        "fromLogbook": "according to Flyary logbook"
       },
       "chat": {
         "contact": "Send message",
@@ -2185,6 +2187,11 @@
         "delete": "Delete search",
         "deleteConfirm": "Delete search \"{{name}}\"?",
         "notification": "New matches for your saved search"
+      },
+      "prefill": {
+        "label": "From my equipment",
+        "placeholder": "Choose a wing …",
+        "done": "Taken over – {{hours}} h according to the logbook. Please check."
       }
     }
 }

@@ -9,7 +9,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
-| M2 – Wiederkommen | 🔶 In Arbeit | 6.1 ✅, 6.2 ✅; Vorausfüllen aus dem eigenen Material und Umkreis folgen |
+| M2 – Wiederkommen | 🔶 In Arbeit | 6.1–6.3 ✅; Umkreissuche und Gewichts-Abgleich folgen |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
 
@@ -282,9 +282,11 @@ Aktuelle Filter als Suche speichern. Neue passende Anzeigen lösen eine Push-Mit
 
 **Ist-Stand:** Migration `0043_marketplace_saved_searches.sql` (`marketplace_saved_searches`, `market_listing_matches` als gemeinsame Filterregel für Suche und gespeicherte Suchen, Trigger `marketplace_notify_saved_searches`, `marketplace_saved_searches_overview` mit Zähler «neu seit dem letzten Öffnen»), Knöpfe «Suche speichern» und «Gespeicherte Suchen» in der Übersicht. Mitteilung, sobald eine passende Anzeige online geht, auch nach einer Verlängerung; höchstens eine pro Suche und Tag. **Abweichung:** Statt einer gesammelten Tagesmitteilung kommt die erste Mitteilung sofort und weitere Treffer desselben Tages zeigt der Zähler «neu» an (schneller für Occasionen, die rasch weg sind).
 
-### 6.3 Vorausfüllen aus dem eigenen Material
+### 6.3 Vorausfüllen aus dem eigenen Material ✅
 
 «Aus meinem Material» füllt die Anzeige aus `pilot_gliders` vor (Hersteller, Modell, Grösse). Flugstunden werden aus dem Flugbuch vorgeschlagen und als «laut Flugbuch des Verkäufers» gekennzeichnet. Weil `flights.glider` heute Freitext ist, stimmt der Abgleich nur ungefähr. Genauer wird es erst mit einer echten Verknüpfung `flights.pilot_glider_id` (eigener, vorgelagerter Umbau).
+
+**Ist-Stand:** `src/lib/marketplace-prefill.ts`, Auswahl «Aus meinem Material» im Formular (Schritt 2, private Anzeigen). Flugstunden = Summe der eigenen Flüge, deren Schirmtext Hersteller und Modell enthält (Grösse in Klammern muss übereinstimmen, wenn beide eine nennen), auf ganze Stunden gerundet. Kennzeichnung über das versteckte Merkmal `hours_from_logbook`, Anzeige «laut Flyary-Flugbuch»; von Hand geänderte Stunden verlieren die Kennzeichnung. **Abweichung:** Keine Migration und keine feste Verknüpfung `flights.pilot_glider_id` – der Abgleich bleibt ungefähr und ist als Vorschlag markiert.
 
 ### 6.4 Umkreissuche und Gewichts-Abgleich
 

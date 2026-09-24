@@ -1849,7 +1849,8 @@
         "max_load": "Max. Anhängelast",
         "last_repack": "Letztes Packdatum",
         "instrument_type": "Art",
-        "norm": "Norm"
+        "norm": "Norm",
+        "hours_from_logbook": "Flugstunden aus dem Flyary-Flugbuch"
       },
       "options": {
         "certification": {
@@ -2043,7 +2044,8 @@
         "quantity_one": "1 Stück verfügbar",
         "quantity_other": "{{count}} Stück verfügbar",
         "share": "Teilen",
-        "linkCopied": "Link kopiert"
+        "linkCopied": "Link kopiert",
+        "fromLogbook": "laut Flyary-Flugbuch"
       },
       "chat": {
         "contact": "Nachricht senden",
@@ -2185,6 +2187,11 @@
         "delete": "Suche löschen",
         "deleteConfirm": "Suche «{{name}}» löschen?",
         "notification": "Neue Treffer für deine gespeicherte Suche"
+      },
+      "prefill": {
+        "label": "Aus meinem Material",
+        "placeholder": "Schirm auswählen …",
+        "done": "Übernommen – {{hours}} h laut Flugbuch. Bitte prüfen."
       }
     }
 }

@@ -29,6 +29,7 @@ import { firstFreePosition, uploadListingPhoto, ListingPhotoError, type ListingP
 import { safetyHints } from "@/lib/marketplace-safety";
 import { fetchMyShops, type MyShop } from "@/lib/school-shop";
 import { hasAcceptedTerms, withPrivateSaleClause } from "@/lib/marketplace-terms";
+import { fetchOwnGear, gliderLabel, prefillFromGlider, type FlightGliderRow, type OwnGlider } from "@/lib/marketplace-prefill";
 import MarketTermsDialog from "@/components/market/MarketTermsDialog";
 
 interface FormState {
@@ -93,6 +94,21 @@ export default function MarketListingForm() {
   const [sellerGroup, setSellerGroup] = useState<string>(searchParams.get("school") ?? "");
 
   useEffect(() => { fetchMyShops().then(setShops).catch(() => setShops([])); }, []);
+
+  /** Own wings and logbook for "Aus meinem Material" (plan 6.3), only when creating. */
+  const [gear, setGear] = useState<{ gliders: OwnGlider[]; flights: FlightGliderRow[] }>({ gliders: [], flights: [] });
+  useEffect(() => {
+    if (!isEdit && user) fetchOwnGear(user.id).then(setGear).catch(() => undefined);
+  }, [isEdit, user]);
+  const prefill = (gliderId: string) => {
+    const g = gear.gliders.find((x) => x.id === gliderId);
+    if (!g) return;
+    const p = prefillFromGlider(g, gear.flights);
+    setForm((f) => ({ ...f, listing_type: "offer", category: p.category, title: f.title.trim() ? f.title : p.title,
+      manufacturer: p.manufacturer, model: p.model, size: p.size, attributes: { ...f.attributes, ...p.attributes } }));
+    setAttributeErrors([]);
+    toast.success(t("market.prefill.done", { hours: p.attributes.flight_hours ?? 0 }));
+  };
 
   /** Marketplace rules confirmed (plan 4.10)? null = still checking. Only asked when creating. */
   const [termsOk, setTermsOk] = useState<boolean | null>(isEdit ? true : null);
@@ -287,6 +303,12 @@ export default function MarketListingForm() {
                 <SelectItem value="me">{t("market.shop.sellAsMe")}</SelectItem>
                 {shops.map((s) => <SelectItem key={s.group_id} value={s.group_id}>{s.name}</SelectItem>)}
               </SelectContent>
+            </Select>
+          ))}
+          {!isEdit && !sellerGroup && gear.gliders.length > 0 && field(t("market.prefill.label"), (
+            <Select value="" onValueChange={prefill}>
+              <SelectTrigger><SelectValue placeholder={t("market.prefill.placeholder")} /></SelectTrigger>
+              <SelectContent>{gear.gliders.map((g) => <SelectItem key={g.id} value={g.id}>{gliderLabel(g)}</SelectItem>)}</SelectContent>
             </Select>
           ))}
           {sellerGroup && shops.some((s) => s.group_id === sellerGroup && !s.ready) && (

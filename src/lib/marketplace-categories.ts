@@ -13,7 +13,7 @@ interface BaseField { key: string; required?: boolean }
 export interface NumberField extends BaseField { kind: "number"; min: number; max: number; unit?: "kg" | "h" | "s"; integer?: boolean }
 export interface SelectField extends BaseField { kind: "select"; options: readonly string[] }
 export interface DateField extends BaseField { kind: "month" }
-export interface BooleanField extends BaseField { kind: "boolean" }
+export interface BooleanField extends BaseField { kind: "boolean"; /** Set by the app (e.g. prefill), no input in the form. */ hidden?: boolean }
 export interface TextField extends BaseField { kind: "text"; maxLength: number }
 export type AttributeField = NumberField | SelectField | DateField | BooleanField | TextField;
 
@@ -37,6 +37,8 @@ const wingFields: readonly AttributeField[] = [
   { key: "weight_min", kind: "number", min: 30, max: 300, unit: "kg", integer: true },
   { key: "weight_max", kind: "number", min: 30, max: 300, unit: "kg", integer: true },
   { key: "flight_hours", kind: "number", min: 0, max: 5000, unit: "h", integer: true },
+  // plan 6.3: flight hours taken from the Flyary logbook (reset when the seller changes the hours)
+  { key: "hours_from_logbook", kind: "boolean", hidden: true },
   { key: "last_check", kind: "month" },
   { key: "porosity", kind: "number", min: 0, max: 5000, unit: "s", integer: true },
   { key: "repairs", kind: "text", maxLength: 300 },
