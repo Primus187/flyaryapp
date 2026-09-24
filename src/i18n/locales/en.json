@@ -1918,7 +1918,9 @@
         "already_reported": "You have already reported this listing.",
         "reason_required": "Please give a reason.",
         "limit_saved_searches": "At most 5 saved searches. Delete one first.",
-        "equipment_other_school": "This equipment does not belong to the selling school."
+        "equipment_other_school": "This equipment does not belong to the selling school.",
+        "buyer_not_member": "This person does not belong to the school.",
+        "school_only": "Only for flight school listings."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2207,6 +2209,17 @@
         "sell": "Sell as used item",
         "inMarket": "In the marketplace",
         "prefilled": "Taken over from the inventory – please add price, photos and condition."
+      },
+      "billing": {
+        "action": "Sell to a member (billing)",
+        "title": "Put on the bill",
+        "hint": "Sell \"{{title}}\" to a member of the school. The amount appears on their bill; the listing is marked sold.",
+        "member": "Buyer",
+        "search": "Search name …",
+        "price": "Price (CHF)",
+        "confirm": "Sell and bill",
+        "done": "Put on the bill",
+        "noMembers": "No members found."
       }
     }
 }

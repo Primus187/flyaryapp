@@ -94,6 +94,8 @@ beforeAll(async () => {
     CREATE TABLE public.user_roles (user_id uuid, role public.app_role);
     CREATE TABLE public.flights (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid);
     CREATE TABLE public.school_equipment (id uuid PRIMARY KEY, group_id uuid, name text, status text, retired_at date, retire_reason text);
+    CREATE TABLE public.billing_items (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), group_id uuid, user_id uuid, item_type text,
+      description text, quantity numeric, unit_amount numeric, amount numeric, billing_date date, note text, created_by uuid);
     CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
     CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
       SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role) $$;
@@ -102,7 +104,7 @@ beforeAll(async () => {
       SELECT EXISTS (SELECT 1 FROM public.group_member_functions WHERE user_id = _user_id AND group_id = _group_id AND function = _function::text) $$;
   `);
   for (const name of ["0031_marketplace_group_functions", "0032_marketplace_listings", "0033_marketplace_photos",
-    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop", "0038_marketplace_moderation", "0039_marketplace_cleanup", "0041_marketplace_terms", "0042_marketplace_favorites", "0043_marketplace_saved_searches", "0044_marketplace_radius_weight", "0045_marketplace_school_equipment"]) {
+    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop", "0038_marketplace_moderation", "0039_marketplace_cleanup", "0041_marketplace_terms", "0042_marketplace_favorites", "0043_marketplace_saved_searches", "0044_marketplace_radius_weight", "0045_marketplace_school_equipment", "0046_marketplace_sale_to_billing"]) {
     await db.exec(readFileSync(new URL(`../../drizzle/migrations/${name}.sql`, import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   }
   // Channels created by staff after the migration

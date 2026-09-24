@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0045 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius, school equipment).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0046 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius, school equipment, billing).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -54,6 +54,8 @@ beforeAll(async () => {
     CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, pilot_name text, avatar_url text, created_at timestamptz DEFAULT now());
     CREATE TABLE public.flights (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid);
     CREATE TABLE public.school_equipment (id uuid PRIMARY KEY, group_id uuid, name text, status text, retired_at date, retire_reason text);
+    CREATE TABLE public.billing_items (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), group_id uuid, user_id uuid, item_type text,
+      description text, quantity numeric, unit_amount numeric, amount numeric, billing_date date, note text, created_by uuid);
     CREATE TABLE public.notifications (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid, actor_id uuid, type text,
       reference_id uuid, reference_type text, read boolean DEFAULT false, created_at timestamptz DEFAULT now());
     CREATE TABLE public.pushes (user_id uuid, title text);
@@ -96,6 +98,7 @@ beforeAll(async () => {
   await db.exec(migration("0043_marketplace_saved_searches.sql"));
   await db.exec(migration("0044_marketplace_radius_weight.sql"));
   await db.exec(migration("0045_marketplace_school_equipment.sql"));
+  await db.exec(migration("0046_marketplace_sale_to_billing.sql"));
   // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
   await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
@@ -966,6 +969,55 @@ describe("school equipment as used item", () => {
     await asSystem();
     expect((await db.query(`SELECT status, retire_reason, retired_at IS NOT NULL AS dated FROM public.school_equipment WHERE id = '${eq}'`)).rows)
       .toEqual([{ status: "retired", retire_reason: "Verkauft (Marktplatz)", dated: true }]);
+  });
+});
+
+describe("sale to a member's bill", () => {
+  let listing: string;
+  beforeAll(async () => {
+    await asSystem();
+    listing = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_group_id, created_by, category, title, status,
+      price_cents, quantity, condition, bumped_at, expires_at) VALUES ('${school}', '${shop}', 'helmet', 'B Schulhelm', 'active', 15000, 2, 'new', now(), NULL)
+      RETURNING id`)).rows[0].id;
+    await db.exec(`INSERT INTO public.profiles (user_id, pilot_name) VALUES ('${student}', 'Mia') ON CONFLICT (user_id) DO UPDATE SET pilot_name = 'Mia'`);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.billing_items; DELETE FROM public.marketplace_listings WHERE title LIKE 'B %'`);
+  });
+  const sell = async (uid: string, l: string, buyer: string, price: number | null = null) => {
+    await asUser(uid);
+    return (await db.query<{ id: string }>(`SELECT public.marketplace_sell_to_member($1, $2, $3) AS id`, [l, buyer, price])).rows[0].id;
+  };
+
+  it("puts the sale on the member's bill and counts the pieces down", async () => {
+    await sell(shop, listing, student);
+    await asSystem();
+    expect((await db.query(`SELECT user_id, item_type, description, quantity::int AS q, amount::float AS amount, created_by, listing_id
+      FROM public.billing_items`)).rows).toEqual([{ user_id: student, item_type: "purchase", description: "Marktplatz: B Schulhelm", q: 1,
+      amount: 150, created_by: shop, listing_id: listing }]);
+    expect((await db.query(`SELECT status, quantity FROM public.marketplace_listings WHERE id = '${listing}'`)).rows).toEqual([{ status: "active", quantity: 1 }]);
+    await sell(schoolAdmin, listing, student, 12050);
+    await asSystem();
+    expect((await db.query(`SELECT amount::float AS amount FROM public.billing_items ORDER BY amount`)).rows).toEqual([{ amount: 120.5 }, { amount: 150 }]);
+    expect((await db.query(`SELECT status FROM public.marketplace_listings WHERE id = '${listing}'`)).rows).toEqual([{ status: "sold" }]);
+  });
+
+  it("only for members of the school, only by those who run the shop, only school listings", async () => {
+    await asSystem();
+    const l = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_group_id, created_by, category, title, status, price_cents,
+      bumped_at, expires_at) VALUES ('${school}', '${shop}', 'helmet', 'B Zweiter', 'active', 5000, now(), now() + interval '9 days') RETURNING id`)).rows[0].id;
+    await expect(sell(shop, l, stranger)).rejects.toThrow("marketplace:buyer_not_member");
+    await expect(sell(instructor, l, student)).rejects.toThrow("marketplace:not_allowed");
+    await asSystem();
+    const priv = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, created_by, category, title, status, price_cents,
+      bumped_at, expires_at) VALUES ('${owner}', '${owner}', 'helmet', 'B Privat', 'active', 5000, now(), now() + interval '9 days') RETURNING id`)).rows[0].id;
+    await expect(sell(owner, priv, student)).rejects.toThrow("marketplace:school_only");
+    await asUser(shop);
+    const names = (await db.query<{ pilot_name: string }>(`SELECT pilot_name FROM public.marketplace_sale_candidates('${l}')`)).rows.map((r) => r.pilot_name);
+    expect(names).toContain("Mia");
+    await asUser(stranger);
+    expect((await db.query(`SELECT * FROM public.marketplace_sale_candidates('${l}')`)).rows).toEqual([]);
   });
 });
 

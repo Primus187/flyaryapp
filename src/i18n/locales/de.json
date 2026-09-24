@@ -1918,7 +1918,9 @@
         "already_reported": "Du hast diese Anzeige bereits gemeldet.",
         "reason_required": "Bitte einen Grund angeben.",
         "limit_saved_searches": "Höchstens 5 gespeicherte Suchen. Lösche zuerst eine.",
-        "equipment_other_school": "Dieses Material gehört nicht zur verkaufenden Schule."
+        "equipment_other_school": "Dieses Material gehört nicht zur verkaufenden Schule.",
+        "buyer_not_member": "Diese Person gehört nicht zur Schule.",
+        "school_only": "Nur für Anzeigen einer Flugschule."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2207,6 +2209,17 @@
         "sell": "Als Occasion verkaufen",
         "inMarket": "Im Marktplatz",
         "prefilled": "Aus dem Materialbestand übernommen – bitte Preis, Fotos und Zustand ergänzen."
+      },
+      "billing": {
+        "action": "An Mitglied verkaufen (Abrechnung)",
+        "title": "Auf die Abrechnung setzen",
+        "hint": "«{{title}}» an eine Person der Schule verkaufen. Der Betrag erscheint in ihrer Abrechnung, die Anzeige wird als verkauft markiert.",
+        "member": "Käufer:in",
+        "search": "Name suchen …",
+        "price": "Preis (CHF)",
+        "confirm": "Verkaufen und abrechnen",
+        "done": "Auf die Abrechnung gesetzt",
+        "noMembers": "Keine Mitglieder gefunden."
       }
     }
 }

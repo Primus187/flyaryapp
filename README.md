@@ -1,5 +1,21 @@
 # Flyary
 
+## Marktplatz: Verkauf auf die Abrechnung (7.2) und Abnahme M3
+
+Migration `0046_marketplace_sale_to_billing.sql`, Dialog `src/components/market/SellToMemberDialog.tsx`, Logik in
+`src/lib/marketplace-billing.ts`.
+
+- **Schul-Shop → Anzeige → «An Mitglied verkaufen (Abrechnung)»**: Person der Schule wählen (Namenssuche), Preis
+  übernehmen oder anpassen. Die Datenbank legt eine Abrechnungsposition an (Art «Kauf», Beschreibung «Marktplatz: …»,
+  Betrag in CHF, verknüpft über `billing_items.listing_id`) und markiert die Anzeige als verkauft – bei Neuware mit
+  mehreren Stück eines weniger. Die Position erscheint in der Schul-Abrechnung, im Schülerdossier und bei der Person selbst.
+- Nur für Schul-Anzeigen, nur durch Admin, Schulleitung oder Shop, nur an Mitglieder der Schule
+  (`marketplace:school_only`, `marketplace:buyer_not_member`).
+- **Abnahmeprüfung M3** ohne Befund: Verkauf auf die Abrechnung sondert verknüpftes Material aus (7.1) und benachrichtigt
+  Merkende (6.1); Regeln-Bestätigung (4.10) gilt auch beim Weg über den Materialbestand; Abrechnungsart «Kauf» gab es schon.
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0046), danach das Frontend.
+
 ## Marktplatz: Occasion aus dem Materialbestand (7.1)
 
 Migration `0045_marketplace_school_equipment.sql`, Zuordnung in `src/lib/marketplace-equipment.ts`.

@@ -20,6 +20,7 @@ import {
   type ListingAction, type MarketErrorCode, type MineTab,
 } from "@/lib/marketplace-listing";
 import { coverThumbnails, deleteListing } from "@/lib/marketplace-photos";
+import SellToMemberDialog from "@/components/market/SellToMemberDialog";
 
 type Row = Pick<MarketplaceListing, "id" | "title" | "status" | "listing_type" | "category" | "price_type" | "price_cents"
   | "expires_at" | "bumped_at" | "updated_at" | "removed_reason">;
@@ -40,6 +41,9 @@ export default function ManagedListings({ seller, newPath }: Props) {
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  /** School listing being sold to a member's bill (plan 7.2). */
+  const [selling, setSelling] = useState<Row | null>(null);
+  const isSchool = "groupId" in seller;
   const [tab, setTab] = useState<MineTab>("live");
 
   const sellerColumn = "userId" in seller ? "seller_user_id" : "seller_group_id";
@@ -145,6 +149,9 @@ export default function ManagedListings({ seller, newPath }: Props) {
                   </DropdownMenuItem>
                 </div>
               ))}
+              {isSchool && (status === "active" || status === "reserved") && (
+                <DropdownMenuItem onSelect={() => setSelling(row)}>{t("market.billing.action")}</DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </CardContent>
@@ -153,6 +160,10 @@ export default function ManagedListings({ seller, newPath }: Props) {
   };
 
   return (
+    <>
+    {selling && (
+      <SellToMemberDialog listing={selling} onClose={() => setSelling(null)} onDone={() => { setSelling(null); void load(); }} />
+    )}
     <Tabs value={tab} onValueChange={(v) => setTab(v as MineTab)}>
         <TabsList className="grid w-full grid-cols-3">
           {TABS.map((key) => (
@@ -168,5 +179,6 @@ export default function ManagedListings({ seller, newPath }: Props) {
           </TabsContent>
         ))}
     </Tabs>
+    </>
   );
 }

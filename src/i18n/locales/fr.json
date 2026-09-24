@@ -1918,7 +1918,9 @@
         "already_reported": "Tu as déjà signalé cette annonce.",
         "reason_required": "Merci d'indiquer une raison.",
         "limit_saved_searches": "Au maximum 5 recherches enregistrées. Supprime d'abord une.",
-        "equipment_other_school": "Ce matériel n'appartient pas à l'école qui vend."
+        "equipment_other_school": "Ce matériel n'appartient pas à l'école qui vend.",
+        "buyer_not_member": "Cette personne n'appartient pas à l'école.",
+        "school_only": "Uniquement pour les annonces d'une école."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2207,6 +2209,17 @@
         "sell": "Vendre comme occasion",
         "inMarket": "Sur le marché",
         "prefilled": "Repris de l'inventaire – merci de compléter prix, photos et état."
+      },
+      "billing": {
+        "action": "Vendre à un membre (facturation)",
+        "title": "Mettre sur la facture",
+        "hint": "Vendre « {{title}} » à un membre de l'école. Le montant apparaît dans sa facturation, l'annonce est marquée vendue.",
+        "member": "Acheteur·euse",
+        "search": "Chercher un nom …",
+        "price": "Prix (CHF)",
+        "confirm": "Vendre et facturer",
+        "done": "Mis sur la facture",
+        "noMembers": "Aucun membre trouvé."
       }
     }
 }

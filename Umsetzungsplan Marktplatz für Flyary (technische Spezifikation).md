@@ -1,6 +1,6 @@
 # Umsetzungsplan: Marktplatz für Flyary
 
-2026-09-24 · Tobias Bolliger · Stand: M1 und M2 abgeschlossen (siehe Status)
+2026-09-24 · Tobias Bolliger · Stand: M1 bis M3 abgeschlossen, M4 zurückgestellt (siehe Status)
 
 Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschirm-Material in Flyary: Pilotinnen und Piloten verkaufen ihr altes Material oder suchen günstige Occasionen, Flugschulen verkaufen Material aus ihrem Shop. Es ist wie der Umsetzungsplan für die Flugschul-Erweiterungen aufgebaut: Jeder Unterabschnitt ist ein eigener Auftrag an den Coding-Agenten, mit Ziel, Akzeptanzkriterien, Datenmodell und Platz in der Navigation.
 
@@ -10,7 +10,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | --- | --- | --- |
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ✅ Abgeschlossen | 6.1–6.4 umgesetzt und abnahmegeprüft |
-| M3 – Schulen im Alltag | 🔶 In Arbeit | 7.1 ✅; Verkauf auf die Abrechnung folgt |
+| M3 – Schulen im Alltag | ✅ Abgeschlossen | 7.1–7.2 umgesetzt und abnahmegeprüft |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
 
 ## 1. Grundsatzentscheide
@@ -33,7 +33,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 | --- | --- | --- | --- | --- |
 | M1 | Grundfunktion | 4.1–4.10 | L | ✅ |
 | M2 | Wiederkommen | 6.1–6.4 | M | ✅ |
-| M3 | Schulen im Alltag | 7.1–7.2 | M | 🔶 |
+| M3 | Schulen im Alltag | 7.1–7.2 | M | ✅ |
 | M4 | Später / optional | 8.1–8.5 | L | ⏸ |
 
 Reihenfolge innerhalb von M1: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8 → 4.9 → 4.10. Das Datenmodell und die Kategorien kommen zuerst, weil alle weiteren Features darauf aufbauen. Der Chat (4.6) folgt erst, wenn es Anzeigen zum Anschauen gibt.
@@ -302,9 +302,11 @@ Button «Als Occasion verkaufen» in `SchoolEquipment.tsx`. Die Anzeige wird aus
 
 **Ist-Stand:** Migration `0045_marketplace_school_equipment.sql` (`school_equipment_id` mit Prüfung «gleiche Schule», höchstens eine laufende Anzeige pro Stück, Trigger sondert beim Verkauf aus), `src/lib/marketplace-equipment.ts` (Zuordnung Materialtyp → Kategorie, letzter Check → Nachprüfung, Kaufjahr → Baujahr), Knopf im Materialbestand und «Im Marktplatz»-Hinweis. **Abweichungen:** Der Knopf erscheint für Admins und Schulleitung (sie sehen den Materialbestand und führen den Shop); Personen nur mit Funktion «Shop» sehen den Materialbestand nicht. Das Kaufjahr dient als Vorschlag fürs Baujahr.
 
-### 7.2 Reservieren und auf die Abrechnung setzen
+### 7.2 Reservieren und auf die Abrechnung setzen ✅
 
 Bei Schul-Anzeigen kann das Shop-Team einen Verkauf an eine Person der Schule «auf die Abrechnung setzen». Das erzeugt ein `billing_items` mit `item_type = 'sale'` und dem Verkaufspreis. Die Übergabe erfolgt z. B. am nächsten Flugtag. Damit gibt es eine Zahlungsabwicklung ohne Online-Zahlung.
+
+**Ist-Stand:** Migration `0046_marketplace_sale_to_billing.sql` (`marketplace_sell_to_member`, `marketplace_sale_candidates`, `billing_items.listing_id`), Dialog «An Mitglied verkaufen (Abrechnung)» in der Shop-Liste. Abrechnungsart «Kauf» (gab es schon), Betrag in CHF. **Abweichung:** Kein eigener Schritt «reservieren für Person X» – Reservieren gibt es seit 4.4 allgemein, der Verkauf auf die Abrechnung ist ein Schritt. Die Abnahmeprüfung M3 ergab keinen Befund.
 
 ## 8. M4 – Später / optional
 
@@ -333,7 +335,7 @@ Speziell für den Marktplatz:
 - Prüfen, ob `pg_cron` und `pg_net` im Supabase-Projekt verfügbar sind (4.9)
 - Soll Vertical als erste Schule mit Shop und Moderation starten?
 
-## 11. Erkenntnisse aus der Umsetzung von M1 und M2
+## 11. Erkenntnisse aus der Umsetzung von M1 bis M3
 
 - **Abnahmeprüfung nach M1** (wie im Flugschul-Plan nach jeder Phase): zwei Funde an Übergängen zwischen Aufträgen – die Glocke scheiterte an Mitteilungen ohne Absender (4.8), und Neuware von Schulen bot «Verlängern» ohne Wirkung an. Beide behoben (README, «Nachtrag Abnahmeprüfung»).
 - **Datenbanktests auf PGlite haben drei Fehler vor dem Einspielen gefunden:** PL/pgSQL liest `IF … THEN` nur bis zum ersten `THEN` (ein `CASE` darin braucht Klammern); Supabase-Fehler sind nicht immer `Error`-Objekte (Meldung über `message` lesen); ein Protokolleintrag mit Fremdschlüssel auf die betroffene Person blockierte das Löschen ihres Kontos.
@@ -344,3 +346,5 @@ Speziell für den Marktplatz:
 - **Abnahmeprüfung nach M2:** ein Fund – das Herz erschien auf eigenen Anzeigen, die Datenbank lehnte das Merken ab. Die Suche liefert jetzt `mine`. Behoben in derselben, noch nicht eingespielten Migration 0044.
 - **Eine Filterregel für Suche, gespeicherte Suchen und Mitteilungen** (`market_listing_matches`, 6.2): Umkreis und Gewicht (6.4) mussten nur dort ergänzt werden und wirken überall gleich.
 - **Chat-Datenbanktest braucht mehr Zeit**, seit er alle Chat- und Marktplatz-Migrationen lädt (60 s für die Vorbereitung).
+- **Viele Deploys kurz hintereinander können Geräte auf einer veralteten App-Version festhalten** (Service-Worker-Cache, CSS/JS nicht mehr auf dem Server). Seit dem Hotfix `ac895f4` repariert sich die App selbst; ein bereits hängendes Gerät setzt man in Chrome über die Website-Einstellungen zurück. Die Adresse hat kein «www.» (sonst HSTS-Zertifikatsfehler).
+- **Abnahmeprüfung M3** ohne Befund.
