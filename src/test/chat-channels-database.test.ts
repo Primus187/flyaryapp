@@ -84,6 +84,7 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0026_chat_channel_returning.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0028_chat_notifications.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0029_chat_direct_replies_reactions.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0030_chat_edit_message.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   // Channels created by staff after the migration
   await asAdminDb();
   await db.exec(`
@@ -371,5 +372,24 @@ describe("direct messages, replies, reactions, search (stage 3)", () => {
     expect(await search(groundStudent, "morgen")).toEqual(["Fliegen wir morgen?"]);
     expect(await search(groundStudent, "%%")).toEqual([]);
     expect(await search(groundStudent, "m")).toEqual([]);
+  });
+});
+
+describe("editing messages", () => {
+  it("lets only the author edit the text and marks it as edited", async () => {
+    await asAdminDb();
+    const general = (await db.query<{ id: string }>(`SELECT id FROM public.chat_channels WHERE group_id = '${school}' AND name = 'Allgemein'`)).rows[0].id;
+    await asUser(altStudent);
+    const msg = (await db.query<{ id: string }>(`INSERT INTO public.chat_messages (channel_id, user_id, message) VALUES ('${general}', '${altStudent}', 'Tippfeler') RETURNING id`)).rows[0].id;
+    await db.exec(`SELECT public.chat_edit_message('${msg}', ' Tippfehler ')`);
+    const row = (await db.query<{ message: string; edited_at: string | null }>(`SELECT message, edited_at FROM public.chat_messages WHERE id = '${msg}'`)).rows[0];
+    expect(row.message).toBe("Tippfehler");
+    expect(row.edited_at).not.toBeNull();
+    await expect(db.exec(`SELECT public.chat_edit_message('${msg}', '   ')`)).rejects.toThrow(/cannot be edited/);
+    await asUser(admin);
+    await expect(db.exec(`SELECT public.chat_edit_message('${msg}', 'Admin war hier')`)).rejects.toThrow(/cannot be edited/);
+    await expect(db.exec(`UPDATE public.chat_messages SET message = 'direkt' WHERE id = '${msg}'`)).resolves.toBeDefined();
+    await asAdminDb();
+    expect((await db.query<{ message: string }>(`SELECT message FROM public.chat_messages WHERE id = '${msg}'`)).rows[0].message).toBe("Tippfehler");
   });
 });

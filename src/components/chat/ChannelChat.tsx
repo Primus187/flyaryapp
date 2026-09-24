@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck, Lock, Reply, SmilePlus } from "lucide-react";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck, Lock, Reply, Copy, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/image-compress";
 import { hasConfirmed, summarizeReceipts } from "@/lib/announcement-receipts";
@@ -30,8 +30,11 @@ interface ChatMessage {
   requires_confirmation: boolean;
   mentions?: string[];
   reply_to?: string | null;
+  edited_at?: string | null;
   created_at: string;
 }
+
+const LONG_PRESS_MS = 450;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chat tables are not in the generated types.ts yet
 const chatTable = (name: string) => supabase.from(name as any) as any;
@@ -64,6 +67,12 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [flashId, setFlashId] = useState<string | null>(null);
   const focusedRef = useRef<string | null>(null);
+  // Tap on a message → reactions; long press (or right click) → reply/copy/edit/delete.
+  const [menu, setMenu] = useState<{ id: string; mode: "react" | "actions" } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editing, setEditing] = useState<ChatMessage | null>(null);
+  const pressRef = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null);
+  const closedRef = useRef<{ id: string; at: number } | null>(null);
   const [receipts, setReceipts] = useState<Record<string, string[]>>({});
   const [expandedReceipts, setExpandedReceipts] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -148,6 +157,10 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
         if (msg.attachment_path) loadAttachmentUrls([msg]);
         void markRead();
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages", filter: `channel_id=eq.${channelId}` }, (payload) => {
+        const msg = payload.new as ChatMessage;
+        setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, ...msg } : m)));
+      })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" }, (payload) => {
         const removed = (payload.old as { id?: string }).id;
         if (removed) setMessages((prev) => prev.filter((m) => m.id !== removed));
@@ -208,11 +221,94 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
   };
 
   const startReply = (msg: ChatMessage) => {
+    setEditing(null);
     setReplyTo(msg);
     requestAnimationFrame(() => inputRef.current?.focus());
   };
 
+  const startEdit = (msg: ChatMessage) => {
+    setReplyTo(null);
+    setEditing(msg);
+    setText(msg.message);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const cancelEdit = () => { setEditing(null); setText(""); };
+
+  const copyMessage = async (msg: ChatMessage) => {
+    try {
+      await navigator.clipboard.writeText(msg.message);
+      toast({ title: t("chat.copied") });
+    } catch {
+      toast({ title: t("common.error"), variant: "destructive" });
+    }
+  };
+
+  const openMenu = (id: string, mode: "react" | "actions") => {
+    setConfirmDelete(false);
+    setMenu({ id, mode });
+  };
+
+  // Gesture handlers for one bubble. Taps on links/buttons inside (images, reply quote, reaction chips) keep their own action.
+  const bubbleHandlers = (msg: ChatMessage) => {
+    const interactive = (target: EventTarget) => !!(target as HTMLElement).closest("a, button");
+    const clear = () => { if (pressRef.current) window.clearTimeout(pressRef.current.timer); };
+    return {
+      onPointerDown: (e: React.PointerEvent) => {
+        if (e.button !== 0 || interactive(e.target)) return;
+        clear();
+        const press = { x: e.clientX, y: e.clientY, fired: false, timer: 0 };
+        press.timer = window.setTimeout(() => {
+          press.fired = true;
+          navigator.vibrate?.(10);
+          openMenu(msg.id, "actions");
+        }, LONG_PRESS_MS);
+        pressRef.current = press;
+      },
+      onPointerMove: (e: React.PointerEvent) => {
+        const press = pressRef.current;
+        if (press && !press.fired && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) clear();
+      },
+      onPointerUp: clear,
+      onPointerCancel: clear,
+      onPointerLeave: clear,
+      onContextMenu: (e: React.MouseEvent) => {
+        e.preventDefault();
+        clear();
+        openMenu(msg.id, "actions");
+      },
+      onClick: (e: React.MouseEvent) => {
+        if (pressRef.current?.fired) { pressRef.current = null; return; }
+        if (interactive(e.target)) return;
+        // The tap that closed this message's menu (pointerdown outside) must not reopen it.
+        const closed = closedRef.current;
+        if (closed && closed.id === msg.id && Date.now() - closed.at < 400) return;
+        openMenu(msg.id, "react");
+      },
+    };
+  };
+
+  const saveEdit = async () => {
+    if (!editing || sending) return;
+    setSending(true);
+    try {
+      const mentions = channel.kind === "direct" ? [] : extractMentions(text, readers);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+      const { error } = await supabase.rpc("chat_edit_message" as any, { _message: editing.id, _text: text, _mentions: mentions } as any);
+      if (error) {
+        toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+        return;
+      }
+      const edited = { message: text.trim(), mentions, edited_at: new Date().toISOString() };
+      setMessages((prev) => prev.map((m) => (m.id === editing.id ? { ...m, ...edited } : m)));
+      cancelEdit();
+    } finally {
+      setSending(false);
+    }
+  };
+
   const send = async () => {
+    if (editing) { await saveEdit(); return; }
     if ((!text.trim() && !pendingFile) || !user || sending || !channel.can_post) return;
     setSending(true);
     try {
@@ -314,6 +410,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
       }
       if (e.key === "Escape") { setMentionQ(null); return; }
     }
+    if (e.key === "Escape" && editing) { cancelEdit(); return; }
     if (e.key === "Escape" && replyTo) { setReplyTo(null); return; }
     if (e.key === "Enter" && !e.shiftKey) void send();
   };
@@ -361,7 +458,12 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                   </div>
                 )}
                 <div className={`flex mb-1.5 ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`group relative max-w-[78%] rounded-xl px-3 py-1.5 ${msg.is_announcement ? "bg-primary/10 border border-primary/30" : isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}${mentionsMe ? " ring-2 ring-amber-400/70" : ""}`}>
+                  <Popover open={menu?.id === msg.id} onOpenChange={(open) => {
+                    if (!open) { closedRef.current = { id: msg.id, at: Date.now() }; setMenu(null); }
+                  }}>
+                  <PopoverAnchor asChild>
+                  <div {...bubbleHandlers(msg)}
+                    className={`group relative max-w-[78%] rounded-xl px-3 py-1.5 cursor-pointer select-none [-webkit-touch-callout:none] transition-transform ${menu?.id === msg.id ? "scale-[0.98] brightness-95" : ""} ${msg.is_announcement ? "bg-primary/10 border border-primary/30" : isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}${mentionsMe ? " ring-2 ring-amber-400/70" : ""}`}>
                     {msg.is_announcement && (
                       <Badge variant="outline" className="mb-1 text-[9px] h-4 gap-1 border-primary/40 text-primary">
                         <Megaphone className="h-2.5 w-2.5" /> {t("chat.announcement")}
@@ -443,36 +545,57 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                       </div>
                     )}
                     <div className={`flex items-center gap-1.5 mt-0.5 justify-end ${ownBubble ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                      {msg.edited_at && <p className="text-[9px] italic">{t("chat.edited")}</p>}
                       <p className="text-[9px]">{formatTime(msg.created_at)}</p>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button type="button" aria-label={t("chat.react")} className="opacity-60 hover:opacity-100 transition-opacity">
-                            <SmilePlus className="h-3 w-3" />
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent side="top" className="w-auto p-1">
-                          <div className="flex gap-0.5">
-                            {REACTION_EMOJIS.map((emoji) => (
-                              <button key={emoji} type="button" onClick={() => toggleReaction(msg, emoji)}
-                                className="h-9 w-9 rounded-md text-xl hover:bg-accent active:scale-90 transition-transform">
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                      {channel.can_post && (
-                        <button type="button" onClick={() => startReply(msg)} aria-label={t("chat.reply")} className="opacity-60 hover:opacity-100 transition-opacity">
-                          <Reply className="h-3 w-3" />
-                        </button>
-                      )}
-                      {canDelete && (
-                        <button onClick={() => deleteMessage(msg)} aria-label={t("common.delete")} className="opacity-60 hover:opacity-100 transition-opacity">
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      )}
                     </div>
                   </div>
+                  </PopoverAnchor>
+                  {menu?.id === msg.id && (
+                    menu.mode === "react" ? (
+                      <PopoverContent side="top" align={isMe ? "end" : "start"} className="w-auto rounded-full p-1">
+                        <div className="flex gap-0.5">
+                          {REACTION_EMOJIS.map((emoji) => {
+                            const mine = msgReactions.some((r) => r.emoji === emoji && r.mine);
+                            return (
+                              <button key={emoji} type="button" aria-pressed={mine} aria-label={emoji}
+                                onClick={() => { void toggleReaction(msg, emoji); setMenu(null); }}
+                                className={`h-10 w-10 rounded-full text-2xl active:scale-90 transition-transform ${mine ? "bg-primary/20" : "hover:bg-accent"}`}>
+                                {emoji}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
+                    ) : (
+                      <PopoverContent side="bottom" align={isMe ? "end" : "start"} className="w-52 p-1">
+                        {confirmDelete ? (
+                          <div className="space-y-1 p-1">
+                            <p className="px-1 text-sm">{t("chat.deleteConfirm")}</p>
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="ghost" className="flex-1" onClick={() => setConfirmDelete(false)}>{t("common.cancel")}</Button>
+                              <Button size="sm" variant="destructive" className="flex-1" onClick={() => { void deleteMessage(msg); setMenu(null); }}>{t("common.delete")}</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col">
+                            {channel.can_post && (
+                              <MenuAction icon={Reply} label={t("chat.reply")} onClick={() => { startReply(msg); setMenu(null); }} />
+                            )}
+                            {msg.message && (
+                              <MenuAction icon={Copy} label={t("chat.copy")} onClick={() => { void copyMessage(msg); setMenu(null); }} />
+                            )}
+                            {isMe && channel.can_post && (
+                              <MenuAction icon={Pencil} label={t("common.edit")} onClick={() => { startEdit(msg); setMenu(null); }} />
+                            )}
+                            {canDelete && (
+                              <MenuAction icon={Trash2} label={t("common.delete")} destructive onClick={() => setConfirmDelete(true)} />
+                            )}
+                          </div>
+                        )}
+                      </PopoverContent>
+                    )
+                  )}
+                  </Popover>
                 </div>
               </div>
             );
@@ -486,6 +609,16 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
           </p>
         ) : (
           <>
+            {editing && (
+              <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border bg-muted/30">
+                <Pencil className="h-4 w-4 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1 text-xs">
+                  <p className="font-semibold">{t("chat.editing")}</p>
+                  <p className="truncate text-muted-foreground">{replySnippet(editing.message, !!editing.attachment_path)}</p>
+                </div>
+                <button type="button" onClick={cancelEdit} aria-label={t("common.cancel")}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
+              </div>
+            )}
             {replyTo && (
               <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border bg-muted/30">
                 <Reply className="h-4 w-4 shrink-0 text-primary" />
@@ -507,7 +640,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                 <button onClick={() => setPendingFile(null)} aria-label={t("common.delete")}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
               </div>
             )}
-            {channel.can_manage && (
+            {channel.can_manage && !editing && (
               <div className="flex flex-col gap-1.5 px-2 py-1.5 border-t border-border">
                 <div className="flex items-center gap-2">
                   <Switch id={`announce-${channelId}`} checked={announcement} onCheckedChange={(v) => { setAnnouncement(v); if (!v) setRequiresConfirmation(false); }} />
@@ -528,7 +661,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
             <div className="flex gap-2 p-2 border-t border-border">
               <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.txt,.csv,.doc,.docx"
                 onChange={(e) => setPendingFile(e.target.files?.[0] || null)} />
-              <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label={t("chat.attach")}>
+              <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploading || !!editing} aria-label={t("chat.attach")}>
                 <Paperclip className="h-4 w-4" />
               </Button>
               <div className="relative flex-1">
@@ -556,5 +689,16 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
         )}
       </div>
     </div>
+  );
+}
+
+function MenuAction({ icon: Icon, label, onClick, destructive = false }: {
+  icon: React.ComponentType<{ className?: string }>; label: string; onClick: () => void; destructive?: boolean;
+}) {
+  return (
+    <button type="button" onClick={onClick}
+      className={`flex items-center gap-3 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent ${destructive ? "text-destructive" : ""}`}>
+      <Icon className="h-4 w-4" /> {label}
+    </button>
   );
 }
