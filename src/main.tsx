@@ -27,7 +27,7 @@ const updateSW = registerSW({
   // Never reload under the user's fingers (half-filled flight form, coach notes): reload while
   // the app is in the background, otherwise offer a button. Lazy chunks that vanished with the
   // old precache are covered by recoverFromStaleChunk below.
-  onNeedReload() {
+  onNeedRefresh() {
     const reload = () => window.location.reload();
     if (document.visibilityState === "hidden") { reload(); return; }
     const reloadWhenHidden = () => {
