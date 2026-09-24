@@ -1,6 +1,6 @@
 # Umsetzungsplan: Marktplatz für Flyary
 
-2026-09-24 · Tobias Bolliger · Stand: Konzept, noch nichts umgesetzt
+2026-09-24 · Tobias Bolliger · Stand: M1 in Arbeit (siehe Status)
 
 Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschirm-Material in Flyary: Pilotinnen und Piloten verkaufen ihr altes Material oder suchen günstige Occasionen, Flugschulen verkaufen Material aus ihrem Shop. Es ist wie der Umsetzungsplan für die Flugschul-Erweiterungen aufgebaut: Jeder Unterabschnitt ist ein eigener Auftrag an den Coding-Agenten, mit Ziel, Akzeptanzkriterien, Datenmodell und Platz in der Navigation.
 
