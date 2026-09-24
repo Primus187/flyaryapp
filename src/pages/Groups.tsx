@@ -59,11 +59,15 @@ export default function Groups() {
 
   const handleJoin = async () => {
     if (!user || !inviteCode.trim()) return;
-    const { data: group } = await supabase.from("groups").select("id, name").eq("invite_code", inviteCode.trim()).single();
-    if (!group) { toast({ title: t("groups.invalidCode"), variant: "destructive" }); return; }
-    const { error } = await supabase.from("group_members").insert({ group_id: group.id, user_id: user.id, role: "member" });
-    if (error?.code === "23505") toast({ title: t("groups.alreadyMember") });
-    else if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    // Non-members cannot read groups (RLS), so joining goes through a SECURITY DEFINER function
+    // that looks up the code and adds the caller as a plain member.
+    const code = inviteCode.trim();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code);
+    const { data, error } = isUuid ? await supabase.rpc("join_group_by_invite_code", { _invite_code: code }) : { data: null, error: null };
+    const group = data?.[0];
+    if (error && !/invalid invite code/i.test(error.message)) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    else if (!group) toast({ title: t("groups.invalidCode"), variant: "destructive" });
+    else if (group.already_member) toast({ title: t("groups.alreadyMember") });
     else toast({ title: `${t("groups.joined")}: ${group.name}` });
     setInviteCode(""); setJoinOpen(false); fetchGroups();
   };
