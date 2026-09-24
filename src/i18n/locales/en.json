@@ -1917,7 +1917,8 @@
         "shop_not_ready": "The school's shop is not active yet (shop profile incomplete).",
         "already_reported": "You have already reported this listing.",
         "reason_required": "Please give a reason.",
-        "limit_saved_searches": "At most 5 saved searches. Delete one first."
+        "limit_saved_searches": "At most 5 saved searches. Delete one first.",
+        "equipment_other_school": "This equipment does not belong to the selling school."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2201,6 +2202,11 @@
         "notFound": "Unknown postcode – searching without radius.",
         "weightFits": "Fits your take-off weight ({{kg}} kg).",
         "weightOutside": "Outside your take-off weight ({{kg}} kg)."
+      },
+      "equipment": {
+        "sell": "Sell as used item",
+        "inMarket": "In the marketplace",
+        "prefilled": "Taken over from the inventory – please add price, photos and condition."
       }
     }
 }

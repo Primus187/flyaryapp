@@ -12,7 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, Plus, ArchiveX, Pencil, Search, Undo2, HandHelping } from "lucide-react";
+import { Package, Plus, ArchiveX, Pencil, Search, Undo2, HandHelping, Store } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useRoleMode } from "@/contexts/RoleModeContext";
 import { useToast } from "@/hooks/use-toast";
 import EquipmentMaintenance from "@/components/school/EquipmentMaintenance";
 import { equipmentHasOverdueMaintenance, type MaintenanceDeadline } from "@/lib/equipment-maintenance";
@@ -94,6 +96,10 @@ export default function SchoolEquipment({ groupId }: Props) {
   const [rates, setRates] = useState<Rate[]>([]);
   const [maintenance, setMaintenance] = useState<MaintenanceDeadline[]>([]);
   const [maintenanceError, setMaintenanceError] = useState(false);
+  // marketplace (plan 7.1): sell as a used item; running listings per piece of equipment
+  const navigate = useNavigate();
+  const { canShopSchool } = useRoleMode();
+  const [listed, setListed] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState("1");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
@@ -123,6 +129,11 @@ export default function SchoolEquipment({ groupId }: Props) {
     setRates(((rateRes.data as any[]) || []) as Rate[]);
     setMaintenance(maintenanceRes.data || []);
     setMaintenanceError(!!maintenanceRes.error);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    const { data: running } = await supabase.from("marketplace_listings" as any).select("id, school_equipment_id")
+      .eq("seller_group_id", groupId).not("school_equipment_id", "is", null).in("status", ["draft", "active", "reserved"]);
+    const rows = (running ?? []) as unknown as { id: string; school_equipment_id: string }[];
+    setListed(Object.fromEntries(rows.map((l) => [l.school_equipment_id, l.id])));
 
     const ids = (memRes.data || []).map((m) => m.user_id);
     if (ids.length > 0) {
@@ -441,6 +452,15 @@ export default function SchoolEquipment({ groupId }: Props) {
                       <div className="flex gap-2 flex-wrap">
                         {equipmentHasOverdueMaintenance(item, maintenance) && (
                           <Badge variant="destructive">{t("school.maintenance.overdue")}</Badge>
+                        )}
+                        {listed[item.id] ? (
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/market/${listed[item.id]}`)}>
+                            <Store className="h-3.5 w-3.5 mr-1" />{t("market.equipment.inMarket")}
+                          </Button>
+                        ) : canShopSchool && item.status !== "retired" && !open && (
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/market/new?school=${groupId}&equipment=${item.id}`)}>
+                            <Store className="h-3.5 w-3.5 mr-1" />{t("market.equipment.sell")}
+                          </Button>
                         )}
                         {item.status !== "retired" && !open && (
                           <Button size="sm" variant="secondary" onClick={() => openAssign(item)}>

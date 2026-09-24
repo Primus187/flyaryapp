@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0044 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0045 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius, school equipment).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -53,6 +53,7 @@ beforeAll(async () => {
     CREATE TABLE public.groups (id uuid PRIMARY KEY, name text, group_type public.group_type, created_at timestamptz DEFAULT now());
     CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, pilot_name text, avatar_url text, created_at timestamptz DEFAULT now());
     CREATE TABLE public.flights (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid);
+    CREATE TABLE public.school_equipment (id uuid PRIMARY KEY, group_id uuid, name text, status text, retired_at date, retire_reason text);
     CREATE TABLE public.notifications (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid, actor_id uuid, type text,
       reference_id uuid, reference_type text, read boolean DEFAULT false, created_at timestamptz DEFAULT now());
     CREATE TABLE public.pushes (user_id uuid, title text);
@@ -94,6 +95,7 @@ beforeAll(async () => {
   await db.exec(migration("0042_marketplace_favorites.sql"));
   await db.exec(migration("0043_marketplace_saved_searches.sql"));
   await db.exec(migration("0044_marketplace_radius_weight.sql"));
+  await db.exec(migration("0045_marketplace_school_equipment.sql"));
   // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
   await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
@@ -927,6 +929,43 @@ describe("radius and take-off weight", () => {
     await asSystem();
     const km = (await db.query<{ d: number }>("SELECT round(public.market_distance_km(46.68, 7.88, 46.95, 7.44)::numeric) AS d")).rows[0].d;
     expect(Number(km)).toBe(45);
+  });
+});
+
+describe("school equipment as used item", () => {
+  const eq = id(701), otherEq = id(702);
+  beforeAll(async () => {
+    await asSystem();
+    await db.exec(`INSERT INTO public.school_equipment (id, group_id, name, status) VALUES
+      ('${eq}', '${school}', 'Schulschirm 1', 'in_stock'), ('${otherEq}', '${otherSchool}', 'Fremder Schirm', 'in_stock')`);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE title LIKE 'E %'; DELETE FROM public.school_equipment WHERE id IN ('${eq}', '${otherEq}')`);
+  });
+  const insert = async (uid: string, seller: string, group: string, title: string, equipment: string) => {
+    await asUser(uid);
+    return (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, seller_group_id, created_by, category, title, status, school_equipment_id)
+      VALUES (${seller}, ${group}, '${uid}', 'glider', '${title}', 'draft', '${equipment}') RETURNING id`)).rows[0].id;
+  };
+
+  it("links only equipment of the selling school, one running listing per piece", async () => {
+    await expect(insert(shop, "NULL", `'${school}'`, "E fremd", otherEq)).rejects.toThrow("marketplace:equipment_other_school");
+    await expect(insert(owner, `'${owner}'`, "NULL", "E privat", eq)).rejects.toThrow("marketplace:equipment_other_school");
+    const first = await insert(shop, "NULL", `'${school}'`, "E Schulschirm", eq);
+    await expect(insert(shop, "NULL", `'${school}'`, "E doppelt", eq)).rejects.toThrow();
+    expect(first).toBeTruthy();
+  });
+
+  it("retires the equipment when the listing is sold", async () => {
+    await asSystem();
+    const l = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listings WHERE title = 'E Schulschirm'`)).rows[0].id;
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'active', published_at = now(), bumped_at = now() WHERE id = '${l}'`);
+    await asUser(shop);
+    await db.query(`SELECT public.marketplace_mark_sold('${l}')`);
+    await asSystem();
+    expect((await db.query(`SELECT status, retire_reason, retired_at IS NOT NULL AS dated FROM public.school_equipment WHERE id = '${eq}'`)).rows)
+      .toEqual([{ status: "retired", retire_reason: "Verkauft (Marktplatz)", dated: true }]);
   });
 });
 

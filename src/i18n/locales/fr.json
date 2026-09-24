@@ -1917,7 +1917,8 @@
         "shop_not_ready": "La boutique de l'école n'est pas encore active (profil incomplet).",
         "already_reported": "Tu as déjà signalé cette annonce.",
         "reason_required": "Merci d'indiquer une raison.",
-        "limit_saved_searches": "Au maximum 5 recherches enregistrées. Supprime d'abord une."
+        "limit_saved_searches": "Au maximum 5 recherches enregistrées. Supprime d'abord une.",
+        "equipment_other_school": "Ce matériel n'appartient pas à l'école qui vend."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2201,6 +2202,11 @@
         "notFound": "NPA inconnu – recherche sans rayon.",
         "weightFits": "Convient à ton PTV ({{kg}} kg).",
         "weightOutside": "Hors de ton PTV ({{kg}} kg)."
+      },
+      "equipment": {
+        "sell": "Vendre comme occasion",
+        "inMarket": "Sur le marché",
+        "prefilled": "Repris de l'inventaire – merci de compléter prix, photos et état."
       }
     }
 }

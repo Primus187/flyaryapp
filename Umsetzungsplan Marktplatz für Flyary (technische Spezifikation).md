@@ -10,7 +10,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | --- | --- | --- |
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ✅ Abgeschlossen | 6.1–6.4 umgesetzt und abnahmegeprüft |
-| M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
+| M3 – Schulen im Alltag | 🔶 In Arbeit | 7.1 ✅; Verkauf auf die Abrechnung folgt |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
 
 ## 1. Grundsatzentscheide
@@ -33,7 +33,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 | --- | --- | --- | --- | --- |
 | M1 | Grundfunktion | 4.1–4.10 | L | ✅ |
 | M2 | Wiederkommen | 6.1–6.4 | M | ✅ |
-| M3 | Schulen im Alltag | 7.1–7.2 | M | ⬜ |
+| M3 | Schulen im Alltag | 7.1–7.2 | M | 🔶 |
 | M4 | Später / optional | 8.1–8.5 | L | ⏸ |
 
 Reihenfolge innerhalb von M1: 4.1 → 4.2 → 4.3 → 4.4 → 4.5 → 4.6 → 4.7 → 4.8 → 4.9 → 4.10. Das Datenmodell und die Kategorien kommen zuerst, weil alle weiteren Features darauf aufbauen. Der Chat (4.6) folgt erst, wenn es Anzeigen zum Anschauen gibt.
@@ -296,9 +296,11 @@ Umkreis ab eigener PLZ mit gerundeten Koordinaten (über die bestehende Funktion
 
 ## 7. M3 – Schulen im Alltag
 
-### 7.1 Occasion aus dem Materialbestand
+### 7.1 Occasion aus dem Materialbestand ✅
 
 Button «Als Occasion verkaufen» in `SchoolEquipment.tsx`. Die Anzeige wird aus `school_equipment` vorausgefüllt (Typ, Grösse, Prüfdaten). Beim Verkauf wird das Material automatisch mit Grund «verkauft» ausgemustert.
+
+**Ist-Stand:** Migration `0045_marketplace_school_equipment.sql` (`school_equipment_id` mit Prüfung «gleiche Schule», höchstens eine laufende Anzeige pro Stück, Trigger sondert beim Verkauf aus), `src/lib/marketplace-equipment.ts` (Zuordnung Materialtyp → Kategorie, letzter Check → Nachprüfung, Kaufjahr → Baujahr), Knopf im Materialbestand und «Im Marktplatz»-Hinweis. **Abweichungen:** Der Knopf erscheint für Admins und Schulleitung (sie sehen den Materialbestand und führen den Shop); Personen nur mit Funktion «Shop» sehen den Materialbestand nicht. Das Kaufjahr dient als Vorschlag fürs Baujahr.
 
 ### 7.2 Reservieren und auf die Abrechnung setzen
 

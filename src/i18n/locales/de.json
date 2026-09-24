@@ -1917,7 +1917,8 @@
         "shop_not_ready": "Der Shop der Schule ist noch nicht aktiv (Shop-Profil unvollständig).",
         "already_reported": "Du hast diese Anzeige bereits gemeldet.",
         "reason_required": "Bitte einen Grund angeben.",
-        "limit_saved_searches": "Höchstens 5 gespeicherte Suchen. Lösche zuerst eine."
+        "limit_saved_searches": "Höchstens 5 gespeicherte Suchen. Lösche zuerst eine.",
+        "equipment_other_school": "Dieses Material gehört nicht zur verkaufenden Schule."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2201,6 +2202,11 @@
         "notFound": "Diese PLZ kennen wir nicht – Suche ohne Umkreis.",
         "weightFits": "Passt zu deinem Startgewicht ({{kg}} kg).",
         "weightOutside": "Ausserhalb deines Startgewichts ({{kg}} kg)."
+      },
+      "equipment": {
+        "sell": "Als Occasion verkaufen",
+        "inMarket": "Im Marktplatz",
+        "prefilled": "Aus dem Materialbestand übernommen – bitte Preis, Fotos und Zustand ergänzen."
       }
     }
 }

@@ -1,5 +1,30 @@
 # Flyary
 
+## Marktplatz: Occasion aus dem Materialbestand (7.1)
+
+Migration `0045_marketplace_school_equipment.sql`, Zuordnung in `src/lib/marketplace-equipment.ts`.
+
+- **Materialbestand → «Als Occasion verkaufen»** (für Admins und Schulleitung, die den Shop führen): öffnet das Formular
+  als Schul-Anzeige, vorausgefüllt aus dem Material – Kategorie (Schirm, Gurtzeug, Retter, Helm; Funk/Vario als
+  Instrument, Rest «Sonstiges»), Bezeichnung als Titel, Grösse, Zustand «Gebraucht», Kaufjahr als Baujahr und beim
+  Schirm der letzte Check als «letzte Nachprüfung». Preis, Fotos und Ort ergänzt die Schule.
+- Die Anzeige merkt sich das Material (`school_equipment_id`); pro Stück höchstens eine laufende Anzeige, nur Material
+  der verkaufenden Schule (sonst `marketplace:equipment_other_school`). Im Materialbestand steht dann «Im Marktplatz»
+  mit Link zur Anzeige.
+- **Verkauft → ausgesondert:** Wird die Anzeige als verkauft markiert, setzt die Datenbank das Material auf
+  «ausgesondert» mit Grund «Verkauft (Marktplatz)».
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0045), danach das Frontend.
+
+## Betrieb: Veraltete App-Version auf Geräten (Hotfix)
+
+Nach mehreren Deploys kurz hintereinander hielt ein Handy eine alte Startseite im Service-Worker-Cache, deren CSS/JS es
+auf dem Server nicht mehr gab (kein Styling, weisse Seite bei «Mehr»). `src/main.tsx` erkennt fehlende `/assets/`-Dateien
+jetzt (Ladefehler von CSS/JS, Stylesheets ohne Inhalt nach dem Laden, fehlgeschlagene Lazy-Imports) und löscht Service
+Worker und Caches (`forceAppUpdate`), höchstens einmal pro Minute. Hängt ein Gerät noch auf einem alten Stand ohne diese
+Reparatur: Chrome → Website-Einstellungen → `flyaryapp.vercel.app` → «Löschen und zurücksetzen». Die Adresse hat kein
+«www.» (`www.flyaryapp.vercel.app` hat kein gültiges Zertifikat und scheitert an HSTS).
+
 ## Marktplatz M2: Nachtrag Abnahmeprüfung
 
 Prüfung von 6.1–6.4 an den Übergängen. Ein Fund, behoben: Das Herz erschien in der Übersicht auch auf den eigenen

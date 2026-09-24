@@ -31,6 +31,7 @@ import { fetchMyShops, type MyShop } from "@/lib/school-shop";
 import { hasAcceptedTerms, withPrivateSaleClause } from "@/lib/marketplace-terms";
 import { fetchOwnGear, gliderLabel, prefillFromGlider, type FlightGliderRow, type OwnGlider } from "@/lib/marketplace-prefill";
 import { geocodeSwissPostalCode } from "@/lib/geo-ch";
+import { equipmentToListing, type EquipmentRow } from "@/lib/marketplace-equipment";
 import MarketTermsDialog from "@/components/market/MarketTermsDialog";
 
 interface FormState {
@@ -93,6 +94,24 @@ export default function MarketListingForm() {
   /** Schools the person sells for; "" = privately (plan 4.7). */
   const [shops, setShops] = useState<MyShop[]>([]);
   const [sellerGroup, setSellerGroup] = useState<string>(searchParams.get("school") ?? "");
+  /** Selling a piece of school equipment (plan 7.1): ?school=<group>&equipment=<id>. */
+  const [equipmentId, setEquipmentId] = useState<string | null>(null);
+  useEffect(() => {
+    const eq = searchParams.get("equipment");
+    if (isEdit || !eq) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    supabase.from("school_equipment" as any).select("id, group_id, name, equipment_type, size, purchase_date, last_check_date").eq("id", eq).maybeSingle()
+      .then(({ data }) => {
+        const row = data as unknown as EquipmentRow | null;
+        if (!row) return;
+        const p = equipmentToListing(row);
+        setEquipmentId(row.id);
+        setSellerGroup(row.group_id);
+        setForm((f) => ({ ...f, listing_type: "offer", category: p.category, title: p.title, size: p.size, year: p.year,
+          condition: p.condition, attributes: p.attributes }));
+        toast.info(t("market.equipment.prefilled"));
+      });
+  }, [isEdit, searchParams, t]);
 
   useEffect(() => { fetchMyShops().then(setShops).catch(() => setShops([])); }, []);
 
@@ -193,7 +212,8 @@ export default function MarketListingForm() {
         const { data, error } = await supabase
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
           .from("marketplace_listings" as any)
-          .insert({ ...content, seller_user_id: sellerGroup ? null : user.id, seller_group_id: sellerGroup || null, created_by: user.id, status: "draft" })
+          .insert({ ...content, seller_user_id: sellerGroup ? null : user.id, seller_group_id: sellerGroup || null, created_by: user.id, status: "draft",
+            ...(equipmentId && sellerGroup ? { school_equipment_id: equipmentId } : {}) })
           .select("id").single();
         if (error || !data) throw error ?? new Error("insert failed");
         savedId = (data as unknown as { id: string }).id;
