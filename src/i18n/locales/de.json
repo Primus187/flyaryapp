@@ -151,6 +151,10 @@
     "draftRestored": "Zwischenstand wiederhergestellt"
   },
   "events": {
+    "changeStatus": "Status ändern",
+    "statusChanged": "Status geändert",
+    "cancelEventConfirm": "Termin wirklich absagen? Angemeldete sehen danach «Abgesagt».",
+    "signedUpShort": "angemeldet",
     "duplicate": "Duplizieren",
     "moreActions": "Weitere Aktionen",
     "details": "Details",

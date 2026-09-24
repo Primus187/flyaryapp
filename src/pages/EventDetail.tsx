@@ -20,7 +20,6 @@ import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import StudentEquipmentHint from "@/components/school/StudentEquipmentHint";
 import IncidentReportDialog from "@/components/school/IncidentReportDialog";
 import AlternativeDateSuggestion from "@/components/school/AlternativeDateSuggestion";
-import EventWeatherDecision from "@/components/school/EventWeatherDecision";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
@@ -210,10 +209,10 @@ export default function EventDetail() {
   const eventDay = new Date(event.event_date);
   const multiDay = !!event.end_date && event.end_date !== event.event_date.slice(0, 10);
   const dateLabel = multiDay
-    ? `${eventDay.toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${new Date(event.end_date + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`
-    : eventDay.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
-  const timeLabel = eventDay.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+    ? `${eventDay.toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${new Date(event.end_date + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short" })}`
+    : `${eventDay.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })} · ${eventDay.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`;
   const canSignUp = !isPast && event.status !== "cancelled";
+  const canChangeStatus = isStaff || isAdmin;
   // Tabs: students and members see what concerns them; planning and coaching are for school staff.
   const tabs = [
     "overview",
@@ -229,16 +228,34 @@ export default function EventDetail() {
     if (tab === "overview") next.delete("tab"); else next.set("tab", tab);
     setSearchParams(next, { replace: true });
   };
-  const details = [
+  const changeStatus = async (next: "announced" | "confirmed" | "cancelled") => {
+    if (next === event.status) return;
+    if (next === "cancelled" && !confirm(t("events.cancelEventConfirm"))) return;
+    // RPC: school staff (not only admins) may change the status, and a refusal is reported.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+    const { error } = await supabase.rpc("set_event_status" as any, { _event_id: id, _status: next } as any);
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setEvent((prev: any) => ({ ...prev, status: next }));
+    toast({ title: t("events.statusChanged") });
+  };
+  const facts = [
+    { icon: MapPin, label: t("events.meetingPoint"), value: event.meeting_point },
+    { icon: Calendar, label: t("events.date"), value: multiDay ? dateLabel : null },
     { icon: Mountain, label: t("events.flightArea"), value: event.flight_area },
     { icon: BookOpen, label: t("events.dayTopic"), value: event.day_topic },
     { icon: User, label: t("events.instructor"), value: event.instructor },
     { icon: User, label: t("events.launchHelper"), value: event.launch_helper },
     { icon: Calendar, label: t("events.eventTypeLabel"), value: event.event_type },
   ].filter((d) => d.value);
+  const statusOptions = [
+    { value: "announced" as const, label: t("events.statusAnnounced") },
+    { value: "confirmed" as const, label: t("events.statusConfirmed") },
+    { value: "cancelled" as const, label: t("events.statusCancelled") },
+  ];
+  const statusBadge = <Badge className={`${statusColor} text-[10px] px-1.5 py-0 gap-0.5`}>{statusLabel}{canChangeStatus && <ChevronDown className="h-3 w-3" />}</Badge>;
 
   const participantRow = (s: any) => (
-    <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+    <div key={s.user_id} className="flex items-center gap-2 py-2">
       <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
       <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
       {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
@@ -248,23 +265,36 @@ export default function EventDetail() {
           {s.confirmed_by_school ? t("events.unconfirm") : t("events.confirm")}
         </Button>
       )}
-    </CardContent></Card>
+    </div>
   );
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      {/* Header: title, group and badges; admin actions live in one menu instead of a row of icons */}
-      <div className="flex items-start gap-2">
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-3">
+      {/* Header: title, one compact meta line; admin actions in one menu */}
+      <div className="flex items-start gap-1">
         <Button variant="ghost" size="icon" className="shrink-0 -ml-2" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pt-1">
           <h1 className="text-xl font-bold tracking-tight leading-tight">{event.title}</h1>
-          <div className="flex flex-wrap items-center gap-1.5 mt-1">
-            <span className="text-xs text-muted-foreground">{groupName}</span>
-            <Badge className={`${statusColor} text-[10px] px-1.5 py-0`}>{statusLabel}</Badge>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{dateLabel}</span>
+            {canChangeStatus ? (
+              // School staff set the day's status directly (announced → confirmed / cancelled).
+              <DropdownMenu>
+                <DropdownMenuTrigger aria-label={t("events.changeStatus")}>{statusBadge}</DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {statusOptions.map((o) => (
+                    <DropdownMenuItem key={o.value} onClick={() => void changeStatus(o.value)}>
+                      <CheckCircle2 className={`h-4 w-4 mr-2 ${o.value === event.status ? "text-primary" : "opacity-0"}`} />{o.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : statusBadge}
             {event.event_category && (
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}</Badge>
             )}
           </div>
+          <p className="text-xs text-muted-foreground mt-1">{groupName}</p>
         </div>
         {(isAdmin || isCreator || (isStaff && isSchool)) && (
           <DropdownMenu>
@@ -302,86 +332,74 @@ export default function EventDetail() {
         <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
       </div>
 
-      {/* Decisive status first: weather decision and (for staff) an alternative date after a cancellation */}
-      {isSchool && (
-        <EventWeatherDecision
-          eventId={id!}
-          groupId={event.group_id}
-          eventTitle={event.title}
-          canManage={isStaff}
-          onEventStatusSynced={(status) => setEvent((prev) => (prev ? { ...prev, status } : prev))}
-        />
-      )}
-      {isStaff && event.status === "cancelled" && isSchool && (
-        <AlternativeDateSuggestion eventId={id!} groupId={event.group_id} eventDate={event.event_date} />
-      )}
-
-      {/* At a glance: when, where, how many, and the pilot's own sign-up */}
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Fact icon={Calendar} label={t("events.date")} value={multiDay ? dateLabel : `${dateLabel}, ${timeLabel}`} />
-            <Fact icon={Users} label={t("events.participants")} value={`${totalSignedUp}${event.max_participants ? ` / ${event.max_participants}` : ""}`} />
-            {event.meeting_point && <Fact icon={MapPin} label={t("events.meetingPoint")} value={event.meeting_point} wide />}
-            {event.signup_deadline && canSignUp && (
-              <Fact icon={Clock} label={t("events.signupDeadline")} value={new Date(event.signup_deadline).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })} />
+      {/* Sign-up strip: participants, deadline and the pilot's own action in one row */}
+      {canSignUp && (
+        <div className="flex items-center gap-3 rounded-xl bg-card shadow-sm px-3 py-2.5">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-primary" />{totalSignedUp}{event.max_participants ? ` / ${event.max_participants}` : ""} {t("events.signedUpShort")}
+            </p>
+            {(event.signup_deadline || (isSignedUp && mySignup?.confirmed_by_school)) && (
+              <p className="text-[11px] text-muted-foreground truncate">
+                {isSignedUp && mySignup?.confirmed_by_school
+                  ? <span className="text-green-600 dark:text-green-400">{t("events.confirmedBySchool")}</span>
+                  : `${t("events.signupDeadline")}: ${new Date(event.signup_deadline).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}`}
+              </p>
             )}
           </div>
-          {canSignUp ? (
-            <div className="space-y-1.5">
-              <Button
-                className={`w-full gap-2 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
-                variant={isSignedUp ? "default" : "outline"}
-                onClick={toggleSignup}
-                disabled={!isSignedUp && deadlinePassed}
-              >
-                {myWaitlist ? <Hourglass className="h-4 w-4" /> : isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                {myWaitlist
-                  ? t("events.onWaitlist", { position: mySignup?.waitlist_position || "?" })
-                  : isSignedUp
-                    ? t("events.signedUpAction")
-                    : deadlinePassed
-                      ? t("events.deadlinePassed")
-                      : t("events.signUp")}
-              </Button>
-              {isSignedUp && mySignup?.confirmed_by_school && (
-                <p className="text-xs text-center text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" /> {t("events.confirmedBySchool")}
-                </p>
-              )}
-            </div>
-          ) : isPast && event.status !== "cancelled" ? (
-            <p className="text-xs text-muted-foreground text-center">{t("events.pastEvent")}</p>
-          ) : null}
-        </CardContent>
-      </Card>
+          <Button
+            size="sm"
+            className={`shrink-0 gap-1.5 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
+            variant={isSignedUp ? "default" : "outline"}
+            onClick={toggleSignup}
+            disabled={!isSignedUp && deadlinePassed}
+          >
+            {myWaitlist ? <Hourglass className="h-4 w-4" /> : isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : null}
+            {myWaitlist
+              ? t("events.onWaitlist", { position: mySignup?.waitlist_position || "?" })
+              : isSignedUp
+                ? t("events.signedUpAction")
+                : deadlinePassed
+                  ? t("events.deadlinePassed")
+                  : t("events.signUp")}
+          </Button>
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={selectTab}>
-        <TabsList className="w-full h-auto justify-start overflow-x-auto no-scrollbar">
+        {/* Underlined tab bar, stays visible while scrolling */}
+        <TabsList className="sticky top-0 z-20 w-full h-auto justify-start gap-5 rounded-none border-b bg-background/95 backdrop-blur p-0 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
-            <TabsTrigger key={tab} value={tab} className="flex-1 min-w-fit text-xs px-2.5">
+            <TabsTrigger key={tab} value={tab}
+              className="relative shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-0.5 pb-2.5 pt-2 text-sm font-medium text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">
               {t(`events.tabs.${tab}`)}
-              {tab === "participants" && <span className="ml-1 text-[10px] text-muted-foreground">{totalSignedUp}</span>}
+              {tab === "participants" && totalSignedUp > 0 && (
+                <span className="ml-1.5 rounded-full bg-muted px-1.5 py-px text-[10px] text-muted-foreground">{totalSignedUp}</span>
+              )}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {/* Overview: everything a pilot needs for the day, long texts folded */}
-        <TabsContent value="overview" className="space-y-4 mt-4">
+        {/* Overview: the facts of the day (once), then briefing, programme, travel, folded prep */}
+        <TabsContent value="overview" className="space-y-3 mt-3">
+          {isStaff && event.status === "cancelled" && isSchool && (
+            <AlternativeDateSuggestion eventId={id!} groupId={event.group_id} eventDate={event.event_date} />
+          )}
+          {isPast && event.status !== "cancelled" && <p className="text-xs text-muted-foreground">{t("events.pastEvent")}</p>}
           {isStudent && isHeight && canSignUp && user && (
             <StudentEquipmentHint key={`${event.group_id}:${user.id}`} groupId={event.group_id} studentUserId={user.id} />
           )}
-          {details.length > 0 && (
-            <Card className="border-0 shadow-sm"><CardContent className="p-3 space-y-2">
-              {details.map((d) => (
-                <div key={d.label} className="flex items-start gap-2">
+          {facts.length > 0 && (
+            <Card className="border-0 shadow-sm"><CardContent className="p-0 divide-y">
+              {facts.map((d) => (
+                <div key={d.label} className="flex items-start gap-3 px-3 py-2.5">
                   <d.icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{d.label}</p><p className="text-sm whitespace-pre-line">{d.value}</p></div>
+                  <div className="min-w-0 flex-1"><p className="text-[11px] text-muted-foreground">{d.label}</p><p className="text-sm whitespace-pre-line">{d.value}</p></div>
                 </div>
               ))}
             </CardContent></Card>
           )}
-          {event.description && <Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-sm whitespace-pre-wrap">{event.description}</p></CardContent></Card>}
+          {event.description && <p className="text-sm whitespace-pre-wrap px-1">{event.description}</p>}
           <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
           {!isStaff && <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={false} />}
           {event.departure_info && (
@@ -416,29 +434,29 @@ export default function EventDetail() {
         </TabsContent>
 
         {/* Participants: names for everyone; confirmation, emergency data and attendance for staff */}
-        <TabsContent value="participants" className="space-y-4 mt-4">
+        <TabsContent value="participants" className="space-y-3 mt-3">
           {isStaff && isSchool && event.event_category === "basic_course" && event.status !== "cancelled" && (
             <EquipmentQuotaHint groupId={event.group_id} eventDate={event.event_date} signups={signups} />
           )}
-          {isStaff && activeDay && isSchool && <div className="space-y-2">
+          {isStaff && activeDay && isSchool && <div className="space-y-1">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />{t("journeys.includeInactive")}</label>
             <p className="text-xs text-muted-foreground">{t("journeys.inactiveHint")}</p>
             {inactive.isError && <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => void inactive.refetch()}>{t("performance.retry")}</Button></div>}
             {inactive.isPending && <p role="status">{t("common.loading")}</p>}
           </div>}
-          <div>
-            {visibleConfirmed.length === 0
-              ? activeListReady && <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p>
-              : <div className="space-y-1">{visibleConfirmed.map(participantRow)}</div>}
-            {visibleWaitlist.length > 0 && (
-              <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
-              <div className="space-y-1">{visibleWaitlist.map(s => (
-                <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+          {visibleConfirmed.length === 0
+            ? activeListReady && <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p>
+            : <Card className="border-0 shadow-sm"><CardContent className="px-3 py-1 divide-y">{visibleConfirmed.map(participantRow)}</CardContent></Card>}
+          {visibleWaitlist.length > 0 && (
+            <div>
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
+              <Card className="border-0 shadow-sm"><CardContent className="px-3 py-1 divide-y">{visibleWaitlist.map(s => (
+                <div key={s.user_id} className="flex items-center gap-2 py-2">
                   <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
                   <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
-                </CardContent></Card>))}</div></>
-            )}
-          </div>
+                </div>))}</CardContent></Card>
+            </div>
+          )}
           {isStaff && (
             <EventAttendance eventId={id!} groupId={event.group_id} eventDate={event.event_date} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
           )}
@@ -446,7 +464,7 @@ export default function EventDetail() {
 
         {/* Planning (staff): announcement, team, day programme */}
         {isStaff && (
-          <TabsContent value="planning" className="space-y-4 mt-4">
+          <TabsContent value="planning" className="space-y-3 mt-3">
             {isHeight && <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />}
             <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} isSchool={isSchool} eventDate={event.event_date} />
             <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
@@ -455,19 +473,19 @@ export default function EventDetail() {
 
         {/* Coaching (school staff): day notes per student and the flights of the day */}
         {isStaff && isSchool && (
-          <TabsContent value="coaching" className="space-y-4 mt-4">
+          <TabsContent value="coaching" className="space-y-3 mt-3">
             <CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
             <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
           </TabsContent>
         )}
 
         {isStudent && isPast && (
-          <TabsContent value="feedback" className="space-y-4 mt-4">
+          <TabsContent value="feedback" className="space-y-3 mt-3">
             <StudentDayFeedback eventId={id!} />
           </TabsContent>
         )}
 
-        <TabsContent value="chat" className="mt-4">
+        <TabsContent value="chat" className="mt-3">
           <EventChat eventId={id!} groupId={event.group_id} />
         </TabsContent>
       </Tabs>
@@ -476,15 +494,6 @@ export default function EventDetail() {
         <IncidentReportDialog groupId={event.group_id} open={incidentDialogOpen} onOpenChange={setIncidentDialogOpen} presetEventId={id} />
       )}
       <EventPublishPreviewDialog open={showPreview} onOpenChange={setShowPreview} onPublish={handlePublish} event={event} pilotName={pilotName} avatarUrl={avatarUrl} groupName={groupName} photos={photos.map(p => ({ id: p.id, url: p.url }))} loading={publishing} />
-    </div>
-  );
-}
-
-function Fact({ icon: Icon, label, value, wide = false }: { icon: any; label: string; value: string; wide?: boolean }) {
-  return (
-    <div className={wide ? "col-span-2" : undefined}>
-      <div className="flex items-center gap-1.5 mb-0.5"><Icon className="h-3.5 w-3.5 text-primary" /><span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span></div>
-      <p className="text-sm font-medium whitespace-pre-line">{value}</p>
     </div>
   );
 }

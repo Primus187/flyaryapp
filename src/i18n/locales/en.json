@@ -173,6 +173,10 @@
     "draftRestored": "Draft restored"
   },
   "events": {
+    "changeStatus": "Change status",
+    "statusChanged": "Status changed",
+    "cancelEventConfirm": "Really cancel this event? Participants will see \"Cancelled\".",
+    "signedUpShort": "signed up",
     "duplicate": "Duplicate",
     "moreActions": "More actions",
     "details": "Details",

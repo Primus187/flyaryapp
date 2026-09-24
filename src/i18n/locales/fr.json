@@ -173,6 +173,10 @@
     "draftRestored": "Brouillon restauré"
   },
   "events": {
+    "changeStatus": "Modifier le statut",
+    "statusChanged": "Statut modifié",
+    "cancelEventConfirm": "Vraiment annuler cet événement ? Les inscrits verront « Annulé ».",
+    "signedUpShort": "inscrits",
     "duplicate": "Dupliquer",
     "moreActions": "Autres actions",
     "details": "Détails",
