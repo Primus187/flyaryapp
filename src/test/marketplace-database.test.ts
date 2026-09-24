@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0038 (marketplace listings, photos, status functions, search, school shop, moderation).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -41,7 +41,8 @@ beforeAll(async () => {
     CREATE SCHEMA extensions; GRANT USAGE ON SCHEMA extensions TO authenticated;
     CREATE SCHEMA storage; GRANT USAGE ON SCHEMA storage TO authenticated;
     CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
-    CREATE TABLE storage.objects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bucket_id text, name text);
+    CREATE TABLE storage.objects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bucket_id text, name text,
+      created_at timestamptz DEFAULT now(), metadata jsonb);
     ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
     GRANT SELECT, INSERT, DELETE ON storage.objects TO authenticated;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id', true), '')::uuid $$;
@@ -88,6 +89,7 @@ beforeAll(async () => {
   await db.exec(migration("0035_marketplace_search.sql"));
   await db.exec(migration("0037_school_shop.sql"));
   await db.exec(migration("0038_marketplace_moderation.sql"));
+  await db.exec(migration("0039_marketplace_cleanup.sql"));
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
     INSERT INTO public.school_shop_profiles (group_id, legal_name, street, postal_code, locality, email, warranty_text, active)
       VALUES ('${school}', 'Vertical GmbH', 'Hauptstrasse 1', '3800', 'Interlaken', 'shop@vertical.ch', 'Gewährleistung 2 Jahre', true);`);
@@ -638,6 +640,91 @@ describe("reports and moderation", () => {
     await asSystem();
     expect((await db.query<{ action: string }>(`SELECT action FROM public.marketplace_moderation_log WHERE target_user_id IN ('${student}', '${instructor}')
       AND action IN ('ban', 'unban', 'delete') ORDER BY action`)).rows.map((r) => r.action)).toEqual(["ban", "delete", "unban"]);
+  });
+});
+
+describe("daily cleanup and storage usage", () => {
+  // listings here are titled "C …" and removed afterwards
+  const ids: Record<string, string> = {};
+  const ghost = "99999999-9999-4999-8999-999999999999";
+  const cleanup = async () => {
+    await asSystem();
+    return (await db.query<{ r: { expired: number; reminded: number; deleted_drafts: number; paths: string[] } }>(
+      "SELECT public.marketplace_daily_cleanup() AS r")).rows[0].r;
+  };
+
+  beforeAll(async () => {
+    await asSystem();
+    const add = async (key: string, status: string, expires: string, extra = "") => {
+      ids[key] = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, created_by, category, title, status,
+        published_at, bumped_at, expires_at) VALUES ('${instructor}', '${instructor}', 'helmet', 'C ${key}', '${status}', now(), now(), ${expires})
+        RETURNING id`)).rows[0].id;
+      if (extra) await db.exec(extra.split("$ID").join(ids[key]));
+    };
+    const photo = `INSERT INTO public.marketplace_listing_photos (listing_id, path, thumb_path, position) VALUES ('$ID', '$ID/p.webp', '$ID/p_thumb.webp', 0);
+      INSERT INTO storage.objects (bucket_id, name) VALUES ('marketplace-photos', '$ID/p.webp'), ('marketplace-photos', '$ID/p_thumb.webp');`;
+    await add("expired", "active", "now() - interval '1 hour'");
+    await add("soon", "active", "now() + interval '2 days'");
+    await add("sold_old", "sold", "now() + interval '10 days'", photo);
+    await add("sold_new", "sold", "now() + interval '10 days'", photo);
+    await add("draft_old", "draft", "NULL", photo);
+    await add("live", "active", "now() + interval '40 days'", photo +
+      `INSERT INTO storage.objects (bucket_id, name, created_at, metadata) VALUES ('marketplace-photos', '$ID/stray.webp', now() - interval '2 days', '{"size": 1000}');`);
+    // backdate past the updated_at trigger
+    await db.exec(`ALTER TABLE public.marketplace_listings DISABLE TRIGGER trg_marketplace_listing_guard;
+      UPDATE public.marketplace_listings SET updated_at = now() - interval '15 days' WHERE id = '${ids.sold_old}';
+      UPDATE public.marketplace_listings SET updated_at = now() - interval '31 days' WHERE id = '${ids.draft_old}';
+      ALTER TABLE public.marketplace_listings ENABLE TRIGGER trg_marketplace_listing_guard;
+      INSERT INTO storage.objects (bucket_id, name, metadata) VALUES ('marketplace-photos', '${ghost}/x.webp', '{"size": 5000}');
+      DELETE FROM public.notifications; DELETE FROM public.pushes;`);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE title LIKE 'C %';
+      DELETE FROM storage.objects WHERE name LIKE '${ghost}/%' OR name LIKE ANY (ARRAY(SELECT id::text || '/%' FROM unnest(ARRAY['${Object.values(ids).join("','")}']::uuid[]) id));`);
+  });
+
+  it("is not callable from the app", async () => {
+    await asUser(flyaryAdmin);
+    await expect(db.query("SELECT public.marketplace_daily_cleanup()")).rejects.toThrow(/permission denied/);
+  });
+
+  it("expires, reminds once, clears finished photos, drafts and orphans", async () => {
+    const r = await cleanup();
+    expect(r.expired).toBe(1);
+    expect(r.reminded).toBe(1);
+    expect(r.deleted_drafts).toBe(1);
+    expect([...r.paths].sort()).toEqual([
+      `${ids.draft_old}/p.webp`, `${ids.draft_old}/p_thumb.webp`, `${ids.live}/stray.webp`,
+      `${ids.sold_old}/p.webp`, `${ids.sold_old}/p_thumb.webp`, `${ghost}/x.webp`,
+    ].sort());
+    await asSystem();
+    const status = async (key: string) => (await db.query<{ status: string }>(`SELECT status FROM public.marketplace_listings WHERE id = '${ids[key]}'`)).rows[0]?.status;
+    expect(await status("expired")).toBe("expired");
+    expect(await status("draft_old")).toBeUndefined();
+    const photos = (await db.query<{ listing_id: string }>(`SELECT listing_id FROM public.marketplace_listing_photos WHERE listing_id = ANY($1::uuid[])`,
+      [`{${Object.values(ids).join(",")}}`])).rows.map((p) => p.listing_id).sort();
+    expect(photos).toEqual([ids.sold_new, ids.live].sort());
+    expect((await db.query(`SELECT type FROM public.notifications WHERE user_id = '${instructor}'`)).rows).toEqual([{ type: "market_expiring" }]);
+    expect((await db.query(`SELECT title FROM public.pushes WHERE user_id = '${instructor}'`)).rows).toEqual([{ title: "Anzeige läuft bald ab" }]);
+  });
+
+  it("does not remind twice, but again after renewing", async () => {
+    expect((await cleanup()).reminded).toBe(0);
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET expires_at = now() + interval '1 day' WHERE id = '${ids.soon}'`);
+    expect((await cleanup()).reminded).toBe(0);
+    await db.exec(`UPDATE public.marketplace_listings SET expiry_reminded_at = now() - interval '60 days' WHERE id = '${ids.soon}'`);
+    expect((await cleanup()).reminded).toBe(1);
+  });
+
+  it("shows storage per bucket to admins only", async () => {
+    await asUser(flyaryAdmin);
+    const usage = (await db.query<{ u: { total_bytes: number; buckets: Record<string, number> } }>("SELECT public.marketplace_storage_usage() AS u")).rows[0].u;
+    expect(usage.buckets["marketplace-photos"]).toBe(6000);
+    expect(usage.total_bytes).toBe(6000);
+    await asUser(moderator);
+    await expect(db.query("SELECT public.marketplace_storage_usage()")).rejects.toThrow("marketplace:not_allowed");
   });
 });
 

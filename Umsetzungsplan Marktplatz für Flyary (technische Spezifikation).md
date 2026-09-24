@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.8 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.9 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -224,7 +224,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** Migration `0038_marketplace_moderation.sql` (`marketplace_reports`, `marketplace_moderation_log`, `is_market_moderator`, `market_can_moderate`, RPCs `marketplace_report`, `_moderate`, `_set_ban`, `_moderation_queue`), Seite `MarketModeration.tsx`, Melde-Dialog auf der Detailseite. Ausgeblendete Anzeigen merken sich ihren vorherigen Status (`removed_from_status`) und kehren beim Freigeben dorthin zurück; «Wieder freigeben» weist offene Meldungen zugleich ab. **Abweichungen:** Das Protokoll verweist ohne Fremdschlüssel auf die betroffene Person, weil ein Eintrag sonst die Konto-Löschung blockiert hätte (Fund aus den Tests); das Löschen wird nur protokolliert, wenn ein Admin eine fremde Anzeige löscht. Bei Schul-Anzeigen geht die Mitteilung übers Ausblenden an die erfassende Person. Der Push an Moderierende ist auf einen pro Stunde und Person begrenzt, über alle Meldungen hinweg. Die globale Rolle Admin/Moderator hat noch keine Oberfläche (Eintrag in `user_roles`).
 
-### 4.9 Aufräumen, Speicherüberwachung und Konto-Löschung
+### 4.9 Aufräumen, Speicherüberwachung und Konto-Löschung ✅
 
 **Ziel:** Der Marktplatz bleibt im Free-Plan (E7), und gelöschte Konten hinterlassen nichts.
 
@@ -239,6 +239,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 - Dateien müssen über die Storage-API gelöscht werden, nicht durch Löschen von Zeilen in `storage.objects`. Darum läuft der Job als Edge Function `marketplace-cleanup`, ausgelöst täglich per `pg_cron` + `pg_net` (vor der Umsetzung prüfen, ob beide Erweiterungen im Projekt aktiv sind)
 - Speicherüberwachung: Die Admin-Ansicht zeigt den belegten Speicher pro Bucket (Summe aus `storage.objects`). Hinweis ab **700 MB** Gesamtbelegung: Wechsel auf Supabase Pro prüfen
 - `delete-account` löscht Anzeigen, Fotos, Merklisten, gespeicherte Suchen und Meldungen der Person. Anzeige-Chats bleiben für das Gegenüber lesbar, mit «Gelöschtes Konto» als Absender (gleiche Regel wie bei den übrigen Chats)
+
+**Ist-Stand:** Migration `0039_marketplace_cleanup.sql` (`marketplace_daily_cleanup`, `marketplace_storage_usage`, Spalte `expiry_reminded_at`), `0040_marketplace_cleanup_schedule.sql` (`pg_cron`, täglich 03:15 UTC über `pg_net` an die Edge Function), Edge Function `marketplace-cleanup` (Dateien löschen über die Storage-API), Speicheranzeige für Admins auf der Moderationsseite, `delete-account` löscht die Marktplatz-Fotos der eigenen Anzeigen. **Abweichungen:** Die Push-Erinnerung aus 4.4 (3 Tage vor Ablauf) ist hier umgesetzt; die Speicheranzeige steht auf der Moderationsseite statt in einer eigenen Admin-Ansicht; Anzeigen ohne Fotos nach dem Aufräumen lassen sich weiterhin verlängern (ohne Bilder). `pg_cron` liegt in einer eigenen Migration, weil die Test-Datenbank es nicht kennt. Meldungen gelöschter Personen verschwinden mit dem Konto (Fremdschlüssel mit Cascade).
 
 ### 4.10 Nutzungsbedingungen und Hinweise
 

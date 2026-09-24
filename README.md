@@ -1,5 +1,30 @@
 # Flyary
 
+## Marktplatz: Aufräumen, Speicherüberwachung, Konto-Löschung (4.9)
+
+Migrationen `0039_marketplace_cleanup.sql` und `0040_marketplace_cleanup_schedule.sql`, Edge Function
+`supabase/functions/marketplace-cleanup`, Speicheranzeige in `src/lib/storage-usage.ts`.
+
+- **Täglich um 03:15 UTC** ruft `pg_cron` (0040) die Edge Function `marketplace-cleanup` auf (mit `x-push-secret`, wie
+  `send-push`). Sie führt `marketplace_daily_cleanup()` aus (nur Service-Rolle):
+  1. aktive/reservierte Anzeigen nach Ablauf → «abgelaufen»
+  2. 3 Tage vor Ablauf eine Erinnerung (Glocke + Push «läuft bald ab»), einmal pro Laufzeit; nach dem Verlängern wieder
+  3. Fotos von Anzeigen, die vor über 14 Tagen verkauft oder von der Moderation ausgeblendet wurden oder seit über
+     30 Tagen abgelaufen sind: Einträge weg, Dateien werden gelöscht
+  4. Entwürfe, die 30 Tage nicht bearbeitet wurden, samt Fotos
+  5. verwaiste Dateien (Anzeige gelöscht, oder Datei ohne Eintrag seit einem Tag), höchstens 1000 pro Lauf
+  Die Datenbank liefert nur die Pfade; gelöscht wird über die Storage-API in der Edge Function (Dateien in
+  `storage.objects` lassen sich nicht per SQL entfernen). Was nicht gelöscht werden konnte, taucht beim nächsten Lauf
+  als verwaist wieder auf.
+- **Speicheranzeige** für Flyary-Admins oben auf der Moderationsseite: belegter Speicher gesamt und pro Bucket, Anteil
+  am Free-Plan (1 GB), Hinweis ab 700 MB, auf Supabase Pro zu wechseln (`marketplace_storage_usage`).
+- **Konto löschen:** `delete-account` entfernt jetzt auch die Marktplatz-Fotos der eigenen Anzeigen (sie liegen unter der
+  Anzeigen-ID, nicht unter der Benutzer-ID). Schul-Anzeigen bleiben bei der Schule. Chats bleiben für die Gegenseite
+  lesbar wie bisher.
+
+**Auslieferung:** `node scripts/db-migrate.mjs --apply` (0039, 0040 – 0040 schaltet `pg_cron` ein), dann die Edge Functions
+deployen: `npx supabase@latest functions deploy marketplace-cleanup delete-account --use-api --project-ref <ref>`.
+
 ## Marktplatz: Melden und Moderation (4.8)
 
 Migration `0038_marketplace_moderation.sql`, Seite `src/pages/MarketModeration.tsx` (`/market/moderation`), Dialog

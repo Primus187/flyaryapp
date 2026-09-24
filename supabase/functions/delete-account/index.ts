@@ -62,6 +62,21 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Marketplace photos live under the listing id (marketplace-photos/<listing>/<file>), not the user id:
+    // collect them through the user's private listings, which the account deletion removes by cascade.
+    // (School listings stay with the school.) Anything missed is removed as an orphan by marketplace-cleanup.
+    try {
+      const { data: listings } = await admin.from("marketplace_listings").select("id").eq("seller_user_id", user.id);
+      const ids = (listings ?? []).map((l: { id: string }) => l.id);
+      if (ids.length) {
+        const { data: photos } = await admin.from("marketplace_listing_photos").select("path, thumb_path").in("listing_id", ids);
+        const paths = (photos ?? []).flatMap((p: { path: string; thumb_path: string }) => [p.path, p.thumb_path]);
+        for (let i = 0; i < paths.length; i += 100) await admin.storage.from("marketplace-photos").remove(paths.slice(i, i + 100));
+      }
+    } catch (e) {
+      console.error("Marketplace photo cleanup failed", e);
+    }
+
     const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
     if (delErr) {
       return new Response(JSON.stringify({ error: delErr.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });

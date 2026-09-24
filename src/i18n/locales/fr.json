@@ -2003,7 +2003,8 @@
         "deleteConfirmTitle": "Supprimer l'annonce ?",
         "deleteConfirmText": "L'annonce et ses photos seront supprimées définitivement.",
         "deleted": "Annonce supprimée",
-        "actionDone": "C'est fait"
+        "actionDone": "C'est fait",
+        "expiringNotification": "Ton annonce se termine dans 3 jours – la prolonger maintenant ?"
       },
       "browse": {
         "searchPlaceholder": "Rechercher, p. ex. Alpha 7 ou secours",
@@ -2133,6 +2134,10 @@
         },
         "hiddenNotice": "Cette annonce a été masquée par la modération",
         "notification": "a masqué ton annonce"
+      },
+      "storage": {
+        "title": "Stockage : {{used}} ({{percent}} % du plan gratuit)",
+        "warn": "Plus de 700 Mo utilisés – envisager de passer à Supabase Pro."
       }
     }
 }

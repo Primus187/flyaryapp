@@ -2003,7 +2003,8 @@
         "deleteConfirmTitle": "Anzeige löschen?",
         "deleteConfirmText": "Die Anzeige und ihre Fotos werden endgültig gelöscht.",
         "deleted": "Anzeige gelöscht",
-        "actionDone": "Erledigt"
+        "actionDone": "Erledigt",
+        "expiringNotification": "Deine Anzeige läuft in 3 Tagen ab – jetzt verlängern?"
       },
       "browse": {
         "searchPlaceholder": "Suchen, z. B. Alpha 7 oder Retter",
@@ -2133,6 +2134,10 @@
         },
         "hiddenNotice": "Diese Anzeige wurde von der Moderation ausgeblendet",
         "notification": "hat deine Anzeige ausgeblendet"
+      },
+      "storage": {
+        "title": "Speicher: {{used}} ({{percent}} % des Free-Plans)",
+        "warn": "Über 700 MB belegt – Wechsel auf Supabase Pro prüfen."
       }
     }
 }

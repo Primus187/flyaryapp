@@ -7,3 +7,7 @@ verify_jwt = false
 # Called by the database trigger with x-push-secret; the function authorizes every caller itself.
 [functions.send-push]
 verify_jwt = false
+
+# Nightly marketplace cleanup, started by pg_cron with x-push-secret (migration 0040).
+[functions.marketplace-cleanup]
+verify_jwt = false

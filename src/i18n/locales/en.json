@@ -2003,7 +2003,8 @@
         "deleteConfirmTitle": "Delete listing?",
         "deleteConfirmText": "The listing and its photos are deleted permanently.",
         "deleted": "Listing deleted",
-        "actionDone": "Done"
+        "actionDone": "Done",
+        "expiringNotification": "Your listing ends in 3 days – renew it now?"
       },
       "browse": {
         "searchPlaceholder": "Search, e.g. Alpha 7 or reserve",
@@ -2133,6 +2134,10 @@
         },
         "hiddenNotice": "This listing was hidden by the moderators",
         "notification": "hid your listing"
+      },
+      "storage": {
+        "title": "Storage: {{used}} ({{percent}} % of the Free plan)",
+        "warn": "Over 700 MB used – consider switching to Supabase Pro."
       }
     }
 }

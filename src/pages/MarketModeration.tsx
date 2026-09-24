@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Ban, Eye, EyeOff, RotateCcw, ShieldCheck, Trash2, X } from "lucide-react";
+import { Ban, Eye, EyeOff, HardDrive, RotateCcw, ShieldCheck, Trash2, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { bucketsBySize, fetchStorageUsage, formatBytes, usageLevel, type StorageUsage } from "@/lib/storage-usage";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/layout/PageContainer";
@@ -26,6 +28,8 @@ export default function MarketModeration() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  /** Admins: storage against the Free plan (plan 4.9). */
+  const [usage, setUsage] = useState<StorageUsage | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -38,7 +42,10 @@ export default function MarketModeration() {
 
   useEffect(() => {
     void load();
-    if (user) void supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(data === true));
+    if (user) void supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
+      setIsAdmin(data === true);
+      if (data === true) fetchStorageUsage().then(setUsage).catch(() => setUsage(null));
+    });
   }, [load, user]);
 
   const run = async (item: QueueItem, work: () => Promise<unknown>, done: string) => {
@@ -88,6 +95,23 @@ export default function MarketModeration() {
   return (
     <PageContainer>
       <PageHeader title={t("market.moderation.title")} subtitle={t("market.moderation.subtitle")} back="/market" />
+      {usage && (() => {
+        const level = usageLevel(usage.total_bytes);
+        return (
+          <Card className={level.warn ? "border-amber-500/50" : undefined}>
+            <CardContent className="space-y-2 p-3">
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <HardDrive className="h-4 w-4" /> {t("market.storage.title", { used: formatBytes(usage.total_bytes), percent: level.percent })}
+              </p>
+              <Progress value={level.percent} />
+              <p className="text-[11px] text-muted-foreground">
+                {bucketsBySize(usage).map(([bucket, bytes]) => `${bucket}: ${formatBytes(bytes)}`).join(" · ")}
+              </p>
+              {level.warn && <p className="text-xs text-amber-700 dark:text-amber-300">{t("market.storage.warn")}</p>}
+            </CardContent>
+          </Card>
+        );
+      })()}
       {items.length === 0 ? (
         <EmptyState icon={ShieldCheck} title={t("market.moderation.empty")} />
       ) : items.map((item) => (
