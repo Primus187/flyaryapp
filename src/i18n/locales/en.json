@@ -173,6 +173,18 @@
     "draftRestored": "Draft restored"
   },
   "events": {
+    "duplicate": "Duplicate",
+    "moreActions": "More actions",
+    "details": "Details",
+    "pastEvent": "This event is over.",
+    "tabs": {
+      "overview": "Overview",
+      "participants": "Participants",
+      "planning": "Planning",
+      "coaching": "Coaching",
+      "chat": "Chat",
+      "feedback": "Feedback"
+    },
     "title": "Events",
     "newEvent": "Event",
     "editEvent": "Edit event",

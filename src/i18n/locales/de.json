@@ -151,6 +151,18 @@
     "draftRestored": "Zwischenstand wiederhergestellt"
   },
   "events": {
+    "duplicate": "Duplizieren",
+    "moreActions": "Weitere Aktionen",
+    "details": "Details",
+    "pastEvent": "Dieser Termin ist vorbei.",
+    "tabs": {
+      "overview": "Übersicht",
+      "participants": "Teilnehmende",
+      "planning": "Planung",
+      "coaching": "Coaching",
+      "chat": "Chat",
+      "feedback": "Feedback"
+    },
     "title": "Termine",
     "newEvent": "Termin",
     "editEvent": "Termin bearbeiten",

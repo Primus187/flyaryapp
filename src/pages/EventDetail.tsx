@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ArrowLeft, Calendar, MapPin, User, Users, Clock, CheckCircle2, XCircle, Pencil, Copy, ImagePlus, Trash2, Share2, X, Mountain, BookOpen, Hourglass, ShieldCheck, AlertTriangle, MoreHorizontal, ChevronDown } from "lucide-react";
 import EventChat from "@/components/EventChat";
 import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
@@ -37,6 +40,10 @@ export default function EventDetail() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { hash } = useLocation();
+  // ?tab=… keeps the open tab on reload/back; #coaching is the deep link from the student dossier.
+  const requestedTab = searchParams.get("tab") || (hash === "#coaching" ? "coaching" : "overview");
   const [event, setEvent] = useState<any>(null);
   const [signups, setSignups] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
@@ -198,144 +205,105 @@ export default function EventDetail() {
   const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
   const isPast = new Date(event.event_date) < new Date();
 
+  const isSchool = event.groups?.group_type === "school";
+  const isHeight = event.event_category === "height_flight";
+  const eventDay = new Date(event.event_date);
+  const multiDay = !!event.end_date && event.end_date !== event.event_date.slice(0, 10);
+  const dateLabel = multiDay
+    ? `${eventDay.toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${new Date(event.end_date + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`
+    : eventDay.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
+  const timeLabel = eventDay.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const canSignUp = !isPast && event.status !== "cancelled";
+  // Tabs: students and members see what concerns them; planning and coaching are for school staff.
+  const tabs = [
+    "overview",
+    "participants",
+    ...(isStaff ? ["planning"] : []),
+    ...(isStaff && isSchool ? ["coaching"] : []),
+    ...(isStudent && isPast ? ["feedback"] : []),
+    "chat",
+  ];
+  const activeTab = tabs.includes(requestedTab) ? requestedTab : "overview";
+  const selectTab = (tab: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (tab === "overview") next.delete("tab"); else next.set("tab", tab);
+    setSearchParams(next, { replace: true });
+  };
+  const details = [
+    { icon: Mountain, label: t("events.flightArea"), value: event.flight_area },
+    { icon: BookOpen, label: t("events.dayTopic"), value: event.day_topic },
+    { icon: User, label: t("events.instructor"), value: event.instructor },
+    { icon: User, label: t("events.launchHelper"), value: event.launch_helper },
+    { icon: Calendar, label: t("events.eventTypeLabel"), value: event.event_type },
+  ].filter((d) => d.value);
+
+  const participantRow = (s: any) => (
+    <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+      <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
+      {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
+      {isStaff && <EmergencyInfoDialog eventId={id!} userId={s.user_id} pilotName={profiles[s.user_id] || t("events.pilot")} />}
+      {isStaff && (
+        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 shrink-0" onClick={() => toggleSchoolConfirm(s)}>
+          {s.confirmed_by_school ? t("events.unconfirm") : t("events.confirm")}
+        </Button>
+      )}
+    </CardContent></Card>
+  );
+
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
-        <div className="flex-1"><h1 className="text-xl font-bold tracking-tight">{event.title}</h1><p className="text-xs text-muted-foreground">{groupName}</p></div>
-        <Badge className={statusColor}>{statusLabel}</Badge>
-        {event.event_category && (
-          <Badge variant="secondary">{t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}</Badge>
-        )}
-        {isAdmin && (
-          <>
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/events/${id}/edit`)}><Pencil className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={async () => {
-              if (!confirm(t("events.deleteEventConfirm"))) return;
-              // Child rows (signups, chat, briefing, day notes, photos) cascade in the database;
-              // deleting them one by one first lost them whenever the event delete itself failed.
-              const { error: deleteError } = await supabase.from("flight_events").delete().eq("id", id!);
-              if (deleteError) {
-                toast({ title: t("common.error"), description: deleteError.message, variant: "destructive" });
-                return;
-              }
-              toast({ title: t("events.eventDeleted") });
-              navigate("/events");
-            }}><Trash2 className="h-4 w-4" /></Button>
-          </>
-        )}
-      </div>
-
-      {isStaff && event.status === "cancelled" && event.groups?.group_type === "school" && (
-        <AlternativeDateSuggestion eventId={id!} groupId={event.group_id} eventDate={event.event_date} />
-      )}
-
-      {!isPast && event.status !== "cancelled" && (
-        <>
-          {isStudent && event.event_category === "height_flight" && user && (
-            <StudentEquipmentHint key={`${event.group_id}:${user.id}`} groupId={event.group_id} studentUserId={user.id} />
-          )}
-          <Button
-            className={`w-full gap-2 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
-            variant={isSignedUp ? "default" : "outline"}
-            onClick={toggleSignup}
-            disabled={!isSignedUp && deadlinePassed}
-          >
-            {myWaitlist ? <Hourglass className="h-4 w-4" /> : isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-            {myWaitlist
-              ? t("events.onWaitlist", { position: mySignup?.waitlist_position || "?" })
-              : isSignedUp
-                ? t("events.signedUpAction")
-                : deadlinePassed
-                  ? t("events.deadlinePassed")
-                  : t("events.signUp")}
-          </Button>
-          {isSignedUp && mySignup?.confirmed_by_school && (
-            <p className="text-xs text-center text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5" /> {t("events.confirmedBySchool")}
-            </p>
-          )}
-        </>
-      )}
-
-      {/* Announcement (push) - staff only */}
-      {isStaff && event.event_category === "height_flight" && (
-        <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />
-      )}
-
-      {/* Photos section */}
-      {isCreator && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.photos")}</h2>
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-              <ImagePlus className="h-3.5 w-3.5" />{t("events.addPhotos")}
-            </Button>
-            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+      {/* Header: title, group and badges; admin actions live in one menu instead of a row of icons */}
+      <div className="flex items-start gap-2">
+        <Button variant="ghost" size="icon" className="shrink-0 -ml-2" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold tracking-tight leading-tight">{event.title}</h1>
+          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            <span className="text-xs text-muted-foreground">{groupName}</span>
+            <Badge className={`${statusColor} text-[10px] px-1.5 py-0`}>{statusLabel}</Badge>
+            {event.event_category && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t(`events.categories.${event.event_category}`, { defaultValue: event.event_category })}</Badge>
+            )}
           </div>
-          {photos.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {photos.map(p => (
-                <div key={p.id} className="relative group aspect-square">
-                  <img src={p.url} alt="" className="w-full h-full object-cover rounded-lg" />
-                  <button onClick={() => handleDeletePhoto(p.id, p.storage_path)}
-                    className="absolute top-1 right-1 bg-destructive/80 text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-      )}
-
-      {/* Publish to feed */}
-      {isCreator && (
-        <div className="flex gap-2">
-          {!event.published_to_feed ? (
-            <Button variant="outline" className="flex-1 gap-2" onClick={() => setShowPreview(true)}>
-              <Share2 className="h-4 w-4" />{t("events.publishToFeed")}
-            </Button>
-          ) : (
-            <Button variant="outline" className="flex-1 gap-2 text-destructive" onClick={handleUnpublish}>
-              <X className="h-4 w-4" />{t("events.unpublishFromFeed")}
-            </Button>
-          )}
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <InfoCard icon={Calendar} label={t("events.date")} value={event.end_date && event.end_date !== event.event_date.slice(0, 10)
-          ? `${new Date(event.event_date).toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${new Date(event.end_date + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`
-          : new Date(event.event_date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
-        <InfoCard icon={Clock} label={t("events.time")} value={new Date(event.event_date).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} />
-        {event.event_type && <InfoCard icon={Calendar} label={t("events.eventTypeLabel")} value={event.event_type} />}
-        {event.meeting_point && <InfoCard icon={MapPin} label={t("events.meetingPoint")} value={event.meeting_point} />}
-        {event.flight_area && <InfoCard icon={Mountain} label={t("events.flightArea")} value={event.flight_area} />}
-        {event.day_topic && <InfoCard icon={BookOpen} label={t("events.dayTopic")} value={event.day_topic} />}
-        {event.instructor && <InfoCard icon={User} label={t("events.instructor")} value={event.instructor} />}
-        {event.launch_helper && <InfoCard icon={User} label={t("events.launchHelper")} value={event.launch_helper} />}
-        {event.signup_deadline && <InfoCard icon={Clock} label={t("events.signupDeadline")} value={new Date(event.signup_deadline).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })} />}
-        <InfoCard icon={Users} label={t("events.participants")} value={`${totalSignedUp}${event.max_participants ? ` / ${event.max_participants}` : ""}`} />
+        {(isAdmin || isCreator || (isStaff && isSchool)) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0" aria-label={t("events.moreActions")}><MoreHorizontal className="h-5 w-5" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isAdmin && <DropdownMenuItem onClick={() => navigate(`/events/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />{t("common.edit")}</DropdownMenuItem>}
+              {isAdmin && <DropdownMenuItem onClick={() => navigate(`/events/new?duplicate=${id}`)}><Copy className="h-4 w-4 mr-2" />{t("events.duplicate")}</DropdownMenuItem>}
+              {isCreator && <DropdownMenuItem onClick={() => fileInputRef.current?.click()} disabled={uploading}><ImagePlus className="h-4 w-4 mr-2" />{t("events.addPhotos")}</DropdownMenuItem>}
+              {isCreator && (!event.published_to_feed
+                ? <DropdownMenuItem onClick={() => setShowPreview(true)}><Share2 className="h-4 w-4 mr-2" />{t("events.publishToFeed")}</DropdownMenuItem>
+                : <DropdownMenuItem onClick={handleUnpublish}><X className="h-4 w-4 mr-2" />{t("events.unpublishFromFeed")}</DropdownMenuItem>)}
+              {isStaff && isSchool && <DropdownMenuItem onClick={() => setIncidentDialogOpen(true)}><AlertTriangle className="h-4 w-4 mr-2" />{t("school.safety.reportForEvent")}</DropdownMenuItem>}
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={async () => {
+                    if (!confirm(t("events.deleteEventConfirm"))) return;
+                    // Child rows (signups, chat, briefing, day notes, photos) cascade in the database;
+                    // deleting them one by one first lost them whenever the event delete itself failed.
+                    const { error: deleteError } = await supabase.from("flight_events").delete().eq("id", id!);
+                    if (deleteError) {
+                      toast({ title: t("common.error"), description: deleteError.message, variant: "destructive" });
+                      return;
+                    }
+                    toast({ title: t("events.eventDeleted") });
+                    navigate("/events");
+                  }}><Trash2 className="h-4 w-4 mr-2" />{t("common.delete")}</DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
       </div>
 
-      {/* Departure info */}
-      {event.departure_info && (
-        <Card className="border-0 shadow-sm"><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
-      )}
-
-      {event.description && <Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-sm whitespace-pre-wrap">{event.description}</p></CardContent></Card>}
-
-      {/* Flight prep notes */}
-      {event.flight_prep_notes && (
-        <Card className="border-0 shadow-sm"><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.flightPrep")}</h3><p className="text-sm whitespace-pre-wrap">{event.flight_prep_notes}</p></CardContent></Card>
-      )}
-
-      {/* Briefing tasks & maneuvers */}
-      <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
-
-      {event.groups?.group_type === "school" && (
+      {/* Decisive status first: weather decision and (for staff) an alternative date after a cancellation */}
+      {isSchool && (
         <EventWeatherDecision
           eventId={id!}
           groupId={event.group_id}
@@ -344,92 +312,179 @@ export default function EventDetail() {
           onEventStatusSynced={(status) => setEvent((prev) => (prev ? { ...prev, status } : prev))}
         />
       )}
-
-      {/* Program, staff, carpools */}
-      <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
-      <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} isSchool={event.groups?.group_type === "school"} eventDate={event.event_date} />
-      {isStaff && event.groups?.group_type === "school" && event.event_category === "basic_course" && event.status !== "cancelled" && (
-        <EquipmentQuotaHint groupId={event.group_id} eventDate={event.event_date} signups={signups} />
-      )}
-      {isStaff && event.groups?.group_type === "school" && (
-        <>
-          <Button variant="outline" className="w-full gap-2 text-destructive" onClick={() => setIncidentDialogOpen(true)}>
-            <AlertTriangle className="h-4 w-4" />{t("school.safety.reportForEvent")}
-          </Button>
-          <IncidentReportDialog
-            groupId={event.group_id}
-            open={incidentDialogOpen}
-            onOpenChange={setIncidentDialogOpen}
-            presetEventId={id}
-          />
-        </>
-      )}
-      <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
-
-      {isStaff && (
-        <EventAttendance
-          eventId={id!}
-          groupId={event.group_id}
-          eventDate={event.event_date}
-          signups={visibleConfirmed}
-          profiles={profiles}
-          onChanged={refetchSignups}
-        />
+      {isStaff && event.status === "cancelled" && isSchool && (
+        <AlternativeDateSuggestion eventId={id!} groupId={event.group_id} eventDate={event.event_date} />
       )}
 
-      {/* Participants */}
-      <div>
-        {isStaff && activeDay && event.groups?.group_type === "school" && <div className="mb-3 space-y-2">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />{t("journeys.includeInactive")}</label>
-          <p className="text-xs text-muted-foreground">{t("journeys.inactiveHint")}</p>
-          {inactive.isError && <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => void inactive.refetch()}>{t("performance.retry")}</Button></div>}
-          {inactive.isPending && <p role="status">{t("common.loading")}</p>}
-        </div>}
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("events.participants")}</h2>
-        {visibleConfirmed.length === 0 ? activeListReady && <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p> : (
-          <div className="space-y-1">{visibleConfirmed.map(s => (
-            <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
-              {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
-              {isStaff && <EmergencyInfoDialog eventId={id!} userId={s.user_id} pilotName={profiles[s.user_id] || t("events.pilot")} />}
-              {isStaff && (
-                <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 shrink-0" onClick={() => toggleSchoolConfirm(s)}>
-                  {s.confirmed_by_school ? t("events.unconfirm") : t("events.confirm")}
-                </Button>
+      {/* At a glance: when, where, how many, and the pilot's own sign-up */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Fact icon={Calendar} label={t("events.date")} value={multiDay ? dateLabel : `${dateLabel}, ${timeLabel}`} />
+            <Fact icon={Users} label={t("events.participants")} value={`${totalSignedUp}${event.max_participants ? ` / ${event.max_participants}` : ""}`} />
+            {event.meeting_point && <Fact icon={MapPin} label={t("events.meetingPoint")} value={event.meeting_point} wide />}
+            {event.signup_deadline && canSignUp && (
+              <Fact icon={Clock} label={t("events.signupDeadline")} value={new Date(event.signup_deadline).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })} />
+            )}
+          </div>
+          {canSignUp ? (
+            <div className="space-y-1.5">
+              <Button
+                className={`w-full gap-2 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
+                variant={isSignedUp ? "default" : "outline"}
+                onClick={toggleSignup}
+                disabled={!isSignedUp && deadlinePassed}
+              >
+                {myWaitlist ? <Hourglass className="h-4 w-4" /> : isSignedUp ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                {myWaitlist
+                  ? t("events.onWaitlist", { position: mySignup?.waitlist_position || "?" })
+                  : isSignedUp
+                    ? t("events.signedUpAction")
+                    : deadlinePassed
+                      ? t("events.deadlinePassed")
+                      : t("events.signUp")}
+              </Button>
+              {isSignedUp && mySignup?.confirmed_by_school && (
+                <p className="text-xs text-center text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
+                  <ShieldCheck className="h-3.5 w-3.5" /> {t("events.confirmedBySchool")}
+                </p>
               )}
-            </CardContent></Card>))}</div>
+            </div>
+          ) : isPast && event.status !== "cancelled" ? (
+            <p className="text-xs text-muted-foreground text-center">{t("events.pastEvent")}</p>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Tabs value={activeTab} onValueChange={selectTab}>
+        <TabsList className="w-full h-auto justify-start overflow-x-auto no-scrollbar">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab} value={tab} className="flex-1 min-w-fit text-xs px-2.5">
+              {t(`events.tabs.${tab}`)}
+              {tab === "participants" && <span className="ml-1 text-[10px] text-muted-foreground">{totalSignedUp}</span>}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {/* Overview: everything a pilot needs for the day, long texts folded */}
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          {isStudent && isHeight && canSignUp && user && (
+            <StudentEquipmentHint key={`${event.group_id}:${user.id}`} groupId={event.group_id} studentUserId={user.id} />
+          )}
+          {details.length > 0 && (
+            <Card className="border-0 shadow-sm"><CardContent className="p-3 space-y-2">
+              {details.map((d) => (
+                <div key={d.label} className="flex items-start gap-2">
+                  <d.icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{d.label}</p><p className="text-sm whitespace-pre-line">{d.value}</p></div>
+                </div>
+              ))}
+            </CardContent></Card>
+          )}
+          {event.description && <Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-sm whitespace-pre-wrap">{event.description}</p></CardContent></Card>}
+          <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
+          {!isStaff && <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={false} />}
+          {event.departure_info && (
+            <Card className="border-0 shadow-sm"><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
+          )}
+          <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
+          {event.flight_prep_notes && (
+            <Collapsible className="rounded-lg bg-card shadow-sm">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left group">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.flightPrep")}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-3 pb-3"><p className="text-sm whitespace-pre-wrap">{event.flight_prep_notes}</p></CollapsibleContent>
+            </Collapsible>
+          )}
+          {isCreator && photos.length > 0 && (
+            <div className="space-y-2">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.photos")}</h2>
+              <div className="grid grid-cols-3 gap-2">
+                {photos.map(p => (
+                  <div key={p.id} className="relative aspect-square">
+                    <img src={p.url} alt="" className="w-full h-full object-cover rounded-lg" />
+                    <button onClick={() => handleDeletePhoto(p.id, p.storage_path)} aria-label={t("common.delete")}
+                      className="absolute top-1 right-1 bg-destructive/80 text-destructive-foreground rounded-full p-1">
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Participants: names for everyone; confirmation, emergency data and attendance for staff */}
+        <TabsContent value="participants" className="space-y-4 mt-4">
+          {isStaff && isSchool && event.event_category === "basic_course" && event.status !== "cancelled" && (
+            <EquipmentQuotaHint groupId={event.group_id} eventDate={event.event_date} signups={signups} />
+          )}
+          {isStaff && activeDay && isSchool && <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />{t("journeys.includeInactive")}</label>
+            <p className="text-xs text-muted-foreground">{t("journeys.inactiveHint")}</p>
+            {inactive.isError && <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => void inactive.refetch()}>{t("performance.retry")}</Button></div>}
+            {inactive.isPending && <p role="status">{t("common.loading")}</p>}
+          </div>}
+          <div>
+            {visibleConfirmed.length === 0
+              ? activeListReady && <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p>
+              : <div className="space-y-1">{visibleConfirmed.map(participantRow)}</div>}
+            {visibleWaitlist.length > 0 && (
+              <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
+              <div className="space-y-1">{visibleWaitlist.map(s => (
+                <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
+                  <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
+                  <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
+                </CardContent></Card>))}</div></>
+            )}
+          </div>
+          {isStaff && (
+            <EventAttendance eventId={id!} groupId={event.group_id} eventDate={event.event_date} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
+          )}
+        </TabsContent>
+
+        {/* Planning (staff): announcement, team, day programme */}
+        {isStaff && (
+          <TabsContent value="planning" className="space-y-4 mt-4">
+            {isHeight && <EventAnnounceDialog event={event} profiles={profiles} briefingTasks={briefingTasks} maneuverNames={maneuverNames} />}
+            <EventStaff eventId={id!} groupId={event.group_id} canManage={isStaff} isSchool={isSchool} eventDate={event.event_date} />
+            <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={isStaff} />
+          </TabsContent>
         )}
-        {visibleWaitlist.length > 0 && (
-          <><h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
-          <div className="space-y-1">{visibleWaitlist.map(s => (
-            <Card key={s.user_id} className="border-0 shadow-sm"><CardContent className="p-2.5 flex items-center gap-2">
-              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
-              <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>
-            </CardContent></Card>))}</div></>
+
+        {/* Coaching (school staff): day notes per student and the flights of the day */}
+        {isStaff && isSchool && (
+          <TabsContent value="coaching" className="space-y-4 mt-4">
+            <CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
+            <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+          </TabsContent>
         )}
-      </div>
 
-      {/* Student flights - admin only (simple view) */}
-      <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+        {isStudent && isPast && (
+          <TabsContent value="feedback" className="space-y-4 mt-4">
+            <StudentDayFeedback eventId={id!} />
+          </TabsContent>
+        )}
 
-      {/* Coach batch evaluation - admin only */}
-      {isStaff && event.groups?.group_type === "school" && (
-        <div id="coaching"><CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} /></div>
+        <TabsContent value="chat" className="mt-4">
+          <EventChat eventId={id!} groupId={event.group_id} />
+        </TabsContent>
+      </Tabs>
+
+      {isStaff && isSchool && (
+        <IncidentReportDialog groupId={event.group_id} open={incidentDialogOpen} onOpenChange={setIncidentDialogOpen} presetEventId={id} />
       )}
-
-      {/* Student feedback view - non-admin only */}
-      {isStudent && (
-        <StudentDayFeedback eventId={id!} />
-      )}
-
-      <EventChat eventId={id!} groupId={event.group_id} />
-
       <EventPublishPreviewDialog open={showPreview} onOpenChange={setShowPreview} onPublish={handlePublish} event={event} pilotName={pilotName} avatarUrl={avatarUrl} groupName={groupName} photos={photos.map(p => ({ id: p.id, url: p.url }))} loading={publishing} />
     </div>
   );
 }
 
-function InfoCard({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
-  return <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 mb-0.5"><Icon className="h-3.5 w-3.5 text-primary" /><span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span></div><p className="text-sm font-medium whitespace-pre-line">{value}</p></CardContent></Card>;
+function Fact({ icon: Icon, label, value, wide = false }: { icon: any; label: string; value: string; wide?: boolean }) {
+  return (
+    <div className={wide ? "col-span-2" : undefined}>
+      <div className="flex items-center gap-1.5 mb-0.5"><Icon className="h-3.5 w-3.5 text-primary" /><span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span></div>
+      <p className="text-sm font-medium whitespace-pre-line">{value}</p>
+    </div>
+  );
 }

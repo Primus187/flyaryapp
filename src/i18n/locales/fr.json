@@ -173,6 +173,18 @@
     "draftRestored": "Brouillon restauré"
   },
   "events": {
+    "duplicate": "Dupliquer",
+    "moreActions": "Autres actions",
+    "details": "Détails",
+    "pastEvent": "Cet événement est terminé.",
+    "tabs": {
+      "overview": "Aperçu",
+      "participants": "Participants",
+      "planning": "Planification",
+      "coaching": "Coaching",
+      "chat": "Chat",
+      "feedback": "Feedback"
+    },
     "title": "Événements",
     "newEvent": "Événement",
     "editEvent": "Modifier l'événement",

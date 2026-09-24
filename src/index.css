@@ -83,3 +83,9 @@
   0%, 100% { transform: translateX(-100%); }
   50% { transform: translateX(100%); }
 }
+
+/* Horizontal tab bars etc.: scrollable without a visible scrollbar. */
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
