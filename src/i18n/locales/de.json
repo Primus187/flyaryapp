@@ -1778,5 +1778,131 @@
       "not_participant": "Diese Person ist für diesen Termin nicht angemeldet.",
       "unknown": "Notfalldaten konnten nicht geladen werden."
     }
-  }
+  },
+  "market": {
+      "title": "Marktplatz",
+      "listingTypes": {
+        "offer": "Ich verkaufe",
+        "wanted": "Ich suche"
+      },
+      "categories": {
+        "glider": "Schirm",
+        "tandem": "Tandemschirm",
+        "harness": "Gurtzeug",
+        "reserve": "Retter",
+        "instrument": "Instrumente",
+        "helmet": "Helm",
+        "clothing": "Bekleidung und Zubehör",
+        "other": "Sonstiges"
+      },
+      "conditions": {
+        "new": "Neu",
+        "like_new": "Wie neu",
+        "used": "Gebraucht",
+        "for_parts": "Für Teile / nicht flugtauglich"
+      },
+      "priceTypes": {
+        "fixed": "Festpreis",
+        "negotiable": "Verhandelbar",
+        "free": "Gratis",
+        "on_request": "Preis auf Anfrage"
+      },
+      "delivery": {
+        "pickup": "Abholung",
+        "shipping": "Versand",
+        "both": "Abholung oder Versand"
+      },
+      "visibility": {
+        "all": "Alle",
+        "school_students": "Nur unsere Schüler"
+      },
+      "status": {
+        "draft": "Entwurf",
+        "active": "Aktiv",
+        "reserved": "Reserviert",
+        "sold": "Verkauft",
+        "expired": "Abgelaufen",
+        "removed": "Entfernt"
+      },
+      "fields": {
+        "manufacturer": "Hersteller",
+        "model": "Modell",
+        "size": "Grösse",
+        "year": "Baujahr"
+      },
+      "attributes": {
+        "certification": "EN/LTF-Klasse",
+        "weight_min": "Startgewicht von",
+        "weight_max": "Startgewicht bis",
+        "flight_hours": "Flugstunden",
+        "last_check": "Letzte Nachprüfung",
+        "porosity": "Porosität",
+        "repairs": "Reparaturen",
+        "harness_type": "Typ",
+        "protector": "Protektor",
+        "reserve_container": "Retterfach",
+        "reserve_type": "Typ",
+        "max_load": "Max. Anhängelast",
+        "last_repack": "Letztes Packdatum",
+        "instrument_type": "Art",
+        "norm": "Norm"
+      },
+      "options": {
+        "certification": {
+          "a": "A",
+          "b": "B",
+          "c": "C",
+          "d": "D",
+          "ccc": "CCC",
+          "none": "Ohne Zulassung"
+        },
+        "harness_type": {
+          "seat": "Sitzgurtzeug",
+          "pod": "Liegegurtzeug",
+          "reversible": "Wendegurtzeug",
+          "tandem": "Tandem"
+        },
+        "protector": {
+          "airbag": "Airbag",
+          "foam": "Schaumstoff",
+          "hybrid": "Hybrid",
+          "none": "Ohne"
+        },
+        "reserve_type": {
+          "round": "Rundkappe",
+          "rogallo": "Rogallo (steuerbar)",
+          "cross": "Kreuzkappe",
+          "other": "Andere"
+        },
+        "instrument_type": {
+          "vario": "Vario",
+          "gps": "GPS",
+          "radio": "Funk",
+          "combo": "Kombigerät",
+          "other": "Anderes"
+        },
+        "norm": {
+          "en966": "EN 966",
+          "en1077": "EN 1077",
+          "other": "Andere"
+        }
+      },
+      "errors": {
+        "required": "Pflichtfeld",
+        "invalid": "Ungültiger Wert",
+        "out_of_range": "Ausserhalb des erlaubten Bereichs",
+        "future_date": "Datum liegt in der Zukunft",
+        "too_long": "Zu lang",
+        "weight_range": "«Bis» muss grösser sein als «von»"
+      },
+      "safety": {
+        "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
+        "reserve_repack_unknown": "Packdatum des Retters unbekannt. Vor dem Einsatz neu packen lassen.",
+        "reserve_repack_overdue": "Retter seit {{months}} Monaten nicht gepackt. Vor dem Einsatz neu packen lassen.",
+        "wing_check_missing": "Keine Angabe zur letzten Nachprüfung. Nach dem Prüfprotokoll fragen.",
+        "wing_check_old": "Letzte Nachprüfung vor {{months}} Monaten. Vor dem Fliegen nachprüfen lassen.",
+        "expert_class": "Anspruchsvolle Klasse – nicht für Einsteiger geeignet.",
+        "check_before_flight": "Material vor dem ersten Flug von einer Fachperson prüfen lassen."
+      }
+    }
 }

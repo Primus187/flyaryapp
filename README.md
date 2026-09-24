@@ -1,5 +1,26 @@
 # Flyary
 
+## Marktplatz: Kategorien, Merkmale und Sicherheitshinweise (4.2)
+
+Reine App-Logik, noch ohne Oberfläche und ohne Migration (`src/lib/marketplace-categories.ts`,
+`src/lib/marketplace-safety.ts`, Texte unter `market.*` in DE/FR/EN).
+
+- **Kategorien:** Schirm, Tandemschirm, Gurtzeug, Retter, Instrumente, Helm, Bekleidung/Zubehör, Sonstiges. Pro
+  Kategorie ist festgelegt, ob Hersteller/Modell/Baujahr und Grösse abgefragt werden und welche Zusatzmerkmale es gibt
+  (in `marketplace_listings.attributes`): z. B. Schirm mit EN/LTF-Klasse (Pflicht), Startgewicht von/bis, Flugstunden,
+  letzte Nachprüfung, Porosität, Reparaturen; Retter mit Typ und max. Anhängelast (Pflicht) und letztem Packdatum.
+- **`validateAttributes`** prüft und bereinigt die Eingaben eines Formulars: unbekannte Schlüssel und leere Felder fallen
+  weg, Zahlen aus Text werden umgewandelt, Datumsangaben als Monat (`2026-04`) oder Tag, nicht in der Zukunft.
+  Pflichtfelder gelten nur für Angebote, nicht für Such-Anzeigen.
+- **Sicherheitshinweise** (`safetyHints`), nur Hinweise, nichts wird blockiert: Retter mit unbekanntem oder über
+  6 Monate altem Packdatum, Schirm ohne Angabe zur Nachprüfung oder mit Nachprüfung über 24 Monate, Klasse C/D/CCC nicht
+  für Einsteiger, «Für Teile» als nicht flugtauglich, allgemein «vor dem ersten Flug prüfen lassen» bei Schirm, Gurtzeug,
+  Retter und Helm. Such-Anzeigen bekommen keine Hinweise.
+- Abweichung vom Plan: Bei **neuem** Material fehlen die Hinweise «Nachprüfung fehlt» bzw. «Packdatum unbekannt», weil
+  sie dort nicht zutreffen. Die Datenbank prüft `attributes` vorerst nur als JSON-Objekt; die serverseitige Prüfung der
+  Pflichtfelder folgt mit der Veröffentlichungs-RPC in 4.4.
+- Ein Test stellt sicher, dass jede Kategorie, jede Option und jeder Hinweis in allen drei Sprachen übersetzt ist.
+
 ## Marktplatz: Datenmodell und Zugriffsregeln (4.1)
 
 Grundlage für den Marktplatz aus dem `Umsetzungsplan Marktplatz für Flyary (technische Spezifikation).md`

@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1 ✅; inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1 ✅, 4.2 ✅; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -78,7 +78,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
 
 **Ist-Stand:** Migrationen `0031_marketplace_group_functions.sql` (neue Funktionen `shop`, `market_moderator`) und `0032_marketplace_listings.sql` (`marketplace_listings`, `marketplace_bans`, Hilfsfunktionen `market_can_manage`, `is_market_staff`, `is_market_banned`). Neue Anzeigen starten immer als `draft`; Clients dürfen nur die Inhaltsspalten ändern (spaltenweises `GRANT UPDATE`), Status und Datumsfelder folgen mit den RPCs in 4.4. **Abweichung:** `seller_user_id` ist nur bei Privatanzeigen gesetzt (löscht mit dem Konto), bei Schul-Anzeigen leer; zusätzlich `created_by` (beim Löschen des Kontos leer), damit Schul-Anzeigen erhalten bleiben, wenn die erfassende Person geht. Moderation liest in 4.1 nur global (`app_role`); Schul-Moderatoren folgen in 4.8. RLS-Tests in `src/test/marketplace-database.test.ts` (Besitzer, fremde Person, Schul-Admin, Shop, Instruktor, Schüler, Shop einer fremden Schule, Moderator, Admin, Gesperrte, nicht angemeldet).
 
-### 4.2 Kategorien, Merkmale und Sicherheitshinweise
+### 4.2 Kategorien, Merkmale und Sicherheitshinweise ✅
 
 **Ziel:** Jede Kategorie hat ihre fachlich passenden Felder und zeigt Sicherheitshinweise an, ohne etwas zu blockieren.
 
@@ -105,6 +105,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (siehe F
   - Zustand `for_parts`: deutlicher Hinweis «Nicht flugtauglich»
   - Immer: Hinweis, das Material vor dem ersten Flug prüfen zu lassen
 - Übersetzungen für Kategorien, Merkmale und Hinweise in DE/FR/EN
+
+**Ist-Stand:** `src/lib/marketplace-categories.ts` (`CATEGORY_SPECS`, `validateAttributes`, `parseMonthDate`) und `src/lib/marketplace-safety.ts` (`safetyHints`), Texte unter `market.*`. EN- und LTF-Klasse sind in einem Feld zusammengefasst (A/B/C/D/CCC/ohne Zulassung). Pflichtfelder: Klasse bei Schirmen, Typ bei Gurtzeug und Instrumenten, Typ und max. Anhängelast bei Rettern; nur für Angebote. Prüf- und Packdaten als Monat oder Tag. **Abweichungen:** keine Hinweise «Nachprüfung fehlt»/«Packdatum unbekannt» bei neuem Material; Such-Anzeigen bekommen keine Hinweise; Tandemschirme haben dieselben Merkmale wie Soloschirme (ein eigenes Feld «Tandem-Zulassung» entfällt, weil die Kategorie das schon aussagt). Die serverseitige Prüfung der Pflichtfelder folgt mit der Veröffentlichungs-RPC (4.4).
 
 ### 4.3 Fotos
 

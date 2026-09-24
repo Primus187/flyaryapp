@@ -1778,5 +1778,131 @@
       "not_participant": "This person is not signed up for this event.",
       "unknown": "Could not load emergency info."
     }
-  }
+  },
+  "market": {
+      "title": "Marketplace",
+      "listingTypes": {
+        "offer": "I'm selling",
+        "wanted": "I'm looking for"
+      },
+      "categories": {
+        "glider": "Wing",
+        "tandem": "Tandem wing",
+        "harness": "Harness",
+        "reserve": "Reserve",
+        "instrument": "Instruments",
+        "helmet": "Helmet",
+        "clothing": "Clothing and accessories",
+        "other": "Other"
+      },
+      "conditions": {
+        "new": "New",
+        "like_new": "Like new",
+        "used": "Used",
+        "for_parts": "For parts / not airworthy"
+      },
+      "priceTypes": {
+        "fixed": "Fixed price",
+        "negotiable": "Negotiable",
+        "free": "Free",
+        "on_request": "Price on request"
+      },
+      "delivery": {
+        "pickup": "Pickup",
+        "shipping": "Shipping",
+        "both": "Pickup or shipping"
+      },
+      "visibility": {
+        "all": "Everyone",
+        "school_students": "Our students only"
+      },
+      "status": {
+        "draft": "Draft",
+        "active": "Active",
+        "reserved": "Reserved",
+        "sold": "Sold",
+        "expired": "Expired",
+        "removed": "Removed"
+      },
+      "fields": {
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "size": "Size",
+        "year": "Year"
+      },
+      "attributes": {
+        "certification": "EN/LTF class",
+        "weight_min": "Take-off weight from",
+        "weight_max": "Take-off weight to",
+        "flight_hours": "Flight hours",
+        "last_check": "Last check",
+        "porosity": "Porosity",
+        "repairs": "Repairs",
+        "harness_type": "Type",
+        "protector": "Protector",
+        "reserve_container": "Reserve container",
+        "reserve_type": "Type",
+        "max_load": "Max. load",
+        "last_repack": "Last repack",
+        "instrument_type": "Type",
+        "norm": "Standard"
+      },
+      "options": {
+        "certification": {
+          "a": "A",
+          "b": "B",
+          "c": "C",
+          "d": "D",
+          "ccc": "CCC",
+          "none": "Not certified"
+        },
+        "harness_type": {
+          "seat": "Seat harness",
+          "pod": "Pod harness",
+          "reversible": "Reversible harness",
+          "tandem": "Tandem"
+        },
+        "protector": {
+          "airbag": "Airbag",
+          "foam": "Foam",
+          "hybrid": "Hybrid",
+          "none": "None"
+        },
+        "reserve_type": {
+          "round": "Round",
+          "rogallo": "Rogallo (steerable)",
+          "cross": "Cross",
+          "other": "Other"
+        },
+        "instrument_type": {
+          "vario": "Vario",
+          "gps": "GPS",
+          "radio": "Radio",
+          "combo": "Combined device",
+          "other": "Other"
+        },
+        "norm": {
+          "en966": "EN 966",
+          "en1077": "EN 1077",
+          "other": "Other"
+        }
+      },
+      "errors": {
+        "required": "Required",
+        "invalid": "Invalid value",
+        "out_of_range": "Outside the allowed range",
+        "future_date": "Date is in the future",
+        "too_long": "Too long",
+        "weight_range": "\"To\" must be greater than \"from\""
+      },
+      "safety": {
+        "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
+        "reserve_repack_unknown": "Last repack of the reserve unknown. Have it repacked before use.",
+        "reserve_repack_overdue": "Reserve not repacked for {{months}} months. Have it repacked before use.",
+        "wing_check_missing": "No information about the last check. Ask for the check report.",
+        "wing_check_old": "Last check {{months}} months ago. Have it checked before flying.",
+        "expert_class": "Demanding class – not suitable for beginners.",
+        "check_before_flight": "Have the equipment checked by a professional before the first flight."
+      }
+    }
 }

@@ -1778,5 +1778,131 @@
       "not_participant": "Cette personne n’est pas inscrite à cet événement.",
       "unknown": "Impossible de charger les données d’urgence."
     }
-  }
+  },
+  "market": {
+      "title": "Marché",
+      "listingTypes": {
+        "offer": "Je vends",
+        "wanted": "Je cherche"
+      },
+      "categories": {
+        "glider": "Voile",
+        "tandem": "Voile biplace",
+        "harness": "Sellette",
+        "reserve": "Parachute de secours",
+        "instrument": "Instruments",
+        "helmet": "Casque",
+        "clothing": "Vêtements et accessoires",
+        "other": "Divers"
+      },
+      "conditions": {
+        "new": "Neuf",
+        "like_new": "Comme neuf",
+        "used": "Occasion",
+        "for_parts": "Pour pièces / non navigable"
+      },
+      "priceTypes": {
+        "fixed": "Prix fixe",
+        "negotiable": "À discuter",
+        "free": "Gratuit",
+        "on_request": "Prix sur demande"
+      },
+      "delivery": {
+        "pickup": "Retrait",
+        "shipping": "Envoi",
+        "both": "Retrait ou envoi"
+      },
+      "visibility": {
+        "all": "Tout le monde",
+        "school_students": "Seulement nos élèves"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "active": "Active",
+        "reserved": "Réservée",
+        "sold": "Vendue",
+        "expired": "Expirée",
+        "removed": "Retirée"
+      },
+      "fields": {
+        "manufacturer": "Fabricant",
+        "model": "Modèle",
+        "size": "Taille",
+        "year": "Année"
+      },
+      "attributes": {
+        "certification": "Homologation EN/LTF",
+        "weight_min": "PTV de",
+        "weight_max": "PTV à",
+        "flight_hours": "Heures de vol",
+        "last_check": "Dernière révision",
+        "porosity": "Porosité",
+        "repairs": "Réparations",
+        "harness_type": "Type",
+        "protector": "Protection",
+        "reserve_container": "Container de secours",
+        "reserve_type": "Type",
+        "max_load": "Charge max.",
+        "last_repack": "Dernier pliage",
+        "instrument_type": "Type",
+        "norm": "Norme"
+      },
+      "options": {
+        "certification": {
+          "a": "A",
+          "b": "B",
+          "c": "C",
+          "d": "D",
+          "ccc": "CCC",
+          "none": "Non homologuée"
+        },
+        "harness_type": {
+          "seat": "Sellette assise",
+          "pod": "Sellette cocon",
+          "reversible": "Sellette réversible",
+          "tandem": "Biplace"
+        },
+        "protector": {
+          "airbag": "Airbag",
+          "foam": "Mousse",
+          "hybrid": "Hybride",
+          "none": "Aucune"
+        },
+        "reserve_type": {
+          "round": "Rond",
+          "rogallo": "Rogallo (dirigeable)",
+          "cross": "Croix",
+          "other": "Autre"
+        },
+        "instrument_type": {
+          "vario": "Vario",
+          "gps": "GPS",
+          "radio": "Radio",
+          "combo": "Appareil combiné",
+          "other": "Autre"
+        },
+        "norm": {
+          "en966": "EN 966",
+          "en1077": "EN 1077",
+          "other": "Autre"
+        }
+      },
+      "errors": {
+        "required": "Champ obligatoire",
+        "invalid": "Valeur invalide",
+        "out_of_range": "Hors de la plage autorisée",
+        "future_date": "La date est dans le futur",
+        "too_long": "Trop long",
+        "weight_range": "« À » doit être supérieur à « de »"
+      },
+      "safety": {
+        "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
+        "reserve_repack_unknown": "Date du dernier pliage du secours inconnue. Faire replier avant utilisation.",
+        "reserve_repack_overdue": "Secours non replié depuis {{months}} mois. Faire replier avant utilisation.",
+        "wing_check_missing": "Aucune indication sur la dernière révision. Demander le rapport de révision.",
+        "wing_check_old": "Dernière révision il y a {{months}} mois. Faire réviser avant de voler.",
+        "expert_class": "Classe exigeante – ne convient pas aux débutants.",
+        "check_before_flight": "Faire contrôler le matériel par un professionnel avant le premier vol."
+      }
+    }
 }
