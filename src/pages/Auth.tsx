@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -19,7 +18,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleGoogleSignIn = async () => { setGoogleLoading(true); try { const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin }); if (error) throw error; } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); } finally { setGoogleLoading(false); } };
+  const handleGoogleSignIn = async () => { setGoogleLoading(true); try { const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } }); if (error) throw error; } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); } finally { setGoogleLoading(false); } };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true);

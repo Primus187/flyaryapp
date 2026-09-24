@@ -1,1 +1,9 @@
-project_id = "ofveewfalizqrjpglzpo"
+project_id = "PROJECT_REF_PENDING"
+
+# Public: link previews for crawlers (WhatsApp etc.) and the shared-flight page need no login.
+[functions.get-shared-flight]
+verify_jwt = false
+
+# Called by the database trigger with x-push-secret; the function authorizes every caller itself.
+[functions.send-push]
+verify_jwt = false

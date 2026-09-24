@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -16,7 +15,6 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png"],
@@ -45,7 +43,6 @@ export default defineConfig(({ mode }) => ({
         // Heavy, rarely used chunks (3D map ~1 MB, XLSX import ~340 KB) are not precached on
         // install; they are cached at runtime on first use instead (see runtimeCaching).
         globIgnores: ["**/stats.html", "**/push-sw.js", "**/assets/Flight3DMap-*.js", "**/assets/ImportFlights-*.js"],
-        navigateFallbackDenylist: [/^\/~oauth/],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/(Flight3DMap|ImportFlights)-.*\.js$/,

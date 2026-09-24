@@ -316,7 +316,7 @@ export default function SharedFlightDetail() {
         <div className="pt-8 text-center">
           <p className="text-xs text-muted-foreground">
             Geteilt über{" "}
-            <a href="https://flyaryapp.lovable.app" className="text-primary hover:underline font-medium">
+            <a href={window.location.origin} className="text-primary hover:underline font-medium">
               FlyAry
             </a>
           </p>

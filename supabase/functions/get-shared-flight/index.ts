@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 const CRAWLER_PATTERN = /WhatsApp|TelegramBot|facebookexternalhit|Twitterbot|LinkedInBot|Slackbot|Discordbot|bot|crawler|spider|preview/i;
-const SPA_ORIGIN = "https://flyaryapp.lovable.app";
+// Public web-app address (e.g. the Vercel domain), set as edge-function secret APP_URL.
+const SPA_ORIGIN = (Deno.env.get("APP_URL") || "").replace(/\/+$/, "");
 const TILE_SIZE = 256;
 const IMG_W = 600;
 const IMG_H = 400;
