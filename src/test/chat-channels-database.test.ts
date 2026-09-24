@@ -79,6 +79,7 @@ beforeAll(async () => {
     INSERT INTO public.event_messages (id, event_id, user_id, message) VALUES ('${id(303)}', '${eventId}', '${altStudent}', 'Fahre ab Bern');
   `);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0025_chat_channels.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0026_chat_channel_returning.sql", import.meta.url), "utf8"));
   // Channels created by staff after the migration
   await asAdminDb();
   await db.exec(`
@@ -150,7 +151,10 @@ describe("chat channels: writing and managing", () => {
 
   it("lets instructors create channels, but not students or other schools' staff", async () => {
     await asUser(instructor);
-    await db.exec(`INSERT INTO public.chat_channels (kind, group_id, name, audience, created_by) VALUES ('group', '${school}', 'Camp Tessin', 'custom', '${instructor}')`);
+    // Like the app: insert and read the new row back in one statement (INSERT ... RETURNING).
+    const created = await db.query<{ id: string }>(`INSERT INTO public.chat_channels (kind, group_id, name, audience, created_by)
+      VALUES ('group', '${school}', 'Camp Tessin', 'custom', '${instructor}') RETURNING id`);
+    expect(created.rows).toHaveLength(1);
     await asUser(altStudent);
     await expect(db.exec(`INSERT INTO public.chat_channels (kind, group_id, name, created_by) VALUES ('group', '${school}', 'Meins', '${altStudent}')`)).rejects.toThrow();
     await asUser(pilotMember);
