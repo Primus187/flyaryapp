@@ -59,3 +59,51 @@ export function useChatChannel(params: { channelId?: string; eventId?: string })
     },
   });
 }
+
+export interface DirectCandidate { user_id: string; pilot_name: string; groups: string[] }
+
+/** People the user can write to directly (everyone sharing at least one group). */
+export function useDirectCandidates(enabled = true) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["chat-direct-candidates", user?.id],
+    enabled: !!user && enabled,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+      const { data, error } = await supabase.rpc("chat_direct_candidates" as any);
+      if (error) throw error;
+      return (data as unknown as DirectCandidate[]) || [];
+    },
+  });
+}
+
+/** Opens (creates if needed) the direct channel with another person; returns its id. */
+export async function openDirectChannel(otherUserId: string): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+  const { data, error } = await supabase.rpc("chat_open_direct" as any, { _other: otherUserId } as any);
+  if (error) throw error;
+  return data as unknown as string;
+}
+
+export interface ChatSearchHit {
+  id: string; channel_id: string; message: string; created_at: string; author: string;
+  channel: string | null; kind: "group" | "event" | "direct"; group_name: string | null;
+}
+
+/** Messages containing the query across every readable channel (at least 2 characters). */
+export function useChatSearch(query: string) {
+  const { user } = useAuth();
+  const q = query.trim();
+  return useQuery({
+    queryKey: ["chat-search", user?.id, q],
+    enabled: !!user && q.length >= 2,
+    staleTime: 30_000,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+      const { data, error } = await supabase.rpc("chat_search" as any, { _q: q } as any);
+      if (error) throw error;
+      return (data as unknown as ChatSearchHit[]) || [];
+    },
+  });
+}

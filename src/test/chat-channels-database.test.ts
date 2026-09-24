@@ -83,6 +83,7 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0025_chat_channels.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0026_chat_channel_returning.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0028_chat_notifications.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0029_chat_direct_replies_reactions.sql", import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   // Channels created by staff after the migration
   await asAdminDb();
   await db.exec(`
@@ -271,5 +272,104 @@ describe("chat notifications (stage 2)", () => {
     expect((await db.query<{ c: { notify_level: string } }>(`SELECT public.chat_channel_json('${team}') AS c`)).rows[0].c.notify_level).toBe("none");
     await asUser(instructor);
     expect((await db.query<{ c: { notify_level: string } }>(`SELECT public.chat_channel_json('${team}') AS c`)).rows[0].c.notify_level).toBe("mentions");
+  });
+});
+
+describe("direct messages, replies, reactions, search (stage 3)", () => {
+  const openDirect = async (me: string, other: string) => {
+    await asUser(me);
+    return (await db.query<{ id: string }>(`SELECT public.chat_open_direct('${other}') AS id`)).rows[0].id;
+  };
+  const pushesFor = async (uid: string) => {
+    await asAdminDb();
+    return (await db.query<{ title: string }>(`SELECT title FROM public.pushes WHERE user_id = '${uid}'`)).rows.map((r) => r.title);
+  };
+  const channelNamed = async (name: string) => {
+    await asAdminDb();
+    return (await db.query<{ id: string }>(`SELECT id FROM public.chat_channels WHERE group_id = '${school}' AND name = '${name}'`)).rows[0].id;
+  };
+  const firstMessageIn = async (channel: string) => {
+    await asAdminDb();
+    return (await db.query<{ id: string }>(`SELECT id FROM public.chat_messages WHERE channel_id = '${channel}' LIMIT 1`)).rows[0].id;
+  };
+
+  it("opens one direct channel per pair, only for people sharing a group", async () => {
+    const dm = await openDirect(groundStudent, pilotMember);
+    expect(await openDirect(pilotMember, groundStudent)).toBe(dm);
+    await asUser(outsider);
+    await expect(db.query(`SELECT public.chat_open_direct('${groundStudent}')`)).rejects.toThrow(/shared group/);
+    await asUser(groundStudent);
+    await expect(db.query(`SELECT public.chat_open_direct('${groundStudent}')`)).rejects.toThrow(/invalid person/);
+    await asUser(altStudent);
+    expect((await db.query(`SELECT 1 FROM public.chat_channels WHERE id = '${dm}'`)).rows).toHaveLength(0);
+    expect((await db.query(`SELECT 1 FROM public.chat_messages WHERE channel_id = '${dm}'`)).rows).toHaveLength(0);
+  });
+
+  it("lists people to write to and names the peer in the channel JSON", async () => {
+    await asUser(pilotMember);
+    const people = (await db.query<{ user_id: string; groups: string[] }>("SELECT * FROM public.chat_direct_candidates()")).rows;
+    expect(people.map((p) => p.user_id)).toEqual([groundStudent]);
+    expect(people[0].groups).toEqual(["Freunde"]);
+    const dm = await openDirect(pilotMember, groundStudent);
+    const json = (await db.query<{ c: { kind: string; peer: { pilot_name: string }; can_post: boolean } }>(`SELECT public.chat_channel_json('${dm}') AS c`)).rows[0].c;
+    expect(json).toMatchObject({ kind: "direct", peer: { pilot_name: "Mia" }, can_post: true });
+  });
+
+  it("keeps empty direct channels out of the inbox and pushes direct messages bundled", async () => {
+    const dm = await openDirect(pilotMember, groundStudent);
+    const inboxIds = async (uid: string) => {
+      await asUser(uid);
+      return (await db.query<{ i: { id: string }[] }>("SELECT public.chat_inbox() AS i")).rows[0].i.map((c) => c.id);
+    };
+    expect(await inboxIds(groundStudent)).not.toContain(dm);
+    await asAdminDb();
+    await db.exec("DELETE FROM public.pushes");
+    await asUser(pilotMember);
+    await db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message) VALUES ('${dm}', '${pilotMember}', 'Fliegen wir morgen?')`);
+    await db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message) VALUES ('${dm}', '${pilotMember}', 'Hallo?')`);
+    expect(await pushesFor(groundStudent)).toHaveLength(1);
+    expect(await inboxIds(groundStudent)).toContain(dm);
+    // Reading restarts the bundling window
+    await asUser(groundStudent);
+    await db.exec(`SELECT public.chat_mark_read('${dm}')`);
+    await asUser(pilotMember);
+    await db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message) VALUES ('${dm}', '${pilotMember}', 'Noch da?')`);
+    expect(await pushesFor(groundStudent)).toHaveLength(2);
+  });
+
+  it("accepts replies only within the same channel", async () => {
+    const general = await channelNamed("Allgemein");
+    const teamMessage = await firstMessageIn(await channelNamed("Team"));
+    const generalMessage = await firstMessageIn(general);
+    await asUser(instructor);
+    await db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message, reply_to) VALUES ('${general}', '${instructor}', 'Genau', '${generalMessage}')`);
+    await expect(db.exec(`INSERT INTO public.chat_messages (channel_id, user_id, message, reply_to) VALUES ('${general}', '${instructor}', 'Leak', '${teamMessage}')`))
+      .rejects.toThrow(/row-level security/);
+  });
+
+  it("lets readers react once per emoji and remove only their own reactions", async () => {
+    const msg = await firstMessageIn(await channelNamed("Allgemein"));
+    await asUser(groundStudent);
+    await db.exec(`INSERT INTO public.chat_message_reactions (message_id, user_id, emoji) VALUES ('${msg}', '${groundStudent}', '👍')`);
+    await expect(db.exec(`INSERT INTO public.chat_message_reactions (message_id, user_id, emoji) VALUES ('${msg}', '${groundStudent}', '👍')`)).rejects.toThrow(/duplicate/);
+    await asUser(outsider);
+    await expect(db.exec(`INSERT INTO public.chat_message_reactions (message_id, user_id, emoji) VALUES ('${msg}', '${outsider}', '👍')`)).rejects.toThrow(/row-level security/);
+    expect((await db.query("SELECT 1 FROM public.chat_message_reactions")).rows).toHaveLength(0);
+    await asUser(altStudent);
+    await db.exec(`DELETE FROM public.chat_message_reactions WHERE message_id = '${msg}'`);
+    await asUser(groundStudent);
+    expect((await db.query(`SELECT 1 FROM public.chat_message_reactions WHERE message_id = '${msg}'`)).rows).toHaveLength(1);
+  });
+
+  it("searches only messages the caller can read", async () => {
+    const search = async (uid: string, q: string) => {
+      await asUser(uid);
+      return (await db.query<{ r: { message: string }[] }>(`SELECT public.chat_search('${q}') AS r`)).rows[0].r.map((m) => m.message);
+    };
+    expect(await search(instructor, "intern")).toContain("Team intern");
+    expect(await search(groundStudent, "intern")).toEqual([]);
+    expect(await search(groundStudent, "morgen")).toEqual(["Fliegen wir morgen?"]);
+    expect(await search(groundStudent, "%%")).toEqual([]);
+    expect(await search(groundStudent, "m")).toEqual([]);
   });
 });

@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import BadgeGrid from "@/components/BadgeGrid";
 import HexBadge from "@/components/HexBadge";
 import { BADGES } from "@/lib/badges";
-import { ChevronLeft, Trophy, Clock, Mountain, MapPin, Wind, UserPlus, UserMinus } from "lucide-react";
+import { ChevronLeft, Trophy, Clock, Mountain, MapPin, Wind, UserPlus, UserMinus, MessageCircle } from "lucide-react";
+import { openDirectChannel } from "@/hooks/use-chat";
+import { useToast } from "@/hooks/use-toast";
 import { useFollows } from "@/hooks/use-follows";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
@@ -48,6 +50,28 @@ export default function PilotProfile() {
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profilePhotos, setProfilePhotos] = useState<{ signedUrl: string }[]>([]);
+  const [canMessage, setCanMessage] = useState(false);
+  const [openingChat, setOpeningChat] = useState(false);
+  const { toast } = useToast();
+
+  // Direct messages are possible with people sharing a group.
+  useEffect(() => {
+    if (!user || !userId || user.id === userId) { setCanMessage(false); return; }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+    supabase.rpc("chat_shares_group" as any, { _a: user.id, _b: userId } as any).then(({ data }) => setCanMessage(data === true));
+  }, [user, userId]);
+
+  const startChat = async () => {
+    if (!userId) return;
+    setOpeningChat(true);
+    try {
+      navigate(`/messages/${await openDirectChannel(userId)}`);
+    } catch (error) {
+      toast({ title: t("common.error"), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setOpeningChat(false);
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -186,16 +210,24 @@ export default function PilotProfile() {
           <span><strong className="text-foreground">{followingCount}</strong> Following</span>
         </div>
         {user && userId && user.id !== userId && (
-          <Button
-            variant={isFollowing ? "outline" : "default"}
-            size="sm"
-            className="mt-2 gap-1.5"
-            disabled={followLoading}
-            onClick={toggleFollow}
-          >
-            {isFollowing ? <UserMinus className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
-            {isFollowing ? t("follows.unfollow") : t("follows.follow")}
-          </Button>
+          <div className="flex justify-center gap-2">
+            <Button
+              variant={isFollowing ? "outline" : "default"}
+              size="sm"
+              className="mt-2 gap-1.5"
+              disabled={followLoading}
+              onClick={toggleFollow}
+            >
+              {isFollowing ? <UserMinus className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+              {isFollowing ? t("follows.unfollow") : t("follows.follow")}
+            </Button>
+            {canMessage && (
+              <Button variant="outline" size="sm" className="mt-2 gap-1.5" disabled={openingChat} onClick={() => void startChat()}>
+                <MessageCircle className="h-3.5 w-3.5" />
+                {t("chat.sendMessage")}
+              </Button>
+            )}
+          </div>
         )}
         {profile.bio && (
           <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mt-2">{profile.bio}</p>

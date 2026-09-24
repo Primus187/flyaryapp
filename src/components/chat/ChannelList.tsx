@@ -1,9 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Archive, BellOff, CalendarDays, Hash, Lock, Megaphone, MessageCircle, Users } from "lucide-react";
-import { channelTitle, formatUnread, type ChatChannel } from "@/lib/chat";
+import { channelTitle, formatUnread, initials, type ChatChannel } from "@/lib/chat";
 
 function ChannelIcon({ channel }: { channel: ChatChannel }) {
+  if (channel.kind === "direct") {
+    return (
+      <div className="h-10 w-10 shrink-0 rounded-full bg-accent flex items-center justify-center text-sm font-semibold text-accent-foreground">
+        {initials(channelTitle(channel))}
+      </div>
+    );
+  }
   const Icon = channel.archived_at ? Archive : channel.kind === "event" ? CalendarDays : channel.audience === "team" ? Users
     : channel.staff_only_posting ? Megaphone : channel.audience === "custom" ? Lock : channel.is_default ? MessageCircle : Hash;
   return (
@@ -32,7 +39,7 @@ export default function ChannelList({ channels, showGroup = true, emptyText }: {
       {channels.map((c) => {
         const last = c.last_message;
         const preview = last
-          ? `${last.author ? `${last.author}: ` : ""}${last.message || (last.has_attachment ? t("chat.attachmentPreview") : "")}`
+          ? `${last.author && c.kind !== "direct" ? `${last.author}: ` : ""}${last.message || (last.has_attachment ? t("chat.attachmentPreview") : "")}`
           : c.kind === "event" && c.event_date
             ? new Date(c.event_date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })
             : c.description || t("chat.noMessagesYet");

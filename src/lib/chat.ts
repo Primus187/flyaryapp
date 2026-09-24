@@ -2,7 +2,7 @@
  *  pure helpers the inbox, channel page and channel form share. */
 export type ChannelKind = "group" | "event" | "direct";
 export type ChannelAudience = "all" | "team" | "students" | "custom";
-export type InboxFilter = "all" | "school" | "groups" | "events";
+export type InboxFilter = "all" | "direct" | "school" | "groups" | "events";
 export type NotifyLevel = "all" | "mentions" | "none";
 
 export interface ChatChannel {
@@ -27,6 +27,8 @@ export interface ChatChannel {
   can_post: boolean;
   /** The viewer's push level for this channel (default "mentions"). */
   notify_level?: NotifyLevel;
+  /** Direct channels only: the other person. */
+  peer?: { user_id: string; pilot_name: string } | null;
   last_message: { message: string; has_attachment: boolean; is_announcement: boolean; created_at: string; user_id: string; author: string } | null;
   unread: number;
 }
@@ -34,12 +36,14 @@ export interface ChatChannel {
 /** Training levels a students channel can be limited to (school stages without "licensed"). */
 export const STUDENT_LEVELS = ["ground", "altitude", "exam_ready"] as const;
 
-export function channelTitle(channel: Pick<ChatChannel, "kind" | "name" | "event_title">): string {
+export function channelTitle(channel: Pick<ChatChannel, "kind" | "name" | "event_title"> & { peer?: ChatChannel["peer"] }): string {
+  if (channel.kind === "direct") return channel.peer?.pilot_name || "Pilot";
   return channel.kind === "event" ? channel.event_title || "" : channel.name || "";
 }
 
 export function matchesFilter(channel: ChatChannel, filter: InboxFilter): boolean {
   switch (filter) {
+    case "direct": return channel.kind === "direct";
     case "school": return channel.kind === "group" && channel.group_type === "school";
     case "groups": return channel.kind === "group" && channel.group_type !== "school";
     case "events": return channel.kind === "event";
@@ -70,7 +74,7 @@ export function formatUnread(count: number): string {
 
 /** Which filter chips are worth showing (only those with at least one channel). */
 export function availableFilters(channels: ChatChannel[]): InboxFilter[] {
-  return (["all", "school", "groups", "events"] as InboxFilter[]).filter((f) => f === "all" || channels.some((c) => matchesFilter(c, f)));
+  return (["all", "direct", "school", "groups", "events"] as InboxFilter[]).filter((f) => f === "all" || channels.some((c) => matchesFilter(c, f)));
 }
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -136,4 +140,27 @@ export function splitMentions(text: string, names: string[]): { text: string; me
   const escaped = tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   return text.split(new RegExp(`(${escaped.join("|")})`, "g")).filter((part) => part !== "")
     .map((part) => ({ text: part, mention: tokens.includes(part) }));
+}
+
+/** Initials for an avatar placeholder ("Lea Schmid" → "LS"). */
+export function initials(name: string): string {
+  return name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") || "?";
+}
+
+// ── Reactions ────────────────────────────────────────────────────────────────
+export const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "🙏", "🪂"] as const;
+export interface Reaction { message_id: string; user_id: string; emoji: string }
+
+/** Reactions of one message grouped by emoji, in first-use order, with whether I reacted. */
+export function groupReactions(reactions: Reaction[], myUserId?: string): { emoji: string; count: number; mine: boolean; userIds: string[] }[] {
+  const groups = new Map<string, string[]>();
+  for (const r of reactions) groups.set(r.emoji, [...(groups.get(r.emoji) || []), r.user_id]);
+  return [...groups.entries()].map(([emoji, userIds]) => ({ emoji, count: userIds.length, mine: !!myUserId && userIds.includes(myUserId), userIds }));
+}
+
+/** One-line preview of a replied-to message. */
+export function replySnippet(message: string, hasAttachment: boolean, max = 80): string {
+  const text = message.replace(/\s+/g, " ").trim();
+  if (!text) return hasAttachment ? "📎" : "";
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CalendarDays, Settings } from "lucide-react";
+import { CalendarDays, Settings, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageContainer from "@/components/layout/PageContainer";
@@ -17,6 +17,7 @@ export default function MessageChannel() {
   const { channelId } = useParams<{ channelId: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const query = useChatChannel({ channelId });
   const [editOpen, setEditOpen] = useState(false);
   const channel = query.data;
@@ -33,12 +34,17 @@ export default function MessageChannel() {
     );
   }
 
-  const subtitle = [channel.group_name, audienceSummary(channel, t), channel.archived_at ? t("chat.archived") : null].filter(Boolean).join(" · ");
+  const subtitle = channel.kind === "direct" ? t("chat.audience.direct") : [channel.group_name, audienceSummary(channel, t), channel.archived_at ? t("chat.archived") : null].filter(Boolean).join(" · ");
   return (
     <PageContainer>
       <PageHeader title={channelTitle(channel)} subtitle={subtitle} back="/messages" action={
         <>
           <NotifyLevelMenu channel={channel} />
+          {channel.kind === "direct" && channel.peer && (
+            <Button variant="ghost" size="icon" asChild aria-label={t("chat.openProfile")}>
+              <Link to={`/pilot/${channel.peer.user_id}`}><UserRound className="h-5 w-5" /></Link>
+            </Button>
+          )}
           {channel.kind === "event" && channel.event_id && (
             <Button variant="ghost" size="icon" asChild aria-label={t("chat.openEvent")}>
               <Link to={`/events/${channel.event_id}`}><CalendarDays className="h-5 w-5" /></Link>
@@ -50,7 +56,7 @@ export default function MessageChannel() {
         </>
       } />
       {channel.description && <p className="text-xs text-muted-foreground -mt-2">{channel.description}</p>}
-      <ChannelChat key={channel.id} channel={channel} fullHeight />
+      <ChannelChat key={channel.id} channel={channel} fullHeight focusMessageId={searchParams.get("m")} />
       {channel.kind === "group" && channel.can_manage && (
         <ChannelFormDialog open={editOpen} onOpenChange={setEditOpen} channel={channel}
           groups={[{ id: channel.group_id!, name: channel.group_name || "", group_type: channel.group_type }]}

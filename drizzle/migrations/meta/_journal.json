@@ -204,6 +204,13 @@
       "when": 1791072000000,
       "tag": "0028_chat_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791158400000,
+      "tag": "0029_chat_direct_replies_reactions",
+      "breakpoints": true
     }
   ]
 }

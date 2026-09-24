@@ -23,7 +23,9 @@ export default function NotifyLevelMenu({ channel }: { channel: ChatChannel }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const current = channel.notify_level ?? "mentions";
+  // In direct chats every message counts as addressed to you, so "mentions" behaves like "all".
+  const stored = channel.notify_level ?? "mentions";
+  const current: NotifyLevel = channel.kind === "direct" && stored === "mentions" ? "all" : stored;
   const Icon = current === "all" ? BellRing : current === "none" ? BellOff : Bell;
 
   const choose = async (level: NotifyLevel) => {
@@ -49,7 +51,7 @@ export default function NotifyLevelMenu({ channel }: { channel: ChatChannel }) {
       <DropdownMenuContent align="end" className="w-64">
         <p className="px-2 py-1.5 text-sm font-semibold">{t("chat.notifyTitle")}</p>
         <DropdownMenuSeparator />
-        {LEVELS.map(({ level, label, hint }) => (
+        {LEVELS.filter(({ level }) => channel.kind !== "direct" || level !== "mentions").map(({ level, label, hint }) => (
           <DropdownMenuItem key={level} onSelect={() => void choose(level)} className="items-start gap-2">
             <Check className={`mt-0.5 h-4 w-4 shrink-0 ${level === current ? "opacity-100" : "opacity-0"}`} />
             <div>

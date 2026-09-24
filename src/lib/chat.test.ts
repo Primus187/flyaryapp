@@ -39,6 +39,7 @@ describe("chat helpers", () => {
 
   it("offers only filters that have channels", () => {
     expect(availableFilters([school, event])).toEqual(["all", "school", "events"]);
+    expect(availableFilters([school, ch({ id: "d", kind: "direct", name: null, group_id: null })])).toEqual(["all", "direct", "school"]);
   });
 
   it("describes the audience", () => {
@@ -86,5 +87,36 @@ describe("mentions", () => {
     expect(splitMentions("Hallo @Lea Schmid!", ["Lea Schmid", "Mia"])).toEqual([
       { text: "Hallo ", mention: false }, { text: "@Lea Schmid", mention: true }, { text: "!", mention: false },
     ]);
+  });
+});
+
+describe("direct messages, reactions, replies", () => {
+  const dm = ch({ id: "d", kind: "direct", name: null, group_id: null, group_name: null, group_type: null, peer: { user_id: "u", pilot_name: "Lea Schmid" } });
+  it("titles direct channels by the other person and filters them", async () => {
+    const { channelTitle, filterChannels } = await import("./chat");
+    expect(channelTitle(dm)).toBe("Lea Schmid");
+    expect(channelTitle({ ...dm, peer: null })).toBe("Pilot");
+    expect(filterChannels([dm, school], "direct").map((c) => c.id)).toEqual(["d"]);
+    expect(filterChannels([dm, school], "all", "lea").map((c) => c.id)).toEqual(["d"]);
+  });
+  it("builds initials", async () => {
+    const { initials } = await import("./chat");
+    expect(initials("Lea Schmid")).toBe("LS");
+    expect(initials("mia")).toBe("M");
+    expect(initials("  ")).toBe("?");
+  });
+  it("groups reactions by emoji", async () => {
+    const { groupReactions } = await import("./chat");
+    expect(groupReactions([
+      { message_id: "m", user_id: "a", emoji: "👍" }, { message_id: "m", user_id: "b", emoji: "❤️" }, { message_id: "m", user_id: "b", emoji: "👍" },
+    ], "b")).toEqual([
+      { emoji: "👍", count: 2, mine: true, userIds: ["a", "b"] }, { emoji: "❤️", count: 1, mine: true, userIds: ["b"] },
+    ]);
+  });
+  it("shortens reply previews", async () => {
+    const { replySnippet } = await import("./chat");
+    expect(replySnippet("  Hallo\n  Welt ", false)).toBe("Hallo Welt");
+    expect(replySnippet("", true)).toBe("📎");
+    expect(replySnippet("abcdefghij", false, 5)).toBe("abcd…");
   });
 });

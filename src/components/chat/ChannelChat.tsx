@@ -9,12 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck, Lock } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Send, Paperclip, Megaphone, Trash2, FileText, X, CheckCheck, Lock, Reply, SmilePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/image-compress";
 import { hasConfirmed, summarizeReceipts } from "@/lib/announcement-receipts";
 import { CHAT_INBOX_KEY } from "@/hooks/use-chat";
-import { extractMentions, insertMention, mentionQuery, mentionSuggestions, splitMentions, type ChatChannel, type MentionCandidate } from "@/lib/chat";
+import {
+  extractMentions, groupReactions, insertMention, mentionQuery, mentionSuggestions, REACTION_EMOJIS, replySnippet, splitMentions,
+  type ChatChannel, type MentionCandidate, type Reaction,
+} from "@/lib/chat";
 
 interface ChatMessage {
   id: string;
@@ -25,6 +29,7 @@ interface ChatMessage {
   is_announcement: boolean;
   requires_confirmation: boolean;
   mentions?: string[];
+  reply_to?: string | null;
   created_at: string;
 }
 
@@ -35,8 +40,9 @@ const chatTable = (name: string) => supabase.from(name as any) as any;
  * One chat channel (migration 0025): group, event or direct. Access, posting and moderation rights
  * come from the database (chat_can_read/post/manage); this component only reflects them.
  * `fullHeight` fills the channel page; otherwise it is embedded (e.g. the event page's chat tab).
+ * `focusMessageId` scrolls to and highlights one message (search results).
  */
-export default function ChannelChat({ channel, fullHeight = false }: { channel: ChatChannel; fullHeight?: boolean }) {
+export default function ChannelChat({ channel, fullHeight = false, focusMessageId }: { channel: ChatChannel; fullHeight?: boolean; focusMessageId?: string | null }) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -54,6 +60,10 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
   const [readers, setReaders] = useState<MentionCandidate[]>([]);
   const [mentionQ, setMentionQ] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState(0);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [flashId, setFlashId] = useState<string | null>(null);
+  const focusedRef = useRef<string | null>(null);
   const [receipts, setReceipts] = useState<Record<string, string[]>>({});
   const [expandedReceipts, setExpandedReceipts] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -89,6 +99,13 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
     }
   }, []);
 
+  // All reactions of the channel (filtered through the message; a list of 200 ids would make the URL too long).
+  const loadReactions = useCallback(async () => {
+    const { data } = await chatTable("chat_message_reactions").select("message_id, user_id, emoji, chat_messages!inner(channel_id)")
+      .eq("chat_messages.channel_id", channelId);
+    if (data) setReactions((data as Reaction[]).map(({ message_id, user_id, emoji }) => ({ message_id, user_id, emoji })));
+  }, [channelId]);
+
   // Opening (and reading new messages in) the channel resets its unread count.
   const markRead = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
@@ -117,6 +134,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
       loadProfiles(msgs.map((m) => m.user_id));
       loadAttachmentUrls(msgs);
       loadReceipts(msgs);
+      loadReactions();
       void markRead();
     };
     void load();
@@ -138,13 +156,61 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
         const receipt = payload.new as { message_id: string; user_id: string };
         setReceipts((prev) => ({ ...prev, [receipt.message_id]: [...new Set([...(prev[receipt.message_id] || []), receipt.user_id])] }));
       })
+      // Reactions of other channels arrive too (no channel column to filter on); they never match a shown message.
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_message_reactions" }, (payload) => {
+        const r = payload.new as Reaction;
+        setReactions((prev) => (prev.some((x) => x.message_id === r.message_id && x.user_id === r.user_id && x.emoji === r.emoji) ? prev : [...prev, r]));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_message_reactions" }, (payload) => {
+        const r = payload.old as Partial<Reaction>;
+        setReactions((prev) => prev.filter((x) => !(x.message_id === r.message_id && x.user_id === r.user_id && x.emoji === r.emoji)));
+      })
       .subscribe();
     return () => { cancelled = true; void supabase.removeChannel(realtime); };
-  }, [channelId, loadProfiles, loadAttachmentUrls, loadReceipts, markRead]);
+  }, [channelId, loadProfiles, loadAttachmentUrls, loadReceipts, loadReactions, markRead]);
 
   useEffect(() => {
+    // A message to jump to (search result): scroll there once it is loaded, otherwise stay at the bottom.
+    if (focusMessageId && focusedRef.current !== focusMessageId) {
+      const el = document.getElementById(`msg-${focusMessageId}`);
+      if (el) {
+        focusedRef.current = focusMessageId;
+        el.scrollIntoView({ block: "center" });
+        setFlashId(focusMessageId);
+        window.setTimeout(() => setFlashId(null), 2000);
+      }
+      return;
+    }
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, focusMessageId]);
+
+  const scrollToMessage = (id: string) => {
+    const el = document.getElementById(`msg-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setFlashId(id);
+    window.setTimeout(() => setFlashId(null), 1500);
+  };
+
+  const toggleReaction = async (msg: ChatMessage, emoji: string) => {
+    if (!user) return;
+    const mine = reactions.some((r) => r.message_id === msg.id && r.user_id === user.id && r.emoji === emoji);
+    const row = { message_id: msg.id, user_id: user.id, emoji };
+    // Optimistic; realtime echoes are de-duplicated above.
+    setReactions((prev) => (mine ? prev.filter((r) => !(r.message_id === msg.id && r.user_id === user.id && r.emoji === emoji)) : [...prev, row]));
+    const { error } = mine
+      ? await chatTable("chat_message_reactions").delete().eq("message_id", msg.id).eq("user_id", user.id).eq("emoji", emoji)
+      : await chatTable("chat_message_reactions").insert(row);
+    if (error && error.code !== "23505") {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      setReactions((prev) => (mine ? [...prev, row] : prev.filter((r) => !(r.message_id === msg.id && r.user_id === user.id && r.emoji === emoji))));
+    }
+  };
+
+  const startReply = (msg: ChatMessage) => {
+    setReplyTo(msg);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
 
   const send = async () => {
     if ((!text.trim() && !pendingFile) || !user || sending || !channel.can_post) return;
@@ -173,7 +239,10 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
         channel_id: channelId,
         user_id: user.id,
         message: text.trim(),
-        mentions: extractMentions(text, readers),
+        // Replying notifies the replied-to author like a mention (direct channels push every message anyway).
+        mentions: [...new Set([...extractMentions(text, readers),
+          ...(replyTo && replyTo.user_id !== user.id && channel.kind !== "direct" ? [replyTo.user_id] : [])])],
+        reply_to: replyTo?.id ?? null,
         attachment_path: attachmentPath,
         is_announcement: isAnnouncement,
         requires_confirmation: isAnnouncement && requiresConfirmation,
@@ -182,6 +251,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       } else {
         setText("");
+        setReplyTo(null);
         setPendingFile(null);
         setAnnouncement(false);
         setRequiresConfirmation(false);
@@ -244,6 +314,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
       }
       if (e.key === "Escape") { setMentionQ(null); return; }
     }
+    if (e.key === "Escape" && replyTo) { setReplyTo(null); return; }
     if (e.key === "Enter" && !e.shiftKey) void send();
   };
 
@@ -279,8 +350,11 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
             lastDate = msgDate;
             const canDelete = isMe || channel.can_manage;
             const mentionsMe = !isMe && !!user && (msg.mentions || []).includes(user.id);
+            const parent = msg.reply_to ? messages.find((m) => m.id === msg.reply_to) : null;
+            const ownBubble = isMe && !msg.is_announcement;
+            const msgReactions = groupReactions(reactions.filter((r) => r.message_id === msg.id), user?.id);
             return (
-              <div key={msg.id}>
+              <div key={msg.id} id={`msg-${msg.id}`} className={`rounded-lg transition-colors duration-700 ${flashId === msg.id ? "bg-amber-300/30" : ""}`}>
                 {showDate && (
                   <div className="flex justify-center my-2">
                     <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{msgDate}</span>
@@ -293,7 +367,20 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
                         <Megaphone className="h-2.5 w-2.5" /> {t("chat.announcement")}
                       </Badge>
                     )}
-                    {!isMe && <p className="text-[10px] font-medium opacity-70 mb-0.5">{profiles[msg.user_id] || "Pilot"}</p>}
+                    {!isMe && channel.kind !== "direct" && <p className="text-[10px] font-medium opacity-70 mb-0.5">{profiles[msg.user_id] || "Pilot"}</p>}
+                    {msg.reply_to && (
+                      <button type="button" onClick={() => parent && scrollToMessage(parent.id)}
+                        className={`mb-1 block w-full rounded-md border-l-2 px-2 py-1 text-left text-[11px] ${ownBubble ? "border-primary-foreground/60 bg-primary-foreground/15" : "border-primary/60 bg-background/60"}`}>
+                        {parent ? (
+                          <>
+                            <span className="block font-semibold">{profiles[parent.user_id] || "Pilot"}</span>
+                            <span className="block truncate opacity-80">{replySnippet(parent.message, !!parent.attachment_path)}</span>
+                          </>
+                        ) : (
+                          <span className="italic opacity-80">{t("chat.replyUnavailable")}</span>
+                        )}
+                      </button>
+                    )}
                     {msg.attachment_path && (
                       isImage(msg.attachment_path) ? (
                         <a href={attachmentUrls[msg.attachment_path]} target="_blank" rel="noopener noreferrer">
@@ -341,8 +428,44 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
                         })()}
                       </div>
                     )}
-                    <div className={`flex items-center gap-1.5 mt-0.5 justify-end ${isMe && !msg.is_announcement ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                    {msgReactions.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {msgReactions.map((r) => (
+                          <button key={r.emoji} type="button" onClick={() => toggleReaction(msg, r.emoji)}
+                            title={r.userIds.map((id) => profiles[id] || "Pilot").join(", ")}
+                            aria-pressed={r.mine}
+                            className={`flex h-5 items-center gap-0.5 rounded-full border px-1.5 text-[11px] ${r.mine
+                              ? "border-primary bg-primary/15 text-foreground"
+                              : ownBubble ? "border-primary-foreground/30 bg-primary-foreground/10" : "border-border bg-background/70"}`}>
+                            <span>{r.emoji}</span><span className="tabular-nums">{r.count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className={`flex items-center gap-1.5 mt-0.5 justify-end ${ownBubble ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                       <p className="text-[9px]">{formatTime(msg.created_at)}</p>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button type="button" aria-label={t("chat.react")} className="opacity-60 hover:opacity-100 transition-opacity">
+                            <SmilePlus className="h-3 w-3" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent side="top" className="w-auto p-1">
+                          <div className="flex gap-0.5">
+                            {REACTION_EMOJIS.map((emoji) => (
+                              <button key={emoji} type="button" onClick={() => toggleReaction(msg, emoji)}
+                                className="h-9 w-9 rounded-md text-xl hover:bg-accent active:scale-90 transition-transform">
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      {channel.can_post && (
+                        <button type="button" onClick={() => startReply(msg)} aria-label={t("chat.reply")} className="opacity-60 hover:opacity-100 transition-opacity">
+                          <Reply className="h-3 w-3" />
+                        </button>
+                      )}
                       {canDelete && (
                         <button onClick={() => deleteMessage(msg)} aria-label={t("common.delete")} className="opacity-60 hover:opacity-100 transition-opacity">
                           <Trash2 className="h-3 w-3" />
@@ -363,6 +486,16 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
           </p>
         ) : (
           <>
+            {replyTo && (
+              <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border bg-muted/30">
+                <Reply className="h-4 w-4 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1 text-xs">
+                  <p className="font-semibold">{t("chat.replyingTo", { name: profiles[replyTo.user_id] || "Pilot" })}</p>
+                  <p className="truncate text-muted-foreground">{replySnippet(replyTo.message, !!replyTo.attachment_path)}</p>
+                </div>
+                <button type="button" onClick={() => setReplyTo(null)} aria-label={t("common.cancel")}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
+              </div>
+            )}
             {pendingFile && (
               <div className="flex items-center gap-2 px-2 py-1.5 border-t border-border bg-muted/30">
                 {pendingFile.type.startsWith("image/") ? (
@@ -412,7 +545,7 @@ export default function ChannelChat({ channel, fullHeight = false }: { channel: 
                   </ul>
                 )}
                 <Input ref={inputRef} value={text} onChange={(e) => onTextChange(e.target.value, e.target.selectionStart)}
-                  onBlur={() => setMentionQ(null)} placeholder={t("chat.typeMessageMention")}
+                  onBlur={() => setMentionQ(null)} placeholder={channel.kind === "direct" ? t("events.typeMessage") : t("chat.typeMessageMention")}
                   onKeyDown={onKeyDown} className="h-9 text-sm" />
               </div>
               <Button size="icon" className="h-9 w-9 shrink-0" onClick={send} disabled={(!text.trim() && !pendingFile) || sending} aria-label={t("chat.send")}>
