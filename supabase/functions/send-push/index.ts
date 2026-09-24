@@ -151,7 +151,12 @@ Deno.serve(async (req) => {
     // Allowed callers: other edge functions (service-role key), the database trigger
     // (shared x-push-secret), or a signed-in user sending a test push to themselves.
     const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-    const internalSecret = Deno.env.get("PUSH_INTERNAL_SECRET");
+    const { data: secretRow } = await supabase
+      .from("internal_secrets")
+      .select("value")
+      .eq("name", "push_internal_secret")
+      .maybeSingle();
+    const internalSecret = secretRow?.value as string | undefined;
     let authorized = token === serviceKey ||
       (!!internalSecret && req.headers.get("x-push-secret") === internalSecret);
     if (!authorized && token) {
