@@ -1,5 +1,21 @@
 # Flyary
 
+## Marktplatz M1: Nachtrag Abnahmeprüfung
+
+Prüfung aller M1-Aufträge (4.1–4.10) nach Abschluss der Stufe, gezielt an den Übergängen zwischen den Aufträgen.
+Zwei Funde, beide behoben:
+
+- **Glocke (seit 4.8):** Marktplatz-Mitteilungen haben keinen Absender (`actor_id` leer). Die Glocke fragte die Profile
+  trotzdem mit dieser leeren ID ab; die Abfrage schlug fehl, und bei *allen* Mitteilungen stand «Pilot» statt des
+  Namens. Leere IDs werden jetzt vor der Abfrage herausgefiltert.
+- **«Verlängern» bei Neuware von Schulen:** Diese Anzeigen laufen nicht ab, trotzdem bot die Liste «Verlängern» an
+  (ohne Wirkung). Angeboten wird es jetzt nur bei Anzeigen mit Ablaufdatum (Test ergänzt).
+
+Ohne Befund geprüft: Sichtbarkeit von Schul-Anzeigen bei inaktivem Shop auch nach Moderation und Aufräumen, Pflicht
+zur Bestätigung der Regeln auch für Schul-Anzeigen, Chat-Rechte des Shop-Teams, Aufräumen ausgeblendeter Anzeigen,
+Kachel «Shop» im Menü «Mehr». Schon während der Umsetzung gefunden und behoben: PL/pgSQL-Syntax in 0034, Fehlercode bei
+nicht-`Error`-Objekten von Supabase (4.3), blockierte Konto-Löschung durch das Moderationsprotokoll (4.8).
+
 ## Marktplatz: Regeln und Nutzungsbedingungen (4.10)
 
 Migration `0041_marketplace_terms.sql`, Dialog `src/components/market/MarketTermsDialog.tsx`, Logik in

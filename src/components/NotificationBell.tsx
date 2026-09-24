@@ -59,7 +59,8 @@ export default function NotificationBell() {
 
     if (!data) return;
 
-    const actorIds = [...new Set(data.map(n => n.actor_id))];
+    // Marketplace notifications have no actor (sender "Marktplatz"); a null id would make the whole lookup fail.
+    const actorIds = [...new Set(data.map(n => n.actor_id).filter((id): id is string => !!id))];
     const profileMap: Record<string, { name: string; avatar: string }> = {};
 
     if (actorIds.length > 0) {

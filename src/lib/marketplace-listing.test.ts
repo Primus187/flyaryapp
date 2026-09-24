@@ -88,6 +88,8 @@ describe("Meine Anzeigen", () => {
     expect(availableActions({ status: "active", expires_at: iso(-1) }, now)).toEqual(["renew", "edit", "sold", "delete"]);
     expect(availableActions({ status: "reserved", expires_at: iso(10) }, now)).toContain("unreserve");
     expect(availableActions({ status: "removed", expires_at: null }, now)).toEqual(["delete"]);
+    // school new goods do not expire: nothing to renew
+    expect(availableActions({ status: "active", expires_at: null }, now)).toEqual(["edit", "reserve", "sold", "bump", "delete"]);
   });
 });
 

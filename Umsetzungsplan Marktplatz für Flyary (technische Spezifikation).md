@@ -1,6 +1,6 @@
 # Umsetzungsplan: Marktplatz für Flyary
 
-2026-09-24 · Tobias Bolliger · Stand: M1 in Arbeit (siehe Status)
+2026-09-24 · Tobias Bolliger · Stand: M1 abgeschlossen (siehe Status)
 
 Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschirm-Material in Flyary: Pilotinnen und Piloten verkaufen ihr altes Material oder suchen günstige Occasionen, Flugschulen verkaufen Material aus ihrem Shop. Es ist wie der Umsetzungsplan für die Flugschul-Erweiterungen aufgebaut: Jeder Unterabschnitt ist ein eigener Auftrag an den Coding-Agenten, mit Ziel, Akzeptanzkriterien, Datenmodell und Platz in der Navigation.
 
@@ -8,7 +8,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| M1 – Grundfunktion (MVP) | 🔶 In Arbeit | 4.1–4.10 ✅ (Abnahmeprüfung folgt); inkl. Schul-Shop mit Neuware und Moderation |
+| M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
@@ -31,7 +31,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 
 | Stufe | Fokus | Enthaltene Features | Aufwand | Status |
 | --- | --- | --- | --- | --- |
-| M1 | Grundfunktion | 4.1–4.10 | L | 🔶 |
+| M1 | Grundfunktion | 4.1–4.10 | L | ✅ |
 | M2 | Wiederkommen | 6.1–6.4 | M | ⬜ |
 | M3 | Schulen im Alltag | 7.1–7.2 | M | ⬜ |
 | M4 | Später / optional | 8.1–8.5 | L | ⏸ |
@@ -322,3 +322,12 @@ Speziell für den Marktplatz:
 - Text der Nutzungsbedingungen juristisch durchsehen lassen (4.10)
 - Prüfen, ob `pg_cron` und `pg_net` im Supabase-Projekt verfügbar sind (4.9)
 - Soll Vertical als erste Schule mit Shop und Moderation starten?
+
+## 11. Erkenntnisse aus der Umsetzung von M1
+
+- **Abnahmeprüfung nach M1** (wie im Flugschul-Plan nach jeder Phase): zwei Funde an Übergängen zwischen Aufträgen – die Glocke scheiterte an Mitteilungen ohne Absender (4.8), und Neuware von Schulen bot «Verlängern» ohne Wirkung an. Beide behoben (README, «Nachtrag Abnahmeprüfung»).
+- **Datenbanktests auf PGlite haben drei Fehler vor dem Einspielen gefunden:** PL/pgSQL liest `IF … THEN` nur bis zum ersten `THEN` (ein `CASE` darin braucht Klammern); Supabase-Fehler sind nicht immer `Error`-Objekte (Meldung über `message` lesen); ein Protokolleintrag mit Fremdschlüssel auf die betroffene Person blockierte das Löschen ihres Kontos.
+- **Bestehende Chat-Tests laden alle Marktplatz-Migrationen mit.** Weil 4.6 die Chat-Funktionen erweitert, prüfen die alten Chat-Tests so bei jedem Lauf, dass Gruppen-, Termin- und Direkt-Chats unverändert funktionieren.
+- **Sichtbarkeit als eine Funktion** (`market_listing_visible`): RLS, Foto-Speicher, Suche, Chat-Eröffnung und Meldungen nutzen dieselbe Regel; spätere Verschärfungen (Shop aktiv, Moderation) mussten nur an einer Stelle ergänzt werden.
+- **Dateien lassen sich nicht per SQL löschen.** Die Datenbank liefert die Pfade, die Edge Function löscht über die Storage-API; verwaiste Dateien räumt der nächtliche Lauf auf.
+- **Arbeitsablauf pro Auftrag:** Commit → Tobias spielt die Migration ein (`db-migrate --apply`, bei Edge Functions zusätzlich `supabase functions deploy` mit gesetztem `SUPABASE_ACCESS_TOKEN`) → lesende Prüfung der Live-Datenbank → Push → Vercel-Build abwarten.

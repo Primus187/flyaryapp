@@ -94,12 +94,13 @@ export function mineTab(l: Pick<MarketplaceListing, "status" | "expires_at">, no
 }
 
 export type ListingAction = "publish" | "edit" | "reserve" | "unreserve" | "sold" | "renew" | "bump" | "delete";
-/** Actions offered on "Meine Anzeigen" for a listing in its current state. */
+/** Actions offered on "Meine Anzeigen" for a listing in its current state (no "renew" for listings that do not expire). */
 export function availableActions(l: Pick<MarketplaceListing, "status" | "expires_at">, now: Date = new Date()): ListingAction[] {
+  const renew: ListingAction[] = l.expires_at === null ? [] : ["renew"];
   switch (effectiveStatus(l, now)) {
     case "draft": return ["publish", "edit", "delete"];
-    case "active": return ["edit", "reserve", "sold", "bump", "renew", "delete"];
-    case "reserved": return ["edit", "unreserve", "sold", "bump", "renew", "delete"];
+    case "active": return ["edit", "reserve", "sold", "bump", ...renew, "delete"];
+    case "reserved": return ["edit", "unreserve", "sold", "bump", ...renew, "delete"];
     case "expired": return ["renew", "edit", "sold", "delete"];
     default: return ["delete"];
   }
