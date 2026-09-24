@@ -14,6 +14,7 @@
     "more": "Mehr"
   },
   "common": {
+    "undo": "Rückgängig",
     "updateAvailable": "Neue Version verfügbar",
     "reloadNow": "Neu laden",
     "save": "Speichern",
@@ -904,6 +905,9 @@
     "licensesIntro": "Flyary nutzt zahlreiche Open-Source-Bibliotheken. Wir danken den Maintainern für ihre Arbeit."
   },
   "dashboard": {
+    "hide": "Ausblenden",
+    "eventHidden": "Termin ausgeblendet",
+    "eventHiddenHint": "Unter «Termine» bleibt er sichtbar.",
     "title": "Flyary",
     "subtitle": "Deine Übersicht",
     "stats": "Stats",

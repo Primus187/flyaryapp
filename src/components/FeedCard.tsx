@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, MapPin, Bookmark, X } from "lucide-react";
+import { MessageCircle, MapPin, Bookmark, X, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MentionCommentInput from "@/components/MentionCommentInput";
 import useEmblaCarousel from "embla-carousel-react";
@@ -142,13 +142,23 @@ function UnifiedMediaCarousel({
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selected, setSelected] = useState(0);
   const [mapVisible, setMapVisible] = useState(false);
-  
+  // Videos play in a dialog: a live player inside the carousel swallows the swipe gesture.
+  const [playing, setPlaying] = useState<Extract<MediaSlide, { type: "video" | "uploaded-video" }> | null>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
 
   useEffect(() => {
     if (!emblaApi) return;
-    const onSelect = () => setSelected(emblaApi.selectedScrollSnap());
+    const onSelect = () => {
+      setSelected(emblaApi.selectedScrollSnap());
+      setCanPrev(emblaApi.canScrollPrev());
+      setCanNext(emblaApi.canScrollNext());
+    };
+    onSelect();
     emblaApi.on("select", onSelect);
-    return () => { emblaApi.off("select", onSelect); };
+    emblaApi.on("reInit", onSelect);
+    return () => { emblaApi.off("select", onSelect); emblaApi.off("reInit", onSelect); };
   }, [emblaApi]);
 
   // Lazy-load map slide when it becomes the selected slide
@@ -169,38 +179,31 @@ function UnifiedMediaCarousel({
   if (slides.length === 1) {
     const slide = slides[0];
     return (
-      <DoubleTapHeart onDoubleTap={onDoubleTap}>
-        <div className="relative w-full aspect-[4/5] bg-muted overflow-hidden">
-          {renderSlide(slide)}
-        </div>
-      </DoubleTapHeart>
+      <>
+        <DoubleTapHeart onDoubleTap={onDoubleTap}>
+          <div className="relative w-full aspect-[4/5] bg-muted overflow-hidden">
+            {renderSlide(slide)}
+          </div>
+        </DoubleTapHeart>
+        {renderPlayer()}
+      </>
     );
   }
 
   function renderSlide(slide: MediaSlide) {
-    if (slide.type === "video") {
+    if (slide.type === "video" || slide.type === "uploaded-video") {
+      const youtubeId = slide.type === "video" ? slide.embedUrl.match(/\/embed\/([A-Za-z0-9_-]+)/)?.[1] : null;
+      const poster = slide.type === "video" ? (youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : "") : slide.posterUrl;
       return (
-        <div className="relative w-full h-full">
-          <iframe
-            src={slide.embedUrl}
-            title="YouTube video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
-        </div>
-      );
-    }
-    if (slide.type === "uploaded-video") {
-      return (
-        <video
-          src={slide.videoUrl}
-          poster={slide.posterUrl || undefined}
-          controls
-          playsInline
-          preload="none"
-          className="w-full h-full object-cover bg-black"
-        />
+        <button type="button" aria-label="Video abspielen" onClick={(e) => { e.stopPropagation(); setPlaying(slide); }}
+          className="relative w-full h-full bg-black">
+          {poster && <img src={poster} alt="" draggable={false} className="w-full h-full object-cover" loading="lazy" />}
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="h-14 w-14 rounded-full bg-black/60 flex items-center justify-center shadow-lg">
+              <Play className="h-7 w-7 text-white fill-white ml-0.5" />
+            </span>
+          </span>
+        </button>
       );
     }
     if (slide.type === "photo") {
@@ -209,6 +212,7 @@ function UnifiedMediaCarousel({
           src={slide.url}
           alt=""
           className="w-full h-full object-cover cursor-pointer"
+          draggable={false}
           loading="lazy"
           onClick={(e) => { e.stopPropagation(); onPhotoTap(slide.index); }}
         />
@@ -243,10 +247,29 @@ function UnifiedMediaCarousel({
     );
   }
 
+  function renderPlayer() {
+    return (
+      <Dialog open={!!playing} onOpenChange={(open) => { if (!open) setPlaying(null); }}>
+        <DialogContent className="max-w-3xl w-[calc(100%-1rem)] p-0 bg-black border-0 overflow-hidden">
+          {playing?.type === "video" && (
+            <iframe src={`${playing.embedUrl}${playing.embedUrl.includes("?") ? "&" : "?"}autoplay=1&playsinline=1`} title="YouTube video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+              className="w-full aspect-video" />
+          )}
+          {playing?.type === "uploaded-video" && (
+            <video src={playing.videoUrl} poster={playing.posterUrl || undefined} controls autoPlay playsInline className="w-full max-h-[85dvh] bg-black" />
+          )}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
+    <>
     <DoubleTapHeart onDoubleTap={onDoubleTap}>
       <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
+        {/* touch-action per Embla docs: horizontal drags go to the carousel, vertical ones scroll the page */}
+        <div className="overflow-hidden touch-pan-y touch-pinch-zoom" ref={emblaRef}>
           <div className="flex">
             {slides.map((slide, i) => (
               <div key={i} className="flex-[0_0_100%] min-w-0 aspect-[4/5] bg-muted overflow-hidden">
@@ -255,6 +278,19 @@ function UnifiedMediaCarousel({
             ))}
           </div>
         </div>
+        {/* Arrows for mouse users (touch devices swipe) */}
+        {canPrev && (
+          <button type="button" aria-label="Zurück" onClick={(e) => { e.stopPropagation(); emblaApi?.scrollPrev(); }}
+            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        )}
+        {canNext && (
+          <button type="button" aria-label="Weiter" onClick={(e) => { e.stopPropagation(); emblaApi?.scrollNext(); }}
+            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        )}
         {/* Counter top-right */}
         <div className="absolute top-3 right-3 bg-black/60 text-white text-xs font-medium px-2 py-0.5 rounded-full z-10">
           {selected + 1}/{slides.length}
@@ -269,6 +305,8 @@ function UnifiedMediaCarousel({
         )}
       </div>
     </DoubleTapHeart>
+    {renderPlayer()}
+    </>
   );
 }
 

@@ -14,6 +14,7 @@
     "more": "Plus"
   },
   "common": {
+    "undo": "Annuler",
     "updateAvailable": "Nouvelle version disponible",
     "reloadNow": "Recharger",
     "save": "Enregistrer",
@@ -45,6 +46,9 @@
     "later": "Plus tard"
   },
   "dashboard": {
+    "hide": "Masquer",
+    "eventHidden": "Événement masqué",
+    "eventHiddenHint": "Il reste visible sous Événements.",
     "title": "Flyary",
     "subtitle": "Votre aperçu",
     "stats": "Stats",

@@ -98,7 +98,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   const prevYear = currentYear - 1;
 
   // === BATCH 1: Everything that doesn't depend on other results ===
-  const [statsRes, currentYearRes, prevYearRes, profileRes, recentRes, membershipsRes, glidersRes] = await Promise.all([
+  const [statsRes, currentYearRes, prevYearRes, profileRes, recentRes, membershipsRes, glidersRes, hiddenRes] = await Promise.all([
     supabase.rpc("get_pilot_stats", { _user_id: userId }),
     supabase.rpc("get_pilot_stats", { _user_id: userId, _year: currentYear }),
     supabase.rpc("get_pilot_stats", { _user_id: userId, _year: prevYear }),
@@ -110,6 +110,10 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
       .limit(5),
     supabase.from("group_members").select("group_id, groups(name)").eq("user_id", userId),
     supabase.from("pilot_gliders").select("manufacturer, model, next_check_date, reserve_repack_date").eq("user_id", userId),
+    // Events hidden from the home screen with a left swipe (migration 0027; no error handling
+    // needed: without the table nothing is hidden).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    supabase.from("hidden_events" as any).select("event_id").eq("user_id", userId),
   ]);
 
   // Parse stats
@@ -171,7 +175,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
           .in("group_id", groupIds)
           .gte("event_date", new Date().toISOString())
           .order("event_date", { ascending: true })
-          .limit(3).then(r => r)
+          .limit(12).then(r => r)
       : Promise.resolve({ data: null }),
     // 3: challenges
     groupIds.length > 0
@@ -195,11 +199,13 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   // Process events & signups
   let events: UpcomingEvent[] = [];
   let signups: SignupRow[] = [];
-  if (eventsRes.data && eventsRes.data.length > 0) {
-    const eventIds = eventsRes.data.map((e: any) => e.id);
+  const hiddenIds = new Set(((hiddenRes.data as unknown as { event_id: string }[] | null) || []).map((h) => h.event_id));
+  const visibleEvents = (eventsRes.data || []).filter((e: any) => !hiddenIds.has(e.id)).slice(0, 3);
+  if (visibleEvents.length > 0) {
+    const eventIds = visibleEvents.map((e: any) => e.id);
     const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds);
     if (sups) signups = sups;
-    events = eventsRes.data.map((e: any) => ({ ...e, group_name: groupNames[e.group_id] || "" }));
+    events = visibleEvents.map((e: any) => ({ ...e, group_name: groupNames[e.group_id] || "" }));
   }
 
   // Process challenges
@@ -292,6 +298,27 @@ export function useDashboardData() {
     }
   };
 
+  // Hide an event from the home screen (left swipe): optimistic removal, then refetch to refill
+  // the list to three. Returns false when it could not be saved.
+  const hideEvent = async (eventId: string) => {
+    if (!user) return false;
+    queryClient.setQueryData<DashboardData>(["dashboard", user.id], (old) => old && { ...old, events: old.events.filter((e) => e.id !== eventId) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    const { error } = await supabase.from("hidden_events" as any).insert({ user_id: user.id, event_id: eventId } as any);
+    void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
+    if (error && error.code !== "23505") {
+      toast({ title: i18n.t("common.error"), description: error.message, variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+  const unhideEvent = async (eventId: string) => {
+    if (!user) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    await supabase.from("hidden_events" as any).delete().eq("user_id", user.id).eq("event_id", eventId);
+    void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
+  };
+
   return {
     stats: data?.stats || { totalFlights: 0, totalMinutes: 0, uniqueTakeoffs: 0, uniqueLandings: 0 },
     yearComparison: data?.yearComparison || null,
@@ -305,6 +332,8 @@ export function useDashboardData() {
     avatarSignedUrl: data?.avatarSignedUrl || "",
     overdueGliders: data?.overdueGliders || [],
     toggleSignup,
+    hideEvent,
+    unhideEvent,
     refetch,
     user,
   };

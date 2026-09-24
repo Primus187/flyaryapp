@@ -65,6 +65,7 @@ export default function Feed() {
   const [groupMembers, setGroupMembers] = useState<{ user_id: string; pilot_name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
+  const touchStartX = useRef(0);
   const isPulling = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const stableGroupIds = groupIds;
@@ -138,6 +139,7 @@ export default function Feed() {
     const scrollTop = scrollRef.current?.scrollTop ?? window.scrollY;
     if (scrollTop <= 0) {
       touchStartY.current = e.touches[0].clientY;
+      touchStartX.current = e.touches[0].clientX;
       isPulling.current = true;
     }
   }, []);
@@ -145,6 +147,13 @@ export default function Feed() {
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isPulling.current) return;
     const diff = e.touches[0].clientY - touchStartY.current;
+    // A sideways swipe (media carousel) is not a pull-to-refresh: stop tracking, so the whole
+    // feed does not re-render on every pixel of the swipe.
+    if (Math.abs(e.touches[0].clientX - touchStartX.current) > Math.abs(diff)) {
+      isPulling.current = false;
+      setPullDistance(0);
+      return;
+    }
     if (diff > 0) {
       setPullDistance(Math.min(diff * 0.5, 80));
     }

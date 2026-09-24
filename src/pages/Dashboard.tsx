@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame } from "lucide-react";
+import { Plus, Plane, Clock, MapPin, BarChart3, CheckCircle2, XCircle, Users, AlertTriangle, RefreshCw, Target, TrendingUp, TrendingDown, Mountain, Route, Flame, EyeOff } from "lucide-react";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import MessagesButton from "@/components/chat/MessagesButton";
@@ -22,6 +22,25 @@ import GoalFormDialog from "@/components/GoalFormDialog";
 import { useXcontestAutoSync } from "@/hooks/use-xcontest-auto-sync";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { usePilotGoals } from "@/hooks/use-pilot-goals";
+import { useSwipeAction } from "@/hooks/use-swipe-action";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+
+/** Home-screen event row: swipe left to hide it from the home screen. */
+function SwipeableEventCard({ children, onHide, hideLabel }: { children: React.ReactNode; onHide: () => void; hideLabel: string }) {
+  const { offset, onTouchStart, onTouchMove, onTouchEnd } = useSwipeAction({ onSwipeLeft: onHide });
+  return (
+    <div className="relative overflow-hidden rounded-lg">
+      <div className="absolute inset-y-0 right-0 flex items-center gap-1.5 bg-muted-foreground/80 text-background px-4 text-xs font-medium">
+        <EyeOff className="h-4 w-4" />{hideLabel}
+      </div>
+      <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        style={{ transform: `translateX(${offset}px)`, transition: offset === 0 ? "transform 0.2s" : "none" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function DashboardSkeleton() {
   return (
@@ -49,8 +68,14 @@ export default function Dashboard() {
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const {
     stats, yearComparison, recent, events, signups, challenges, loading, error,
-    profile, avatarSignedUrl, overdueGliders, toggleSignup, refetch, user,
+    profile, avatarSignedUrl, overdueGliders, toggleSignup, hideEvent, unhideEvent, refetch, user,
   } = useDashboardData();
+  const { toast } = useToast();
+  const hideFromHome = async (eventId: string) => {
+    if (!(await hideEvent(eventId))) return;
+    toast({ title: t("dashboard.eventHidden"), description: t("dashboard.eventHiddenHint"),
+      action: <ToastAction altText={t("common.undo")} onClick={() => void unhideEvent(eventId)}>{t("common.undo")}</ToastAction> });
+  };
   const { streak } = usePilotStreak(user?.id);
   const { mode, loading: roleLoading } = useRoleMode();
 
@@ -173,7 +198,8 @@ export default function Dashboard() {
               const isSignedUp = mySignup?.signed_up ?? false;
               const totalSignedUp = signups.filter(s => s.event_id === e.id && s.signed_up).length;
               return (
-                <article key={e.id}>
+                <SwipeableEventCard key={e.id} onHide={() => void hideFromHome(e.id)} hideLabel={t("dashboard.hide")}>
+                <article>
                   <Card className="border-0 shadow-sm hover:bg-muted/50 cursor-pointer transition-colors">
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between gap-2" onClick={() => navigate(`/events/${e.id}`)}>
@@ -199,6 +225,7 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                 </article>
+                </SwipeableEventCard>
               );
             })}
           </div>
