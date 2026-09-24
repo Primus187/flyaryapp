@@ -2742,6 +2742,13 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      event_detail_data: { Args: { _event_id: string }; Returns: Json }
+      feed_achievement_item: { Args: { _id: string }; Returns: Json }
+      feed_event_item: { Args: { _id: string }; Returns: Json }
+      feed_flight_item: { Args: { _id: string }; Returns: Json }
+      feed_mention_members: { Args: never; Returns: Json }
+      feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
+      feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
       get_emergency_contact_info: {
         Args: { _event_id: string; _target_user_id: string }
         Returns: {
