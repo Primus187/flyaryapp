@@ -2157,6 +2157,18 @@
         "sectionModeration": "Listings can be reported. The moderators (Flyary, and flight school moderators for private listings) can hide listings. Flyary can ban people from the marketplace for misuse and delete listings.",
         "sectionSchools": "Flight schools sell commercially. They state company, address, contact and warranty; VAT-registered schools also their UID number. Sales by schools are covered by their warranty terms.",
         "sectionData": "Listings are visible to all signed-in people. Photos of sold, hidden or long-expired listings are deleted automatically, as are abandoned drafts. Deleting your account removes your own listings and their photos; chats remain readable for the other party."
+      },
+      "favorites": {
+        "tab": "Saved",
+        "ownTab": "My listings",
+        "empty": "Nothing saved yet",
+        "emptyHint": "Tap the heart in the marketplace to save listings. You'll hear when they get cheaper, reserved or sold.",
+        "add": "Save",
+        "remove": "Remove from saved",
+        "unavailable": "No longer available",
+        "notifyPrice": "A saved listing got cheaper",
+        "notifyReserved": "A saved listing was reserved",
+        "notifySold": "A saved listing was sold"
       }
     }
 }

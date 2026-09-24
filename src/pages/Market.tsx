@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { ImageOff, List, Plus, Search, ShieldAlert, SlidersHorizontal, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchModerationQueue, isMarketModerator } from "@/lib/marketplace-moderation";
+import { fetchFavoriteIds, toggledSet } from "@/lib/marketplace-favorites";
+import FavoriteButton from "@/components/market/FavoriteButton";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import EmptyState from "@/components/layout/EmptyState";
@@ -54,6 +56,9 @@ export default function Market() {
   const { user } = useAuth();
   /** Open moderation cases; null = not a moderator (plan 4.8). */
   const [cases, setCases] = useState<number | null>(null);
+  /** Kept listings (plan 6.1). */
+  const [favIds, setFavIds] = useState<Set<string>>(new Set());
+  useEffect(() => { if (user) fetchFavoriteIds().then(setFavIds).catch(() => undefined); }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -113,8 +118,9 @@ export default function Market() {
   const filterCount = activeFilterCount(filters);
 
   const card = (item: SearchItem) => (
-    <button key={item.id} type="button" onClick={() => navigate(`/market/${item.id}`)}
-      className="overflow-hidden rounded-xl border border-border/50 bg-card text-left shadow-sm active:scale-[0.99]">
+    <div key={item.id} className="relative">
+    <button type="button" onClick={() => navigate(`/market/${item.id}`)}
+      className="w-full overflow-hidden rounded-xl border border-border/50 bg-card text-left shadow-sm active:scale-[0.99]">
       <div className="relative aspect-square bg-muted">
         {thumbs[item.id]
           ? <img src={thumbs[item.id]} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -133,6 +139,11 @@ export default function Market() {
         </p>
       </div>
     </button>
+    {user && (
+      <FavoriteButton userId={user.id} listingId={item.id} active={favIds.has(item.id)} className="absolute right-1.5 top-1.5"
+        onChange={(on) => setFavIds((prev) => toggledSet(prev, item.id, on))} />
+    )}
+    </div>
   );
 
   const chipGroup = <V extends string>(label: string, values: readonly V[], selected: V[], text: (v: V) => string, set: (v: V[]) => void) => (

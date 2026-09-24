@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039, 0041 and 0042 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -91,6 +91,7 @@ beforeAll(async () => {
   await db.exec(migration("0038_marketplace_moderation.sql"));
   await db.exec(migration("0039_marketplace_cleanup.sql"));
   await db.exec(migration("0041_marketplace_terms.sql"));
+  await db.exec(migration("0042_marketplace_favorites.sql"));
   // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
   await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
@@ -743,6 +744,65 @@ describe("daily cleanup and storage usage", () => {
     expect(usage.total_bytes).toBe(6000);
     await asUser(moderator);
     await expect(db.query("SELECT public.marketplace_storage_usage()")).rejects.toThrow("marketplace:not_allowed");
+  });
+});
+
+describe("favourites", () => {
+  let alpha: string;
+  const notesFor = async (uid: string) => {
+    await asSystem();
+    return (await db.query<{ type: string }>(`SELECT type FROM public.notifications WHERE user_id = '${uid}' ORDER BY created_at, type`)).rows.map((r) => r.type);
+  };
+  const favorites = async (uid: string) => {
+    await asUser(uid);
+    return (await db.query<{ f: { title: string; status: string; available: boolean }[] }>("SELECT public.marketplace_my_favorites() AS f")).rows[0].f;
+  };
+  beforeAll(async () => {
+    await asSystem();
+    alpha = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_listings WHERE seller_user_id = '${owner}' AND title LIKE 'Advance%'`)).rows[0].id;
+    await db.exec(`DELETE FROM public.notifications; DELETE FROM public.pushes;`);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'active', price_cents = 180000 WHERE id = '${alpha}';
+      DELETE FROM public.marketplace_favorites;`);
+  });
+
+  it("keeps visible listings of others only; everyone sees only their own list", async () => {
+    await asUser(student);
+    await db.exec(`INSERT INTO public.marketplace_favorites (user_id, listing_id) VALUES ('${student}', '${alpha}')`);
+    await asUser(owner);
+    await expect(db.exec(`INSERT INTO public.marketplace_favorites (user_id, listing_id) VALUES ('${owner}', '${alpha}')`)).rejects.toThrow();
+    const draft = (await insertAs(stranger, `('${stranger}', NULL, 'helmet', 'F Entwurf', 'all', 1, 'draft')`)).rows[0].id;
+    await asUser(student);
+    await expect(db.exec(`INSERT INTO public.marketplace_favorites (user_id, listing_id) VALUES ('${student}', '${draft}')`)).rejects.toThrow();
+    await expect(db.exec(`INSERT INTO public.marketplace_favorites (user_id, listing_id) VALUES ('${stranger}', '${alpha}')`)).rejects.toThrow();
+    await asUser(stranger);
+    expect((await db.query("SELECT * FROM public.marketplace_favorites")).rows).toHaveLength(0);
+    await asSystem();
+    await db.exec(`DELETE FROM public.marketplace_listings WHERE id = '${draft}'`);
+  });
+
+  it("tells people keeping it when it gets cheaper, reserved or sold – not the seller, not for price increases", async () => {
+    await asUser(owner);
+    await db.exec(`UPDATE public.marketplace_listings SET price_cents = 190000 WHERE id = '${alpha}'`);
+    expect(await notesFor(student)).toEqual([]);
+    await db.exec(`UPDATE public.marketplace_listings SET price_cents = 150000 WHERE id = '${alpha}'`);
+    await db.query(`SELECT public.marketplace_reserve('${alpha}', true)`);
+    await db.query(`SELECT public.marketplace_mark_sold('${alpha}')`);
+    expect(await notesFor(student)).toEqual(["market_fav_price", "market_fav_reserved", "market_fav_sold"]);
+    expect(await notesFor(owner)).toEqual([]);
+    await asSystem();
+    expect((await db.query(`SELECT title FROM public.pushes WHERE user_id = '${student}' ORDER BY title`)).rows.map((r) => (r as { title: string }).title))
+      .toEqual(["Gemerkte Anzeige günstiger", "Gemerkte Anzeige reserviert", "Gemerkte Anzeige verkauft"]);
+  });
+
+  it("lists favourites with their state even after they are gone from the market", async () => {
+    expect(await favorites(student)).toMatchObject([{ title: "Advance Alpha 7 (26)", status: "sold", available: false }]);
+    await asSystem();
+    await db.exec(`UPDATE public.marketplace_listings SET status = 'active' WHERE id = '${alpha}'`);
+    expect(await favorites(student)).toMatchObject([{ status: "active", available: true }]);
+    expect(await favorites(stranger)).toEqual([]);
   });
 });
 

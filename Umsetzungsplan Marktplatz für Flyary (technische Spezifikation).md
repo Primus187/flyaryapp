@@ -1,6 +1,6 @@
 # Umsetzungsplan: Marktplatz für Flyary
 
-2026-09-24 · Tobias Bolliger · Stand: M1 abgeschlossen (siehe Status)
+2026-09-24 · Tobias Bolliger · Stand: M1 abgeschlossen, M2 in Arbeit (siehe Status)
 
 Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschirm-Material in Flyary: Pilotinnen und Piloten verkaufen ihr altes Material oder suchen günstige Occasionen, Flugschulen verkaufen Material aus ihrem Shop. Es ist wie der Umsetzungsplan für die Flugschul-Erweiterungen aufgebaut: Jeder Unterabschnitt ist ein eigener Auftrag an den Coding-Agenten, mit Ziel, Akzeptanzkriterien, Datenmodell und Platz in der Navigation.
 
@@ -9,7 +9,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
-| M2 – Wiederkommen | ⬜ Nicht begonnen | Merkliste, gespeicherte Suchen, Vorausfüllen aus dem eigenen Material |
+| M2 – Wiederkommen | 🔶 In Arbeit | 6.1 ✅; gespeicherte Suchen, Vorausfüllen aus dem eigenen Material, Umkreis folgen |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
 
@@ -32,7 +32,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 | Stufe | Fokus | Enthaltene Features | Aufwand | Status |
 | --- | --- | --- | --- | --- |
 | M1 | Grundfunktion | 4.1–4.10 | L | ✅ |
-| M2 | Wiederkommen | 6.1–6.4 | M | ⬜ |
+| M2 | Wiederkommen | 6.1–6.4 | M | 🔶 |
 | M3 | Schulen im Alltag | 7.1–7.2 | M | ⬜ |
 | M4 | Später / optional | 8.1–8.5 | L | ⏸ |
 
@@ -270,9 +270,11 @@ Mit dem Aufräumen aus Abschnitt 4.9 bleibt der Bestand begrenzt. Wird es knapp,
 
 ## 6. M2 – Wiederkommen
 
-### 6.1 Merkliste
+### 6.1 Merkliste ✅
 
 Herz auf Karte und Detailseite, Liste unter «Meine Anzeigen». Mitteilung, wenn eine gemerkte Anzeige reserviert, verkauft oder im Preis gesenkt wird.
+
+**Ist-Stand:** Migration `0042_marketplace_favorites.sql` (`marketplace_favorites`, Trigger `marketplace_notify_favorites`, `marketplace_my_favorites`), Reiter «Gemerkt» in «Meine Anzeigen». Gemerkte Anzeigen bleiben nach Verkauf oder Ausblenden mit Status in der Liste; Mitteilungen nie an die verkaufende Seite und nicht bei Preiserhöhungen. Bei Schul-Neuware mit mehreren Stück löst ein einzelner Verkauf keine Mitteilung aus (die Anzeige bleibt aktiv).
 
 ### 6.2 Gespeicherte Suchen mit Push
 

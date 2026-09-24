@@ -1,5 +1,21 @@
 # Flyary
 
+## Marktplatz: Merkliste (6.1)
+
+Migration `0042_marketplace_favorites.sql`, Herz `src/components/market/FavoriteButton.tsx`, Liste
+`src/components/market/FavoritesList.tsx`, Logik in `src/lib/marketplace-favorites.ts`.
+
+- **Herz** auf jeder Kachel der Übersicht und auf der Detailseite fremder Anzeigen (sofortige Anzeige, bei Fehler
+  zurückgesetzt). Merken lassen sich nur Anzeigen, die man sehen darf, und nicht die eigenen.
+- **«Meine Anzeigen» → Reiter «Gemerkt»** (`/market/mine?tab=favorites`): gemerkte Anzeigen mit Preis und Status;
+  verfügbare zuerst. Verkaufte, ausgeblendete oder abgelaufene bleiben mit dem Grund in der Liste
+  (`marketplace_my_favorites`, Fotos nur solange die Anzeige sichtbar ist).
+- **Mitteilung** (Glocke + Push, Absender «Marktplatz») an alle, die eine Anzeige gemerkt haben, wenn sie günstiger,
+  reserviert oder verkauft wird (Trigger auf `marketplace_listings`); nicht bei Preiserhöhungen, nie an die verkaufende
+  Seite.
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0042), danach das Frontend.
+
 ## Marktplatz M1: Nachtrag Abnahmeprüfung
 
 Prüfung aller M1-Aufträge (4.1–4.10) nach Abschluss der Stufe, gezielt an den Übergängen zwischen den Aufträgen.

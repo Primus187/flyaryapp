@@ -2157,6 +2157,18 @@
         "sectionModeration": "Anzeigen können gemeldet werden. Die Moderation (Flyary sowie Moderatorinnen und Moderatoren von Flugschulen für private Anzeigen) kann Anzeigen ausblenden. Flyary kann Personen bei Missbrauch vom Marktplatz sperren und Anzeigen löschen.",
         "sectionSchools": "Flugschulen verkaufen gewerblich. Sie geben Firma, Adresse, Kontakt und Gewährleistung an; MWST-pflichtige Schulen zudem ihre UID-Nummer. Für Verkäufe von Schulen gelten deren Gewährleistungsangaben.",
         "sectionData": "Anzeigen sind für alle angemeldeten Personen sichtbar. Fotos verkaufter, ausgeblendeter oder lange abgelaufener Anzeigen werden automatisch gelöscht, ebenso liegen gebliebene Entwürfe. Beim Löschen des Kontos werden die eigenen Anzeigen samt Fotos entfernt; Chats bleiben für die Gegenseite lesbar."
+      },
+      "favorites": {
+        "tab": "Gemerkt",
+        "ownTab": "Meine Anzeigen",
+        "empty": "Noch nichts gemerkt",
+        "emptyHint": "Tippe im Marktplatz auf das Herz, um Anzeigen zu merken. Du erfährst dann, wenn sie günstiger, reserviert oder verkauft werden.",
+        "add": "Merken",
+        "remove": "Nicht mehr merken",
+        "unavailable": "Nicht mehr verfügbar",
+        "notifyPrice": "Eine gemerkte Anzeige ist günstiger geworden",
+        "notifyReserved": "Eine gemerkte Anzeige wurde reserviert",
+        "notifySold": "Eine gemerkte Anzeige wurde verkauft"
       }
     }
 }

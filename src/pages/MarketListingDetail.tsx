@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, Pencil, School, Share2, Truck } from "lucide-react";
 import ReportListingDialog from "@/components/market/ReportListingDialog";
+import FavoriteButton from "@/components/market/FavoriteButton";
+import { fetchFavoriteIds } from "@/lib/marketplace-favorites";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/layout/PageContainer";
@@ -49,6 +51,8 @@ export default function MarketListingDetail() {
   const [loading, setLoading] = useState(true);
   const [contacting, setContacting] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [favorite, setFavorite] = useState(false);
+  useEffect(() => { if (id) fetchFavoriteIds().then((ids) => setFavorite(ids.has(id))).catch(() => undefined); }, [id]);
   /** School listings: the shop's legal details (plan 4.7). */
   const [shopProfile, setShopProfile] = useState<ShopProfile | null>(null);
 
@@ -142,6 +146,9 @@ export default function MarketListingDetail() {
     <PageContainer>
       <PageHeader title={t("market.title")} back
         action={<>
+          {!canManage && user && (
+            <FavoriteButton userId={user.id} listingId={listing.id} active={favorite} onChange={setFavorite} className="bg-transparent shadow-none" />
+          )}
           {!canManage && (
             <Button size="icon" variant="ghost" aria-label={t("market.report.title")} onClick={() => setReportOpen(true)}><Flag className="h-4 w-4" /></Button>
           )}

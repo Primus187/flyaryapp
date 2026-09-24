@@ -125,7 +125,7 @@ export default function NotificationBell() {
       return;
     }
     if (n.reference_id && n.reference_type) {
-      if (n.reference_type === "listing") navigate(n.type === "market_expiring" ? "/market/mine" : `/market/${n.reference_id}`);
+      if (n.reference_type === "listing") navigate(n.type === "market_expiring" ? "/market/mine" : n.type === "market_fav_sold" ? "/market/mine?tab=favorites" : `/market/${n.reference_id}`);
       else if (n.reference_type === "chat") navigate(`/messages/${n.reference_id}`);
       else if (n.reference_type === "flight") navigate(`/flights/${n.reference_id}`);
       else if (n.reference_type === "event") navigate(`/events/${n.reference_id}`);
@@ -140,6 +140,9 @@ export default function NotificationBell() {
     if (n.type === "chat_mention") return t("notifications.mentionedInChat");
     if (n.type === "market_removed") return t("market.moderation.notification");
     if (n.type === "market_expiring") return t("market.mine.expiringNotification");
+    if (n.type === "market_fav_price") return t("market.favorites.notifyPrice");
+    if (n.type === "market_fav_reserved") return t("market.favorites.notifyReserved");
+    if (n.type === "market_fav_sold") return t("market.favorites.notifySold");
     return "";
   };
 

@@ -2157,6 +2157,18 @@
         "sectionModeration": "Les annonces peuvent être signalées. La modération (Flyary ainsi que les modératrices et modérateurs des écoles pour les annonces privées) peut masquer des annonces. En cas d'abus, Flyary peut exclure des personnes du marché et supprimer des annonces.",
         "sectionSchools": "Les écoles vendent à titre commercial. Elles indiquent entreprise, adresse, contact et garantie ; les écoles assujetties à la TVA aussi leur numéro IDE. Les ventes des écoles sont couvertes par leurs indications de garantie.",
         "sectionData": "Les annonces sont visibles pour toutes les personnes connectées. Les photos d'annonces vendues, masquées ou expirées depuis longtemps sont supprimées automatiquement, tout comme les brouillons abandonnés. La suppression du compte efface ses propres annonces et leurs photos ; les chats restent lisibles pour l'autre partie."
+      },
+      "favorites": {
+        "tab": "Favoris",
+        "ownTab": "Mes annonces",
+        "empty": "Aucun favori pour l'instant",
+        "emptyHint": "Touche le cœur sur le marché pour garder des annonces. Tu seras averti·e si elles baissent de prix, sont réservées ou vendues.",
+        "add": "Ajouter aux favoris",
+        "remove": "Retirer des favoris",
+        "unavailable": "Plus disponible",
+        "notifyPrice": "Une annonce favorite a baissé de prix",
+        "notifyReserved": "Une annonce favorite a été réservée",
+        "notifySold": "Une annonce favorite a été vendue"
       }
     }
 }
