@@ -2192,6 +2192,15 @@
         "label": "Aus meinem Material",
         "placeholder": "Schirm auswählen …",
         "done": "Übernommen – {{hours}} h laut Flugbuch. Bitte prüfen."
+      },
+      "radius": {
+        "plz": "Umkreis um PLZ",
+        "radius": "Umkreis",
+        "weight": "Startgewicht (kg)",
+        "weightHint": "Blendet Schirme aus, deren Gewichtsbereich nicht passt.",
+        "notFound": "Diese PLZ kennen wir nicht – Suche ohne Umkreis.",
+        "weightFits": "Passt zu deinem Startgewicht ({{kg}} kg).",
+        "weightOutside": "Ausserhalb deines Startgewichts ({{kg}} kg)."
       }
     }
 }

@@ -26,6 +26,7 @@ import { safetyHints } from "@/lib/marketplace-safety";
 import { ageLabel } from "@/lib/marketplace-search";
 import { getSignedUrl } from "@/lib/signed-url-cache";
 import { fetchShopProfile, type ShopProfile } from "@/lib/school-shop";
+import { rememberedWeight, weightFit } from "@/lib/geo-ch";
 
 interface SellerCard {
   seller_kind: "person" | "school";
@@ -97,6 +98,9 @@ export default function MarketListingDetail() {
   const status = effectiveStatus(listing);
   const spec = CATEGORY_SPECS[listing.category];
   const hints = safetyHints(listing);
+  // plan 6.4: compare with the take-off weight last used in the filter (this browser only)
+  const myWeight = rememberedWeight();
+  const fit = listing.category === "glider" || listing.category === "tandem" ? weightFit(listing.attributes, myWeight) : null;
   const monthFormat = new Intl.DateTimeFormat(i18n.language, { month: "long", year: "numeric" });
 
   const attributeText = (field: AttributeField, value: unknown): string | null => {
@@ -213,6 +217,12 @@ export default function MarketListingDetail() {
         </Button>
       )}
 
+      {fit && (
+        <p className={fit === "fits" ? "rounded-md bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300"
+          : "rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300"}>
+          {t(fit === "fits" ? "market.radius.weightFits" : "market.radius.weightOutside", { kg: myWeight })}
+        </p>
+      )}
       {hints.length > 0 && (
         <Card><CardContent className="space-y-1.5 p-3">
           {hints.map((h) => (

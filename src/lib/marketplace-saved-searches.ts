@@ -4,6 +4,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { EMPTY_FILTERS, filtersFromParams, filtersToParams, toRpcFilters, type SearchFilters } from "./marketplace-search";
+import { geocodeSwissPostalCode, type LatLng } from "./geo-ch";
 
 export const MAX_SAVED_SEARCHES = 5;
 
@@ -21,8 +22,8 @@ export const hasSearchCriteria = (f: SearchFilters) =>
   filtersToParams({ ...f, sort: EMPTY_FILTERS.sort }).toString() !== "";
 
 /** Filters as stored for matching: like the search, without the sort order. */
-export function savedFilters(f: SearchFilters): Record<string, unknown> {
-  const rest = { ...toRpcFilters(f) };
+export function savedFilters(f: SearchFilters, near: LatLng | null = null): Record<string, unknown> {
+  const rest = { ...toRpcFilters(f, near) };
   delete rest.sort;
   return rest;
 }
@@ -37,8 +38,9 @@ export function suggestName(f: SearchFilters, categoryLabel: (c: string) => stri
 const table = () => supabase.from("marketplace_saved_searches" as any);
 
 export async function saveSearch(userId: string, name: string, f: SearchFilters): Promise<string> {
+  const near = f.nearPlz ? await geocodeSwissPostalCode(f.nearPlz) : null;
   const { data, error } = await table()
-    .insert({ user_id: userId, name: name.trim().slice(0, 60), filters: savedFilters(f), query: filtersToParams(f).toString() })
+    .insert({ user_id: userId, name: name.trim().slice(0, 60), filters: savedFilters(f, near), query: filtersToParams(f).toString() })
     .select("id").single();
   if (error) throw error;
   return (data as unknown as { id: string }).id;

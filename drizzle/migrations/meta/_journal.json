@@ -309,6 +309,13 @@
       "when": 1792368000000,
       "tag": "0043_marketplace_saved_searches",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1792454400000,
+      "tag": "0044_marketplace_radius_weight",
+      "breakpoints": true
     }
   ]
 }

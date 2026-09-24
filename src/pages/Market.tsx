@@ -29,10 +29,11 @@ import { LISTING_CATEGORIES, LISTING_CONDITIONS, LISTING_TYPES } from "@/lib/mar
 import { CERTIFICATION_CLASSES } from "@/lib/marketplace-categories";
 import { CANTONS } from "@/lib/marketplace-listing";
 import {
-  EMPTY_FILTERS, SORT_ORDERS, activeFilterCount, ageLabel, filtersFromParams, filtersToParams, searchListings,
+  EMPTY_FILTERS, RADIUS_OPTIONS, SORT_ORDERS, activeFilterCount, ageLabel, filtersFromParams, filtersToParams, parseWeight, searchListings,
   showsCertificationFilter, toggle, type SearchFilters, type SearchItem, type SearchPage,
 } from "@/lib/marketplace-search";
 import { MARKET_PHOTO_BUCKET } from "@/lib/marketplace-photos";
+import { geocodeSwissPostalCode, rememberWeight } from "@/lib/geo-ch";
 import { getSignedUrls } from "@/lib/signed-url-cache";
 
 const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
@@ -95,7 +96,12 @@ export default function Market() {
   useEffect(() => {
     const current = ++request.current;
     setLoading(true);
-    searchListings(filters)
+    (async () => {
+      // radius search (plan 6.4): position of the postal code from geo.admin.ch
+      const near = filters.nearPlz ? await geocodeSwissPostalCode(filters.nearPlz) : null;
+      if (filters.nearPlz && !near && current === request.current) toast.warning(t("market.radius.notFound"));
+      return searchListings(filters, null, near);
+    })()
       .then(async (page) => {
         if (current !== request.current) return;
         setItems(page.items);
@@ -114,7 +120,8 @@ export default function Market() {
     if (!cursor) return;
     setLoadingMore(true);
     try {
-      const page = await searchListings(filters, cursor);
+      const near = filters.nearPlz ? await geocodeSwissPostalCode(filters.nearPlz) : null;
+      const page = await searchListings(filters, cursor, near);
       setItems((prev) => [...prev, ...page.items]);
       setCursor(page.next_cursor);
       await addThumbs(page.items);
@@ -182,7 +189,7 @@ export default function Market() {
         </p>
       </div>
     </button>
-    {user && (
+    {user && !item.mine && (
       <FavoriteButton userId={user.id} listingId={item.id} active={favIds.has(item.id)} className="absolute right-1.5 top-1.5"
         onChange={(on) => setFavIds((prev) => toggledSet(prev, item.id, on))} />
     )}
@@ -295,6 +302,20 @@ export default function Market() {
             <div className="space-y-1.5"><Label className="text-xs">{t("market.fields.size")}</Label>
               <Input value={draft.size} maxLength={20} onChange={(e) => setDraft({ ...draft, size: e.target.value })} /></div>
             {chipGroup(t("market.form.canton"), CANTONS, draft.cantons, (c) => (c === "other" ? t("market.form.cantonOther") : c), (v) => setDraft({ ...draft, cantons: v }))}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label className="text-xs">{t("market.radius.plz")}</Label>
+                <Input inputMode="numeric" maxLength={4} value={draft.nearPlz} placeholder="3800"
+                  onChange={(e) => setDraft({ ...draft, nearPlz: e.target.value.replace(/\D/g, "") })} /></div>
+              <div className="space-y-1.5"><Label className="text-xs">{t("market.radius.radius")}</Label>
+                <Select value={String(draft.radiusKm)} onValueChange={(v) => setDraft({ ...draft, radiusKm: Number(v) })}>
+                  <SelectTrigger disabled={!draft.nearPlz}><SelectValue /></SelectTrigger>
+                  <SelectContent>{RADIUS_OPTIONS.map((r) => <SelectItem key={r} value={String(r)}>{r} km</SelectItem>)}</SelectContent>
+                </Select></div>
+            </div>
+            <div className="space-y-1.5"><Label className="text-xs">{t("market.radius.weight")}</Label>
+              <Input inputMode="numeric" maxLength={3} value={draft.weightKg} placeholder="85"
+                onChange={(e) => setDraft({ ...draft, weightKg: e.target.value.replace(/\D/g, "") })} />
+              <p className="text-[11px] text-muted-foreground">{t("market.radius.weightHint")}</p></div>
             <div className="flex items-center justify-between rounded-md border px-3 py-2">
               <Label className="text-sm">{t("market.browse.schoolsOnly")}</Label>
               <Switch checked={draft.schoolsOnly} onCheckedChange={(v) => setDraft({ ...draft, schoolsOnly: v })} />
@@ -304,7 +325,11 @@ export default function Market() {
             <Button variant="outline" className="flex-1" onClick={() => { setQuery(""); setFilters(EMPTY_FILTERS); setSheetOpen(false); }}>
               {t("market.browse.reset")}
             </Button>
-            <Button className="flex-1" onClick={() => { setFilters({ ...draft, q: query }); setSheetOpen(false); }}>{t("market.browse.apply")}</Button>
+            <Button className="flex-1" onClick={() => {
+              rememberWeight(parseWeight(draft.weightKg));
+              setFilters({ ...draft, q: query });
+              setSheetOpen(false);
+            }}>{t("market.browse.apply")}</Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

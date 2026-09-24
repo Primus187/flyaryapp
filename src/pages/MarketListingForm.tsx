@@ -30,6 +30,7 @@ import { safetyHints } from "@/lib/marketplace-safety";
 import { fetchMyShops, type MyShop } from "@/lib/school-shop";
 import { hasAcceptedTerms, withPrivateSaleClause } from "@/lib/marketplace-terms";
 import { fetchOwnGear, gliderLabel, prefillFromGlider, type FlightGliderRow, type OwnGlider } from "@/lib/marketplace-prefill";
+import { geocodeSwissPostalCode } from "@/lib/geo-ch";
 import MarketTermsDialog from "@/components/market/MarketTermsDialog";
 
 interface FormState {
@@ -165,6 +166,8 @@ export default function MarketListingForm() {
     if (blocking.length) { setStep(isEdit ? step : 2); return null; }
 
     const year = Number(form.year);
+    // position of the postal code for the radius search (plan 6.4); Swiss codes only, rounded to ~1 km
+    const position = await geocodeSwissPostalCode(form.postal_code);
     const content = {
       listing_type: form.listing_type, category: form.category, title: form.title.trim(), description: form.description.trim(),
       condition: form.condition || null,
@@ -175,6 +178,7 @@ export default function MarketListingForm() {
       attributes: validation.cleaned, price_type: form.price_type, price_cents: needsPrice ? priceCents : null,
       postal_code: /^\d{4,5}$/.test(form.postal_code.trim()) ? form.postal_code.trim() : null,
       locality: form.locality.trim() || null, canton: form.canton || null, delivery: form.delivery,
+      lat: position?.lat ?? null, lng: position?.lng ?? null,
       ...(sellerGroup ? { visibility: form.visibility, quantity: Math.max(1, Math.min(999, Number.parseInt(form.quantity, 10) || 1)) } : {}),
     };
 

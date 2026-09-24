@@ -2192,6 +2192,15 @@
         "label": "From my equipment",
         "placeholder": "Choose a wing …",
         "done": "Taken over – {{hours}} h according to the logbook. Please check."
+      },
+      "radius": {
+        "plz": "Around postcode",
+        "radius": "Radius",
+        "weight": "Take-off weight (kg)",
+        "weightHint": "Hides wings whose weight range does not fit.",
+        "notFound": "Unknown postcode – searching without radius.",
+        "weightFits": "Fits your take-off weight ({{kg}} kg).",
+        "weightOutside": "Outside your take-off weight ({{kg}} kg)."
       }
     }
 }

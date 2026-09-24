@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0043 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0044 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -93,6 +93,7 @@ beforeAll(async () => {
   await db.exec(migration("0041_marketplace_terms.sql"));
   await db.exec(migration("0042_marketplace_favorites.sql"));
   await db.exec(migration("0043_marketplace_saved_searches.sql"));
+  await db.exec(migration("0044_marketplace_radius_weight.sql"));
   // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
   await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
@@ -876,6 +877,56 @@ describe("saved searches", () => {
     await db.exec(`UPDATE public.marketplace_saved_searches SET last_viewed_at = now() WHERE name = 'Rush M'`);
     expect((await overview()).find((s) => s.name === "Rush M")!.new_count).toBe(0);
     await expect(db.exec(`UPDATE public.marketplace_saved_searches SET last_notified_at = NULL WHERE name = 'Rush M'`)).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("radius and take-off weight", () => {
+  // listings here are titled "R …" and removed afterwards
+  beforeAll(async () => {
+    await asSystem();
+    await db.exec(`INSERT INTO public.marketplace_listings (seller_user_id, created_by, category, title, status, bumped_at, expires_at, lat, lng, attributes)
+      VALUES
+        ('${stranger}', '${stranger}', 'glider', 'R Interlaken 70-90', 'active', now(), now() + interval '9 days', 46.68, 7.88, '{"weight_min": 70, "weight_max": 90}'),
+        ('${stranger}', '${stranger}', 'glider', 'R Bern ohne Bereich', 'active', now(), now() + interval '9 days', 46.95, 7.44, '{}'),
+        ('${stranger}', '${stranger}', 'harness', 'R Zürich Gurtzeug', 'active', now(), now() + interval '9 days', 47.38, 8.54, '{}'),
+        ('${stranger}', '${stranger}', 'glider', 'R ohne Ort 95-115', 'active', now(), now() + interval '9 days', NULL, NULL, '{"weight_min": 95, "weight_max": 115}')`);
+  });
+  afterAll(async () => {
+    await asSystem();
+    await db.exec("DELETE FROM public.marketplace_listings WHERE title LIKE 'R %'");
+  });
+  const titles = async (filters: object) => {
+    await asUser(student);
+    const r = (await db.query<{ r: { items: { title: string }[] } }>("SELECT public.marketplace_search($1::jsonb) AS r", [JSON.stringify(filters)])).rows[0].r;
+    return r.items.map((i) => i.title).filter((t) => t.startsWith("R ")).sort();
+  };
+
+  it("finds listings within the radius; listings without a position only without radius", async () => {
+    expect(await titles({ near: { lat: 46.68, lng: 7.88, radius_km: 50 } })).toEqual(["R Bern ohne Bereich", "R Interlaken 70-90"]);
+    expect(await titles({ near: { lat: 46.68, lng: 7.88, radius_km: 10 } })).toEqual(["R Interlaken 70-90"]);
+    expect(await titles({ near: { lat: 46.68, lng: 7.88, radius_km: 150 } })).toEqual(["R Bern ohne Bereich", "R Interlaken 70-90", "R Zürich Gurtzeug"]);
+    expect((await titles({})).length).toBe(4);
+  });
+
+  it("leaves out wings whose weight range does not fit; wings without range and other gear stay", async () => {
+    expect(await titles({ weight: 85 })).toEqual(["R Bern ohne Bereich", "R Interlaken 70-90", "R Zürich Gurtzeug"]);
+    expect(await titles({ weight: 100 })).toEqual(["R Bern ohne Bereich", "R Zürich Gurtzeug", "R ohne Ort 95-115"]);
+  });
+
+  it("marks the viewer's own listings in the search (no heart there)", async () => {
+    const mine = async (uid: string) => {
+      await asUser(uid);
+      const r = (await db.query<{ r: { items: { title: string; mine: boolean }[] } }>("SELECT public.marketplace_search('{}'::jsonb) AS r")).rows[0].r;
+      return r.items.filter((i) => i.title.startsWith("R ")).map((i) => i.mine);
+    };
+    expect(new Set(await mine(stranger))).toEqual(new Set([true]));
+    expect(new Set(await mine(student))).toEqual(new Set([false]));
+  });
+
+  it("measures distance in km", async () => {
+    await asSystem();
+    const km = (await db.query<{ d: number }>("SELECT round(public.market_distance_km(46.68, 7.88, 46.95, 7.44)::numeric) AS d")).rows[0].d;
+    expect(Number(km)).toBe(45);
   });
 });
 

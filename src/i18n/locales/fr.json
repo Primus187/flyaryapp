@@ -2192,6 +2192,15 @@
         "label": "Depuis mon matériel",
         "placeholder": "Choisir une voile …",
         "done": "Repris – {{hours}} h selon le carnet de vol. Merci de vérifier."
+      },
+      "radius": {
+        "plz": "Autour du NPA",
+        "radius": "Rayon",
+        "weight": "PTV (kg)",
+        "weightHint": "Masque les voiles dont la plage de poids ne convient pas.",
+        "notFound": "NPA inconnu – recherche sans rayon.",
+        "weightFits": "Convient à ton PTV ({{kg}} kg).",
+        "weightOutside": "Hors de ton PTV ({{kg}} kg)."
       }
     }
 }

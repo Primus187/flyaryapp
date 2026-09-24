@@ -1,6 +1,6 @@
 # Umsetzungsplan: Marktplatz für Flyary
 
-2026-09-24 · Tobias Bolliger · Stand: M1 abgeschlossen, M2 in Arbeit (siehe Status)
+2026-09-24 · Tobias Bolliger · Stand: M1 und M2 abgeschlossen (siehe Status)
 
 Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschirm-Material in Flyary: Pilotinnen und Piloten verkaufen ihr altes Material oder suchen günstige Occasionen, Flugschulen verkaufen Material aus ihrem Shop. Es ist wie der Umsetzungsplan für die Flugschul-Erweiterungen aufgebaut: Jeder Unterabschnitt ist ein eigener Auftrag an den Coding-Agenten, mit Ziel, Akzeptanzkriterien, Datenmodell und Platz in der Navigation.
 
@@ -9,7 +9,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
-| M2 – Wiederkommen | 🔶 In Arbeit | 6.1–6.3 ✅; Umkreissuche und Gewichts-Abgleich folgen |
+| M2 – Wiederkommen | ✅ Abgeschlossen | 6.1–6.4 umgesetzt und abnahmegeprüft |
 | M3 – Schulen im Alltag | ⬜ Nicht begonnen | Occasion aus dem Materialbestand, Verkauf auf die Abrechnung |
 | M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
 
@@ -32,7 +32,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 | Stufe | Fokus | Enthaltene Features | Aufwand | Status |
 | --- | --- | --- | --- | --- |
 | M1 | Grundfunktion | 4.1–4.10 | L | ✅ |
-| M2 | Wiederkommen | 6.1–6.4 | M | 🔶 |
+| M2 | Wiederkommen | 6.1–6.4 | M | ✅ |
 | M3 | Schulen im Alltag | 7.1–7.2 | M | ⬜ |
 | M4 | Später / optional | 8.1–8.5 | L | ⏸ |
 
@@ -288,9 +288,11 @@ Aktuelle Filter als Suche speichern. Neue passende Anzeigen lösen eine Push-Mit
 
 **Ist-Stand:** `src/lib/marketplace-prefill.ts`, Auswahl «Aus meinem Material» im Formular (Schritt 2, private Anzeigen). Flugstunden = Summe der eigenen Flüge, deren Schirmtext Hersteller und Modell enthält (Grösse in Klammern muss übereinstimmen, wenn beide eine nennen), auf ganze Stunden gerundet. Kennzeichnung über das versteckte Merkmal `hours_from_logbook`, Anzeige «laut Flyary-Flugbuch»; von Hand geänderte Stunden verlieren die Kennzeichnung. **Abweichung:** Keine Migration und keine feste Verknüpfung `flights.pilot_glider_id` – der Abgleich bleibt ungefähr und ist als Vorschlag markiert.
 
-### 6.4 Umkreissuche und Gewichts-Abgleich
+### 6.4 Umkreissuche und Gewichts-Abgleich ✅
 
 Umkreis ab eigener PLZ mit gerundeten Koordinaten (über die bestehende Funktion `reverse-geocode` bzw. eine PLZ-Tabelle), ohne PostGIS. Hinweis «Passt zu deinem Startgewicht», wenn im Profil ein Gewicht erfasst ist und der Gewichtsbereich des Schirms passt.
+
+**Ist-Stand:** Migration `0044_marketplace_radius_weight.sql` (`lat`/`lng` gerundet auf ~1 km, `market_distance_km`, Filter `near` und `weight` in `market_listing_matches`, Suche mit `mine`), `src/lib/geo-ch.ts` (PLZ-Position über geo.admin.ch, Gewichts-Abgleich). **Abweichungen:** PLZ-Position über den öffentlichen Suchdienst von geo.admin.ch statt `reverse-geocode` (der rechnet Koordinaten in Orte um, nicht PLZ in Koordinaten), nur Schweizer PLZ; das Startgewicht stammt aus dem Filter (im Browser gemerkt), weil das Profil kein Gewichtsfeld hat.
 
 ## 7. M3 – Schulen im Alltag
 
@@ -329,7 +331,7 @@ Speziell für den Marktplatz:
 - Prüfen, ob `pg_cron` und `pg_net` im Supabase-Projekt verfügbar sind (4.9)
 - Soll Vertical als erste Schule mit Shop und Moderation starten?
 
-## 11. Erkenntnisse aus der Umsetzung von M1
+## 11. Erkenntnisse aus der Umsetzung von M1 und M2
 
 - **Abnahmeprüfung nach M1** (wie im Flugschul-Plan nach jeder Phase): zwei Funde an Übergängen zwischen Aufträgen – die Glocke scheiterte an Mitteilungen ohne Absender (4.8), und Neuware von Schulen bot «Verlängern» ohne Wirkung an. Beide behoben (README, «Nachtrag Abnahmeprüfung»).
 - **Datenbanktests auf PGlite haben drei Fehler vor dem Einspielen gefunden:** PL/pgSQL liest `IF … THEN` nur bis zum ersten `THEN` (ein `CASE` darin braucht Klammern); Supabase-Fehler sind nicht immer `Error`-Objekte (Meldung über `message` lesen); ein Protokolleintrag mit Fremdschlüssel auf die betroffene Person blockierte das Löschen ihres Kontos.
@@ -337,3 +339,6 @@ Speziell für den Marktplatz:
 - **Sichtbarkeit als eine Funktion** (`market_listing_visible`): RLS, Foto-Speicher, Suche, Chat-Eröffnung und Meldungen nutzen dieselbe Regel; spätere Verschärfungen (Shop aktiv, Moderation) mussten nur an einer Stelle ergänzt werden.
 - **Dateien lassen sich nicht per SQL löschen.** Die Datenbank liefert die Pfade, die Edge Function löscht über die Storage-API; verwaiste Dateien räumt der nächtliche Lauf auf.
 - **Arbeitsablauf pro Auftrag:** Commit → Tobias spielt die Migration ein (`db-migrate --apply`, bei Edge Functions zusätzlich `supabase functions deploy` mit gesetztem `SUPABASE_ACCESS_TOKEN`) → lesende Prüfung der Live-Datenbank → Push → Vercel-Build abwarten.
+- **Abnahmeprüfung nach M2:** ein Fund – das Herz erschien auf eigenen Anzeigen, die Datenbank lehnte das Merken ab. Die Suche liefert jetzt `mine`. Behoben in derselben, noch nicht eingespielten Migration 0044.
+- **Eine Filterregel für Suche, gespeicherte Suchen und Mitteilungen** (`market_listing_matches`, 6.2): Umkreis und Gewicht (6.4) mussten nur dort ergänzt werden und wirken überall gleich.
+- **Chat-Datenbanktest braucht mehr Zeit**, seit er alle Chat- und Marktplatz-Migrationen lädt (60 s für die Vorbereitung).

@@ -9,10 +9,14 @@ import {
 } from "./marketplace";
 import { CERTIFICATION_CLASSES } from "./marketplace-categories";
 import { CANTONS, parsePriceInput } from "./marketplace-listing";
+import type { LatLng } from "./geo-ch";
 
 export const SORT_ORDERS = ["newest", "price_asc", "price_desc"] as const;
 export type SortOrder = (typeof SORT_ORDERS)[number];
 export const PAGE_SIZE = 24;
+/** Radius choices around a postal code (plan 6.4); 50 km is the default. */
+export const RADIUS_OPTIONS = [10, 25, 50, 100] as const;
+const DEFAULT_RADIUS = 50;
 
 export interface SearchFilters {
   q: string;
@@ -27,12 +31,23 @@ export interface SearchFilters {
   size: string;
   schoolsOnly: boolean;
   sort: SortOrder;
+  /** Radius search around a Swiss postal code (plan 6.4). */
+  nearPlz: string;
+  radiusKm: number;
+  /** Take-off weight in kg as typed (plan 6.4). */
+  weightKg: string;
 }
 
 export const EMPTY_FILTERS: SearchFilters = {
   q: "", type: "", categories: [], conditions: [], certifications: [], cantons: [], priceMin: "", priceMax: "", size: "",
-  schoolsOnly: false, sort: "newest",
+  schoolsOnly: false, sort: "newest", nearPlz: "", radiusKm: DEFAULT_RADIUS, weightKg: "",
 };
+
+/** Take-off weight as a number, or null when empty or not plausible. */
+export function parseWeight(input: string): number | null {
+  const n = Number.parseInt(input.trim(), 10);
+  return Number.isInteger(n) && n >= 30 && n <= 300 ? n : null;
+}
 
 /** The class filter only makes sense when wings can be in the result. */
 export const showsCertificationFilter = (categories: readonly ListingCategory[]) =>
@@ -42,11 +57,11 @@ export const showsCertificationFilter = (categories: readonly ListingCategory[])
 export function activeFilterCount(f: SearchFilters): number {
   return [f.type !== "", f.conditions.length > 0, showsCertificationFilter(f.categories) && f.certifications.length > 0,
     f.cantons.length > 0, f.priceMin.trim() !== "" || f.priceMax.trim() !== "", f.size.trim() !== "", f.schoolsOnly,
-    f.sort !== "newest"].filter(Boolean).length;
+    f.sort !== "newest", f.nearPlz.trim() !== "", parseWeight(f.weightKg) !== null].filter(Boolean).length;
 }
 
-/** Filters as the RPC expects them; empty values are left out. */
-export function toRpcFilters(f: SearchFilters): Record<string, unknown> {
+/** Filters as the RPC expects them; empty values are left out. The radius needs the postal code's position. */
+export function toRpcFilters(f: SearchFilters, near: LatLng | null = null): Record<string, unknown> {
   const out: Record<string, unknown> = { sort: f.sort };
   if (f.q.trim()) out.q = f.q.trim();
   if (f.type) out.type = f.type;
@@ -59,6 +74,9 @@ export function toRpcFilters(f: SearchFilters): Record<string, unknown> {
   if (max !== null) out.price_max = max;
   if (f.size.trim()) out.size = f.size.trim();
   if (f.schoolsOnly) out.schools_only = true;
+  if (near && f.nearPlz.trim()) out.near = { lat: near.lat, lng: near.lng, radius_km: f.radiusKm };
+  const weight = parseWeight(f.weightKg);
+  if (weight !== null) out.weight = weight;
   return out;
 }
 
@@ -80,6 +98,9 @@ export function filtersFromParams(p: URLSearchParams): SearchFilters {
     size: p.get("size") ?? "",
     schoolsOnly: p.get("schools") === "1",
     sort: (SORT_ORDERS as readonly string[]).includes(sort ?? "") ? (sort as SortOrder) : "newest",
+    nearPlz: /^\d{4}$/.test(p.get("near") ?? "") ? p.get("near")! : "",
+    radiusKm: (RADIUS_OPTIONS as readonly number[]).includes(Number(p.get("radius"))) ? Number(p.get("radius")) : DEFAULT_RADIUS,
+    weightKg: parseWeight(p.get("weight") ?? "") !== null ? String(parseWeight(p.get("weight")!)) : "",
   };
 }
 
@@ -97,6 +118,12 @@ export function filtersToParams(f: SearchFilters): URLSearchParams {
   put("size", f.size.trim());
   if (f.schoolsOnly) p.set("schools", "1");
   if (f.sort !== "newest") p.set("sort", f.sort);
+  if (f.nearPlz.trim()) {
+    p.set("near", f.nearPlz.trim());
+    if (f.radiusKm !== DEFAULT_RADIUS) p.set("radius", String(f.radiusKm));
+  }
+  const weight = parseWeight(f.weightKg);
+  if (weight !== null) p.set("weight", String(weight));
   return p;
 }
 
@@ -116,14 +143,16 @@ export interface SearchItem {
   canton: string | null;
   status: ListingStatus;
   is_school: boolean;
+  /** The viewer sells it (no heart; plan 6.1). */
+  mine?: boolean;
   bumped_at: string;
   thumb_path: string | null;
 }
 export interface SearchPage { items: SearchItem[]; next_cursor: Record<string, unknown> | null }
 
-export async function searchListings(f: SearchFilters, cursor: SearchPage["next_cursor"] = null): Promise<SearchPage> {
+export async function searchListings(f: SearchFilters, cursor: SearchPage["next_cursor"] = null, near: LatLng | null = null): Promise<SearchPage> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_search" as any, { _filters: toRpcFilters(f), _cursor: cursor, _limit: PAGE_SIZE });
+  const { data, error } = await supabase.rpc("marketplace_search" as any, { _filters: toRpcFilters(f, near), _cursor: cursor, _limit: PAGE_SIZE });
   if (error) throw error;
   return data as unknown as SearchPage;
 }

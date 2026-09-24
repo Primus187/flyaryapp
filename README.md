@@ -1,5 +1,30 @@
 # Flyary
 
+## Marktplatz M2: Nachtrag Abnahmeprüfung
+
+Prüfung von 6.1–6.4 an den Übergängen. Ein Fund, behoben: Das Herz erschien in der Übersicht auch auf den eigenen
+Anzeigen; die Datenbank lehnt das Merken eigener Anzeigen ab, und es erschien nur «Etwas ist schiefgelaufen». Die Suche
+liefert jetzt pro Treffer `mine` (in Migration 0044), das Herz fehlt dort. Ohne Befund: gespeicherte Suchen mit Umkreis
+(Position wird beim Speichern ermittelt, Mitteilungen nutzen dieselbe Filterregel), gemerkte Anzeigen nach Moderation,
+versteckte Merkmale in Formular und Detailseite, Gewichtsfilter auch in gespeicherten Suchen.
+
+## Marktplatz: Umkreissuche und Startgewicht (6.4)
+
+Migration `0044_marketplace_radius_weight.sql`, Logik in `src/lib/geo-ch.ts`.
+
+- **Position:** Beim Speichern einer Anzeige ermittelt die App über den öffentlichen Dienst von geo.admin.ch die Position
+  der (Schweizer) PLZ und speichert sie auf 2 Nachkommastellen gerundet (etwa 1 km) in `lat`/`lng`. Ausländische PLZ
+  bleiben ohne Position. Bestehende Anzeigen erhalten die Position beim nächsten Speichern.
+- **Umkreis:** Im Filterblatt «Umkreis um PLZ» mit 10/25/50/100 km. Anzeigen ohne Position fallen bei aktivem Umkreis
+  weg. Unbekannte PLZ: Hinweis, Suche ohne Umkreis.
+- **Startgewicht:** Filter in kg; blendet Schirme aus, deren Gewichtsbereich nicht passt (Schirme ohne Angabe und andere
+  Kategorien bleiben). Das zuletzt verwendete Gewicht merkt sich der Browser; die Detailseite eines Schirms zeigt dann
+  «Passt zu deinem Startgewicht» bzw. «Ausserhalb deines Startgewichts». Abweichung vom Plan: Das Profil hat kein
+  Gewichtsfeld, darum stammt der Wert aus dem Filter statt aus dem Profil.
+- Beide Filter sind Teil von `market_listing_matches` und gelten damit auch für gespeicherte Suchen und deren Mitteilungen.
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0044), danach das Frontend.
+
 ## Marktplatz: Vorausfüllen aus dem eigenen Material (6.3)
 
 Logik in `src/lib/marketplace-prefill.ts`, keine Migration.

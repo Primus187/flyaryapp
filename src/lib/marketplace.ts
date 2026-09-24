@@ -49,6 +49,9 @@ export interface MarketplaceListing {
   expires_at: string | null;
   bumped_at: string | null;
   featured_until: string | null;
+  /** Position of the postal code, rounded (plan 6.4). */
+  lat?: number | null;
+  lng?: number | null;
   created_at: string;
   updated_at: string;
 }

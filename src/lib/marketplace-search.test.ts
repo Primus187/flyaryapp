@@ -10,7 +10,7 @@ import {
 
 const full: SearchFilters = {
   q: " alpha ", type: "offer", categories: ["glider", "reserve"], conditions: ["used"], certifications: ["a", "b"], cantons: ["BE", "other"],
-  priceMin: "500", priceMax: "1'800", size: " M ", schoolsOnly: true, sort: "price_asc",
+  priceMin: "500", priceMax: "1'800", size: " M ", schoolsOnly: true, sort: "price_asc", nearPlz: "3800", radiusKm: 25, weightKg: "85",
 };
 
 describe("URL round trip", () => {
@@ -21,7 +21,7 @@ describe("URL round trip", () => {
     expect(filtersToParams(EMPTY_FILTERS).toString()).toBe("");
   });
   it("ignores unknown values", () => {
-    expect(filtersFromParams(new URLSearchParams("type=x&cat=glider,paramotor&class=z&canton=XX&sort=cheap"))).toEqual({
+    expect(filtersFromParams(new URLSearchParams("type=x&cat=glider,paramotor&class=z&canton=XX&sort=cheap&near=75001&radius=7&weight=5"))).toEqual({
       ...EMPTY_FILTERS, categories: ["glider"],
     });
   });
@@ -31,8 +31,11 @@ describe("RPC filters", () => {
   it("converts prices to Rappen and drops empties", () => {
     expect(toRpcFilters(full)).toEqual({
       sort: "price_asc", q: "alpha", type: "offer", categories: ["glider", "reserve"], conditions: ["used"], certifications: ["a", "b"],
-      cantons: ["BE", "other"], price_min: 50000, price_max: 180000, size: "M", schools_only: true,
+      cantons: ["BE", "other"], price_min: 50000, price_max: 180000, size: "M", schools_only: true, weight: 85,
     });
+    // the radius only with the postal code's position
+    expect(toRpcFilters(full, { lat: 46.68, lng: 7.88 })).toMatchObject({ near: { lat: 46.68, lng: 7.88, radius_km: 25 } });
+    expect(toRpcFilters({ ...EMPTY_FILTERS, weightKg: "12" })).toEqual({ sort: "newest" });
     expect(toRpcFilters(EMPTY_FILTERS)).toEqual({ sort: "newest" });
     expect(toRpcFilters({ ...EMPTY_FILTERS, priceMin: "abc" })).toEqual({ sort: "newest" });
   });
@@ -45,12 +48,14 @@ describe("RPC filters", () => {
   it("counts the filters of the sheet", () => {
     expect(activeFilterCount(EMPTY_FILTERS)).toBe(0);
     expect(activeFilterCount({ ...EMPTY_FILTERS, q: "x", categories: ["glider"] })).toBe(0);
-    expect(activeFilterCount(full)).toBe(8);
+    expect(activeFilterCount(full)).toBe(10);
   });
   it("calls marketplace_search with the page size and cursor", async () => {
     rpc.mockResolvedValue({ data: { items: [], next_cursor: null }, error: null });
     await searchListings(EMPTY_FILTERS, { t: "x", id: "y" });
     expect(rpc).toHaveBeenCalledWith("marketplace_search", { _filters: { sort: "newest" }, _cursor: { t: "x", id: "y" }, _limit: 24 });
+    await searchListings({ ...EMPTY_FILTERS, nearPlz: "3800" }, null, { lat: 46.68, lng: 7.88 });
+    expect(rpc).toHaveBeenLastCalledWith("marketplace_search", { _filters: { sort: "newest", near: { lat: 46.68, lng: 7.88, radius_km: 50 } }, _cursor: null, _limit: 24 });
   });
 });
 
