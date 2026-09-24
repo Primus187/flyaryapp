@@ -8,8 +8,10 @@ import SectionHeading from "@/components/layout/SectionHeading";
 import ListRow from "@/components/layout/ListRow";
 import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { canOpenSchoolSection } from "@/lib/school-sections";
+import { APP_VERSION, forceAppUpdate } from "@/lib/app-update";
+import { toast } from "sonner";
 import {
-  User, Users, Settings, LogOut, Map, GraduationCap, MapPin, Scale, Trophy, Search,
+  User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
   CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell,
 } from "lucide-react";
 
@@ -85,7 +87,7 @@ export default function More() {
 
   const sendFeedback = () => {
     const info = [
-      `Version: ${(import.meta as any).env?.VITE_APP_VERSION || "dev"}`,
+      `Version: ${APP_VERSION}`,
       `Modus: ${mode}`,
       `Seite: ${window.location.pathname}`,
       `Gerät: ${navigator.userAgent}`,
@@ -153,8 +155,15 @@ export default function More() {
             onClick={sendFeedback}
           />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
+          <ListRow
+            icon={RefreshCw}
+            label={t("more.updateApp")}
+            description={t("more.updateAppHint")}
+            onClick={async () => { if (!(await forceAppUpdate())) toast.error(t("more.updateAppOffline")); }}
+          />
           <ListRow icon={LogOut} label={t("more.signOut")} onClick={signOut} destructive />
         </div>
+        <p className="pt-2 text-center text-[11px] text-muted-foreground">Flyary · {t("more.version")} {APP_VERSION}</p>
       </section>
     </PageContainer>
   );

@@ -930,6 +930,10 @@
     "allTime": "Total"
   },
   "more": {
+    "updateApp": "App aktualisieren",
+    "updateAppHint": "Lädt die neueste Version, falls noch eine alte angezeigt wird",
+    "updateAppOffline": "Nur mit Internetverbindung möglich",
+    "version": "Version",
     "title": "Mehr",
     "search": "Suche",
     "profile": "Profil",

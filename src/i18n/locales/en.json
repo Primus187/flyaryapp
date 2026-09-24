@@ -845,6 +845,10 @@
     "pilot": "Pilot"
   },
   "more": {
+    "updateApp": "Update app",
+    "updateAppHint": "Loads the newest version if an old one is still shown",
+    "updateAppOffline": "Only possible with an internet connection",
+    "version": "Version",
     "title": "More",
     "search": "Search",
     "profile": "Profile",

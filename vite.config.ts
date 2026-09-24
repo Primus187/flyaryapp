@@ -4,8 +4,15 @@ import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 
+// Shown on the "Mehr" page and in feedback mails: commit (on Vercel) and build time.
+const buildTime = new Date().toLocaleString("de-CH", { timeZone: "Europe/Zurich", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(", ", " ");
+const appVersion = `${(process.env.VERCEL_GIT_COMMIT_SHA || "local").slice(0, 7)} · ${buildTime}`;
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  define: {
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
+  },
   server: {
     host: "::",
     port: 8080,
