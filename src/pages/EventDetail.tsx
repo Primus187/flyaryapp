@@ -26,6 +26,7 @@ import StudentDayFeedback from "@/components/StudentDayFeedback";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
 import EmergencyInfoDialog from "@/components/EmergencyInfoDialog";
 import { compressImage } from "@/lib/image-compress";
+import { getSignedUrls } from "@/lib/signed-url-cache";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveStudents } from "@/hooks/use-active-students";
 
@@ -61,61 +62,38 @@ export default function EventDetail() {
 
   useEffect(() => {
     if (!id || !user) return;
+    // One RPC (RLS-checked, see migration 0019) instead of ~11 sequential requests; avatar and
+    // photos are then signed in a single parallel step.
     const fetchData = async () => {
-      const { data: ev } = await supabase.from("flight_events").select("*, groups(name, group_type)").eq("id", id).single();
-      if (!ev) { navigate("/events"); return; }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
+      const { data, error } = await supabase.rpc("event_detail_data" as any, { _event_id: id } as any);
+      const detail = data as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped RPC payload
+      if (error || !detail?.event) { navigate("/events"); return; }
+      const ev = detail.event;
       setEvent(ev);
       setGroupName(ev.groups?.name || "");
       setIsCreator(ev.created_by === user.id);
+      setSignups(detail.signups || []);
 
-      const { data: sups } = await supabase.from("event_signups").select("*").eq("event_id", id);
-      setSignups(sups || []);
+      const members: { user_id: string; role: string }[] = detail.members || [];
+      const me = members.find(m => m.user_id === user.id);
+      const staffRoles: string[] = detail.myFunctions || [];
+      setIsAdmin(me?.role === "admin");
+      setIsStudent(ev.groups?.group_type === "school" && (staffRoles.includes("student") || (staffRoles.length === 0 && me?.role === "member")));
+      setIsStaff(me?.role === "admin" || staffRoles.includes("instructor") || staffRoles.includes("school_lead"));
+      const map: Record<string, string> = {};
+      Object.entries((detail.profiles || {}) as Record<string, string | null>).forEach(([uid, name]) => { map[uid] = name || t("common.unknown"); });
+      setProfiles(map);
+      setBriefingTasks(detail.briefingTasks || []);
+      setManeuverNames(detail.maneuverNames || []);
 
-      const { data: members } = await supabase.from("group_members").select("user_id, role").eq("group_id", ev.group_id);
-      if (members) {
-        const me = members.find((m: any) => m.user_id === user.id);
-        setIsAdmin(me?.role === "admin");
-        const { data: myFuncs } = await supabase.from("group_member_functions" as any).select("function").eq("group_id", ev.group_id).eq("user_id", user.id);
-        const staffRoles = ((myFuncs as any[]) || []).map((f) => f.function);
-        setIsStudent(ev.groups?.group_type === "school" && (staffRoles.includes("student") || (staffRoles.length === 0 && me?.role === "member")));
-        setIsStaff(me?.role === "admin" || staffRoles.includes("instructor") || staffRoles.includes("school_lead"));
-        const allUserIds = [...new Set([...(sups || []).map((s: any) => s.user_id), ...members.map(m => m.user_id)])];
-        if (allUserIds.length > 0) {
-          const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", allUserIds);
-          if (profs) {
-            const map: Record<string, string> = {};
-            profs.forEach((p: any) => { map[p.user_id] = p.pilot_name || t("common.unknown"); });
-            setProfiles(map);
-          }
-        }
-      }
-
-      // Load own profile
-      const { data: myProf } = await supabase.from("profiles").select("pilot_name, avatar_url").eq("user_id", user.id).single();
-      if (myProf) {
-        setPilotName(myProf.pilot_name || "Pilot");
-        if (myProf.avatar_url) {
-          if (myProf.avatar_url.startsWith("http")) setAvatarUrl(myProf.avatar_url);
-          else {
-            const { data: signed } = await supabase.storage.from("flight-photos").createSignedUrl(myProf.avatar_url, 3600);
-            if (signed?.signedUrl) setAvatarUrl(signed.signedUrl);
-          }
-        }
-      }
-
-      // Load briefing tasks
-      const { data: tasks } = await supabase.from("event_briefing_tasks" as any).select("*").eq("event_id", id).order("sort_order" as any);
-      if (tasks) setBriefingTasks(tasks as any[]);
-
-      // Load planned maneuvers
-      const { data: maneuvers } = await supabase.from("event_maneuvers" as any).select("training_item_id").eq("event_id", id);
-      if (maneuvers && (maneuvers as any[]).length > 0) {
-        const itemIds = (maneuvers as any[]).map((m: any) => m.training_item_id);
-        const { data: items } = await supabase.from("training_items").select("id, name").in("id", itemIds);
-        if (items) setManeuverNames(items.map(i => i.name));
-      }
-
-      await loadPhotos(id);
+      const photoRows: { id: string; storage_path: string }[] = detail.photos || [];
+      const myAvatar: string = detail.me?.avatar_url || "";
+      const toSign = [...photoRows.map(p => p.storage_path), ...(myAvatar && !myAvatar.startsWith("http") ? [myAvatar] : [])];
+      const signed = await getSignedUrls("flight-photos", toSign);
+      setPilotName(detail.me?.pilot_name || "Pilot");
+      setAvatarUrl(myAvatar.startsWith("http") ? myAvatar : signed[myAvatar] || "");
+      setPhotos(photoRows.map(p => ({ id: p.id, url: signed[p.storage_path] || "", storage_path: p.storage_path })));
       setLoading(false);
     };
     fetchData();

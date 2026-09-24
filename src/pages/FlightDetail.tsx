@@ -60,11 +60,11 @@ export default function FlightDetail() {
     const { data } = await supabase.from("flight_photos").select("*").eq("flight_id", id);
     const photoList = data || [];
     setPhotos(photoList);
-    // Create signed URLs for all photos
+    // One batched (and cached) signing request instead of one round trip per photo
+    const signed = await getSignedUrls("flight-photos", photoList.map(p => p.storage_path));
     const urls: Record<string, string> = {};
     for (const p of photoList) {
-      const { data: signedData } = await supabase.storage.from("flight-photos").createSignedUrl(p.storage_path, 3600);
-      if (signedData?.signedUrl) urls[p.id] = signedData.signedUrl;
+      if (signed[p.storage_path]) urls[p.id] = signed[p.storage_path];
     }
     setPhotoUrls(urls);
   };

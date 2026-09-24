@@ -53,9 +53,12 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "lazy-heavy-chunks", expiration: { maxEntries: 10 } },
           },
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            // Database reads only: photos/videos (large, signed URLs change) and auth calls
+            // gained nothing from this cache. On a weak mountain connection fall back to the
+            // last cached answer after 3 s instead of waiting for the browser timeout.
+            urlPattern: /^https:\/\/[^/]+\.supabase\.co\/rest\/v1\/.*/i,
             handler: "NetworkFirst",
-            options: { cacheName: "supabase-api", expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
+            options: { cacheName: "supabase-api", networkTimeoutSeconds: 3, expiration: { maxEntries: 100, maxAgeSeconds: 300 } },
           },
         ],
       },

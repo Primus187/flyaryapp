@@ -1,5 +1,24 @@
 # Flyary
 
+## Performance: Feed, Event-Detail, Start
+
+Die Datenbank ist von der Schweiz aus ~120 ms pro Anfrage entfernt (vermutlich US-Region). Teuer waren deshalb
+lange Ketten nacheinander ausgeführter Anfragen, nicht die Datenmenge.
+
+- **Feed:** ein RPC `feed_page(_cursor, _limit)` liefert eine fertig gemischte, nach Datum sortierte Seite (Flüge,
+  Events, Errungenschaften inkl. Likes, Kommentare, Lesezeichen); danach ein paralleler Signierschritt pro Bucket
+  (`src/lib/feed-page.ts`, getestet). Vorher 8–9 sequenzielle Schritte, ~25–30 Anfragen pro Seite. Die Paginierung
+  ist jetzt serverseitig exakt; Events erscheinen chronologisch statt nur auf Seite 1.
+- **Event-Detail:** RPC `event_detail_data(_event_id)` statt ~11 sequenzieller Anfragen.
+- Beide RPCs sind `SECURITY INVOKER` (RLS wie bisher) und lesen aus `profiles` nur freigegebene Spalten.
+- Neue Indizes auf Fremdschlüsseln (u. a. `group_members(user_id)`, das fast jede RLS-Policy prüft).
+- Flug-Detail signiert alle Fotos in einer Anfrage statt einer pro Foto.
+- Der Splash wartet nicht mehr auf die Dashboard-Daten (Dashboard zeigt eigenes Skeleton).
+- Service-Worker-Cache nur noch für Datenbank-Lesezugriffe (keine Fotos/Videos/Auth), mit 3 s Timeout.
+
+**Auslieferung:** zuerst `drizzle/migrations/0019_feed_and_event_read_models.sql` anwenden (rein additiv, das alte
+Frontend läuft damit weiter), danach das Frontend deployen. Grösster verbleibender Hebel: Datenbank-Region Europa.
+
 ## Pre-Launch-Audit (vor dem Start mit Vertical)
 
 Tiefenprüfung vor dem ersten Einsatz mit Schülerinnen und Schülern. Behobene Befunde:

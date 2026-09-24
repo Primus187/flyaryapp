@@ -99,33 +99,14 @@ function SplashGate({ children }: { children: React.ReactNode }) {
     if (!authLoading) setProgress(p => Math.max(p, 20));
   }, [authLoading]);
 
-  // Prefetch dashboard once we know who the user is (or that there is none)
+  // Start the dashboard fetch as early as possible, but never keep the splash up for it:
+  // the dashboard renders its own skeleton. Waiting here added the full request chain
+  // (several round trips to the database) to every cold start.
   useEffect(() => {
     if (authLoading) return;
-    if (!showSplash || !user || pathname !== "/") {
-      setProgress(100);
-      setDataReady(true);
-      return;
-    }
-    let cancelled = false;
-    // Safety: never let the splash block the UI for more than 4s
-    const safety = setTimeout(() => {
-      if (!cancelled) {
-        setProgress(100);
-        setDataReady(true);
-      }
-    }, 4000);
-    prefetchDashboard(user.id, queryClient, (pct) => {
-      if (!cancelled) setProgress(p => Math.max(p, pct));
-    })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) {
-          setProgress(100);
-          setDataReady(true);
-        }
-      });
-    return () => { cancelled = true; clearTimeout(safety); };
+    if (showSplash && user && pathname === "/") void prefetchDashboard(user.id, queryClient).catch(() => {});
+    setProgress(100);
+    setDataReady(true);
   }, [user, authLoading, pathname, showSplash]);
 
   const handleSplashFinished = useCallback(() => {

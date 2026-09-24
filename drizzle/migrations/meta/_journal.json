@@ -134,6 +134,13 @@
       "when": 1790208000000,
       "tag": "0018_prelaunch_audit_fixes",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790294400000,
+      "tag": "0019_feed_and_event_read_models",
+      "breakpoints": true
     }
   ]
 }
