@@ -162,6 +162,13 @@
       "when": 1790553600000,
       "tag": "0022_group_creation_and_join",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790640000000,
+      "tag": "0023_locations_of_visible_flights",
+      "breakpoints": true
     }
   ]
 }
