@@ -1,6 +1,6 @@
 # Umsetzungsplan: Flugtag-Cockpit für Flyary
 
-2026-09-25 · Tobias Bolliger · Stand: Grundsatzentscheide gefällt, bereit für C1, noch nichts umgesetzt
+2026-09-25 · Tobias Bolliger · Stand: C1 umgesetzt (4.1–4.5), Abnahmeprüfung C1 offen; C2 und C3 offen
 
 Dieses Dokument beschreibt, wie das Schulteam am eigentlichen Flugtag erfasst, wer da ist, wer welche Flüge gemacht hat und welche Rückmeldungen dazugehören. Heute ist das auf vier Stellen verteilt (Anwesenheit, Ausbildungsblatt F1–F6, Schülerflüge, geplante Manöver), und Schulteam und Schüler erfassen dieselben Flüge doppelt und ohne Abgleich. Das Flugtag-Cockpit ersetzt das durch **einen Bildschirm pro Flugtag**, auf dem jeder Flug ein **echter Eintrag der Schule** ist.
 
@@ -10,8 +10,8 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅, 4.2 ✅, 4.3 ✅, 4.4 ✅; 4.5 offen |
-| C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 |
+| C1 – Cockpit und Flugerfassung (MVP) | 🚧 Umgesetzt, Abnahmeprüfung offen | 4.1–4.5 ✅; Betriebshandbuch noch nicht nachgeführt |
+| C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 (Freigabe-Regel und Schüleransicht aus 5.2 schon mit 4.5 umgesetzt) |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
@@ -163,7 +163,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Ist-Stand:** Migration `0053_flight_day_landing_hint.sql` (`flight_events.landing_hint_minutes`, RPC `set_flight_day_landing_hint`), Oberfläche `TakeoffBoard.tsx`, `InAirBar.tsx`, `FlightDayStations.tsx` (Umschalter Landeplatz/Startplatz, pro Gerät gemerkt), Hook `use-flight-day-live.ts`. Auf dem Landeplatz steht neben «+ Flug» ein «Start» für Starts, die nur per Funk gemeldet werden. Pausierte Schüler lassen sich nach Rückfrage starten. Der Landehinweis wird in der Karte «Plätze des Tages» gesetzt und gilt für alle Geräte des Tages.
 
-### 4.5 Ablösung von Ausbildungsblatt und Schülerflügen
+### 4.5 Ablösung von Ausbildungsblatt und Schülerflügen ✅
 
 **Ziel:** Keine parallelen Wege mehr. Zusammenfassung und nächster Lernschritt wandern ins Cockpit.
 
@@ -176,6 +176,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - `EventStudentFlights` entfällt im Reiter; Flüge aus privaten Flugbüchern mit `event_id` des Termins erscheinen als kleiner Hinweis «Von Schülern selbst erfasst: 4 Flüge» (Grundlage für 6.1)
 - `school_student_dossier`, `latestNextStepPerStudent` (`src/lib/handoff-notes.ts`) und `StudentDayFeedback` lesen weiterhin korrekt; Tests anpassen
 - Betriebshandbuch Kapitel 14, 15 und 27 überarbeiten (neue Screenshots über `scripts/capture-school-handbook.mjs`)
+
+**Ist-Stand:** Migration `0054_flight_day_feedback_release.sql` (Freigabe-Regel `flight_day_feedback_released`: Tagesabschluss oder spätestens Folgetag 06:00 Schweizer Zeit, nach dem letzten Tag bei mehrtägigen Terminen; gilt für `my_school_flights` und die Schüler-Policy auf `student_day_notes`), `DaySummaryEditor.tsx` (Zusammenfassung und nächster Lernschritt in der aufgeklappten Zeile, «Letzten Lernschritt als Vorlage übernehmen»), `LegacyCoachNotes.tsx` (F1–F6 nur lesen), `StudentDayFeedback.tsx` (Schulflüge mit Bewertungen und Rückmeldung für Schüler). `CoachDayView.tsx` und `EventStudentFlights.tsx` entfernt. **Abweichungen:** Freigabe-Regel und Schüleranzeige aus 5.2 vorgezogen (Push folgt mit 5.2); der letzte Lernschritt stammt aus dem letzten früheren Termin mit markiertem Lernschritt; **Betriebshandbuch noch offen** (die Handbuch-Dateien und das Screenshot-Skript sind noch nicht eingecheckt).
 
 ## 5. C2 – Tagesabschluss
 

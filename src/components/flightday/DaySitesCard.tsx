@@ -35,8 +35,7 @@ export default function DaySitesCard({ eventId, onChanged }: { eventId: string; 
   const load = useCallback(async () => {
     const { data } = await supabase.from("flight_events")
       .select("default_takeoff_location_id, default_landing_location_id, landing_hint_minutes").eq("id", eventId).maybeSingle();
-    // landing_hint_minutes: migration 0053, not in generated types.ts yet
-    const ev = data as unknown as { default_takeoff_location_id: string | null; default_landing_location_id: string | null; landing_hint_minutes: number | null } | null;
+    const ev = data;
     setHint((ev?.landing_hint_minutes ?? null) as LandingHintMinutes);
     const ids = [ev?.default_takeoff_location_id, ev?.default_landing_location_id].filter(Boolean) as string[];
     setTakeoff(ev?.default_takeoff_location_id || "");
@@ -56,8 +55,7 @@ export default function DaySitesCard({ eventId, onChanged }: { eventId: string; 
     const { error } = await supabase.rpc("set_flight_day_locations", {
       _event_id: eventId, _takeoff_location_id: takeoff || null, _landing_location_id: landing || null,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0053 not in generated types.ts yet
-    const hintRes = error ? null : await (supabase as any).rpc("set_flight_day_landing_hint", { _event_id: eventId, _minutes: hint });
+    const hintRes = error ? null : await supabase.rpc("set_flight_day_landing_hint", { _event_id: eventId, _minutes: hint });
     setSaving(false);
     const failed = error || hintRes?.error;
     if (failed) { toast({ title: t(`flightDay.errors.${schoolFlightErrorKey(failed.message)}`), variant: "destructive" }); return; }

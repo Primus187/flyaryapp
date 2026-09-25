@@ -1705,6 +1705,7 @@ export type Database = {
           group_id: string
           id: string
           instructor: string | null
+          landing_hint_minutes: number | null
           launch_helper: string | null
           max_participants: number | null
           meeting_point: string | null
@@ -1737,6 +1738,7 @@ export type Database = {
           group_id: string
           id?: string
           instructor?: string | null
+          landing_hint_minutes?: number | null
           launch_helper?: string | null
           max_participants?: number | null
           meeting_point?: string | null
@@ -1769,6 +1771,7 @@ export type Database = {
           group_id?: string
           id?: string
           instructor?: string | null
+          landing_hint_minutes?: number | null
           launch_helper?: string | null
           max_participants?: number | null
           meeting_point?: string | null
@@ -4412,6 +4415,7 @@ export type Database = {
           group_id: string
           id: string
           instructor: string | null
+          landing_hint_minutes: number | null
           launch_helper: string | null
           max_participants: number | null
           meeting_point: string | null
@@ -4572,6 +4576,10 @@ export type Database = {
           _status: Database["public"]["Enums"]["event_status"]
         }
         Returns: Database["public"]["Enums"]["event_status"]
+      }
+      set_flight_day_landing_hint: {
+        Args: { _event_id: string; _minutes: number }
+        Returns: number
       }
       set_flight_day_locations: {
         Args: {

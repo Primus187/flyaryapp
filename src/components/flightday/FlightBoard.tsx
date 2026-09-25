@@ -15,6 +15,7 @@ import {
 } from "@/lib/school-flights";
 import RecordFlightSheet, { type FlightDraft, type SheetMode } from "./RecordFlightSheet";
 import InAirBar from "./InAirBar";
+import DaySummaryEditor, { type DaySummary } from "./DaySummaryEditor";
 
 interface BoardFlight extends SchoolFlight { start_note: string | null }
 interface FlightNote { flight_id: string; feedback: string | null; internal_note: string | null }
@@ -27,13 +28,15 @@ interface Props {
   profiles: Record<string, string>;
   /** Bumped when the day's settings (sites, landing hint) change. */
   settingsVersion?: number;
+  /** Day summaries are written through is_group_staff (admin, instructor, school lead). */
+  canWriteSummary?: boolean;
 }
 
 const emptyDraft: FlightDraft = { feedback: "", internal: "", ratings: {} };
 
 /** Instructor view of a flying day: one row per student with the day's flights and one main
  *  action (land / + flight / +1 on the practice slope). Flugtag-Cockpit 4.3. */
-export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0 }: Props) {
+export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0, canWriteSummary = false }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [flights, setFlights] = useState<BoardFlight[]>([]);
@@ -42,6 +45,8 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
   const [pauses, setPauses] = useState<DayPause[]>([]);
   const [maneuvers, setManeuvers] = useState<{ id: string; name: string }[]>([]);
   const [nextSteps, setNextSteps] = useState<Record<string, string>>({});
+  const [summaries, setSummaries] = useState<Record<string, DaySummary>>({});
+  const [selfLogged, setSelfLogged] = useState(0);
   const [loadError, setLoadError] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -63,9 +68,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
     const rows = (flightsRes.data || []) as BoardFlight[];
     setFlights(rows);
     setPauses((pausesRes.data || []) as DayPause[]);
-    // landing_hint_minutes: migration 0053, not in generated types.ts yet
-    const day = eventRes.data as unknown as { landing_hint_minutes: number | null } | null;
-    setHint((day?.landing_hint_minutes ?? null) as LandingHintMinutes);
+    setHint((eventRes.data?.landing_hint_minutes ?? null) as LandingHintMinutes);
     const ids = rows.map((f) => f.id);
     if (ids.length > 0) {
       const [notesRes, itemsRes] = await Promise.all([
@@ -84,10 +87,17 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
   }, [eventId, settingsVersion]); // eslint-disable-line react-hooks/exhaustive-deps -- settingsVersion forces a reload
   const now = useFlightDayLive(eventId, load, "flight-day-board");
 
-  // Last next step of earlier days, for reading only (not prefilled).
+  // Day summaries of this event, the last next step of earlier days (for reading, not prefilled)
+  // and the flights students logged themselves for this event.
   useEffect(() => {
     if (studentIds.length === 0) return;
     void (async () => {
+      const [summaryRes, selfRes] = await Promise.all([
+        supabase.from("student_day_notes").select("id, student_user_id, note, is_next_step").eq("event_id", eventId).is("flight_number", null),
+        supabase.from("flights").select("id", { count: "exact", head: true }).eq("event_id", eventId),
+      ]);
+      setSummaries(Object.fromEntries((summaryRes.data || []).map((n) => [n.student_user_id, { id: n.id, note: n.note, is_next_step: n.is_next_step }])));
+      setSelfLogged(selfRes.count || 0);
       const { data } = await supabase.from("student_day_notes")
         .select("event_id, student_user_id, flight_number, note, is_next_step, flight_events(event_date)")
         .in("student_user_id", studentIds).eq("is_next_step", true).is("flight_number", null).neq("event_id", eventId);
@@ -234,11 +244,16 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                   <ArrowRightCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                   <span><span className="font-medium">{t("flightDay.board.lastNextStep")}:</span> {nextSteps[p.userId] || t("flightDay.board.noNextStep")}</span>
                 </div>
+                {canWriteSummary && (
+                  <DaySummaryEditor eventId={eventId} studentId={p.userId} summary={summaries[p.userId] || null} lastNextStep={nextSteps[p.userId] || null} />
+                )}
               </div>
             )}
           </div>
         );
       })}
+
+      {selfLogged > 0 && <p className="text-[11px] text-muted-foreground">{t("flightDay.board.selfLogged", { count: selfLogged })}</p>}
 
       <RecordFlightSheet
         eventId={eventId}

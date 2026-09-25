@@ -10,7 +10,7 @@ const { from, rpc, channel, removeChannel, tables } = vi.hoisted(() => {
   const from = vi.fn((table: string) => {
     const result = Promise.resolve({ data: tables[table] ?? [], error: null });
     const query: Record<string, unknown> = {};
-    for (const m of ["select", "eq", "in", "is", "neq", "order", "maybeSingle"]) query[m] = vi.fn().mockReturnValue(query);
+    for (const m of ["select", "eq", "in", "is", "neq", "order", "maybeSingle", "upsert", "gte", "lte"]) query[m] = vi.fn().mockReturnValue(query);
     query.then = result.then.bind(result);
     return query;
   });
@@ -95,4 +95,28 @@ it("opens the landing sheet from the in-the-air bar", async () => {
   render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} />);
   fireEvent.click(await screen.findByRole("button", { name: /flightDay\.inAir\.entry/ }));
   expect(await screen.findByText("flightDay.sheet.titleLand 2")).toBeInTheDocument();
+});
+
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "teacher" } }) }));
+
+it("lets staff write the day summary and mark it as next step, offering the last step only as a template", async () => {
+  tables.student_day_notes = [];
+  render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} canWriteSummary />);
+  fireEvent.click(await screen.findByText("Beat"));
+  const box = await screen.findByRole("textbox", { name: "flightDay.summary.title" });
+  expect(box).toHaveValue("");
+  fireEvent.change(box, { target: { value: "Anflug früher planen" } });
+  fireEvent.click(screen.getByRole("button", { name: "flightDay.summary.nextStep" }));
+  fireEvent.blur(box);
+  const upsertCall = () => from.mock.results
+    .map((r) => (r.value as { upsert: ReturnType<typeof vi.fn> }).upsert.mock.calls[0]?.[0])
+    .find(Boolean);
+  await waitFor(() => expect(upsertCall()).toBeDefined());
+  expect(upsertCall()).toMatchObject({ note: "Anflug früher planen", is_next_step: true, visible_to_student: true, flight_number: null, student_user_id: "beat", event_id: "ev" });
+});
+
+it("hides the summary editor from instructors who only read the day", async () => {
+  render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} />);
+  fireEvent.click(await screen.findByText("Beat"));
+  expect(screen.queryByRole("textbox", { name: "flightDay.summary.title" })).not.toBeInTheDocument();
 });

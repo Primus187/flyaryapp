@@ -1,5 +1,32 @@
 # Flyary
 
+## Flugtag-Cockpit: Ablösung des Ausbildungsblatts, Freigabe für Schüler (4.5)
+
+Migration `0054_flight_day_feedback_release.sql`, Oberfläche `src/components/flightday/DaySummaryEditor.tsx`,
+`LegacyCoachNotes.tsx`, `src/components/StudentDayFeedback.tsx`; entfernt: `CoachDayView.tsx`,
+`EventStudentFlights.tsx`. Tests in `FlightBoard.test.tsx`, `StudentDayFeedback.test.tsx` und
+`src/test/school-flights-database.test.ts`.
+
+- **Tageszusammenfassung in der Flugliste:** Die aufgeklappte Schülerzeile enthält die Zusammenfassung mit
+  «Als nächsten Lernschritt markieren» (`student_day_notes`, `flight_number IS NULL`, automatisch gespeichert mit
+  Status und «Wiederholen»). Der letzte Lernschritt früherer Tage steht darüber nur zum Lesen; kein automatisches
+  Vorausfüllen mehr, «Letzten Lernschritt als Vorlage übernehmen» kopiert ihn bewusst. Kein Augen-Symbol mehr.
+- **Ausbildungsblatt F1–F6 und «Schülerflüge» entfallen.** Alte F1–F6-Notizen erscheinen eingeklappt als
+  «Ausbildungsblatt (bisher)», nur zum Lesen (E5). Flüge, die Schüler selbst im Flugbuch mit diesem Termin erfasst
+  haben, werden als Zahl angezeigt (Grundlage für 6.1).
+- **Freigabe für Schüler (E8)** in der Datenbank: `flight_day_feedback_released(event)` ist wahr, sobald der Tag
+  freigegeben ist (`feedback_released_at`, ab 5.1) oder spätestens am Folgetag um 06:00 Schweizer Zeit (bei
+  mehrtägigen Terminen nach dem letzten Tag). Gilt für `my_school_flights` und neu auch für die Policy «Students can
+  view own visible notes». Frühere Termine sind damit automatisch freigegeben; es braucht keinen geplanten Job.
+- **Schüleransicht «Feedback»:** zeigt jetzt die Schulflüge mit Zeiten, Plätzen, bewerteten Manövern und
+  Rückmeldung, dazu frühere F-Notizen und die Zusammenfassung. Vor der Freigabe steht ein Hinweis, wann sie kommt.
+
+**Abweichungen vom Plan:** (1) Die Freigabe-Regel mit dem 06:00-Rückfall ist schon hier umgesetzt (geplant für 5.2),
+weil die Zusammenfassung sonst sofort für Schüler sichtbar gewesen wäre. (2) Die Anzeige der Schulflüge für Schüler
+ist aus 5.2 vorgezogen; die Push-Mitteilung folgt mit 5.2. (3) Der letzte Lernschritt stammt aus dem letzten früheren
+Termin mit einem markierten Lernschritt; Notizen gibt es nur an Tagen, an denen der Schüler betreut wurde. (4) Das
+Betriebshandbuch (Kapitel 14, 15, 27) ist noch nicht nachgeführt.
+
 ## Flugtag-Cockpit: Startplatz, «In der Luft» und Landehinweis (4.4)
 
 Migration `0053_flight_day_landing_hint.sql`, Oberfläche `src/components/flightday/TakeoffBoard.tsx`,

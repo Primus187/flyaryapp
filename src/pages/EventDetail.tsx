@@ -22,10 +22,9 @@ import IncidentReportDialog from "@/components/school/IncidentReportDialog";
 import AlternativeDateSuggestion from "@/components/school/AlternativeDateSuggestion";
 import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
-import EventStudentFlights from "@/components/EventStudentFlights";
-import CoachDayView from "@/components/CoachDayView";
 import DayCheckIn from "@/components/flightday/DayCheckIn";
 import FlightDayStations from "@/components/flightday/FlightDayStations";
+import LegacyCoachNotes from "@/components/flightday/LegacyCoachNotes";
 import { opensOnFlightDay, type FlightDayRole } from "@/lib/flight-day";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
@@ -491,11 +490,11 @@ export default function EventDetail() {
         {showDayTab && (
           <TabsContent value="day" className="space-y-3 mt-3">
             <DayCheckIn eventId={id!} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
-            {dayRole && <FlightDayStations eventId={id!} eventCategory={event.event_category || null} role={dayRole} signups={visibleConfirmed} profiles={profiles} />}
-            {/* Legacy coaching sheet and day booking read through is_group_staff (until 4.3–5.1). */}
+            {dayRole && <FlightDayStations eventId={id!} eventCategory={event.event_category || null} role={dayRole} signups={visibleConfirmed} profiles={profiles} canWriteSummary={isStaff} />}
+            {/* Former coaching sheet (F1–F6, read only) and the day booking read through is_group_staff;
+                the booking moves into the day closing with 5.1. */}
             {isStaff && <>
-              <CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
-              <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+              <LegacyCoachNotes eventId={id!} profiles={profiles} />
               <EventAttendance eventId={id!} groupId={event.group_id} eventDate={event.event_date} signups={visibleConfirmed} />
             </>}
           </TabsContent>

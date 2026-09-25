@@ -19,6 +19,8 @@ const club = "10000000-0000-0000-0000-000000000003";
 const event = "20000000-0000-0000-0000-000000000001";
 const closedEvent = "20000000-0000-0000-0000-000000000002";
 const clubEvent = "20000000-0000-0000-0000-000000000003";
+const oldEvent = "20000000-0000-0000-0000-000000000004";
+const camp = "20000000-0000-0000-0000-000000000005";
 const takeoff = "30000000-0000-0000-0000-000000000001";
 const landing = "30000000-0000-0000-0000-000000000002";
 const takeoff2 = "30000000-0000-0000-0000-000000000003";
@@ -37,7 +39,10 @@ beforeAll(async () => {
     CREATE TABLE flights(id uuid PRIMARY KEY);
     CREATE TABLE training_items(id uuid PRIMARY KEY, name text, sort_order integer);
     INSERT INTO training_items VALUES ('${approach}','Landeeinteilung',2),('${launch}','Aufziehen',1);
-    CREATE TABLE flight_events(id uuid PRIMARY KEY, group_id uuid, title text, event_date timestamptz, status text);
+    CREATE TABLE flight_events(id uuid PRIMARY KEY, group_id uuid, title text, event_date timestamptz, status text, end_date date);
+    CREATE TABLE student_day_notes(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), event_id uuid, student_user_id uuid, note text, flight_number integer, visible_to_student boolean);
+    ALTER TABLE student_day_notes ENABLE ROW LEVEL SECURITY;
+    CREATE POLICY "Students can view own visible notes" ON student_day_notes FOR SELECT USING (student_user_id = auth.uid() AND visible_to_student = true);
     CREATE TABLE event_signups(event_id uuid, user_id uuid, signed_up boolean, status text);
     CREATE TABLE event_staff(event_id uuid, user_id uuid, role text);
     CREATE FUNCTION is_group_staff(u uuid, g uuid) RETURNS boolean LANGUAGE sql STABLE AS $$
@@ -52,7 +57,12 @@ beforeAll(async () => {
     CREATE POLICY own ON locations FOR SELECT USING (user_id = auth.uid());
     INSERT INTO flight_events VALUES ('${event}','${school}','Höhenflüge',now(),'confirmed'),
       ('${closedEvent}','${school}','Gestern',now()-interval '1 day','confirmed'),
-      ('${clubEvent}','${club}','Clubtag',now(),'confirmed');
+      ('${clubEvent}','${club}','Clubtag',now(),'confirmed'),
+      ('${oldEvent}','${school}','Früher',now()-interval '3 days','confirmed');
+    INSERT INTO flight_events(id,group_id,title,event_date,status,end_date) VALUES ('${camp}','${school}','Camp',now()-interval '3 days','confirmed',(now()+interval '1 day')::date);
+    INSERT INTO student_day_notes(event_id,student_user_id,note,flight_number,visible_to_student) VALUES
+      ('${oldEvent}','${student}','Alte Rückmeldung',NULL,true),('${oldEvent}','${student}','Intern alt',1,false),
+      ('${event}','${student}','Heutige Zusammenfassung',NULL,true),('${camp}','${student}','Camp-Zusammenfassung',NULL,true);
     INSERT INTO event_signups VALUES ('${event}','${student}',true,'confirmed'),('${event}','${student2}',true,'confirmed'),
       ('${event}','${waitlisted}',true,'waitlist'),('${closedEvent}','${student}',true,'confirmed'),('${clubEvent}','${student}',true,'confirmed');
     INSERT INTO event_staff VALUES ('${event}','${eventHelper}','launch_helper'),('${event}','${eventInstructor}','instructor');
@@ -60,6 +70,7 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0050_event_school_flights.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0052_school_flight_items.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0053_flight_day_landing_hint.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0054_flight_day_feedback_release.sql", import.meta.url), "utf8"));
   await db.exec(`UPDATE flight_events SET default_takeoff_location_id='${takeoff}', default_landing_location_id='${landing}' WHERE id='${event}';
     UPDATE flight_events SET day_closed_at=now() WHERE id='${closedEvent}';`);
 }, 60_000);
@@ -267,5 +278,28 @@ describe("landing hint", () => {
       await asUser(user);
       await expect(db.query("SELECT set_flight_day_landing_hint($1,15::smallint)", [event])).rejects.toThrow("Flight day access required");
     }
+  });
+});
+
+describe("feedback release", () => {
+  it("releases a day when it is closed or at 06:00 the day after (after the last day of a camp)", async () => {
+    await asUser(student);
+    const released = async (ev: string) => (await call<{ r: boolean }>("SELECT flight_day_feedback_released($1) AS r", [ev])).r;
+    expect(await released(oldEvent)).toBe(true);
+    expect(await released(camp)).toBe(false);
+    expect(await released(clubEvent)).toBe(false);
+    await db.exec(`RESET ROLE; UPDATE flight_events SET feedback_released_at=now() WHERE id='${clubEvent}';`);
+    await asUser(student);
+    expect(await released(clubEvent)).toBe(true);
+  });
+
+  it("shows students their day summaries only once released, never hidden notes", async () => {
+    await asUser(student);
+    const notes = (await db.query<{ note: string }>("SELECT note FROM student_day_notes ORDER BY note")).rows.map((r) => r.note);
+    expect(notes).toContain("Alte Rückmeldung");
+    expect(notes).not.toContain("Intern alt");
+    expect(notes).not.toContain("Camp-Zusammenfassung");
+    // The main event was released by an earlier test (feedback_released_at = now()).
+    expect(notes).toContain("Heutige Zusammenfassung");
   });
 });

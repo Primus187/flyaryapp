@@ -46,8 +46,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
     ]);
     setFlights((flightsRes.data || []) as TakeoffFlight[]);
     setPauses((pausesRes.data || []) as DayPause[]);
-    // landing_hint_minutes: migration 0053, not in generated types.ts yet
-    const day = eventRes.data as unknown as { default_takeoff_location_id: string | null; landing_hint_minutes: number | null } | null;
+    const day = eventRes.data;
     setHint((day?.landing_hint_minutes ?? null) as LandingHintMinutes);
     const siteId = day?.default_takeoff_location_id;
     if (siteId) {

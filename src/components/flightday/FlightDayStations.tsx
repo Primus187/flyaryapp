@@ -19,11 +19,12 @@ interface Props {
   role: FlightDayRole;
   signups: DaySignup[];
   profiles: Record<string, string>;
+  canWriteSummary?: boolean;
 }
 
 /** Launch helpers work the take-off; instructors the landing field and can switch to the take-off
  *  view when they are up there themselves (remembered per device). Flugtag-Cockpit 4.4. */
-export default function FlightDayStations({ eventId, eventCategory, role, signups, profiles }: Props) {
+export default function FlightDayStations({ eventId, eventCategory, role, signups, profiles, canWriteSummary = false }: Props) {
   const { t } = useTranslation();
   const [station, setStation] = useState<Station>(storedStation);
   const [settingsVersion, setSettingsVersion] = useState(0);
@@ -47,7 +48,7 @@ export default function FlightDayStations({ eventId, eventCategory, role, signup
         ))}
       </div>
       {station === "landing"
-        ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} />
+        ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} canWriteSummary={canWriteSummary} />
         : <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} settingsVersion={settingsVersion} />}
     </div>
   );
