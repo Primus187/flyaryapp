@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import NextStepCard from "@/components/NextStepCard";
+import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import PushPromptCard from "@/components/PushPromptCard";
 import EmptyState from "@/components/layout/EmptyState";
 import ChallengeCard from "@/components/ChallengeCard";
@@ -186,6 +187,8 @@ export default function Dashboard() {
       />
 
       <PushPromptCard />
+
+      <SchoolFlightImportCard />
 
 
       {/* Events */}

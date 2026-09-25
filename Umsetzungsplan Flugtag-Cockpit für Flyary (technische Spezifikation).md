@@ -12,7 +12,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 | --- | --- | --- |
 | C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
 | C2 – Tagesabschluss | ✅ Abgeschlossen | 5.1–5.2 umgesetzt und abnahmegeprüft |
-| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
+| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | 🚧 In Arbeit | 6.1 ✅; 6.2–6.3 offen |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
 ## 1. Ausgangslage
@@ -214,7 +214,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 ## 6. C3 – Flugbuch-Abgleich und Ausbildungsnachweis
 
-### 6.1 Übernahme ins Flugbuch
+### 6.1 Übernahme ins Flugbuch ✅
 
 **Ziel:** Schluss mit der doppelten Erfassung ohne Abgleich (E3).
 
@@ -229,6 +229,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - Das Formular für neue Flüge weist bei einem Termin mit Schulflügen darauf hin: «Die Schule hat für diesen Tag schon Flüge erfasst – übernehmen statt neu erfassen?»
 
 **Logik in `src/lib/school-flight-match.ts`:** Zuordnung von Schulflügen zu vorhandenen Flugbuch-Einträgen. Vitest-Tests (gleiche Anzahl, mehr Schul- als Flugbuchflüge und umgekehrt, fehlende Zeiten).
+
+**Ist-Stand:** Migration `0057_school_flight_logbook.sql` (`flights.school_flight_id` mit Schutz-Trigger, `event_signups.logbook_import_dismissed_at`, RPCs `my_school_flight_imports`, `import_school_flights`, `dismiss_school_flight_import`), `SchoolFlightImportCard.tsx` auf Startseite, «Flüge» und im Formular für neue Flüge (das ersetzt den eigenen Hinweis im Formular). **Abweichungen:** Die Zuordnung paart nach Reihenfolge (Schulflug-Nummer ↔ Erfassungszeit des eigenen Eintrags), weil eigene Einträge keine Uhrzeit haben; verknüpfte Einträge behalten ihre eigenen Angaben; nur Tage ab 2026-09-25. Die Orte der Schulflüge gehören dem Fluglehrer; im Bearbeiten-Formular sieht der Schüler nur seine eigenen Orte.
 
 ### 6.2 Ausbildungsnachweis im Dossier
 

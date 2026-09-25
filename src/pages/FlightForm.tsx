@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import TagsInput from "@/components/TagsInput";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
+import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { cn } from "@/lib/utils";
 
 const DRAFT_KEY = "flyary.flightDraft";
@@ -529,6 +530,7 @@ export default function FlightForm() {
   return (
     <PageContainer>
       <PageHeader title={isEdit ? t("flights.editFlight") : t("flights.newFlight")} back />
+      {!isEdit && <SchoolFlightImportCard />}
       {!isEdit && (
         <div className="flex items-center gap-2">
           {[1, 2, 3].map((n) => (

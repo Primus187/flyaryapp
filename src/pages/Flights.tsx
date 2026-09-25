@@ -18,6 +18,7 @@ import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
+import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 
 type QuickFilter = "all" | "season" | "track";
 
@@ -155,6 +156,8 @@ export default function Flights() {
           </Button>
         }
       />
+
+      <SchoolFlightImportCard />
 
       <div className="flex gap-2">
         <div className="relative flex-1">

@@ -1,5 +1,27 @@
 # Flyary
 
+## Flugtag-Cockpit: Übernahme ins Flugbuch (6.1)
+
+Migration `0057_school_flight_logbook.sql`, Oberfläche `src/components/SchoolFlightImportCard.tsx` (Startseite,
+«Flüge» und Formular für neue Flüge), Logik in `src/lib/school-flight-match.ts`, Tests in
+`src/test/school-flight-logbook-database.test.ts`, `src/lib/school-flight-match.test.ts` und
+`SchoolFlightImportCard.test.tsx`.
+
+- Nach der Freigabe eines Flugtags sieht der Schüler «Die Schule hat 3 Flüge vom 25.9. erfasst» mit
+  **Ins Flugbuch übernehmen** und **Nicht jetzt**. Hat er an diesem Tag selbst nichts erfasst, übernimmt ein Tipp
+  alle Flüge. Sonst schlägt ein Dialog vor, seine eigenen Einträge des Tages der Reihe nach mit den Schulflügen zu
+  verknüpfen; pro Schulflug lässt sich «neu anlegen» oder ein anderer eigener Eintrag wählen.
+- Neue Einträge erhalten Datum, Start- und Landeplatz, Gruppe, Termin und – wenn Start und Landung erfasst sind –
+  die Flugdauer. Verknüpfte Einträge behalten ihre eigenen Angaben; der Schüler ergänzt Schirm, Track oder Fotos
+  wie gewohnt. Der Schulnachweis bleibt davon unberührt.
+- **Sicherheit:** `flights.school_flight_id` setzt nur `import_school_flights` (Schutz-Trigger); niemand kann
+  einen eigenen Eintrag mit einem fremden Schulflug verbinden. Löscht der Schüler den Eintrag, löst sich nur die
+  Verknüpfung (der Schulflug erscheint wieder zur Übernahme).
+- «Nicht jetzt» blendet den Tag aus (`event_signups.logbook_import_dismissed_at`). Nur Tage ab 2026-09-25.
+
+**Hinweis:** Die Plätze der Schulflüge gehören dem Fluglehrer. Der Schüler sieht ihre Namen in seinem Flug, im
+Bearbeiten-Formular stehen aber nur seine eigenen Orte zur Auswahl.
+
 ## Flugtag-Cockpit: Nachtrag Abnahmeprüfung C2
 
 Alle Akzeptanzkriterien von 5.1 und 5.2 gegen den Code geprüft. Zwei Funde, behoben:
