@@ -57,7 +57,7 @@ beforeAll(async () => {
   `);
   for (const m of ["0050_event_school_flights.sql", "0051_flight_day_presence.sql", "0052_school_flight_items.sql",
     "0053_flight_day_landing_hint.sql", "0054_flight_day_feedback_release.sql", "0057_school_flight_logbook.sql",
-    "0058_school_student_proof.sql"]) {
+    "0058_school_student_proof.sql", "0060_school_flight_link_consistency.sql"]) {
     await db.exec(migration(m));
   }
   await db.exec(`SET app.user_id='${instructor}'; SET ROLE authenticated;`);
@@ -127,6 +127,20 @@ describe("taking school flights into the logbook", () => {
     await asUser(beat);
     await expect(db.query("SELECT import_school_flights($1,$2)", [event, JSON.stringify([{ schoolFlightId: annaSchool, flightId: null }])]))
       .rejects.toThrow("School flight not available");
+  });
+
+  it("frees the school flight again when the student clears the link on an own entry", async () => {
+    await asUser(anna);
+    const linked = (await db.query<{ id: string; school_flight_id: string }>("SELECT id, school_flight_id FROM flights WHERE school_flight_id IS NOT NULL AND id <> $1 LIMIT 1", [ownFlight])).rows[0];
+    await db.query("UPDATE flights SET school_flight_id = NULL WHERE id=$1", [linked.id]);
+    await db.exec("RESET ROLE");
+    expect((await db.query("SELECT logbook_flight_id FROM event_school_flights WHERE id=$1", [linked.school_flight_id])).rows).toEqual([{ logbook_flight_id: null }]);
+    await asUser(anna);
+    const [day] = await imports();
+    expect(day.flights.map((f) => f.id)).toEqual([linked.school_flight_id]);
+    // Take it over again, so the following tests start from the same state.
+    await db.query("SELECT import_school_flights($1,$2)", [event, JSON.stringify([{ schoolFlightId: linked.school_flight_id, flightId: linked.id }])]);
+    expect(await imports()).toEqual([]);
   });
 
   it("keeps the school's record when the student deletes the logbook entry", async () => {

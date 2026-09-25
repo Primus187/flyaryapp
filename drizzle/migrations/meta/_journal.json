@@ -421,6 +421,13 @@
       "when": 1793750400000,
       "tag": "0059_instructor_ratings",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1793836800000,
+      "tag": "0060_school_flight_link_consistency",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Umsetzungsplan: Flugtag-Cockpit für Flyary
 
-2026-09-25 · Tobias Bolliger · Stand: C1 abgeschlossen und abnahmegeprüft (Betriebshandbuch offen), C2 abgeschlossen und abnahmegeprüft; C3 offen
+2026-09-25 · Tobias Bolliger · Stand: C1, C2 und C3 abgeschlossen und abnahmegeprüft; offen: Betriebshandbuch, Bereitstellung der Edge Function für das Nachweis-PDF; C4 zurückgestellt
 
 Dieses Dokument beschreibt, wie das Schulteam am eigentlichen Flugtag erfasst, wer da ist, wer welche Flüge gemacht hat und welche Rückmeldungen dazugehören. Heute ist das auf vier Stellen verteilt (Anwesenheit, Ausbildungsblatt F1–F6, Schülerflüge, geplante Manöver), und Schulteam und Schüler erfassen dieselben Flüge doppelt und ohne Abgleich. Das Flugtag-Cockpit ersetzt das durch **einen Bildschirm pro Flugtag**, auf dem jeder Flug ein **echter Eintrag der Schule** ist.
 
@@ -12,7 +12,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 | --- | --- | --- |
 | C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
 | C2 – Tagesabschluss | ✅ Abgeschlossen | 5.1–5.2 umgesetzt und abnahmegeprüft |
-| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | 🚧 Umgesetzt, Abnahmeprüfung offen | 6.1 ✅, 6.2 ✅, 6.3 ✅ |
+| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ✅ Abgeschlossen | 6.1–6.3 umgesetzt und abnahmegeprüft; Edge Function für das PDF muss bereitgestellt werden |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
 ## 1. Ausgangslage
@@ -325,3 +325,6 @@ Speziell für das Flugtag-Cockpit:
 - **Testlauf auf diesem Rechner:** Die ganze Suite braucht `npx vitest run --maxWorkers=2`; mit den Standard-Workern bricht sie wegen Speichermangel ab (viele PGlite-Datenbanken parallel).
 - **Abnahmeprüfung C2:** zwei Funde, behoben – ein abgeschlossener Tag war in der Oberfläche nicht schreibgeschützt (erst der Server lehnte ab), und «Tag abschliessen» erschien erst ab der Startzeit statt ab dem Kalendertag (README, «Nachtrag Abnahmeprüfung C2»).
 - **Tagesabschluss als eine Serverfunktion:** Rückgaben, Guthaben, Mietposten, Abschluss, Freigabe und Push in einer Transaktion; eindeutige Indizes statt Client-Prüfung gegen Doppelbuchungen. Die tägliche Routine ist idempotent (Merker `feedback_notified_at`, `close_reminded_at`) und berücksichtigt nur Termine ab dem Start des Cockpits.
+- **Abnahmeprüfung C3:** zwei Funde, behoben – eine vom Schüler aufgelöste Verknüpfung liess den Schulflug als «übernommen» stehen (Migration 0060), und das Datum der Fluglehrer-Bewertung folgte der Browser- statt der App-Sprache (README, «Nachtrag Abnahmeprüfung C3»).
+- **PDF ohne lokales Deno:** Die Aufbereitung des Nachweises liegt in einem reinen Modul (`school-proof.ts`), das die Edge Function zeichnet, die App als CSV nutzt und Vitest prüft. Das Zeichnen selbst lässt sich erst nach dem Deploy prüfen.
+

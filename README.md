@@ -1,5 +1,16 @@
 # Flyary
 
+## Flugtag-Cockpit: Nachtrag Abnahmeprüfung C3
+
+Alle Akzeptanzkriterien von 6.1–6.3 gegen den Code geprüft. Zwei Funde, behoben:
+
+- **Aufgelöste Verknüpfung blockierte den Schulflug:** Leerte ein Schüler (über die API) `school_flight_id` an
+  seinem Eintrag, blieb der Schulflug als «übernommen» markiert und liess sich nie wieder übernehmen. Migration
+  `0060_school_flight_link_consistency.sql` gibt ihn in diesem Fall frei und repariert bestehende Fälle.
+- **Datum der Fluglehrer-Bewertung** in «Ausbildung» folgte der Browser-Sprache statt der App-Sprache.
+
+Offen bleibt die Bereitstellung der Edge Function `export-flightbook-pdf` für das PDF des Nachweises.
+
 ## Flugtag-Cockpit: Bewertungen im Ausbildungsstand (6.3)
 
 Migration `0059_instructor_ratings.sql`, Anzeige in `src/pages/Training.tsx` und im Dossier-Reiter «Ausbildung»

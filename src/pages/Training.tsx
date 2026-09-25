@@ -38,7 +38,7 @@ const LEVELS = ["grundkurs", "brevetkurs", "siku", "all"] as const;
 type Level = typeof LEVELS[number];
 
 export default function Training() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [savingItem, setSavingItem] = useState<string | null>(null);
@@ -204,7 +204,7 @@ export default function Training() {
                             <span className="block text-[11px] text-muted-foreground">
                               {t("training.instructorRating", {
                                 rating: t(`flightDay.sheet.ratings.${instructorRatings[item.id].rating}`),
-                                date: new Date(`${instructorRatings[item.id].date}T12:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "numeric" }),
+                                date: new Date(`${instructorRatings[item.id].date}T12:00:00`).toLocaleDateString(i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH", { day: "numeric", month: "numeric" }),
                               })}
                             </span>
                           )}
