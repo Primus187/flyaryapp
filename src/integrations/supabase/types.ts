@@ -631,6 +631,24 @@ export type Database = {
           },
         ]
       }
+      client_error_quota: {
+        Row: {
+          hour: string
+          reporter: string | null
+          reports: number
+        }
+        Insert: {
+          hour: string
+          reporter?: string | null
+          reports?: number
+        }
+        Update: {
+          hour?: string
+          reporter?: string | null
+          reports?: number
+        }
+        Relationships: []
+      }
       client_errors: {
         Row: {
           app_version: string | null
