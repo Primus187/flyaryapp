@@ -1170,6 +1170,131 @@ export type Database = {
           },
         ]
       }
+      event_school_flight_notes: {
+        Row: {
+          feedback: string | null
+          flight_id: string
+          internal_note: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          feedback?: string | null
+          flight_id: string
+          internal_note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          feedback?: string | null
+          flight_id?: string
+          internal_note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_school_flight_notes_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: true
+            referencedRelation: "event_school_flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_school_flights: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          group_id: string
+          id: string
+          landed_at: string | null
+          landed_by: string | null
+          landing_location_id: string | null
+          logbook_flight_id: string | null
+          seq: number
+          start_note: string | null
+          started_at: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_id: string
+          group_id: string
+          id?: string
+          landed_at?: string | null
+          landed_by?: string | null
+          landing_location_id?: string | null
+          logbook_flight_id?: string | null
+          seq: number
+          start_note?: string | null
+          started_at?: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: string
+          group_id?: string
+          id?: string
+          landed_at?: string | null
+          landed_by?: string | null
+          landing_location_id?: string | null
+          logbook_flight_id?: string | null
+          seq?: number
+          start_note?: string | null
+          started_at?: string | null
+          status?: string
+          student_user_id?: string
+          takeoff_location_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_school_flights_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_school_flights_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_school_flights_landing_location_id_fkey"
+            columns: ["landing_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_school_flights_logbook_flight_id_fkey"
+            columns: ["logbook_flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_school_flights_takeoff_location_id_fkey"
+            columns: ["takeoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_signups: {
         Row: {
           attended: boolean
@@ -1482,7 +1607,11 @@ export type Database = {
           chat_link: string | null
           created_at: string
           created_by: string
+          day_closed_at: string | null
+          day_closed_by: string | null
           day_topic: string | null
+          default_landing_location_id: string | null
+          default_takeoff_location_id: string | null
           departure_info: string | null
           description: string | null
           end_date: string | null
@@ -1490,6 +1619,7 @@ export type Database = {
           event_date: string
           event_type: string | null
           feed_description: string | null
+          feedback_released_at: string | null
           flight_area: string | null
           flight_prep_notes: string | null
           group_id: string
@@ -1509,7 +1639,11 @@ export type Database = {
           chat_link?: string | null
           created_at?: string
           created_by: string
+          day_closed_at?: string | null
+          day_closed_by?: string | null
           day_topic?: string | null
+          default_landing_location_id?: string | null
+          default_takeoff_location_id?: string | null
           departure_info?: string | null
           description?: string | null
           end_date?: string | null
@@ -1517,6 +1651,7 @@ export type Database = {
           event_date: string
           event_type?: string | null
           feed_description?: string | null
+          feedback_released_at?: string | null
           flight_area?: string | null
           flight_prep_notes?: string | null
           group_id: string
@@ -1536,7 +1671,11 @@ export type Database = {
           chat_link?: string | null
           created_at?: string
           created_by?: string
+          day_closed_at?: string | null
+          day_closed_by?: string | null
           day_topic?: string | null
+          default_landing_location_id?: string | null
+          default_takeoff_location_id?: string | null
           departure_info?: string | null
           description?: string | null
           end_date?: string | null
@@ -1544,6 +1683,7 @@ export type Database = {
           event_date?: string
           event_type?: string | null
           feed_description?: string | null
+          feedback_released_at?: string | null
           flight_area?: string | null
           flight_prep_notes?: string | null
           group_id?: string
@@ -1560,6 +1700,20 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "flight_events_default_landing_location_id_fkey"
+            columns: ["default_landing_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_events_default_takeoff_location_id_fkey"
+            columns: ["default_takeoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "flight_events_group_id_fkey"
             columns: ["group_id"]
@@ -3675,6 +3829,10 @@ export type Database = {
       feed_mention_members: { Args: never; Returns: Json }
       feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
       feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
+      flight_day_role: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: string
+      }
       get_emergency_contact_info: {
         Args: { _event_id: string; _target_user_id: string }
         Returns: {
@@ -4064,6 +4222,7 @@ export type Database = {
       }
       marketplace_storage_usage: { Args: never; Returns: Json }
       marketplace_trigger_cleanup: { Args: never; Returns: undefined }
+      my_school_flights: { Args: { _event_id: string }; Returns: Json }
       report_client_error: {
         Args: {
           _app_version?: string
@@ -4078,6 +4237,214 @@ export type Database = {
       school_dashboard_data: {
         Args: { _group_id: string; _section?: string; _viewer_id?: string }
         Returns: Json
+      }
+      school_flight_abort: {
+        Args: { _flight_id: string; _note?: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          group_id: string
+          id: string
+          landed_at: string | null
+          landed_by: string | null
+          landing_location_id: string | null
+          logbook_flight_id: string | null
+          seq: number
+          start_note: string | null
+          started_at: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_school_flights"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      school_flight_add: {
+        Args: {
+          _event_id: string
+          _landing_location_id?: string
+          _notes?: Json
+          _student_id: string
+          _takeoff_location_id?: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          group_id: string
+          id: string
+          landed_at: string | null
+          landed_by: string | null
+          landing_location_id: string | null
+          logbook_flight_id: string | null
+          seq: number
+          start_note: string | null
+          started_at: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_school_flights"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      school_flight_default_location: {
+        Args: { _event_id: string; _kind: string }
+        Returns: string
+      }
+      school_flight_delete: { Args: { _flight_id: string }; Returns: undefined }
+      school_flight_guard: {
+        Args: { _event_id: string; _need: string }
+        Returns: {
+          chat_link: string | null
+          created_at: string
+          created_by: string
+          day_closed_at: string | null
+          day_closed_by: string | null
+          day_topic: string | null
+          default_landing_location_id: string | null
+          default_takeoff_location_id: string | null
+          departure_info: string | null
+          description: string | null
+          end_date: string | null
+          event_category: string
+          event_date: string
+          event_type: string | null
+          feed_description: string | null
+          feedback_released_at: string | null
+          flight_area: string | null
+          flight_prep_notes: string | null
+          group_id: string
+          id: string
+          instructor: string | null
+          launch_helper: string | null
+          max_participants: number | null
+          meeting_point: string | null
+          published_at: string | null
+          published_to_feed: boolean
+          series_id: string | null
+          signup_deadline: string | null
+          status: Database["public"]["Enums"]["event_status"]
+          title: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "flight_events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      school_flight_land: {
+        Args: {
+          _flight_id: string
+          _landing_location_id?: string
+          _notes?: Json
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          group_id: string
+          id: string
+          landed_at: string | null
+          landed_by: string | null
+          landing_location_id: string | null
+          logbook_flight_id: string | null
+          seq: number
+          start_note: string | null
+          started_at: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_school_flights"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      school_flight_next_seq: {
+        Args: { _event_id: string; _student_id: string }
+        Returns: number
+      }
+      school_flight_set_notes: {
+        Args: { _flight_id: string; _patch: Json }
+        Returns: undefined
+      }
+      school_flight_start: {
+        Args: {
+          _event_id: string
+          _note?: string
+          _student_id: string
+          _takeoff_location_id?: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          group_id: string
+          id: string
+          landed_at: string | null
+          landed_by: string | null
+          landing_location_id: string | null
+          logbook_flight_id: string | null
+          seq: number
+          start_note: string | null
+          started_at: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_school_flights"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      school_flight_update: {
+        Args: { _flight_id: string; _patch: Json }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          group_id: string
+          id: string
+          landed_at: string | null
+          landed_by: string | null
+          landing_location_id: string | null
+          logbook_flight_id: string | null
+          seq: number
+          start_note: string | null
+          started_at: string | null
+          status: string
+          student_user_id: string
+          takeoff_location_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_school_flights"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      school_flight_write_notes: {
+        Args: { _flight_id: string; _patch: Json }
+        Returns: undefined
       }
       school_student_dossier: {
         Args: {
@@ -4102,6 +4469,14 @@ export type Database = {
           _status: Database["public"]["Enums"]["event_status"]
         }
         Returns: Database["public"]["Enums"]["event_status"]
+      }
+      set_flight_day_locations: {
+        Args: {
+          _event_id: string
+          _landing_location_id: string
+          _takeoff_location_id: string
+        }
+        Returns: undefined
       }
       set_member_training_level: {
         Args: { _group_id: string; _training_level: string; _user_id: string }
