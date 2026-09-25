@@ -414,6 +414,13 @@
       "when": 1793664000000,
       "tag": "0058_school_student_proof",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1793750400000,
+      "tag": "0059_instructor_ratings",
+      "breakpoints": true
     }
   ]
 }

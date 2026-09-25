@@ -46,6 +46,8 @@ export default function Training() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<TrainingItem[]>([]);
   const [progress, setProgress] = useState<Map<string, number>>(new Map());
+  // Latest released rating of the instructors per maneuver (Flugtag-Cockpit 6.3); never overwrites the own stars.
+  const [instructorRatings, setInstructorRatings] = useState<Record<string, { rating: 1 | 2 | 3; date: string }>>({});
   const [loading, setLoading] = useState(true);
   const [activeLevel, setActiveLevel] = useState<Level>("all");
   const [userLevel, setUserLevel] = useState<string>("grundkurs");
@@ -57,7 +59,10 @@ export default function Training() {
       supabase.from("training_items").select("*").order("sort_order"),
       supabase.from("training_progress").select("item_id, rating").eq("user_id", user.id),
       supabase.from("profiles").select("training_level").eq("user_id", user.id).single(),
-    ]).then(([catRes, itemRes, progRes, profileRes]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0059 not in generated types.ts yet
+      (supabase as any).rpc("my_instructor_ratings"),
+    ]).then(([catRes, itemRes, progRes, profileRes, ratingsRes]) => {
+      if (ratingsRes?.data && typeof ratingsRes.data === "object") setInstructorRatings(ratingsRes.data);
       if (catRes.data) setCategories(catRes.data as any);
       if (itemRes.data) setItems(itemRes.data);
       if (progRes.data) {
@@ -190,9 +195,19 @@ export default function Training() {
                     const rating = progress.get(item.id) || 0;
                     return (
                       <div key={item.id} className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left">
-                        <button type="button" onClick={() => navigate(`/training/${item.id}`)} className="text-sm min-w-0 flex-1 text-left pr-2 flex items-center gap-1.5">
-                          {item.name}
-                          {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600 shrink-0">SHV</Badge>}
+                        <button type="button" onClick={() => navigate(`/training/${item.id}`)} className="text-sm min-w-0 flex-1 text-left pr-2">
+                          <span className="flex items-center gap-1.5">
+                            {item.name}
+                            {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600 shrink-0">SHV</Badge>}
+                          </span>
+                          {instructorRatings[item.id] && (
+                            <span className="block text-[11px] text-muted-foreground">
+                              {t("training.instructorRating", {
+                                rating: t(`flightDay.sheet.ratings.${instructorRatings[item.id].rating}`),
+                                date: new Date(`${instructorRatings[item.id].date}T12:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "numeric" }),
+                              })}
+                            </span>
+                          )}
                         </button>
                         <div className="flex gap-0.5 shrink-0">
                           {[1, 2, 3].map((star) => (

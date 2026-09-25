@@ -128,7 +128,16 @@ function OverviewPanel({ data, groupId, studentId }: Context & { data: Overview 
 
 function TrainingPanel(context: Context & { level: string | null }) {
   const { t } = useTranslation();
+  const { date } = useFormat();
   const query = useDossierSection(context, "training");
+  // Instructors' ratings from the flying days (6.3), newest first; shown next to the student's own rating (E6).
+  const ratings = useQuery({ queryKey: ["school-student-ratings", context.groupId, context.studentId],
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0059 not in generated types.ts yet
+      const { data, error } = await (supabase as any).rpc("school_student_ratings", { _group_id: context.groupId, _student_id: context.studentId });
+      if (error) throw error;
+      return (data || {}) as Record<string, { date: string; rating: 1 | 2 | 3 }[]>;
+    } });
   const [filter, setFilter] = useState<TrainingFilter>(() => trainingFilter(context.level));
   if (query.isPending) return <p role="status">{t("common.loading")}</p>;
   if (query.isError) return <Retry onRetry={() => void query.refetch()} />;
@@ -136,7 +145,7 @@ function TrainingPanel(context: Context & { level: string | null }) {
   return <div className="space-y-4"><p className="text-xs text-muted-foreground">{t("dossier.trainingHint")}</p>
     <select aria-label={t("dossier.level")} className="rounded-md border bg-background p-2" value={filter} onChange={e => setFilter(e.target.value as TrainingFilter)}>{(["all", "grundkurs", "brevetkurs", "siku"] as const).map(value => <option key={value} value={value}>{t(`dossier.levels.${value}`)}</option>)}</select>
     {!rows.length && <Empty />}
-    {[...new Set(rows.map(row => row.category))].map(category => <Panel key={category} title={category}>{rows.filter(row => row.category === category).map(row => <div key={row.id} className="border-t pt-3 first:border-0 first:pt-0"><div className="flex items-start justify-between gap-2"><p className="text-sm font-medium">{row.name}{row.is_exam_maneuver && <Badge variant="outline" className="ml-2">SHV</Badge>}</p><span className="text-sm shrink-0">{row.rating}/3</span></div>{row.notes && <p className="text-sm whitespace-pre-wrap break-words text-muted-foreground mt-1">{row.notes}</p>}</div>)}</Panel>)}
+    {[...new Set(rows.map(row => row.category))].map(category => <Panel key={category} title={category}>{rows.filter(row => row.category === category).map(row => <div key={row.id} className="border-t pt-3 first:border-0 first:pt-0"><div className="flex items-start justify-between gap-2"><p className="text-sm font-medium">{row.name}{row.is_exam_maneuver && <Badge variant="outline" className="ml-2">SHV</Badge>}</p><span className="text-sm shrink-0">{t("dossier.ownRating", { rating: row.rating })}</span></div>{ratings.data?.[row.id]?.length ? <p className="text-xs text-muted-foreground mt-1">{t("dossier.instructorRatings")}: {[...ratings.data[row.id]].reverse().map(h => `${t(`flightDay.sheet.ratings.${h.rating}`)} (${date(h.date)})`).join(" → ")}</p> : null}{row.notes && <p className="text-sm whitespace-pre-wrap break-words text-muted-foreground mt-1">{row.notes}</p>}</div>)}</Panel>)}
   </div>;
 }
 

@@ -1,5 +1,18 @@
 # Flyary
 
+## Flugtag-Cockpit: Bewertungen im Ausbildungsstand (6.3)
+
+Migration `0059_instructor_ratings.sql`, Anzeige in `src/pages/Training.tsx` und im Dossier-Reiter «Ausbildung»
+(`src/pages/StudentDossier.tsx`), Tests in `src/test/school-flights-database.test.ts` und `StudentDossier.test.tsx`.
+
+- **Schüler:** In «Ausbildung» steht unter jedem Manöver, das am Flugtag bewertet wurde, «Fluglehrer: Sitzt (25.9.)»
+  – die letzte Bewertung, erst nach der Freigabe des Tages (`my_instructor_ratings`). Die eigenen Sterne bleiben
+  unverändert und getrennt (E6).
+- **Dossier:** Neben der Selbsteinschätzung («Selbst: 2/3») der Verlauf der Fluglehrer-Bewertungen, älteste zuerst,
+  höchstens die letzten zehn (`school_student_ratings`, nur Admin, Fluglehrer und Schulleitung der Schule).
+- Die früheren Bewertungen in `flight_training_items.instructor_rating` bleiben, wo sie waren; sie werden nicht
+  übernommen, weil sie an private Flugbuch-Einträge gebunden sind.
+
 ## Flugtag-Cockpit: Ausbildungsnachweis für den SHV (6.2)
 
 Migration `0058_school_student_proof.sql`, Edge Function `supabase/functions/export-flightbook-pdf` (neuer Modus

@@ -12,7 +12,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 | --- | --- | --- |
 | C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
 | C2 – Tagesabschluss | ✅ Abgeschlossen | 5.1–5.2 umgesetzt und abnahmegeprüft |
-| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | 🚧 In Arbeit | 6.1 ✅, 6.2 ✅; 6.3 offen |
+| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | 🚧 Umgesetzt, Abnahmeprüfung offen | 6.1 ✅, 6.2 ✅, 6.3 ✅ |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
 ## 1. Ausgangslage
@@ -252,7 +252,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Ist-Stand:** Migration `0058_school_student_proof.sql` (RPC `school_student_proof` mit Zeitraum), Edge Function `export-flightbook-pdf` mit Modus `school_proof` (Aufbereitung in `school-proof.ts`, von Vitest getestet), Dossier-Reiter «Nachweis» (`SchoolProofPanel.tsx`) mit Totalen, Flugtagen, PDF und CSV. **Abweichungen:** Der Zähler im Dossier-Kopf zeigt weiterhin die selbst erfassten Flüge; der Nachweis steht im eigenen Reiter mit beiden Zahlen. Der Jahresbericht (`AnnualReport`) verlangt keine Flugzahlen pro Schüler und bleibt unverändert. Die Edge Function muss neu bereitgestellt werden; Deno ist lokal nicht installiert.
 
-### 6.3 Bewertungen im Ausbildungsstand
+### 6.3 Bewertungen im Ausbildungsstand ✅
 
 **Ziel:** Die Bewertungen vom Flugtag werden im Ausbildungsstand des Schülers sichtbar, ohne seine Selbsteinschätzung zu überschreiben (E6).
 
@@ -261,6 +261,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - In *Ausbildung* zeigt jedes Manöver neben der eigenen Einschätzung «Fluglehrer: sitzt (25.9.)», also die **letzte** Bewertung aus `event_school_flight_items`
 - Das Dossier zeigt pro Manöver den Verlauf der Bewertungen über die Flugtage
 - Bestehende `flight_training_items.instructor_rating` bleibt lesbar; neue Bewertungen entstehen nur noch über Schulflüge. Ob Altwerte migriert werden, wird bei der Umsetzung anhand der Datenmenge entschieden
+
+**Ist-Stand:** Migration `0059_instructor_ratings.sql` (`my_instructor_ratings`: letzte freigegebene Bewertung pro Manöver für den Schüler; `school_student_ratings`: Verlauf der letzten zehn fürs Dossier), Anzeige in `Training.tsx` und im Dossier-Reiter «Ausbildung». **Abweichung:** Altwerte aus `flight_training_items.instructor_rating` werden nicht übernommen, weil sie an private Flugbuch-Einträge gebunden sind; sie bleiben dort sichtbar.
 
 ## 7. C4 – Später / optional
 

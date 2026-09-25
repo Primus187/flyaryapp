@@ -35,6 +35,7 @@ beforeAll(async () => {
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id',true),'')::uuid $$;
     GRANT USAGE ON SCHEMA auth TO authenticated,anon;
     CREATE TABLE groups(id uuid PRIMARY KEY, group_type text);
+    CREATE TABLE group_members(group_id uuid, user_id uuid);
     CREATE TABLE locations(id uuid PRIMARY KEY, name text, user_id uuid);
     CREATE TABLE flights(id uuid PRIMARY KEY);
     CREATE TABLE training_items(id uuid PRIMARY KEY, name text, sort_order integer);
@@ -51,6 +52,7 @@ beforeAll(async () => {
       SELECT is_group_staff(u, g) OR (u='${helper}' AND g='${school}') $$;
     GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;
     INSERT INTO groups VALUES ('${school}','school'),('${otherSchool}','school'),('${club}','club');
+    INSERT INTO group_members VALUES ('${school}','${student}'),('${school}','${student2}'),('${school}','${instructor}');
     INSERT INTO locations VALUES ('${takeoff}','Niederbauen','${instructor}'),('${landing}','Emmetten','${instructor}'),
       ('${takeoff2}','Klewenalp','${instructor}'),('${unused}','Privat','${instructor}');
     ALTER TABLE locations ENABLE ROW LEVEL SECURITY;
@@ -71,6 +73,7 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0052_school_flight_items.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0053_flight_day_landing_hint.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0054_flight_day_feedback_release.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0059_instructor_ratings.sql", import.meta.url), "utf8"));
   await db.exec(`UPDATE flight_events SET default_takeoff_location_id='${takeoff}', default_landing_location_id='${landing}' WHERE id='${event}';
     UPDATE flight_events SET day_closed_at=now() WHERE id='${closedEvent}';`);
 }, 60_000);
@@ -303,3 +306,32 @@ describe("feedback release", () => {
     expect(notes).toContain("Heutige Zusammenfassung");
   });
 });
+
+describe("instructor ratings in the training level", () => {
+  it("gives students their latest released rating per maneuver", async () => {
+    await asUser(student);
+    const ratings = (await call<{ r: Record<string, { rating: number; date: string }> }>("SELECT my_instructor_ratings() AS r")).r;
+    expect(Object.fromEntries(Object.entries(ratings).map(([k, v]) => [k, v.rating]))).toEqual({ [launch]: 2, [approach]: 3 });
+    await asUser(student2);
+    expect((await call<{ r: Record<string, unknown> }>("SELECT my_instructor_ratings() AS r")).r).toEqual({});
+  });
+
+  it("hides ratings of a day that is not released yet", async () => {
+    await db.exec(`RESET ROLE; UPDATE flight_events SET feedback_released_at = NULL WHERE id='${event}';`);
+    await asUser(student);
+    expect((await call<{ r: Record<string, unknown> }>("SELECT my_instructor_ratings() AS r")).r).toEqual({});
+    await db.exec(`RESET ROLE; UPDATE flight_events SET feedback_released_at = now() WHERE id='${event}';`);
+  });
+
+  it("shows the school's staff the history per maneuver, nobody else", async () => {
+    await asUser(instructor);
+    const history = (await call<{ r: Record<string, { rating: number }[]> }>("SELECT school_student_ratings($1,$2) AS r", [school, student])).r;
+    expect(history[launch].map((h) => h.rating)).toEqual([2]);
+    expect(history[approach].map((h) => h.rating)).toEqual([3]);
+    for (const user of [helper, student, foreignTeam]) {
+      await asUser(user);
+      await expect(db.query("SELECT school_student_ratings($1,$2)", [school, student])).rejects.toThrow("School student access required");
+    }
+  });
+});
+

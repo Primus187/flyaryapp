@@ -6,7 +6,8 @@ import StudentDossier from "./StudentDossier";
 import { fetchDossier } from "@/lib/student-dossier";
 import type { Overview } from "@/lib/student-dossier";
 
-const mocks = vi.hoisted(() => ({ groups: [{ id: "school", name: "My school", canManage: true }], setMode: vi.fn(), setSchoolGroupId: vi.fn() }));
+const mocks = vi.hoisted(() => ({ groups: [{ id: "school", name: "My school", canManage: true }], setMode: vi.fn(), setSchoolGroupId: vi.fn(), rpc: vi.fn() }));
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { rpc: mocks.rpc } }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "teacher" } }) }));
 vi.mock("@/contexts/RoleModeContext", () => ({ useRoleMode: () => mocks }));
 vi.mock("@/hooks/use-school-access", () => ({ useSchoolGroups: () => ({ data: mocks.groups, isPending: false, isError: false }) }));
@@ -61,3 +62,16 @@ it("loads only the selected section and paginates flights without losing notes",
   await waitFor(() => expect(screen.queryByRole("button", { name: "dossier.loadMore" })).not.toBeInTheDocument());
   expect(fetchDossier).toHaveBeenLastCalledWith("school", "student", "flights", 30, expect.any(AbortSignal));
 });
+it("shows the instructors' ratings from the flying days next to the student's own rating", async () => {
+  mocks.rpc.mockResolvedValue({ data: { item: [{ date: "2026-09-25", rating: 3 }, { date: "2026-09-01", rating: 1 }] }, error: null });
+  vi.mocked(fetchDossier).mockImplementation(async (_group, _student, section) => {
+    if (section === "overview") return overview;
+    return { total: 1, rows: [{ id: "item", name: "Aufziehen", category: "Start", training_level: "brevetkurs", is_exam_maneuver: false, rating: 2, notes: null, updated_at: null }] };
+  });
+  show();
+  await screen.findByRole("heading", { name: "Alex" });
+  fireEvent.mouseDown(screen.getByRole("tab", { name: "dossier.sections.training" }), { button: 0, ctrlKey: false });
+  expect(await screen.findByText(/dossier.instructorRatings: flightDay.sheet.ratings.1 .* → flightDay.sheet.ratings.3/)).toBeInTheDocument();
+  expect(mocks.rpc).toHaveBeenCalledWith("school_student_ratings", { _group_id: "school", _student_id: "student" });
+});
+
