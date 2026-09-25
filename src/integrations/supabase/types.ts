@@ -1032,6 +1032,41 @@ export type Database = {
           },
         ]
       }
+      event_day_pauses: {
+        Row: {
+          event_id: string
+          note: string | null
+          paused_at: string
+          paused_by: string | null
+          reason: string
+          student_user_id: string
+        }
+        Insert: {
+          event_id: string
+          note?: string | null
+          paused_at?: string
+          paused_by?: string | null
+          reason: string
+          student_user_id: string
+        }
+        Update: {
+          event_id?: string
+          note?: string | null
+          paused_at?: string
+          paused_by?: string | null
+          reason?: string
+          student_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_day_pauses_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_maneuvers: {
         Row: {
           event_id: string
@@ -1297,10 +1332,12 @@ export type Database = {
       }
       event_signups: {
         Row: {
-          attended: boolean
+          attended: boolean | null
+          checked_in_at: string | null
           confirmed_by_school: boolean
           event_id: string
           id: string
+          presence: string
           signed_up: boolean
           status: string
           updated_at: string
@@ -1308,10 +1345,12 @@ export type Database = {
           waitlist_position: number | null
         }
         Insert: {
-          attended?: boolean
+          attended?: boolean | null
+          checked_in_at?: string | null
           confirmed_by_school?: boolean
           event_id: string
           id?: string
+          presence?: string
           signed_up?: boolean
           status?: string
           updated_at?: string
@@ -1319,10 +1358,12 @@ export type Database = {
           waitlist_position?: number | null
         }
         Update: {
-          attended?: boolean
+          attended?: boolean | null
+          checked_in_at?: string | null
           confirmed_by_school?: boolean
           event_id?: string
           id?: string
+          presence?: string
           signed_up?: boolean
           status?: string
           updated_at?: string
@@ -3829,6 +3870,10 @@ export type Database = {
       feed_mention_members: { Args: never; Returns: Json }
       feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
       feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
+      flight_day_require_signup: {
+        Args: { _event_id: string; _student_id: string }
+        Returns: undefined
+      }
       flight_day_role: {
         Args: { _event_id: string; _user_id: string }
         Returns: string
@@ -4463,6 +4508,15 @@ export type Database = {
         Args: { _body: string; _title: string; _url?: string; _user_id: string }
         Returns: undefined
       }
+      set_day_pause: {
+        Args: {
+          _event_id: string
+          _note?: string
+          _reason: string
+          _student_id: string
+        }
+        Returns: undefined
+      }
       set_event_status: {
         Args: {
           _event_id: string
@@ -4481,6 +4535,18 @@ export type Database = {
       set_member_training_level: {
         Args: { _group_id: string; _training_level: string; _user_id: string }
         Returns: undefined
+      }
+      set_signup_confirmed: {
+        Args: { _confirmed: boolean; _event_id: string; _student_id: string }
+        Returns: boolean
+      }
+      set_signup_presence: {
+        Args: { _event_id: string; _presence: string; _student_id: string }
+        Returns: string
+      }
+      set_signups_present: {
+        Args: { _event_id: string; _student_ids: string[] }
+        Returns: number
       }
     }
     Enums: {

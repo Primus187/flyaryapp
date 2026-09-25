@@ -14,9 +14,6 @@ import {
   type DayParticipant, type DayPause, type DaySignup, type PauseReason, type Presence,
 } from "@/lib/flight-day";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0051 not in generated types.ts yet
-const db = supabase as any;
-
 interface Props {
   eventId: string;
   /** Confirmed signups shown on the participants tab (inactive students already filtered). */
@@ -39,7 +36,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
   const refresh = useCallback(() => onChangedRef.current(), []);
 
   const loadPauses = useCallback(async () => {
-    const { data } = await db.from("event_day_pauses").select("student_user_id, reason, note").eq("event_id", eventId);
+    const { data } = await supabase.from("event_day_pauses").select("student_user_id, reason, note").eq("event_id", eventId);
     setPauses((data || []) as DayPause[]);
   }, [eventId]);
 
@@ -66,7 +63,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
 
   const setPresence = async (p: DayParticipant, presence: Presence) => {
     setBusy(p.userId);
-    const { error } = await db.rpc("set_signup_presence", { _event_id: eventId, _student_id: p.userId, _presence: presence });
+    const { error } = await supabase.rpc("set_signup_presence", { _event_id: eventId, _student_id: p.userId, _presence: presence });
     setBusy(null);
     if (error) { fail(error); return; }
     await onChanged();
@@ -76,7 +73,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
     const ids = participants.filter((p) => p.presence === "expected").map((p) => p.userId);
     if (!confirm(t("flightDay.allPresentConfirm", { count: ids.length }))) return;
     setBusy("all");
-    const { data, error } = await db.rpc("set_signups_present", { _event_id: eventId, _student_ids: ids });
+    const { data, error } = await supabase.rpc("set_signups_present", { _event_id: eventId, _student_ids: ids });
     setBusy(null);
     if (error) { fail(error); return; }
     toast({ title: t("flightDay.allPresentDone", { count: data ?? ids.length }) });
@@ -92,7 +89,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
   const savePause = async (resume = false) => {
     if (!pauseFor) return;
     setBusy(pauseFor.userId);
-    const { error } = await db.rpc("set_day_pause", {
+    const { error } = await supabase.rpc("set_day_pause", {
       _event_id: eventId, _student_id: pauseFor.userId, _reason: resume ? null : reason, _note: resume ? null : note,
     });
     setBusy(null);

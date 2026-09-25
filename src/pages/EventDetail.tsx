@@ -191,8 +191,7 @@ export default function EventDetail() {
   const toggleSchoolConfirm = async (signup: any) => {
     if (!id) return;
     // RPC: RLS only lets people update their own signup, so the direct UPDATE was silently ignored.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0051 not in generated types.ts yet
-    const { error } = await (supabase as any).rpc("set_signup_confirmed", { _event_id: id, _student_id: signup.user_id, _confirmed: !signup.confirmed_by_school });
+    const { error } = await supabase.rpc("set_signup_confirmed", { _event_id: id, _student_id: signup.user_id, _confirmed: !signup.confirmed_by_school });
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     await refetchSignups();
   };
