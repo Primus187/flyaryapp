@@ -1,5 +1,24 @@
 # Flyary
 
+## Betrieb: Datenbank-Typen, Typprüfung und Backup
+
+- **Typprüfung:** `npm run typecheck` (= `tsc --noEmit -p tsconfig.app.json`). Ein blosses `npx tsc --noEmit` prüft
+  nichts, weil `tsconfig.json` nur auf andere Konfigurationen verweist (`"files": []`).
+- **Datenbank-Typen:** `npm run gen-types` erzeugt `src/integrations/supabase/types.ts` aus dem Live-Schema (nur lesend,
+  Management API). Nach jeder angewendeten Migration ausführen – statt `"tabelle" as any`.
+- **Backup:** `npm run backup` (`scripts/db-backup.mjs`, nur lesend) schreibt nach `%USERPROFILE%FlyaryBackups`
+  (änderbar mit `FLYARY_BACKUP_DIR`, bewusst ausserhalb von OneDrive und Repo):
+  `data/<Zeitstempel>/` mit allen Tabellen aus `public` plus `auth.users`/`auth.identities` als JSON und einem
+  `manifest.json` (Commit, Migrationen, Zeilenzahlen, Dateiliste); `files/<bucket>/` spiegelt den Storage
+  inkrementell. Die neuesten 8 Stände bleiben (`FLYARY_BACKUP_KEEP`). Enthält Personendaten und Passwort-Hashes.
+  Wöchentlich per Windows-Aufgabenplanung, z.B.:
+  `schtasks /Create /TN "Flyary Backup" /SC WEEKLY /D SUN /ST 20:00 /TR "cmd /c cd /d <Repo-Pfad> && npm run backup >> %USERPROFILE%FlyaryBackupsackup.log 2>&1"`
+- **Wiederherstellen:** `node scripts/db-restore.mjs <Snapshot-Ordner> --ref <Ziel-Projekt>` prüft nur;
+  mit `--yes` spielt es ein. Voraussetzung: Schema per `db-migrate --apply` im Ziel, Tabellen leer. Konten zuerst,
+  dann die App-Tabellen in Fremdschlüssel-Reihenfolge mit abgeschalteten Triggern (keine Mitteilungen oder XP beim
+  Einspielen), Sequenzen nachgeführt, danach die Dateien. Die SQL-Bausteine (`src/lib/backup-sql.ts`) sind getestet
+  und gegen PGlite geprüft; ein vollständiger Probelauf in ein zweites Supabase-Projekt steht noch aus.
+
 ## Marktplatz: Bewertungen nach dem Verkauf (8.1)
 
 Migration `0048_marketplace_reviews.sql`, Logik in `src/lib/marketplace-reviews.ts`, Dialoge
