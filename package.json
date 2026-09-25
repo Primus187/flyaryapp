@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "gen-types": "node scripts/gen-types.mjs",
     "backup": "node scripts/db-backup.mjs",
+    "smoke": "vite build && node scripts/smoke-routes.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

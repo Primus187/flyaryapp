@@ -16,6 +16,10 @@ Migration `0049_client_errors.sql`, Logik in `src/lib/error-reporting.ts`, Seite
 
 ## Betrieb: Datenbank-Typen, Typprüfung und Backup
 
+- **Rundgang vor dem Push:** `npm run smoke` baut die App, startet sie lokal und ruft 23 Hauptseiten mit einer
+  Test-Sitzung auf (alle Supabase-Anfragen lokal mit leeren Daten beantwortet, kein Zugriff aufs echte Projekt).
+  Rot bei Laufzeitfehler, Fehler-Hinweis, leerer Seite oder fehlender Navigation. Findet Abstürze im Code, nicht
+  Fehler mit echten Daten – dafür gibt es das Fehlerprotokoll.
 - **Typprüfung:** `npm run typecheck` (= `tsc --noEmit -p tsconfig.app.json`). Ein blosses `npx tsc --noEmit` prüft
   nichts, weil `tsconfig.json` nur auf andere Konfigurationen verweist (`"files": []`).
 - **Datenbank-Typen:** `npm run gen-types` erzeugt `src/integrations/supabase/types.ts` aus dem Live-Schema (nur lesend,
