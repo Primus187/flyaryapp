@@ -11,7 +11,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ✅ Abgeschlossen | 6.1–6.4 umgesetzt und abnahmegeprüft |
 | M3 – Schulen im Alltag | ✅ Abgeschlossen | 7.1–7.2 umgesetzt und abnahmegeprüft |
-| M4 – Später / optional | 🔶 Teilweise beauftragt | 8.4 ✅; 8.1 Bewertungen folgt; 8.2, 8.3 und 8.5 gestrichen (Entscheid 2026-09-25) |
+| M4 – Später / optional | ✅ Beauftragter Teil umgesetzt | 8.1 ✅, 8.4 ✅; 8.2, 8.3 und 8.5 gestrichen (Entscheid 2026-09-25) |
 
 ## 1. Grundsatzentscheide
 
@@ -314,7 +314,7 @@ Bei Schul-Anzeigen kann das Shop-Team einen Verkauf an eine Person der Schule «
 
 | # | Feature | Voraussetzung |
 | --- | --- | --- |
-| 8.1 | Bewertungen nach abgeschlossenem Verkauf (nur zwischen Personen, die gechattet haben und beim «Verkauft» ausgewählt wurden) | Genügend Transaktionen, sonst leicht manipulierbar |
+| 8.1 ✅ | Bewertungen nach abgeschlossenem Verkauf (nur zwischen Personen, die gechattet haben und beim «Verkauft» ausgewählt wurden) | Umgesetzt: Migration `0048_marketplace_reviews.sql`; Käuferwahl beim «Verkauft» (auch Verkauf auf die Abrechnung), je eine Bewertung pro Seite, Schnitt auf der Anbieter-Karte, Meldungen an die Flyary-Moderation |
 | 8.2 | Seriennummer-Abgleich gegen gestohlen gemeldetes Material (Nummer nur gehasht gespeichert) | Bedarf aus der Community |
 | 8.3 | Kostenpflichtige Zusatzfunktionen: Hervorheben (`featured_until`), häufigeres Hochschieben, mehr Fotos, Schul-Shop-Paket | Phase 4 (Zahlungsanbieter) des Flugschul-Plans |
 | 8.4 ✅ | Öffentlicher Teilen-Link für Nicht-Nutzer (Muster `/shared/flights/:token`) | Umgesetzt: Migration `0047_marketplace_public_share.sql`, Edge Function `get-shared-listing`, Seite `/shared/market/:token`; nach der Anmeldung direkt zur Anzeige |

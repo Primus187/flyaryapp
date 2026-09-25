@@ -1,5 +1,36 @@
 # Flyary
 
+## Marktplatz: Bewertungen nach dem Verkauf (8.1)
+
+Migration `0048_marketplace_reviews.sql`, Logik in `src/lib/marketplace-reviews.ts`, Dialoge
+`src/components/market/MarkSoldDialog.tsx`, `ReviewDialog.tsx`, `ReviewsSheet.tsx`.
+
+- **«Als verkauft markieren»** fragt, an wen verkauft wurde: zur Auswahl stehen die Personen, die im Anzeigen-Chat
+  geschrieben haben (`marketplace_chat_buyers`), oder «Jemand anderes (ohne Bewertung)». Die Datenbank speichert den
+  Käufer in `marketplace_listings.sold_to` – bei Neuware mit mehreren Stück erst beim letzten. Der Verkauf auf die
+  Abrechnung (7.2) setzt den Käufer ebenfalls.
+- **Gegenseitig bewerten:** Käufer und verkaufende Seite bewerten sich je einmal (1–5 Sterne, freiwillig bis 500 Zeichen
+  Kommentar, nicht änderbar). Die Aufforderung steht auf der verkauften Anzeige; der Käufer erhält eine Mitteilung und
+  sieht die gekaufte Anzeige weiterhin. Bei Schul-Anzeigen bewertet der Käufer die Schule.
+- **Anbieter-Karte:** Durchschnitt und Anzahl (als Anbieter und als Käufer); ein Tipp öffnet die Liste mit Vorname des
+  Bewertenden, Rolle, Monat und Anzeigentitel.
+- **Melden:** jede Bewertung lässt sich melden; Flyary-Admins und -Moderation entfernen oder behalten sie unter
+  «Moderation». Entfernte Bewertungen zählen nicht mehr.
+- Schreiben nur über RPCs (`marketplace_review`, Fehler `cannot_review`, `invalid_rating`, `buyer_not_in_chat`).
+
+**Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0048), danach das Frontend.
+
+## Marktplatz: Öffentlicher Teilen-Link (8.4)
+
+Migration `0047_marketplace_public_share.sql`, Edge Function `supabase/functions/get-shared-listing`, Seite
+`src/pages/SharedListing.tsx` (`/shared/market/:token`).
+
+- «Teilen» auf einer aktiven oder reservierten Anzeige, die für alle sichtbar ist, teilt einen öffentlichen Link. Er
+  zeigt Fotos, Preis, Details und Sicherheitshinweise auch ohne Flyary-Konto – ohne Namen privater Verkäufer, bei
+  Schulen mit den Angaben des Shops. Kontakt nur in Flyary; nach der Anmeldung geht es direkt zur Anzeige.
+- Messenger (WhatsApp & Co.) erhalten eine Vorschau mit Titel, Preis und erstem Foto.
+- Verkaufte, abgelaufene oder entfernte Anzeigen zeigen «nicht mehr verfügbar».
+
 ## Marktplatz: Verkauf auf die Abrechnung (7.2) und Abnahme M3
 
 Migration `0046_marketplace_sale_to_billing.sql`, Dialog `src/components/market/SellToMemberDialog.tsx`, Logik in

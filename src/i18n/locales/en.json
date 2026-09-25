@@ -1920,7 +1920,10 @@
         "limit_saved_searches": "At most 5 saved searches. Delete one first.",
         "equipment_other_school": "This equipment does not belong to the selling school.",
         "buyer_not_member": "This person does not belong to the school.",
-        "school_only": "Only for flight school listings."
+        "school_only": "Only for flight school listings.",
+        "buyer_not_in_chat": "This person has not written to you about this listing.",
+        "cannot_review": "You cannot review this sale (any more).",
+        "invalid_rating": "Please choose 1 to 5 stars."
       },
       "safety": {
         "not_airworthy": "Marked as not airworthy – for parts or decoration only.",
@@ -2230,6 +2233,41 @@
         "privateSeller": "Private seller",
         "shareText": "Have a look at this listing on the Flyary marketplace:",
         "linkCopied": "Public link copied"
+      },
+      "reviews": {
+        "soldTitle": "Mark as sold",
+        "soldHint": "Who did you sell \"{{title}}\" to? You can then review each other.",
+        "soldNoChats": "\"{{title}}\" will be marked as sold. Reviews are possible when the buyer wrote to you via Flyary.",
+        "someoneElse": "Someone else (no review)",
+        "soldTo": "Marked as sold – the buyer can review you now",
+        "prompt_of_seller": "How did the purchase go? Review the seller.",
+        "prompt_of_buyer": "How did the sale go? Review the buyer.",
+        "rate": "Review",
+        "title_of_seller": "Review the seller",
+        "title_of_buyer": "Review the buyer",
+        "hint": "For \"{{title}}\". The review is visible to all signed-in people and cannot be changed.",
+        "stars_one": "{{count}} star",
+        "stars_other": "{{count}} stars",
+        "commentPlaceholder": "Short comment (optional)",
+        "submit": "Submit review",
+        "thanks": "Thanks for your review",
+        "noneYet": "No reviews yet",
+        "listTitle": "Reviews of {{name}}",
+        "none": "No reviews.",
+        "as_of_seller": "as seller",
+        "as_of_buyer": "as buyer",
+        "report": "Report review",
+        "reportConfirm": "Report this review to the moderators?",
+        "reported": "Review reported",
+        "inviteNotification": "Your purchase is complete – review the seller",
+        "reviewedNotification": "You received a new review",
+        "moderation": {
+          "title": "Reported reviews",
+          "hide": "Remove",
+          "keep": "Keep",
+          "hidden": "Review removed",
+          "kept": "Review stays visible"
+        }
       }
     }
 }

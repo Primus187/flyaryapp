@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, School, Share2, Truck } from "lucide-react";
+import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, School, Share2, Star, Truck } from "lucide-react";
 import ReportListingDialog from "@/components/market/ReportListingDialog";
 import OwnerListingActions from "@/components/market/OwnerListingActions";
+import ReviewDialog from "@/components/market/ReviewDialog";
+import ReviewsSheet from "@/components/market/ReviewsSheet";
+import { Stars } from "@/components/market/Stars";
+import { fetchReviewState, ratingSummary, type ReviewDirection } from "@/lib/marketplace-reviews";
 import { listingDetailRows } from "@/components/market/listing-details";
 import { canSharePublicly, sharedListingUrl } from "@/lib/marketplace-share";
 import FavoriteButton from "@/components/market/FavoriteButton";
@@ -37,6 +41,8 @@ interface SellerCard {
   avatar_url: string | null;
   member_since: string | null;
   flight_count: number | null;
+  rating_avg: number | string | null;
+  rating_count: number;
 }
 
 /** Listing detail (plan 4.5): gallery, price, details, safety hints, seller. */
@@ -57,6 +63,10 @@ export default function MarketListingDetail() {
   const [contacting, setContacting] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [favorite, setFavorite] = useState(false);
+  /** Plan 8.1: what the viewer may still review after the sale, the open dialogs. */
+  const [reviewState, setReviewState] = useState<ReviewDirection | null>(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
   useEffect(() => { if (id) fetchFavoriteIds().then((ids) => setFavorite(ids.has(id))).catch(() => undefined); }, [id]);
   /** School listings: the shop's legal details (plan 4.7). */
   const [shopProfile, setShopProfile] = useState<ShopProfile | null>(null);
@@ -83,6 +93,7 @@ export default function MarketListingDetail() {
       setSeller(card);
       setLoading(false);
       const listingRow = l as unknown as MarketplaceListing;
+      if (listingRow.status === "sold") fetchReviewState(id).then(setReviewState).catch(() => setReviewState(null));
       if (listingRow.seller_group_id) setShopProfile(await fetchShopProfile(listingRow.seller_group_id));
       setUrls(await listingPhotoUrls(sorted, "full"));
       if (card?.avatar_url) setAvatar(await getSignedUrl("flight-photos", card.avatar_url));
@@ -196,6 +207,18 @@ export default function MarketListingDetail() {
         </Button>
       )}
 
+      {reviewState && (
+        <Card className="border-amber-500/40"><CardContent className="flex items-center gap-3 p-3">
+          <Star className="h-5 w-5 shrink-0 fill-amber-500 text-amber-500" />
+          <p className="flex-1 text-sm">{t(`market.reviews.prompt_${reviewState}`)}</p>
+          <Button size="sm" onClick={() => setReviewing(true)}>{t("market.reviews.rate")}</Button>
+        </CardContent></Card>
+      )}
+      {reviewing && reviewState && (
+        <ReviewDialog listing={listing} direction={reviewState} onClose={() => setReviewing(false)}
+          onDone={() => { setReviewing(false); setReviewState(null); setReloadKey((k) => k + 1); }} />
+      )}
+
       {fit && (
         <p className={fit === "fits" ? "rounded-md bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300"
           : "rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300"}>
@@ -252,8 +275,18 @@ export default function MarketListingDetail() {
                 seller.flight_count !== null ? t("market.detail.flights", { count: seller.flight_count }) : null,
               ].filter(Boolean).join(" · ")}
             </p>
+            {seller.rating_count > 0 ? (
+              <button type="button" className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground" onClick={() => setReviewsOpen(true)}>
+                <Stars value={Number(seller.rating_avg)} />{ratingSummary(seller.rating_avg, seller.rating_count, i18n.language)}
+              </button>
+            ) : (
+              <p className="mt-0.5 text-[11px] text-muted-foreground">{t("market.reviews.noneYet")}</p>
+            )}
           </div>
         </CardContent></Card>
+      )}
+      {seller && (
+        <ReviewsSheet seller={{ kind: seller.seller_kind, id: seller.seller_id, name: seller.name }} open={reviewsOpen} onOpenChange={setReviewsOpen} />
       )}
 
       {shopProfile && (

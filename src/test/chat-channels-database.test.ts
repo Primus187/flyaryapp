@@ -104,7 +104,7 @@ beforeAll(async () => {
       SELECT EXISTS (SELECT 1 FROM public.group_member_functions WHERE user_id = _user_id AND group_id = _group_id AND function = _function::text) $$;
   `);
   for (const name of ["0031_marketplace_group_functions", "0032_marketplace_listings", "0033_marketplace_photos",
-    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop", "0038_marketplace_moderation", "0039_marketplace_cleanup", "0041_marketplace_terms", "0042_marketplace_favorites", "0043_marketplace_saved_searches", "0044_marketplace_radius_weight", "0045_marketplace_school_equipment", "0046_marketplace_sale_to_billing", "0047_marketplace_public_share"]) {
+    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop", "0038_marketplace_moderation", "0039_marketplace_cleanup", "0041_marketplace_terms", "0042_marketplace_favorites", "0043_marketplace_saved_searches", "0044_marketplace_radius_weight", "0045_marketplace_school_equipment", "0046_marketplace_sale_to_billing", "0047_marketplace_public_share", "0048_marketplace_reviews"]) {
     await db.exec(readFileSync(new URL(`../../drizzle/migrations/${name}.sql`, import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   }
   // Channels created by staff after the migration
@@ -521,5 +521,70 @@ describe("listing chats (marketplace 4.6)", () => {
     await db.exec(`DELETE FROM public.marketplace_bans; DELETE FROM public.marketplace_listings WHERE id = '${privateListing}'`);
     expect(await canRead(pilotMember, chat)).toBe(true);
     expect((await json(pilotMember, chat)).listing).toMatchObject({ title: "Advance Alpha 7", status: "removed", listing_id: null });
+  });
+});
+
+describe("reviews after a sale (marketplace 8.1)", () => {
+  let listing: string;
+  const as = async (uid: string, sql: string, params: unknown[] = []) => { await asUser(uid); return db.query(sql, params); };
+  const state = async (uid: string) => ((await as(uid, `SELECT public.marketplace_review_state($1) AS s`, [listing])).rows[0] as { s: string | null }).s;
+  const card = async (uid: string) => (await as(uid, `SELECT rating_avg::float AS avg, rating_count FROM public.marketplace_seller_cards($1::uuid[])`,
+    [`{${listing}}`])).rows[0] as { avg: number | null; rating_count: number } | undefined;
+
+  beforeAll(async () => {
+    await asAdminDb();
+    listing = (await db.query<{ id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, created_by, category, title, price_cents,
+      status, published_at, bumped_at, expires_at) VALUES ('${pilotMember}', '${pilotMember}', 'glider', 'Bewertungs-Schirm', 120000, 'active', now(), now(),
+      now() + interval '30 days') RETURNING id`)).rows[0].id;
+    await db.exec(`INSERT INTO public.user_roles VALUES ('${admin}', 'admin')`);
+    const chat = ((await as(outsider, `SELECT public.marketplace_open_chat($1) AS id`, [listing])).rows[0] as { id: string }).id;
+    await as(outsider, `INSERT INTO public.chat_messages (channel_id, user_id, message) VALUES ($1, $2, 'Noch da?')`, [chat, outsider]);
+  });
+
+  it("the seller picks the buyer among the people who asked in the chat", async () => {
+    expect((await as(pilotMember, `SELECT pilot_name FROM public.marketplace_chat_buyers($1)`, [listing])).rows).toEqual([{ pilot_name: "Olivia" }]);
+    expect((await as(outsider, `SELECT * FROM public.marketplace_chat_buyers($1)`, [listing])).rows).toEqual([]);
+    await expect(as(pilotMember, `SELECT public.marketplace_mark_sold_to($1, $2)`, [listing, groundStudent])).rejects.toThrow("marketplace:buyer_not_in_chat");
+    await as(pilotMember, `SELECT public.marketplace_mark_sold_to($1, $2)`, [listing, outsider]);
+    await asAdminDb();
+    expect((await db.query(`SELECT status, sold_to FROM public.marketplace_listings WHERE id = $1`, [listing])).rows).toEqual([{ status: "sold", sold_to: outsider }]);
+    expect((await db.query(`SELECT 1 FROM public.notifications WHERE user_id = $1 AND type = 'market_review_invite'`, [outsider])).rows).toHaveLength(1);
+    // the buyer still sees what they bought; others do not
+    expect((await as(outsider, `SELECT 1 FROM public.marketplace_listings WHERE id = $1`, [listing])).rows).toHaveLength(1);
+    expect((await as(groundStudent, `SELECT 1 FROM public.marketplace_listings WHERE id = $1`, [listing])).rows).toHaveLength(0);
+  });
+
+  it("buyer and seller review each other once; nobody else", async () => {
+    expect(await state(outsider)).toBe("of_seller");
+    expect(await state(pilotMember)).toBe("of_buyer");
+    expect(await state(groundStudent)).toBeNull();
+    await expect(as(outsider, `SELECT public.marketplace_review($1, 6, NULL)`, [listing])).rejects.toThrow("marketplace:invalid_rating");
+    await as(outsider, `SELECT public.marketplace_review($1, 5, ' Top Verkäufer ')`, [listing]);
+    await expect(as(outsider, `SELECT public.marketplace_review($1, 1, NULL)`, [listing])).rejects.toThrow("marketplace:cannot_review");
+    await expect(as(groundStudent, `SELECT public.marketplace_review($1, 1, NULL)`, [listing])).rejects.toThrow("marketplace:cannot_review");
+    await as(pilotMember, `SELECT public.marketplace_review($1, 4, NULL)`, [listing]);
+    expect(await state(pilotMember)).toBeNull();
+    await asAdminDb();
+    expect((await db.query(`SELECT direction, rating, comment, reviewee_user_id FROM public.marketplace_reviews ORDER BY direction`)).rows).toEqual([
+      { direction: "of_buyer", rating: 4, comment: null, reviewee_user_id: outsider },
+      { direction: "of_seller", rating: 5, comment: "Top Verkäufer", reviewee_user_id: pilotMember },
+    ]);
+    expect(await card(outsider)).toEqual({ avg: 5, rating_count: 1 });
+    const list = ((await as(groundStudent, `SELECT public.marketplace_reviews_of($1, NULL) AS l`, [pilotMember])).rows[0] as { l: { rating: number; reviewer_name: string }[] }).l;
+    expect(list).toMatchObject([{ rating: 5, reviewer_name: "Olivia" }]);
+    await expect(as(groundStudent, `INSERT INTO public.marketplace_reviews (listing_title, direction, reviewee_user_id, rating) VALUES ('x', 'of_seller', $1, 1)`, [pilotMember]))
+      .rejects.toThrow(/permission denied/);
+  });
+
+  it("reported reviews go to the moderation, hidden ones no longer count", async () => {
+    await asAdminDb();
+    const review = (await db.query<{ id: string }>(`SELECT id FROM public.marketplace_reviews WHERE direction = 'of_seller'`)).rows[0].id;
+    await as(groundStudent, `SELECT public.marketplace_report_review($1)`, [review]);
+    await expect(as(groundStudent, `SELECT public.marketplace_moderate_review($1, true)`, [review])).rejects.toThrow("marketplace:not_allowed");
+    expect(((await as(admin, `SELECT public.marketplace_reported_reviews() AS r`)).rows[0] as { r: unknown[] }).r).toHaveLength(1);
+    await as(admin, `SELECT public.marketplace_moderate_review($1, true)`, [review]);
+    expect(await card(outsider)).toEqual({ avg: null, rating_count: 0 });
+    expect((await as(groundStudent, `SELECT 1 FROM public.marketplace_reviews WHERE id = $1`, [review])).rows).toHaveLength(0);
+    expect((await as(admin, `SELECT 1 FROM public.marketplace_reviews WHERE id = $1`, [review])).rows).toHaveLength(1);
   });
 });

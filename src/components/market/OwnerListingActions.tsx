@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CheckCircle2, Pencil, Receipt, RotateCcw, Trash2 } from "lucide-react";
+import MarkSoldDialog from "@/components/market/MarkSoldDialog";
 import SellToMemberDialog from "@/components/market/SellToMemberDialog";
 import { Button } from "@/components/ui/button";
 import type { MarketplaceListing } from "@/lib/marketplace";
@@ -24,6 +25,8 @@ export default function OwnerListingActions({ listing, onChanged }: Props) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [selling, setSelling] = useState(false);
+  /** "Mark as sold" asks who bought it (plan 8.1). */
+  const [markingSold, setMarkingSold] = useState(false);
   const actions = availableActions(listing);
   const can = (a: ListingAction) => actions.includes(a);
 
@@ -61,7 +64,7 @@ export default function OwnerListingActions({ listing, onChanged }: Props) {
         )}
       </div>
       {can("sold") && (
-        <Button className="w-full gap-1.5" disabled={busy} onClick={() => void run("sold")}>
+        <Button className="w-full gap-1.5" disabled={busy} onClick={() => setMarkingSold(true)}>
           <CheckCircle2 className="h-4 w-4" /> {t("market.mine.sold")}
         </Button>
       )}
@@ -74,6 +77,9 @@ export default function OwnerListingActions({ listing, onChanged }: Props) {
         <Button variant="ghost" className="w-full gap-1.5 text-destructive" disabled={busy} onClick={() => void run("delete")}>
           <Trash2 className="h-4 w-4" /> {t("market.mine.withdraw")}
         </Button>
+      )}
+      {markingSold && (
+        <MarkSoldDialog listing={listing} onClose={() => setMarkingSold(false)} onDone={() => { setMarkingSold(false); onChanged(); }} />
       )}
       {selling && (
         <SellToMemberDialog listing={listing} onClose={() => setSelling(false)} onDone={() => { setSelling(false); onChanged(); }} />

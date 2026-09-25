@@ -145,6 +145,8 @@ export default function NotificationBell() {
     if (n.type === "market_fav_reserved") return t("market.favorites.notifyReserved");
     if (n.type === "market_fav_sold") return t("market.favorites.notifySold");
     if (n.type === "market_search") return t("market.saved.notification");
+    if (n.type === "market_review_invite") return t("market.reviews.inviteNotification");
+    if (n.type === "market_reviewed") return t("market.reviews.reviewedNotification");
     return "";
   };
 

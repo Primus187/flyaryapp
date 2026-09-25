@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Ban, Eye, EyeOff, HardDrive, RotateCcw, ShieldCheck, Trash2, X } from "lucide-react";
+import { Ban, Eye, EyeOff, HardDrive, RotateCcw, ShieldCheck, Star, Trash2, X } from "lucide-react";
+import { Stars } from "@/components/market/Stars";
+import { fetchReportedReviews, moderateReview, type ReportedReview } from "@/lib/marketplace-reviews";
 import { Progress } from "@/components/ui/progress";
 import { bucketsBySize, fetchStorageUsage, formatBytes, usageLevel, type StorageUsage } from "@/lib/storage-usage";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,10 +32,13 @@ export default function MarketModeration() {
   const [busy, setBusy] = useState<string | null>(null);
   /** Admins: storage against the Free plan (plan 4.9). */
   const [usage, setUsage] = useState<StorageUsage | null>(null);
+  /** Reported reviews (plan 8.1), for Flyary admins and moderators. */
+  const [reviews, setReviews] = useState<ReportedReview[]>([]);
 
   const load = useCallback(async () => {
     try {
       setItems(await fetchModerationQueue());
+      setReviews(await fetchReportedReviews().catch(() => []));
     } catch {
       toast.error(t("market.errors.unknown"));
     }
@@ -90,6 +95,18 @@ export default function MarketModeration() {
     void run(item, () => deleteListing(item.listing_id), "market.moderation.done.delete");
   };
 
+  const handleReview = async (review: ReportedReview, hide: boolean) => {
+    setBusy(review.id);
+    try {
+      await moderateReview(review.id, hide);
+      toast.success(t(hide ? "market.reviews.moderation.hidden" : "market.reviews.moderation.kept"));
+      await load();
+    } catch (e) {
+      toast.error(t(`market.errors.${marketErrorCode(e)}`));
+    }
+    setBusy(null);
+  };
+
   if (loading) return <LoadingState />;
 
   return (
@@ -112,7 +129,28 @@ export default function MarketModeration() {
           </Card>
         );
       })()}
-      {items.length === 0 ? (
+      {reviews.length > 0 && (
+        <Card>
+          <CardContent className="space-y-3 p-3">
+            <p className="flex items-center gap-2 text-sm font-medium"><Star className="h-4 w-4" /> {t("market.reviews.moderation.title")}</p>
+            {reviews.map((r) => (
+              <div key={r.id} className={busy === r.id ? "space-y-1 border-t pt-2 opacity-60" : "space-y-1 border-t pt-2"}>
+                <div className="flex items-center gap-2"><Stars value={r.rating} /><span className="truncate text-xs text-muted-foreground">{r.listing_title}</span></div>
+                {r.comment && <p className="whitespace-pre-wrap text-sm">{r.comment}</p>}
+                <div className="flex gap-2">
+                  <Button size="sm" variant="destructive" disabled={busy === r.id} onClick={() => void handleReview(r, true)}>
+                    <EyeOff className="mr-1 h-3.5 w-3.5" />{t("market.reviews.moderation.hide")}
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={busy === r.id} onClick={() => void handleReview(r, false)}>
+                    <Eye className="mr-1 h-3.5 w-3.5" />{t("market.reviews.moderation.keep")}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+      {items.length === 0 && reviews.length === 0 ? (
         <EmptyState icon={ShieldCheck} title={t("market.moderation.empty")} />
       ) : items.map((item) => (
         <Card key={item.listing_id} className={busy === item.listing_id ? "opacity-60" : undefined}>

@@ -1920,7 +1920,10 @@
         "limit_saved_searches": "Höchstens 5 gespeicherte Suchen. Lösche zuerst eine.",
         "equipment_other_school": "Dieses Material gehört nicht zur verkaufenden Schule.",
         "buyer_not_member": "Diese Person gehört nicht zur Schule.",
-        "school_only": "Nur für Anzeigen einer Flugschule."
+        "school_only": "Nur für Anzeigen einer Flugschule.",
+        "buyer_not_in_chat": "Diese Person hat dir zu dieser Anzeige nicht geschrieben.",
+        "cannot_review": "Du kannst diesen Verkauf nicht (mehr) bewerten.",
+        "invalid_rating": "Bitte 1 bis 5 Sterne wählen."
       },
       "safety": {
         "not_airworthy": "Als nicht flugtauglich gekennzeichnet – nur für Teile oder Deko.",
@@ -2230,6 +2233,41 @@
         "privateSeller": "Privatperson",
         "shareText": "Schau dir diese Anzeige im Flyary Marktplatz an:",
         "linkCopied": "Öffentlicher Link kopiert"
+      },
+      "reviews": {
+        "soldTitle": "Als verkauft markieren",
+        "soldHint": "An wen hast du «{{title}}» verkauft? Dann könnt ihr euch gegenseitig bewerten.",
+        "soldNoChats": "«{{title}}» wird als verkauft markiert. Bewerten ist möglich, wenn der Käufer dir über Flyary geschrieben hat.",
+        "someoneElse": "Jemand anderes (ohne Bewertung)",
+        "soldTo": "Als verkauft markiert – der Käufer kann dich jetzt bewerten",
+        "prompt_of_seller": "Wie lief der Kauf? Bewerte den Anbieter.",
+        "prompt_of_buyer": "Wie lief der Verkauf? Bewerte den Käufer.",
+        "rate": "Bewerten",
+        "title_of_seller": "Anbieter bewerten",
+        "title_of_buyer": "Käufer bewerten",
+        "hint": "Zu «{{title}}». Die Bewertung ist für alle angemeldeten Personen sichtbar und lässt sich nicht ändern.",
+        "stars_one": "{{count}} Stern",
+        "stars_other": "{{count}} Sterne",
+        "commentPlaceholder": "Kurzer Kommentar (freiwillig)",
+        "submit": "Bewertung abgeben",
+        "thanks": "Danke für deine Bewertung",
+        "noneYet": "Noch keine Bewertungen",
+        "listTitle": "Bewertungen von {{name}}",
+        "none": "Keine Bewertungen.",
+        "as_of_seller": "als Anbieter",
+        "as_of_buyer": "als Käufer",
+        "report": "Bewertung melden",
+        "reportConfirm": "Diese Bewertung der Moderation melden?",
+        "reported": "Bewertung gemeldet",
+        "inviteNotification": "Dein Kauf ist abgeschlossen – bewerte den Anbieter",
+        "reviewedNotification": "Du hast eine neue Bewertung erhalten",
+        "moderation": {
+          "title": "Gemeldete Bewertungen",
+          "hide": "Entfernen",
+          "keep": "Behalten",
+          "hidden": "Bewertung entfernt",
+          "kept": "Bewertung bleibt sichtbar"
+        }
       }
     }
 }

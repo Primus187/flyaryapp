@@ -20,6 +20,7 @@ import {
   type ListingAction, type MarketErrorCode, type MineTab,
 } from "@/lib/marketplace-listing";
 import { coverThumbnails, deleteListing } from "@/lib/marketplace-photos";
+import MarkSoldDialog from "@/components/market/MarkSoldDialog";
 import SellToMemberDialog from "@/components/market/SellToMemberDialog";
 
 type Row = Pick<MarketplaceListing, "id" | "title" | "status" | "listing_type" | "category" | "price_type" | "price_cents"
@@ -43,6 +44,8 @@ export default function ManagedListings({ seller, newPath }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   /** School listing being sold to a member's bill (plan 7.2). */
   const [selling, setSelling] = useState<Row | null>(null);
+  /** Listing being marked as sold: asks who bought it (plan 8.1). */
+  const [markingSold, setMarkingSold] = useState<Row | null>(null);
   const isSchool = "groupId" in seller;
   const [tab, setTab] = useState<MineTab>("live");
 
@@ -72,6 +75,7 @@ export default function ManagedListings({ seller, newPath }: Props) {
 
   const act = async (row: Row, action: ListingAction) => {
     if (action === "edit") { navigate(`/market/${row.id}/edit`); return; }
+    if (action === "sold") { setMarkingSold(row); return; }
     if (action === "delete" && !window.confirm(`${t("market.mine.deleteConfirmTitle")}\n${t("market.mine.deleteConfirmText")}`)) return;
     setBusy(row.id);
     try {
@@ -161,6 +165,9 @@ export default function ManagedListings({ seller, newPath }: Props) {
 
   return (
     <>
+    {markingSold && (
+      <MarkSoldDialog listing={markingSold} onClose={() => setMarkingSold(null)} onDone={() => { setMarkingSold(null); void load(); }} />
+    )}
     {selling && (
       <SellToMemberDialog listing={selling} onClose={() => setSelling(null)} onDone={() => { setSelling(null); void load(); }} />
     )}

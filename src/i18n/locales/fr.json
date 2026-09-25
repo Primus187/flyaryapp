@@ -1920,7 +1920,10 @@
         "limit_saved_searches": "Au maximum 5 recherches enregistrées. Supprime d'abord une.",
         "equipment_other_school": "Ce matériel n'appartient pas à l'école qui vend.",
         "buyer_not_member": "Cette personne n'appartient pas à l'école.",
-        "school_only": "Uniquement pour les annonces d'une école."
+        "school_only": "Uniquement pour les annonces d'une école.",
+        "buyer_not_in_chat": "Cette personne ne t'a pas écrit au sujet de cette annonce.",
+        "cannot_review": "Tu ne peux pas (plus) évaluer cette vente.",
+        "invalid_rating": "Choisis entre 1 et 5 étoiles."
       },
       "safety": {
         "not_airworthy": "Signalé comme non navigable – uniquement pour pièces ou décoration.",
@@ -2230,6 +2233,41 @@
         "privateSeller": "Particulier",
         "shareText": "Jette un œil à cette annonce sur le marché Flyary :",
         "linkCopied": "Lien public copié"
+      },
+      "reviews": {
+        "soldTitle": "Marquer comme vendu",
+        "soldHint": "À qui as-tu vendu « {{title}} » ? Vous pourrez ensuite vous évaluer mutuellement.",
+        "soldNoChats": "« {{title}} » sera marqué comme vendu. L'évaluation est possible si l'acheteur t'a écrit via Flyary.",
+        "someoneElse": "Quelqu'un d'autre (sans évaluation)",
+        "soldTo": "Marqué comme vendu – l'acheteur peut maintenant t'évaluer",
+        "prompt_of_seller": "Comment s'est passé l'achat ? Évalue le vendeur.",
+        "prompt_of_buyer": "Comment s'est passée la vente ? Évalue l'acheteur.",
+        "rate": "Évaluer",
+        "title_of_seller": "Évaluer le vendeur",
+        "title_of_buyer": "Évaluer l'acheteur",
+        "hint": "Pour « {{title}} ». L'évaluation est visible par toutes les personnes connectées et ne peut pas être modifiée.",
+        "stars_one": "{{count}} étoile",
+        "stars_other": "{{count}} étoiles",
+        "commentPlaceholder": "Court commentaire (facultatif)",
+        "submit": "Envoyer l'évaluation",
+        "thanks": "Merci pour ton évaluation",
+        "noneYet": "Pas encore d'évaluations",
+        "listTitle": "Évaluations de {{name}}",
+        "none": "Aucune évaluation.",
+        "as_of_seller": "comme vendeur",
+        "as_of_buyer": "comme acheteur",
+        "report": "Signaler l'évaluation",
+        "reportConfirm": "Signaler cette évaluation à la modération ?",
+        "reported": "Évaluation signalée",
+        "inviteNotification": "Ton achat est conclu – évalue le vendeur",
+        "reviewedNotification": "Tu as reçu une nouvelle évaluation",
+        "moderation": {
+          "title": "Évaluations signalées",
+          "hide": "Retirer",
+          "keep": "Garder",
+          "hidden": "Évaluation retirée",
+          "kept": "L'évaluation reste visible"
+        }
       }
     }
 }
