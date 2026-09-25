@@ -347,7 +347,6 @@ function photoHtml(category, color, variant, title) {
   const line = "#374151";
   const shapes = {
     glider: `<path d="M140 330 Q640 40 1140 330 Q640 230 140 330 Z" fill="${color}" stroke="${line}" stroke-width="4"/>
-      ${[260, 400, 540, 740, 880, 1020].map((x) => `<line x1="${x}" y1="${x < 640 ? 250 - (640 - x) / 8 : 250 - (x - 640) / 8}" x2="${x}" y2="${x < 640 ? 300 : 300}" stroke="${line}" stroke-opacity=".35" stroke-width="3"/>`).join("")}
       ${[200, 420, 860, 1080].map((x) => `<line x1="${x}" y1="300" x2="640" y2="720" stroke="${line}" stroke-width="2"/>`).join("")}
       <circle cx="640" cy="740" r="26" fill="${line}"/>`,
     tandem: `<path d="M100 330 Q640 20 1180 330 Q640 220 100 330 Z" fill="${color}" stroke="${line}" stroke-width="4"/>
