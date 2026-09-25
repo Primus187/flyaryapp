@@ -43,7 +43,10 @@ und `SchoolProofPanel.test.tsx`.
   Function ruft die RPC mit der Sitzung des Fluglehrers auf – keine Service-Rolle.
 - **CSV** (Semikolon, UTF-8 mit BOM für Excel) für die eigene Ablage, direkt im Browser erzeugt.
 
-**Hinweise:** Die Edge Function muss neu bereitgestellt werden (`supabase functions deploy export-flightbook-pdf`).
+**Hinweise:** Die Edge Function muss nach Änderungen neu bereitgestellt werden, in PowerShell:
+`$env:SUPABASE_ACCESS_TOKEN = (Select-String -Path docs/.env.deploy.local -Pattern '^SUPABASE_ACCESS_TOKEN=(.*)$').Matches[0].Groups[1].Value.Trim()`
+und danach `npx supabase@latest functions deploy export-flightbook-pdf --use-api --project-ref <Projekt-ID>` (die ID
+steht als `SUPABASE_PROJECT_REF` in derselben Datei; `<…>` ist ein Platzhalter, in PowerShell nicht mit eintippen).
 Deno ist hier nicht installiert; geprüft sind die Syntax (esbuild) und die Aufbereitung (Vitest), das Zeichnen des
 PDFs erst nach dem Deploy. Der Zähler «Flüge» im Kopf des Dossiers zeigt weiterhin die selbst erfassten Flüge.
 
