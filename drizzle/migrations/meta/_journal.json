@@ -351,6 +351,13 @@
       "when": 1792886400000,
       "tag": "0049_client_errors",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792972800000,
+      "tag": "0050_event_school_flights",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,64 @@
+import { describe, expect, it } from "vitest";
+import {
+  airborneMinutes, flightCountByStudent, flightDurationMinutes, flightNumbers, flightsInAir, landingHintDue,
+  type SchoolFlight,
+} from "./school-flights";
+
+const flight = (patch: Partial<SchoolFlight>): SchoolFlight => ({
+  id: "f", student_user_id: "anna", seq: 1, status: "landed", started_at: null, landed_at: "2026-09-25T10:00:00Z", ...patch,
+});
+const now = new Date("2026-09-25T10:30:00Z");
+
+describe("flightNumbers", () => {
+  it("numbers per student consecutively, skipping aborted launches and seq gaps", () => {
+    const flights = [
+      flight({ id: "a3", seq: 4 }),
+      flight({ id: "a1", seq: 1 }),
+      flight({ id: "a-abort", seq: 2, status: "aborted", landed_at: null }),
+      flight({ id: "b1", student_user_id: "beat", seq: 1, status: "in_air", started_at: "2026-09-25T10:20:00Z", landed_at: null }),
+    ];
+    expect(flightNumbers(flights)).toEqual({ a1: 1, a3: 2, b1: 1 });
+  });
+});
+
+describe("flightCountByStudent", () => {
+  it("counts landed and airborne flights, not aborted launches", () => {
+    const flights = [
+      flight({ id: "1" }),
+      flight({ id: "2", status: "in_air", started_at: "2026-09-25T10:00:00Z", landed_at: null }),
+      flight({ id: "3", status: "aborted", landed_at: null }),
+      flight({ id: "4", student_user_id: "beat", status: "aborted", landed_at: null }),
+    ];
+    expect(flightCountByStudent(flights)).toEqual({ anna: 2 });
+  });
+});
+
+describe("times", () => {
+  it("measures airborne time only for flights in the air", () => {
+    expect(airborneMinutes(flight({ status: "in_air", started_at: "2026-09-25T10:05:30Z", landed_at: null }), now)).toBe(24);
+    expect(airborneMinutes(flight({}), now)).toBeNull();
+  });
+
+  it("measures flight time only when start and landing are recorded", () => {
+    expect(flightDurationMinutes(flight({ started_at: "2026-09-25T09:48:00Z" }))).toBe(12);
+    expect(flightDurationMinutes(flight({ started_at: null }))).toBeNull();
+    expect(flightDurationMinutes(flight({ status: "aborted", started_at: "2026-09-25T09:48:00Z", landed_at: null }))).toBeNull();
+  });
+
+  it("lists flights in the air, longest first", () => {
+    const flights = [
+      flight({ id: "late", status: "in_air", started_at: "2026-09-25T10:25:00Z", landed_at: null }),
+      flight({ id: "landed" }),
+      flight({ id: "early", status: "in_air", started_at: "2026-09-25T10:01:00Z", landed_at: null }),
+    ];
+    expect(flightsInAir(flights).map((f) => f.id)).toEqual(["early", "late"]);
+  });
+
+  it("shows the landing hint only when switched on and reached", () => {
+    const inAir = flight({ status: "in_air", started_at: "2026-09-25T10:00:00Z", landed_at: null });
+    expect(landingHintDue(inAir, now, null)).toBe(false);
+    expect(landingHintDue(inAir, now, 30)).toBe(true);
+    expect(landingHintDue(inAir, now, 45)).toBe(false);
+    expect(landingHintDue(flight({}), now, 15)).toBe(false);
+  });
+});

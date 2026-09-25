@@ -1,5 +1,41 @@
 # Flyary
 
+## Flugtag-Cockpit: Schulflüge erfassen – Datenmodell und Rechte (4.1)
+
+Migration `0050_event_school_flights.sql`, Logik in `src/lib/school-flights.ts`, Datenbanktests in
+`src/test/school-flights-database.test.ts`. Noch ohne Oberfläche (folgt mit 4.2–4.4).
+
+- **Schulnachweis statt privates Flugbuch:** `event_school_flights` hält pro Flug Termin, Schüler, laufende Nummer
+  `seq`, Status (`in_air`/`landed`/`aborted`), Start- und Landezeit, Start- und Landeplatz und die Startnotiz des
+  Starthelfers. Kein Fremdschlüssel auf das Konto (wie `student_day_notes`): Der Nachweis bleibt bei der Schule.
+- **Rollen des Tages** (`flight_day_role`): «instructor» = Admin, Fluglehrer, Schulleitung oder im Termin als
+  Fluglehrer eingeteilt; «helper» = Starthelfer der Schule oder im Termin als Starthelfer eingeteilt. Nur bei
+  Schulgruppen.
+- **Schreiben nur über RPCs**, keine direkten INSERT/UPDATE/DELETE: `school_flight_start` (Starthelfer oder
+  Fluglehrer), `school_flight_land`, `school_flight_add` (Flug ohne erfassten Start), `school_flight_abort`
+  (Startabbruch mit Grund, Starthelfer oder Fluglehrer), `school_flight_update` (Korrekturen; Starthelfer nur
+  Startplatz und Startnotiz), `school_flight_set_notes`, `school_flight_delete` (nur Fluglehrer) und
+  `set_flight_day_locations` (Standard-Start- und Landeplatz des Tages). Alle lehnen ab, sobald der Tag abgeschlossen
+  ist (`flight_events.day_closed_at`).
+- **Regeln in der Datenbank:** nur Schüler mit bestätigtem Platz (nicht Warteliste); höchstens ein Flug pro Schüler
+  gleichzeitig in der Luft (Prüfung plus eindeutiger Teilindex); `seq` wird unter Sperre der Anmeldezeile vergeben
+  und nach einem Löschen nicht neu nummeriert. Die Anzeige zählt fortlaufend und ohne Startabbrüche
+  (`flightNumbers`).
+- **Standardorte:** ohne Angabe der zuletzt an diesem Tag verwendete Start- bzw. Landeplatz, sonst der Standard des
+  Termins.
+- **Lesen:** Das Team des Tages (inkl. Starthelfer) liest `event_school_flights`, auch über Realtime.
+  Rückmeldung und interne Notiz liegen in `event_school_flight_notes` und sind nur für Fluglehrer lesbar. Schüler
+  lesen keine der beiden Tabellen, sondern `my_school_flights(event)`: nur eigene gelandete Flüge mit Rückmeldung
+  und erst ab `flight_events.feedback_released_at`; Startabbrüche, Startnotizen und interne Notizen nie.
+
+**Abweichungen vom Plan:** (1) Die Rückmeldung an den Schüler liegt nicht in `event_school_flights`, sondern
+zusammen mit der internen Notiz in `event_school_flight_notes`. Sonst hätten Starthelfer sie über SELECT und
+Realtime erhalten; eine spaltenweise Sperre wirkt bei bestehendem Tabellen-Grant nicht. (2) `flight_events` erhält
+schon jetzt `default_takeoff_location_id`/`default_landing_location_id` (der Termin kennt das Fluggebiet bisher nur
+als Text) sowie `day_closed_at`, `day_closed_by` und `feedback_released_at`, damit die Sperre nach dem Abschluss und
+die Freigabe für Schüler von Anfang an durchgesetzt sind; die Oberfläche dazu folgt in 5.1. (3) Die Bewertung der
+Manöver (`event_school_flight_items`) kommt wie geplant erst mit 4.3.
+
 ## Betrieb: Fehlerprotokoll
 
 Migration `0049_client_errors.sql`, Logik in `src/lib/error-reporting.ts`, Seite `src/pages/AdminErrors.tsx`
