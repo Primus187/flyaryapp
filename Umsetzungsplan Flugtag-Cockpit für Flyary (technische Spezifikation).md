@@ -10,7 +10,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅, 4.2 ✅, 4.3 ✅; 4.4–4.5 offen |
+| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅, 4.2 ✅, 4.3 ✅, 4.4 ✅; 4.5 offen |
 | C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
@@ -147,7 +147,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Ist-Stand:** Migration `0052_school_flight_items.sql` (`event_school_flight_items`, nur Fluglehrer lesen; `school_flight_land`/`_add` mit Bewertungen in einer Transaktion; `school_flight_set_items`; `my_school_flights` mit Bewertungen; Lese-Policy für die Orte eines Flugtags), Oberfläche `FlightBoard.tsx`, `RecordFlightSheet.tsx`, `DaySitesCard.tsx`. **Fund:** Orte gehören einer Person; ohne die neue Policy hätten zweiter Fluglehrer und Starthelfer die Namen der Plätze des Tages nicht lesen können. **Abweichungen:** Landeplatz einmal als Platz des Tages statt pro Flug im Sheet (Korrektur pro Flug über `school_flight_update`); Ausbildungsblatt F1–F6 bleibt bis 4.5 unter der Flugliste; Bewertungen noch nicht im Ausbildungsstand (6.3). Für die Übernahme ins Flugbuch (6.1) beachten: Die Orte der Schulflüge gehören dem Fluglehrer, nicht dem Schüler.
 
-### 4.4 Startplatz-Ansicht für Starthelfer und «In der Luft»
+### 4.4 Startplatz-Ansicht für Starthelfer und «In der Luft» ✅
 
 **Ziel:** Der Starthelfer oder der Fluglehrer (wenn es der Starthelfer nicht macht, er es aber über das Radio gemeldet kriegt) meldet Starts, der Fluglehrer am Landeplatz sieht live, wer unterwegs ist. Der Funk bleibt das Hauptmittel, die App spiegelt den Stand.
 
@@ -160,6 +160,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - Beim Wiederverbinden (App im Hintergrund, Funkloch) wird die Liste komplett neu geladen, damit keine Realtime-Nachricht fehlt
 - Starthelfer haben im Einsatz immer ein Handy dabei (Entscheid 2026-09-25). Der Ablauf Start → Landung ist darum der Normalfall. **+ Flug** des Fluglehrers bleibt als Rückfall, wenn ein Start vergessen ging (E2)
 - Ein Fluglehrer kann über einen Schalter «Als Startplatz arbeiten» zur Starthelfer-Ansicht wechseln (z. B. wenn er selbst oben ist)
+
+**Ist-Stand:** Migration `0053_flight_day_landing_hint.sql` (`flight_events.landing_hint_minutes`, RPC `set_flight_day_landing_hint`), Oberfläche `TakeoffBoard.tsx`, `InAirBar.tsx`, `FlightDayStations.tsx` (Umschalter Landeplatz/Startplatz, pro Gerät gemerkt), Hook `use-flight-day-live.ts`. Auf dem Landeplatz steht neben «+ Flug» ein «Start» für Starts, die nur per Funk gemeldet werden. Pausierte Schüler lassen sich nach Rückfrage starten. Der Landehinweis wird in der Karte «Plätze des Tages» gesetzt und gilt für alle Geräte des Tages.
 
 ### 4.5 Ablösung von Ausbildungsblatt und Schülerflügen
 

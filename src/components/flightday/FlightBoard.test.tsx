@@ -10,7 +10,7 @@ const { from, rpc, channel, removeChannel, tables } = vi.hoisted(() => {
   const from = vi.fn((table: string) => {
     const result = Promise.resolve({ data: tables[table] ?? [], error: null });
     const query: Record<string, unknown> = {};
-    for (const m of ["select", "eq", "in", "is", "neq", "order"]) query[m] = vi.fn().mockReturnValue(query);
+    for (const m of ["select", "eq", "in", "is", "neq", "order", "maybeSingle"]) query[m] = vi.fn().mockReturnValue(query);
     query.then = result.then.bind(result);
     return query;
   });
@@ -82,4 +82,17 @@ it("reports a closed day instead of saving", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "flightDay.board.add" }));
   fireEvent.click(await screen.findByRole("button", { name: "flightDay.sheet.save" }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: "flightDay.errors.closed", variant: "destructive" }));
+});
+
+it("lets the instructor record a start reported by radio", async () => {
+  rpc.mockResolvedValue({ data: {}, error: null });
+  render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} />);
+  fireEvent.click(await screen.findByRole("button", { name: "flightDay.board.start" }));
+  await waitFor(() => expect(rpc).toHaveBeenCalledWith("school_flight_start", { _event_id: "ev", _student_id: "beat" }));
+});
+
+it("opens the landing sheet from the in-the-air bar", async () => {
+  render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} />);
+  fireEvent.click(await screen.findByRole("button", { name: /flightDay\.inAir\.entry/ }));
+  expect(await screen.findByText("flightDay.sheet.titleLand 2")).toBeInTheDocument();
 });

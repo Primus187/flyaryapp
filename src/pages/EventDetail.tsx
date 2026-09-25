@@ -25,8 +25,7 @@ import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
 import CoachDayView from "@/components/CoachDayView";
 import DayCheckIn from "@/components/flightday/DayCheckIn";
-import DaySitesCard from "@/components/flightday/DaySitesCard";
-import FlightBoard from "@/components/flightday/FlightBoard";
+import FlightDayStations from "@/components/flightday/FlightDayStations";
 import { opensOnFlightDay, type FlightDayRole } from "@/lib/flight-day";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
@@ -492,10 +491,7 @@ export default function EventDetail() {
         {showDayTab && (
           <TabsContent value="day" className="space-y-3 mt-3">
             <DayCheckIn eventId={id!} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
-            {dayRole === "instructor" && <>
-              <DaySitesCard eventId={id!} />
-              <FlightBoard eventId={id!} eventCategory={event.event_category || null} signups={visibleConfirmed} profiles={profiles} />
-            </>}
+            {dayRole && <FlightDayStations eventId={id!} eventCategory={event.event_category || null} role={dayRole} signups={visibleConfirmed} profiles={profiles} />}
             {/* Legacy coaching sheet and day booking read through is_group_staff (until 4.3–5.1). */}
             {isStaff && <>
               <CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} />

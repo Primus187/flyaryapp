@@ -112,3 +112,12 @@ export function schoolFlightErrorKey(message: string | undefined): string {
   if (message.includes("Flight day access required")) return "noAccess";
   return "generic";
 }
+
+/** Main button at the take-off: start, or abort while the student is starting / in the air. */
+export const takeoffAction = (studentFlights: SchoolFlight[]): "start" | "abort" =>
+  studentFlights.some((f) => f.status === "in_air") ? "abort" : "start";
+
+/** The student's most recent flight or launch of the day (highest seq). */
+export function latestFlight<T extends SchoolFlight>(studentFlights: T[]): T | null {
+  return studentFlights.reduce<T | null>((latest, f) => (!latest || f.seq > latest.seq ? f : latest), null);
+}

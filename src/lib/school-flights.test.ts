@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   airborneMinutes, appendSnippet, boardAction, flightCountByStudent, flightDurationMinutes, flightNumbers, flightsInAir, landingHintDue,
-  ratingsPayload, schoolFlightErrorKey, toggleRating,
+  latestFlight, ratingsPayload, schoolFlightErrorKey, takeoffAction, toggleRating,
   type SchoolFlight,
 } from "./school-flights";
 
@@ -95,5 +95,18 @@ describe("recording helpers", () => {
     expect(schoolFlightErrorKey("Flight day access required")).toBe("noAccess");
     expect(schoolFlightErrorKey("Failed to fetch")).toBe("generic");
     expect(schoolFlightErrorKey(undefined)).toBe("generic");
+  });
+});
+
+describe("take-off helpers", () => {
+  it("offers start on the ground and abort while in the air", () => {
+    expect(takeoffAction([flight({})])).toBe("start");
+    expect(takeoffAction([flight({ status: "in_air", started_at: "2026-09-25T10:00:00Z", landed_at: null })])).toBe("abort");
+    expect(takeoffAction([])).toBe("start");
+  });
+
+  it("finds the latest flight by seq", () => {
+    expect(latestFlight([flight({ id: "a", seq: 1 }), flight({ id: "c", seq: 3 }), flight({ id: "b", seq: 2 })])?.id).toBe("c");
+    expect(latestFlight([])).toBeNull();
   });
 });

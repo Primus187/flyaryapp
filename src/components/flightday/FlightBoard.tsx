@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { ToastAction } from "@/components/ui/toast";
 import { ArrowRightCircle, ChevronRight, PauseCircle, Plane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useFlightDayLive } from "@/hooks/use-flight-day-live";
 import { cn } from "@/lib/utils";
 import { dayParticipants, type DayPause, type DaySignup } from "@/lib/flight-day";
 import { latestNextStepPerStudent, type DayNoteRow } from "@/lib/handoff-notes";
 import {
   airborneMinutes, boardAction, flightDurationMinutes, flightNumbers, schoolFlightErrorKey,
-  type ManeuverRating, type SchoolFlight,
+  type LandingHintMinutes, type ManeuverRating, type SchoolFlight,
 } from "@/lib/school-flights";
 import RecordFlightSheet, { type FlightDraft, type SheetMode } from "./RecordFlightSheet";
+import InAirBar from "./InAirBar";
 
 interface BoardFlight extends SchoolFlight { start_note: string | null }
 interface FlightNote { flight_id: string; feedback: string | null; internal_note: string | null }
@@ -23,13 +25,15 @@ interface Props {
   eventCategory: string | null;
   signups: DaySignup[];
   profiles: Record<string, string>;
+  /** Bumped when the day's settings (sites, landing hint) change. */
+  settingsVersion?: number;
 }
 
 const emptyDraft: FlightDraft = { feedback: "", internal: "", ratings: {} };
 
 /** Instructor view of a flying day: one row per student with the day's flights and one main
  *  action (land / + flight / +1 on the practice slope). Flugtag-Cockpit 4.3. */
-export default function FlightBoard({ eventId, eventCategory, signups, profiles }: Props) {
+export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0 }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [flights, setFlights] = useState<BoardFlight[]>([]);
@@ -42,22 +46,26 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ studentId: string; mode: SheetMode; initial: FlightDraft } | null>(null);
-  const [now, setNow] = useState(() => new Date());
+  const [hint, setHint] = useState<LandingHintMinutes>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   const studentIds = useMemo(() => signups.map((s) => s.user_id), [signups]);
   const studentKey = studentIds.join(",");
 
   const load = useCallback(async () => {
-    const [flightsRes, pausesRes, maneuversRes] = await Promise.all([
+    const [flightsRes, pausesRes, maneuversRes, eventRes] = await Promise.all([
       supabase.from("event_school_flights").select("id, student_user_id, seq, status, started_at, landed_at, start_note").eq("event_id", eventId),
       supabase.from("event_day_pauses").select("student_user_id, reason, note").eq("event_id", eventId),
       supabase.from("event_maneuvers").select("training_item_id, sort_order").eq("event_id", eventId).order("sort_order"),
+      supabase.from("flight_events").select("landing_hint_minutes").eq("id", eventId).maybeSingle(),
     ]);
     if (flightsRes.error) { setLoadError(true); return; }
     setLoadError(false);
     const rows = (flightsRes.data || []) as BoardFlight[];
     setFlights(rows);
     setPauses((pausesRes.data || []) as DayPause[]);
+    // landing_hint_minutes: migration 0053, not in generated types.ts yet
+    const day = eventRes.data as unknown as { landing_hint_minutes: number | null } | null;
+    setHint((day?.landing_hint_minutes ?? null) as LandingHintMinutes);
     const ids = rows.map((f) => f.id);
     if (ids.length > 0) {
       const [notesRes, itemsRes] = await Promise.all([
@@ -73,7 +81,8 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
       const byId = new Map((names || []).map((n) => [n.id, n.name]));
       setManeuvers(itemIds.map((id) => ({ id, name: byId.get(id) || "?" })));
     } else setManeuvers([]);
-  }, [eventId]);
+  }, [eventId, settingsVersion]); // eslint-disable-line react-hooks/exhaustive-deps -- settingsVersion forces a reload
+  const now = useFlightDayLive(eventId, load, "flight-day-board");
 
   // Last next step of earlier days, for reading only (not prefilled).
   useEffect(() => {
@@ -87,18 +96,6 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
       setNextSteps(latestNextStepPerStudent(rows, dates));
     })();
   }, [eventId, studentKey]); // eslint-disable-line react-hooks/exhaustive-deps -- studentKey stands for studentIds
-
-  useEffect(() => {
-    void load();
-    const channel = supabase.channel(`flight-day-board-${eventId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "event_school_flights", filter: `event_id=eq.${eventId}` }, () => { void load(); })
-      .on("postgres_changes", { event: "*", schema: "public", table: "event_day_pauses", filter: `event_id=eq.${eventId}` }, () => { void load(); })
-      .subscribe();
-    const onVisible = () => { if (document.visibilityState === "visible") void load(); };
-    document.addEventListener("visibilitychange", onVisible);
-    const timer = setInterval(() => setNow(new Date()), 30_000);
-    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); void supabase.removeChannel(channel); };
-  }, [eventId, load]);
 
   const numbers = useMemo(() => flightNumbers(flights), [flights]);
   const participants = useMemo(
@@ -136,12 +133,22 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
     });
   };
 
+  // Start reported by radio when the launch helper did not tap it (plan 4.4).
+  const startFlight = async (studentId: string) => {
+    setBusy(studentId);
+    const { error } = await supabase.rpc("school_flight_start", { _event_id: eventId, _student_id: studentId });
+    setBusy(null);
+    if (error) { fail(error.message); return; }
+    await load();
+  };
+
+  const landFlight = (f: SchoolFlight) => setSheet({ studentId: f.student_user_id, mode: { kind: "land", flightId: f.id, number: numbers[f.id] }, initial: draftOf(f.id) });
+
   const mainAction = (studentId: string, name: string) => {
     const own = byStudent[studentId] || [];
     const action = boardAction(own, eventCategory);
     if (action === "land") {
-      const inAir = own.find((f) => f.status === "in_air")!;
-      setSheet({ studentId, mode: { kind: "land", flightId: inAir.id, number: numbers[inAir.id] }, initial: draftOf(inAir.id) });
+      landFlight(own.find((f) => f.status === "in_air")!);
     } else if (action === "count") void addCounted(studentId, name);
     else setSheet({ studentId, mode: { kind: "add", number: countOf(studentId) + 1 }, initial: emptyDraft });
   };
@@ -154,6 +161,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
   return (
     <section className="space-y-1.5">
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("flightDay.board.title")}</h2>
+      <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} onSelect={landFlight} />
       {participants.map((p) => {
         const own = byStudent[p.userId] || [];
         const inAir = own.find((f) => f.status === "in_air");
@@ -180,6 +188,12 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
                   </span>
                 </span>
               </button>
+              {action === "add" && (
+                <Button size="sm" variant="ghost" className="h-10 shrink-0 px-2 text-xs" disabled={busy === p.userId}
+                  onClick={() => void startFlight(p.userId)}>
+                  {t("flightDay.board.start")}
+                </Button>
+              )}
               <Button size="sm" className="h-10 min-w-[5.5rem] shrink-0" variant={action === "land" ? "default" : "outline"}
                 disabled={busy === p.userId} onClick={() => mainAction(p.userId, name)}>
                 {t(`flightDay.board.${action}`)}

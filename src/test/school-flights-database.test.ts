@@ -23,7 +23,7 @@ const takeoff = "30000000-0000-0000-0000-000000000001";
 const landing = "30000000-0000-0000-0000-000000000002";
 const takeoff2 = "30000000-0000-0000-0000-000000000003";
 const unused = "30000000-0000-0000-0000-000000000004";
-const launch ="40000000-0000-0000-0000-000000000001";
+const launch = "40000000-0000-0000-0000-000000000001";
 const approach = "40000000-0000-0000-0000-000000000002";
 
 beforeAll(async () => {
@@ -59,6 +59,7 @@ beforeAll(async () => {
   `);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0050_event_school_flights.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0052_school_flight_items.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0053_flight_day_landing_hint.sql", import.meta.url), "utf8"));
   await db.exec(`UPDATE flight_events SET default_takeoff_location_id='${takeoff}', default_landing_location_id='${landing}' WHERE id='${event}';
     UPDATE flight_events SET day_closed_at=now() WHERE id='${closedEvent}';`);
 }, 60_000);
@@ -251,5 +252,20 @@ describe("reading", () => {
     // student2 has an aborted launch and one landed flight: only the landed one counts.
     await asUser(student2);
     expect((await call<{ data: unknown[] }>("SELECT my_school_flights($1) AS data", [event])).data).toHaveLength(1);
+  });
+});
+
+describe("landing hint", () => {
+  it("lets instructors switch the hint on and off, nobody else", async () => {
+    await asUser(instructor);
+    await db.query("SELECT set_flight_day_landing_hint($1,30::smallint)", [event]);
+    expect((await call<{ landing_hint_minutes: number | null }>("SELECT landing_hint_minutes FROM flight_events WHERE id=$1", [event])).landing_hint_minutes).toBe(30);
+    await expect(db.query("SELECT set_flight_day_landing_hint($1,20::smallint)", [event])).rejects.toThrow();
+    await db.query("SELECT set_flight_day_landing_hint($1,NULL)", [event]);
+    expect((await call<{ landing_hint_minutes: number | null }>("SELECT landing_hint_minutes FROM flight_events WHERE id=$1", [event])).landing_hint_minutes).toBeNull();
+    for (const user of [helper, student, outsider]) {
+      await asUser(user);
+      await expect(db.query("SELECT set_flight_day_landing_hint($1,15::smallint)", [event])).rejects.toThrow("Flight day access required");
+    }
   });
 });

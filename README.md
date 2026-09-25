@@ -1,5 +1,26 @@
 # Flyary
 
+## Flugtag-Cockpit: Startplatz, «In der Luft» und Landehinweis (4.4)
+
+Migration `0053_flight_day_landing_hint.sql`, Oberfläche `src/components/flightday/TakeoffBoard.tsx`,
+`InAirBar.tsx`, `FlightDayStations.tsx`, Hook `src/hooks/use-flight-day-live.ts`, Tests in
+`TakeoffBoard.test.tsx`, `FlightBoard.test.tsx`, `src/lib/school-flights.test.ts` und
+`src/test/school-flights-database.test.ts`.
+
+- **Startplatz-Ansicht** für Starthelfer: pro Schüler **Start** bzw. **Abbruch** (mit Grund, nur Team), im Menü die
+  Startnotiz zum letzten Flug. Keine Rückmeldungen, keine internen Notizen, kein Dossier. Pausierte Schüler lassen
+  sich nach einer Rückfrage trotzdem starten (kein hartes Blockieren). Oben der Startplatz des Tages.
+- **Fluglehrer** schalten zwischen **Landeplatz** und **Startplatz** um (pro Gerät gemerkt). Auf der Landeplatz-
+  Ansicht gibt es neben «+ Flug» ein **Start**, wenn der Starthelfer einen Start nur per Funk meldet (Ergänzung im
+  Plan vom 2026-09-25).
+- **Leiste «In der Luft»** in beiden Ansichten: wer gerade fliegt, mit laufender Zeit, am längsten Fliegende zuerst.
+  Auf dem Landeplatz öffnet ein Tipp direkt die Landung.
+- **Landehinweis pro Flugtag** (`flight_events.landing_hint_minutes`, RPC `set_flight_day_landing_hint`, nur
+  Fluglehrer): aus (Standard) oder nach 15/30/45/60/90 min. Dann wird der Eintrag orange mit «Landung erfassen?» –
+  nur ein Hinweis, keine Alarmierung. Einstellbar in der Karte «Plätze des Tages».
+- **Live-Abgleich** über einen gemeinsamen Hook (`useFlightDayLive`): Änderungen an Flügen und Pausen kommen über
+  Realtime; nach dem Zurückkehren in die App wird neu geladen; die Zeiten ticken alle 30 s.
+
 ## Flugtag-Cockpit: Flüge am Landeplatz erfassen (4.3)
 
 Migration `0052_school_flight_items.sql`, Oberfläche `src/components/flightday/FlightBoard.tsx`,
