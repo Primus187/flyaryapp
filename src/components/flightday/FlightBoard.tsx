@@ -14,9 +14,6 @@ import {
 } from "@/lib/school-flights";
 import RecordFlightSheet, { type FlightDraft, type SheetMode } from "./RecordFlightSheet";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0052 not in generated types.ts yet
-const db = supabase as any;
-
 interface BoardFlight extends SchoolFlight { start_note: string | null }
 interface FlightNote { flight_id: string; feedback: string | null; internal_note: string | null }
 interface FlightItem { flight_id: string; training_item_id: string; rating: ManeuverRating }
@@ -52,7 +49,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
 
   const load = useCallback(async () => {
     const [flightsRes, pausesRes, maneuversRes] = await Promise.all([
-      db.from("event_school_flights").select("id, student_user_id, seq, status, started_at, landed_at, start_note").eq("event_id", eventId),
+      supabase.from("event_school_flights").select("id, student_user_id, seq, status, started_at, landed_at, start_note").eq("event_id", eventId),
       supabase.from("event_day_pauses").select("student_user_id, reason, note").eq("event_id", eventId),
       supabase.from("event_maneuvers").select("training_item_id, sort_order").eq("event_id", eventId).order("sort_order"),
     ]);
@@ -64,8 +61,8 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
     const ids = rows.map((f) => f.id);
     if (ids.length > 0) {
       const [notesRes, itemsRes] = await Promise.all([
-        db.from("event_school_flight_notes").select("flight_id, feedback, internal_note").in("flight_id", ids),
-        db.from("event_school_flight_items").select("flight_id, training_item_id, rating").in("flight_id", ids),
+        supabase.from("event_school_flight_notes").select("flight_id, feedback, internal_note").in("flight_id", ids),
+        supabase.from("event_school_flight_items").select("flight_id, training_item_id, rating").in("flight_id", ids),
       ]);
       setNotes(Object.fromEntries(((notesRes.data || []) as FlightNote[]).map((n) => [n.flight_id, n])));
       setItems((itemsRes.data || []) as FlightItem[]);
@@ -125,7 +122,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
   const addCounted = async (studentId: string, name: string) => {
     const number = countOf(studentId) + 1;
     setBusy(studentId);
-    const { data, error } = await db.rpc("school_flight_add", { _event_id: eventId, _student_id: studentId });
+    const { data, error } = await supabase.rpc("school_flight_add", { _event_id: eventId, _student_id: studentId });
     setBusy(null);
     if (error) { fail(error.message); return; }
     await load();
@@ -133,7 +130,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles 
       title: t("flightDay.board.counted", { name, number }),
       duration: 5000,
       action: <ToastAction altText={t("common.undo")} onClick={async () => {
-        const { error: undoError } = await db.rpc("school_flight_delete", { _flight_id: data.id });
+        const { error: undoError } = await supabase.rpc("school_flight_delete", { _flight_id: data.id });
         if (undoError) fail(undoError.message); else void load();
       }}>{t("common.undo")}</ToastAction>,
     });

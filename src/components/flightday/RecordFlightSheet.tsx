@@ -13,9 +13,6 @@ import {
   type ManeuverRating,
 } from "@/lib/school-flights";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0052 not in generated types.ts yet
-const db = supabase as any;
-
 export type SheetMode =
   | { kind: "land"; flightId: string; number: number }
   | { kind: "add"; number: number }
@@ -66,12 +63,12 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
     const items = ratingsPayload(draft.ratings);
     let error: { message?: string } | null = null;
     if (mode.kind === "land") {
-      ({ error } = await db.rpc("school_flight_land", { _flight_id: mode.flightId, _notes: notes, _items: items }));
+      ({ error } = await supabase.rpc("school_flight_land", { _flight_id: mode.flightId, _notes: notes, _items: items }));
     } else if (mode.kind === "add") {
-      ({ error } = await db.rpc("school_flight_add", { _event_id: eventId, _student_id: studentId, _notes: notes, _items: items }));
+      ({ error } = await supabase.rpc("school_flight_add", { _event_id: eventId, _student_id: studentId, _notes: notes, _items: items }));
     } else {
-      ({ error } = await db.rpc("school_flight_set_notes", { _flight_id: mode.flightId, _patch: notes }));
-      if (!error) ({ error } = await db.rpc("school_flight_set_items", { _flight_id: mode.flightId, _items: items }));
+      ({ error } = await supabase.rpc("school_flight_set_notes", { _flight_id: mode.flightId, _patch: notes }));
+      if (!error) ({ error } = await supabase.rpc("school_flight_set_items", { _flight_id: mode.flightId, _items: items }));
     }
     setSaving(false);
     if (error) { fail(error.message); return; }
@@ -83,7 +80,7 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
   const remove = async () => {
     if (mode?.kind !== "edit" || !confirm(t("flightDay.sheet.deleteConfirm"))) return;
     setSaving(true);
-    const { error } = await db.rpc("school_flight_delete", { _flight_id: mode.flightId });
+    const { error } = await supabase.rpc("school_flight_delete", { _flight_id: mode.flightId });
     setSaving(false);
     if (error) { fail(error.message); return; }
     toast({ title: t("flightDay.board.deleted") });

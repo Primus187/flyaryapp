@@ -1205,6 +1205,45 @@ export type Database = {
           },
         ]
       }
+      event_school_flight_items: {
+        Row: {
+          flight_id: string
+          rated_by: string | null
+          rating: number
+          training_item_id: string
+          updated_at: string
+        }
+        Insert: {
+          flight_id: string
+          rated_by?: string | null
+          rating: number
+          training_item_id: string
+          updated_at?: string
+        }
+        Update: {
+          flight_id?: string
+          rated_by?: string | null
+          rating?: number
+          training_item_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_school_flight_items_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "event_school_flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_school_flight_items_training_item_id_fkey"
+            columns: ["training_item_id"]
+            isOneToOne: false
+            referencedRelation: "training_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_school_flight_notes: {
         Row: {
           feedback: string | null
@@ -4313,6 +4352,7 @@ export type Database = {
       school_flight_add: {
         Args: {
           _event_id: string
+          _items?: Json
           _landing_location_id?: string
           _notes?: Json
           _student_id: string
@@ -4392,6 +4432,7 @@ export type Database = {
       school_flight_land: {
         Args: {
           _flight_id: string
+          _items?: Json
           _landing_location_id?: string
           _notes?: Json
         }
@@ -4423,6 +4464,10 @@ export type Database = {
       school_flight_next_seq: {
         Args: { _event_id: string; _student_id: string }
         Returns: number
+      }
+      school_flight_set_items: {
+        Args: { _flight_id: string; _items: Json }
+        Returns: undefined
       }
       school_flight_set_notes: {
         Args: { _flight_id: string; _patch: Json }
@@ -4486,6 +4531,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      school_flight_write_items: {
+        Args: { _flight_id: string; _items: Json }
+        Returns: undefined
       }
       school_flight_write_notes: {
         Args: { _flight_id: string; _patch: Json }
