@@ -11,3 +11,7 @@ verify_jwt = false
 # Nightly marketplace cleanup, started by pg_cron with x-push-secret (migration 0040).
 [functions.marketplace-cleanup]
 verify_jwt = false
+
+# Public share link of a marketplace listing (plan 8.4): previews for crawlers, data for /shared/market/<token>.
+[functions.get-shared-listing]
+verify_jwt = false

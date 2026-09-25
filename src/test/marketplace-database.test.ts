@@ -4,7 +4,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0046 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius, school equipment, billing).
+// Isolated PostgreSQL fixture with real RLS for migrations 0031–0039 and 0041–0047 (marketplace listings, photos, status functions, search, school shop, moderation, cleanup, rules, favourites, saved searches, radius, school equipment, billing, public share).
 // Only the tables and helper functions the migrations touch are represented.
 let db: PGlite;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -36,7 +36,7 @@ async function publish(listingId: string, expires = "now() + interval '60 days'"
 beforeAll(async () => {
   db = new PGlite({ extensions: { pg_trgm } });
   await db.exec(`
-    CREATE ROLE authenticated; CREATE ROLE anon;
+    CREATE ROLE authenticated; CREATE ROLE anon; CREATE ROLE service_role;
     CREATE SCHEMA auth; GRANT USAGE ON SCHEMA auth TO authenticated, anon;
     CREATE SCHEMA extensions; GRANT USAGE ON SCHEMA extensions TO authenticated;
     CREATE SCHEMA storage; GRANT USAGE ON SCHEMA storage TO authenticated;
@@ -99,6 +99,7 @@ beforeAll(async () => {
   await db.exec(migration("0044_marketplace_radius_weight.sql"));
   await db.exec(migration("0045_marketplace_school_equipment.sql"));
   await db.exec(migration("0046_marketplace_sale_to_billing.sql"));
+  await db.exec(migration("0047_marketplace_public_share.sql"));
   // everyone in the fixture has confirmed the marketplace rules (see "marketplace rules" for the refusal)
   await db.exec("INSERT INTO public.marketplace_terms_acceptances (user_id, version) SELECT id, 1 FROM auth.users");
   await db.exec(`INSERT INTO public.marketplace_bans (user_id, reason) VALUES ('${banned}', 'Betrug');
@@ -1018,6 +1019,51 @@ describe("sale to a member's bill", () => {
     expect(names).toContain("Mia");
     await asUser(stranger);
     expect((await db.query(`SELECT * FROM public.marketplace_sale_candidates('${l}')`)).rows).toEqual([]);
+  });
+});
+
+describe("public share link", () => {
+  // listings here are titled "P …" and removed afterwards
+  const pub = async (token: string) => {
+    await asSystem();
+    return (await db.query<{ p: Record<string, unknown> | null }>("SELECT public.marketplace_public_listing($1::uuid) AS p", [token])).rows[0].p;
+  };
+  const add = async (values: string) => {
+    await asSystem();
+    return (await db.query<{ share_token: string; id: string }>(`INSERT INTO public.marketplace_listings (seller_user_id, seller_group_id, created_by,
+      category, title, status, visibility, bumped_at, expires_at) VALUES ${values} RETURNING id, share_token`)).rows[0];
+  };
+  afterAll(async () => {
+    await asSystem();
+    await db.exec("DELETE FROM public.marketplace_listings WHERE title LIKE 'P %'");
+  });
+
+  it("shows listed listings without the private seller's name, schools with their legal details", async () => {
+    const own = await add(`('${stranger}', NULL, '${stranger}', 'helmet', 'P Helm', 'active', 'all', now(), now() + interval '9 days')`);
+    const p = (await pub(own.share_token))!;
+    expect(p).toMatchObject({ title: "P Helm", is_school: false, school: null, photos: [] });
+    expect(JSON.stringify(p)).not.toContain(stranger);
+    const sch = await add(`(NULL, '${school}', '${shop}', 'helmet', 'P Schulhelm', 'active', 'all', now(), NULL)`);
+    expect((await pub(sch.share_token))!).toMatchObject({ is_school: true, school: { name: "Vertical", legal_name: "Vertical GmbH" } });
+  });
+
+  it("shows nothing for drafts, sold, expired, students-only or school listings without an active shop", async () => {
+    const tokens = await Promise.all([
+      add(`('${stranger}', NULL, '${stranger}', 'helmet', 'P Entwurf', 'draft', 'all', now(), now() + interval '9 days')`),
+      add(`('${stranger}', NULL, '${stranger}', 'helmet', 'P Verkauft', 'sold', 'all', now(), now() + interval '9 days')`),
+      add(`('${stranger}', NULL, '${stranger}', 'helmet', 'P Abgelaufen', 'active', 'all', now(), now() - interval '1 day')`),
+      add(`(NULL, '${school}', '${shop}', 'helmet', 'P Nur Schüler', 'active', 'school_students', now(), NULL)`),
+    ]);
+    for (const t of tokens) expect(await pub(t.share_token)).toBeNull();
+    const sch = await add(`(NULL, '${school}', '${shop}', 'helmet', 'P Shop aus', 'active', 'all', now(), NULL)`);
+    await db.exec(`UPDATE public.school_shop_profiles SET active = false WHERE group_id = '${school}'`);
+    expect(await pub(sch.share_token)).toBeNull();
+    await db.exec(`UPDATE public.school_shop_profiles SET active = true WHERE group_id = '${school}'`);
+  });
+
+  it("is not callable from the app", async () => {
+    await asUser(stranger);
+    await expect(db.query(`SELECT public.marketplace_public_listing(gen_random_uuid())`)).rejects.toThrow(/permission denied/);
   });
 });
 

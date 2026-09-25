@@ -10,6 +10,7 @@ import { RoleModeProvider } from "@/contexts/RoleModeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
+import { takeAfterLogin } from "@/lib/after-login";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prefetchDashboard } from "@/hooks/use-dashboard-data";
 
@@ -28,6 +29,7 @@ const Market = lazy(() => import("@/pages/Market"));
 const MarketMine = lazy(() => import("@/pages/MarketMine"));
 const MarketListingDetail = lazy(() => import("@/pages/MarketListingDetail"));
 const MarketModeration = lazy(() => import("@/pages/MarketModeration"));
+const SharedListing = lazy(() => import("@/pages/SharedListing"));
 const MarketListingForm = lazy(() => import("@/pages/MarketListingForm"));
 const FlightDetail = lazy(() => import("@/pages/FlightDetail"));
 const MapView = lazy(() => import("@/pages/MapView"));
@@ -84,6 +86,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">...</div>;
   if (!user) return <Navigate to="/auth" replace />;
+  // coming from a public listing (plan 8.4): go on to the listing instead of the dashboard
+  const afterLogin = takeAfterLogin();
+  if (afterLogin) return <Navigate to={afterLogin} replace />;
   return <>{children}</>;
 }
 
@@ -197,6 +202,7 @@ const App = () => {
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                     <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
+                    <Route path="/shared/market/:token" element={<SharedListing />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

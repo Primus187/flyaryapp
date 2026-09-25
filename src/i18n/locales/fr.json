@@ -2163,7 +2163,7 @@
         "sectionForbidden": "Sont notamment interdits : les indications fausses ou trompeuses, le matériel non navigable sans indication correspondante, les objets volés, les contenus choquants, les annonces sans lien avec le parapente et les demandes de paiement d'avance à des inconnus.",
         "sectionModeration": "Les annonces peuvent être signalées. La modération (Flyary ainsi que les modératrices et modérateurs des écoles pour les annonces privées) peut masquer des annonces. En cas d'abus, Flyary peut exclure des personnes du marché et supprimer des annonces.",
         "sectionSchools": "Les écoles vendent à titre commercial. Elles indiquent entreprise, adresse, contact et garantie ; les écoles assujetties à la TVA aussi leur numéro IDE. Les ventes des écoles sont couvertes par leurs indications de garantie.",
-        "sectionData": "Les annonces sont visibles pour toutes les personnes connectées. Les photos d'annonces vendues, masquées ou expirées depuis longtemps sont supprimées automatiquement, tout comme les brouillons abandonnés. La suppression du compte efface ses propres annonces et leurs photos ; les chats restent lisibles pour l'autre partie."
+        "sectionData": "Les annonces sont visibles pour toutes les personnes connectées. « Partager » crée un lien qui permet aussi aux personnes sans Flyary de voir une annonce active – sans le nom des vendeurs privés et sans possibilité de contact ; écrire n'est possible que dans Flyary. Les photos d'annonces vendues, masquées ou expirées depuis longtemps sont supprimées automatiquement, tout comme les brouillons abandonnés. La suppression du compte efface ses propres annonces et leurs photos ; les chats restent lisibles pour l'autre partie."
       },
       "favorites": {
         "tab": "Favoris",
@@ -2221,6 +2221,15 @@
         "confirm": "Vendre et facturer",
         "done": "Mis sur la facture",
         "noMembers": "Aucun membre trouvé."
+      },
+      "shared": {
+        "title": "Marché Flyary",
+        "notAvailable": "Cette annonce n'est plus disponible.",
+        "openInApp": "Voir dans Flyary et prendre contact",
+        "discover": "Découvrir Flyary",
+        "privateSeller": "Particulier",
+        "shareText": "Jette un œil à cette annonce sur le marché Flyary :",
+        "linkCopied": "Lien public copié"
       }
     }
 }

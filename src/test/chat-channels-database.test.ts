@@ -27,7 +27,7 @@ async function visibleChannelNames(uid: string) {
 beforeAll(async () => {
   db = new PGlite({ extensions: { pg_trgm } });
   await db.exec(`
-    CREATE ROLE authenticated; CREATE ROLE anon;
+    CREATE ROLE authenticated; CREATE ROLE anon; CREATE ROLE service_role;
     CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE SCHEMA extensions; CREATE PUBLICATION supabase_realtime;
     GRANT USAGE ON SCHEMA auth, storage TO authenticated;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id', true), '')::uuid $$;
@@ -104,7 +104,7 @@ beforeAll(async () => {
       SELECT EXISTS (SELECT 1 FROM public.group_member_functions WHERE user_id = _user_id AND group_id = _group_id AND function = _function::text) $$;
   `);
   for (const name of ["0031_marketplace_group_functions", "0032_marketplace_listings", "0033_marketplace_photos",
-    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop", "0038_marketplace_moderation", "0039_marketplace_cleanup", "0041_marketplace_terms", "0042_marketplace_favorites", "0043_marketplace_saved_searches", "0044_marketplace_radius_weight", "0045_marketplace_school_equipment", "0046_marketplace_sale_to_billing"]) {
+    "0034_marketplace_listing_status", "0035_marketplace_search", "0036_marketplace_listing_chat", "0037_school_shop", "0038_marketplace_moderation", "0039_marketplace_cleanup", "0041_marketplace_terms", "0042_marketplace_favorites", "0043_marketplace_saved_searches", "0044_marketplace_radius_weight", "0045_marketplace_school_equipment", "0046_marketplace_sale_to_billing", "0047_marketplace_public_share"]) {
     await db.exec(readFileSync(new URL(`../../drizzle/migrations/${name}.sql`, import.meta.url), "utf8").replace("NOTIFY pgrst, 'reload schema';", ""));
   }
   // Channels created by staff after the migration

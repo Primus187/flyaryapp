@@ -2163,7 +2163,7 @@
         "sectionForbidden": "Nicht erlaubt sind insbesondere: falsche oder irreführende Angaben, nicht flugtaugliches Material ohne entsprechende Kennzeichnung, gestohlene Ware, anstössige Inhalte, Anzeigen ohne Bezug zum Gleitschirmfliegen und Aufforderungen zur Vorauszahlung an Unbekannte.",
         "sectionModeration": "Anzeigen können gemeldet werden. Die Moderation (Flyary sowie Moderatorinnen und Moderatoren von Flugschulen für private Anzeigen) kann Anzeigen ausblenden. Flyary kann Personen bei Missbrauch vom Marktplatz sperren und Anzeigen löschen.",
         "sectionSchools": "Flugschulen verkaufen gewerblich. Sie geben Firma, Adresse, Kontakt und Gewährleistung an; MWST-pflichtige Schulen zudem ihre UID-Nummer. Für Verkäufe von Schulen gelten deren Gewährleistungsangaben.",
-        "sectionData": "Anzeigen sind für alle angemeldeten Personen sichtbar. Fotos verkaufter, ausgeblendeter oder lange abgelaufener Anzeigen werden automatisch gelöscht, ebenso liegen gebliebene Entwürfe. Beim Löschen des Kontos werden die eigenen Anzeigen samt Fotos entfernt; Chats bleiben für die Gegenseite lesbar."
+        "sectionData": "Anzeigen sind für alle angemeldeten Personen sichtbar. Über «Teilen» entsteht ein Link, mit dem auch Personen ohne Flyary eine aktive Anzeige ansehen können – ohne Namen privater Verkäufer und ohne Kontaktmöglichkeit; schreiben lässt sich nur in Flyary. Fotos verkaufter, ausgeblendeter oder lange abgelaufener Anzeigen werden automatisch gelöscht, ebenso liegen gebliebene Entwürfe. Beim Löschen des Kontos werden die eigenen Anzeigen samt Fotos entfernt; Chats bleiben für die Gegenseite lesbar."
       },
       "favorites": {
         "tab": "Gemerkt",
@@ -2221,6 +2221,15 @@
         "confirm": "Verkaufen und abrechnen",
         "done": "Auf die Abrechnung gesetzt",
         "noMembers": "Keine Mitglieder gefunden."
+      },
+      "shared": {
+        "title": "Flyary Marktplatz",
+        "notAvailable": "Diese Anzeige ist nicht mehr verfügbar.",
+        "openInApp": "In Flyary ansehen und Kontakt aufnehmen",
+        "discover": "Flyary kennenlernen",
+        "privateSeller": "Privatperson",
+        "shareText": "Schau dir diese Anzeige im Flyary Marktplatz an:",
+        "linkCopied": "Öffentlicher Link kopiert"
       }
     }
 }

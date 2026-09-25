@@ -2163,7 +2163,7 @@
         "sectionForbidden": "Not allowed are in particular: false or misleading details, unairworthy equipment without the corresponding note, stolen goods, offensive content, listings unrelated to paragliding, and requests for payment in advance to strangers.",
         "sectionModeration": "Listings can be reported. The moderators (Flyary, and flight school moderators for private listings) can hide listings. Flyary can ban people from the marketplace for misuse and delete listings.",
         "sectionSchools": "Flight schools sell commercially. They state company, address, contact and warranty; VAT-registered schools also their UID number. Sales by schools are covered by their warranty terms.",
-        "sectionData": "Listings are visible to all signed-in people. Photos of sold, hidden or long-expired listings are deleted automatically, as are abandoned drafts. Deleting your account removes your own listings and their photos; chats remain readable for the other party."
+        "sectionData": "Listings are visible to all signed-in people. \"Share\" creates a link that lets people without Flyary view an active listing – without the names of private sellers and without a way to contact them; messages are only possible in Flyary. Photos of sold, hidden or long-expired listings are deleted automatically, as are abandoned drafts. Deleting your account removes your own listings and their photos; chats remain readable for the other party."
       },
       "favorites": {
         "tab": "Saved",
@@ -2221,6 +2221,15 @@
         "confirm": "Sell and bill",
         "done": "Put on the bill",
         "noMembers": "No members found."
+      },
+      "shared": {
+        "title": "Flyary Marketplace",
+        "notAvailable": "This listing is no longer available.",
+        "openInApp": "View in Flyary and get in touch",
+        "discover": "Discover Flyary",
+        "privateSeller": "Private seller",
+        "shareText": "Have a look at this listing on the Flyary marketplace:",
+        "linkCopied": "Public link copied"
       }
     }
 }

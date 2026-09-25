@@ -11,7 +11,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ✅ Abgeschlossen | 6.1–6.4 umgesetzt und abnahmegeprüft |
 | M3 – Schulen im Alltag | ✅ Abgeschlossen | 7.1–7.2 umgesetzt und abnahmegeprüft |
-| M4 – Später / optional | 🔶 Teilweise beauftragt | 8.1 Bewertungen und 8.4 öffentlicher Teilen-Link gewünscht; 8.2, 8.3 und 8.5 gestrichen (Entscheid 2026-09-25) |
+| M4 – Später / optional | 🔶 Teilweise beauftragt | 8.4 ✅; 8.1 Bewertungen folgt; 8.2, 8.3 und 8.5 gestrichen (Entscheid 2026-09-25) |
 
 ## 1. Grundsatzentscheide
 
@@ -21,7 +21,7 @@ Diese Entscheide sind gefällt (2026-09-24) und gelten für alle Stufen:
 | --- | --- | --- | --- |
 | E1 | Modell | **Kleinanzeigen** (wie Tutti, Facebook Marketplace): Kauf und Zahlung laufen direkt zwischen den Parteien | Keine Zahlung, kein Käuferschutz, kein Versand in der App. Keine Abhängigkeit von Phase 4 des Flugschul-Plans |
 | E2 | Wer sieht Anzeigen? | **Alle angemeldeten Flyary-Nutzer** | Privatanzeigen sind immer für alle sichtbar. Nur Schulen können Angebote auf ihre eigenen Schüler beschränken |
-| E3 | Öffentlicher Teilen-Link für Nicht-Nutzer | **Zurückgestellt** (M4) | Foto-Bucket bleibt privat, Zugriff über signierte URLs |
+| E3 | Öffentlicher Teilen-Link für Nicht-Nutzer | Zuerst zurückgestellt, **seit 2026-09-25 gewünscht** (8.4 umgesetzt) | Foto-Bucket bleibt privat; der öffentliche Link liefert signierte URLs über eine Edge Function |
 | E4 | Neuware von Schulen | **Schon in M1** | Schul-Shop mit gewerblichen Pflichtangaben gehört in M1 (Abschnitt 4.7) |
 | E5 | Moderation | **Admin plus Moderatoren aus Schulen, die selbst einen Shop betreiben** | Meldungen zu **Schul-Anzeigen gehen nur an den Admin** (kein Moderieren unter Konkurrenten) |
 | E6 | Kosten | **Vorerst gratis**, später kostenpflichtige Zusatzfunktionen | Felder für Hervorheben/Hochschieben schon im Modell, aber ohne Bezahlung |
@@ -317,7 +317,7 @@ Bei Schul-Anzeigen kann das Shop-Team einen Verkauf an eine Person der Schule «
 | 8.1 | Bewertungen nach abgeschlossenem Verkauf (nur zwischen Personen, die gechattet haben und beim «Verkauft» ausgewählt wurden) | Genügend Transaktionen, sonst leicht manipulierbar |
 | 8.2 | Seriennummer-Abgleich gegen gestohlen gemeldetes Material (Nummer nur gehasht gespeichert) | Bedarf aus der Community |
 | 8.3 | Kostenpflichtige Zusatzfunktionen: Hervorheben (`featured_until`), häufigeres Hochschieben, mehr Fotos, Schul-Shop-Paket | Phase 4 (Zahlungsanbieter) des Flugschul-Plans |
-| 8.4 | Öffentlicher Teilen-Link für Nicht-Nutzer (Muster `/shared/flights/:token`) | Entscheid E3 neu fällen; Bucket-Zugriff anpassen |
+| 8.4 ✅ | Öffentlicher Teilen-Link für Nicht-Nutzer (Muster `/shared/flights/:token`) | Umgesetzt: Migration `0047_marketplace_public_share.sql`, Edge Function `get-shared-listing`, Seite `/shared/market/:token`; nach der Anmeldung direkt zur Anzeige |
 | 8.5 | Zahlung in der App / Käuferschutz | Phase 4, regulatorische Abklärung (Geld für Dritte) |
 
 ## 9. Definition of Done
