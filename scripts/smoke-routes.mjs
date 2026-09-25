@@ -11,6 +11,8 @@ const routes = [
   "/", "/feed", "/flights", "/flights/new", "/locations", "/events", "/events/new", "/groups", "/training",
   "/profile", "/more", "/settings", "/stats", "/search", "/legal", "/leaderboard", "/weather", "/notifications",
   "/messages", "/market", "/market/mine", "/market/new", "/admin/errors",
+  // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
+  "/events/22222222-2222-4222-8222-222222222222",
 ];
 const uid = "11111111-1111-4111-8111-111111111111";
 const user = { id: uid, aud: "authenticated", role: "authenticated", email: "smoke@example.invalid", app_metadata: { provider: "email" }, user_metadata: {}, created_at: "2026-01-01T00:00:00Z" };
@@ -19,6 +21,19 @@ const profile = { id: uid, user_id: uid, pilot_name: "Smoke Test", training_leve
 const rpcResults = {
   feed_page: { items: [], nextCursor: null, groupIds: [] },
   list_flights_page: { rows: [], total: 0 },
+  // today's school flying day for /events/2222…, seen by an instructor
+  event_detail_data: {
+    event: {
+      id: "22222222-2222-4222-8222-222222222222", title: "Smoke Flugtag", event_date: new Date().toISOString(), status: "confirmed",
+      event_category: "height_flight", group_id: "33333333-3333-4333-8333-333333333333", created_by: uid,
+      groups: { name: "Smoke Schule", group_type: "school" },
+    },
+    signups: [{ id: "s1", event_id: "22222222-2222-4222-8222-222222222222", user_id: "44444444-4444-4444-8444-444444444444", signed_up: true, status: "confirmed", presence: "expected", attended: false }],
+    members: [{ user_id: uid, role: "admin" }], myFunctions: ["instructor"],
+    profiles: { "44444444-4444-4444-8444-444444444444": "Anna" },
+    briefingTasks: [], maneuverNames: [], photos: [], me: { pilot_name: "Smoke Test" },
+  },
+  flight_day_role: "instructor",
 };
 const authKey = "sb-" + new URL(loadEnv("production", process.cwd(), "VITE_").VITE_SUPABASE_URL).hostname.split(".")[0] + "-auth-token";
 const token = `${Buffer.from('{"alg":"HS256","typ":"JWT"}').toString("base64url")}.${Buffer.from(JSON.stringify({ sub: uid, exp: 4102444800, role: "authenticated" })).toString("base64url")}.smoke`;

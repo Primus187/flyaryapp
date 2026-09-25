@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, Coins } from "lucide-react";
+import { Coins } from "lucide-react";
 
 interface Signup {
   id: string;
@@ -20,15 +19,14 @@ interface Props {
   groupId: string;
   eventDate: string;
   signups: Signup[];
-  profiles: Record<string, string>;
-  onChanged: () => void | Promise<void>;
 }
 
-export default function EventAttendance({ eventId, groupId, eventDate, signups, profiles, onChanged }: Props) {
+/** Day booking of launch-leader credits and rental items. Presence comes from the check-in of
+ *  the flying day (DayCheckIn); the booking moves into the day closing wizard with 5.1. */
+export default function EventAttendance({ eventId, groupId, eventDate, signups }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [busy, setBusy] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
   const [rates, setRates] = useState<Record<string, number>>({});
   const [helpers, setHelpers] = useState<string[]>([]);
@@ -56,20 +54,6 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
 
   const attending = useMemo(() => signups.filter((s) => (s as any).signed_up !== false), [signups]);
   const attendedIds = useMemo(() => attending.filter((s) => s.attended).map((s) => s.user_id), [attending]);
-
-  const toggle = async (s: Signup) => {
-    setBusy(s.id);
-    const { error } = await supabase
-      .from("event_signups")
-      .update({ attended: !s.attended, updated_at: new Date().toISOString() } as any)
-      .eq("id", s.id);
-    setBusy(null);
-    if (error) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
-      return;
-    }
-    await onChanged();
-  };
 
   const book = async () => {
     if (!user) return;
@@ -139,29 +123,14 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
     <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
-          <ClipboardCheck className="h-4 w-4 text-primary" />
-          <p className="text-sm font-semibold flex-1">{t("school.attendance.title")}</p>
+          <Coins className="h-4 w-4 text-primary" />
+          <p className="text-sm font-semibold flex-1">{t("school.attendance.bookingTitle")}</p>
           <Badge variant="secondary" className="text-[10px]">
             {t("school.attendance.count", { count: attendedIds.length, total: attending.length })}
           </Badge>
         </div>
 
-        <div className="space-y-1">
-          {attending.map((s) => (
-            <label
-              key={s.id}
-              className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-muted/40 cursor-pointer"
-            >
-              <Checkbox checked={!!s.attended} disabled={busy === s.id} onCheckedChange={() => toggle(s)} />
-              <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
-              {helpers.includes(s.user_id) && (
-                <Badge variant="outline" className="text-[9px]">{t("school.functions.launch_helper")}</Badge>
-              )}
-            </label>
-          ))}
-        </div>
-
-        <p className="text-xs text-muted-foreground">{t("school.attendance.hint")}</p>
+        <p className="text-xs text-muted-foreground">{t("school.attendance.bookingHint")}</p>
 
         <Button size="sm" className="w-full gap-1.5" onClick={book} disabled={booking}>
           <Coins className="h-3.5 w-3.5" />

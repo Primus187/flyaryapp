@@ -1,4 +1,5 @@
 {
+  "flightDay": {"presentOf":"{{present}} of {{total}} here","absentCount":"{{count}} absent","expectedCount":"{{count}} open","pausedCount":"{{count}} paused","allCheckedIn":"Everyone checked in","allPresent":"All here","allPresentConfirm":"Mark {{count}} open people as present?","allPresentDone":"{{count}} checked in","status":{"present":"Here","expected":"Not yet","absent":"Absent"},"markAbsent":"Absent","reset":"Reset","editPause":"Edit pause","moreFor":"More actions for {{name}}","tapHint":"Tap = here. Tap again to undo.","pauseTitle":"Pause {{name}} for today","pauseHint":"The reason is visible to the team only. The training status does not change.","pauseNote":"Note (optional, team only)","reasons":{"material":"Equipment","fatigue":"Fatigue","injury":"Injury","weather":"Weather","other":"Other"},"closed":"The flying day is closed.","saveFailed":"Not saved – please try again."},
   "adminErrors": {"title":"Error log","subtitle":"Errors the app caught on devices","showResolved":"Include resolved","onlyOpen":"Open only","empty":"No open errors","emptyHint":"As soon as the app catches an error, it shows up here.","stats_one":"{{count}}× · {{users}} person(s)","stats_other":"{{count}}× · {{users}} person(s)","firstSeen":"First:","markResolved":"Resolved","resolved":"Marked as resolved","done":"resolved","kind":{"render":"Page","error":"Error","rejection":"Promise","chunk":"Outdated version"}},
   "dossier": {"title":"Student dossier","sections":{"overview":"Overview","training":"Training","flights":"Flights","notes":"Day notes","equipment":"Equipment","billing":"Billing"},"noAccess":"This dossier is only available to this school's instructors and school leads.","loadFailed":"The dossier could not be loaded. Check your connection and whether the student still belongs to this school.","empty":"No entries yet.","noLevel":"Not recorded","level":"Training stage","levels":{"all":"All stages","ground":"Ground training","altitude":"Altitude flights","exam_ready":"Ready for exam","licensed":"Licensed","grundkurs":"Basic course","brevetkurs":"Licence course","siku":"Safety training","pilot":"Pilot"},"nextStep":"Next learning step","openDay":"Open flying day","examProgress":"Exam manoeuvres: {{done}} of {{total}} rated 3 stars","lastFlight":"Last school flight","shv":"SHV number","status":"Student status","upcoming":"Upcoming registrations","trainingHint":"The student's training record and recorded progress. Stars do not constitute formal exam approval.","shared":"Visible to student","internal":"School internal","loans":"School equipment · Loans","returned":"Returned","onLoan":"On loan","assigned":"Issued","due":"Return due","nextCheck":"Next inspection","lastCheck":"Last inspection","reserveRepack":"Reserve packed on","ownEquipment":"Own equipment","ownHint":"Gliders and equipment information recorded by the student. Other equipment is documented in the equipment check.","flightsHint":"All flights shared with this school, including flight comments and coaching notes.","notesHint":"Notes from this school's flying days. F1–F6 refer to daily log slots, not necessarily individual flightbook entries.","billingHint":"Existing billing items from this school in CHF. Formal invoices and online payments will follow with the payment module.","open":"Outstanding","paid":"Paid","daySummary":"Day summary","flightSlot":"Flight {{number}}","loadMore":"Load more entries"},
   "journeys": {"schoolNavigation":"Flight school navigation","schoolTitle":"Your school at a glance","schoolHint":"Plan flying days, support your students and follow up on open tasks.","teamTitle":"Your next flying day","teamHint":"Find upcoming flying days, your availability and the team chat here.","noUpcoming":"No upcoming flying days are currently planned.","staffOnly":"This section is available to instructors and school leads.","saveFailed":"Could not save. Please try again.","noteFailed":"The note could not be saved. Your draft is still available here. Please try again before closing the app.","pauseToday":"Pause for today","resumeToday":"Resume today","pausedToday":"Paused for this flying day","resumedToday":"Active again for this flying day","includeInactive":"Show paused and withdrawn students","inactiveHint":"This filters the participant list. Existing registrations and occupied places remain unchanged.","rate_one":"{{name}}: {{count}} star","rate_other":"{{name}}: {{count}} stars"},
@@ -192,7 +193,7 @@
       "overview": "Overview",
       "participants": "Participants",
       "planning": "Planning",
-      "coaching": "Coaching",
+      "day": "Flying day",
       "chat": "Chat",
       "feedback": "Feedback"
     },
@@ -1413,9 +1414,9 @@
     },
     "signupsCount": "{{count}} sign-ups",
     "attendance": {
-      "title": "Attendance",
+      "bookingTitle": "Credits & items of the day",
       "count": "{{count}} of {{total}}",
-      "hint": "Tick who attended the flying day. This creates launch leader credits and billing items.",
+      "bookingHint": "Based on the assigned launch helpers and the check-in above. Nothing is booked until you tap this button.",
       "book": "Book credits & items",
       "booked": "{{credits}} credits and {{items}} items booked",
       "nothingToBook": "Nothing to book – check rates or set attendance.",

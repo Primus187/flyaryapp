@@ -1,5 +1,44 @@
 # Flyary
 
+## Flugtag-Cockpit: Check-in und Tagesstatus (4.2)
+
+Migration `0051_flight_day_presence.sql`, Logik in `src/lib/flight-day.ts`, Oberfläche
+`src/components/flightday/DayCheckIn.tsx`, Tests in `src/test/flight-day-presence-database.test.ts`,
+`src/lib/flight-day.test.ts` und `src/components/flightday/DayCheckIn.test.tsx`.
+
+- **Neuer Reiter «Flugtag»** im Termin für das Team des Tages (Rolle aus `flight_day_role`, also auch Starthelfer
+  und nur im Termin eingeteilte Personen). Er ersetzt «Coaching» und öffnet sich am Tag des Termins von selbst;
+  `?tab=coaching` und `#coaching` aus dem Dossier führen dorthin.
+- **Check-in als Kacheln:** Antippen setzt «da», nochmals antippen macht es rückgängig; über das Menü «Fehlt»,
+  «Zurücksetzen» und «Heute pausieren». Oben der Zähler (da / fehlt / offen / pausiert) und «Alle anwesend» für die
+  angezeigten, noch offenen Personen. Änderungen vom anderen Handy (Start- und Landeplatz) kommen über Realtime;
+  nach dem Zurückkehren in die App wird neu geladen.
+- **Anwesenheit** heisst jetzt `event_signups.presence` (`expected`/`present`/`absent`) mit `checked_in_at`.
+  `attended` bleibt als generierte Spalte (`presence = 'present'`) für bestehende Leser. Der erste erfasste
+  Schulflug checkt den Schüler automatisch ein (Trigger auf `event_school_flights`).
+- **Pausieren** mit Grund (Material, Müdigkeit, Verletzung, Wetter, Anderes) und optionaler Notiz in
+  `event_day_pauses`, nur für das Team lesbar. Die bisherigen Pausen-Notizen (`student_day_notes.flight_number = -1`)
+  sind dorthin übernommen; das Ausbildungsblatt pausiert nicht mehr selbst.
+- **Schreiben nur über RPCs:** `set_signup_presence`, `set_signups_present`, `set_day_pause` (Team inkl.
+  Starthelfer) und `set_signup_confirmed` (Fluglehrer, für «Bestätigen» in der Teilnehmerliste).
+- Die Teilnehmerliste zeigt dem Team «Da» bzw. «Fehlt» als Badge. Die Tagesbuchung (Guthaben & Posten) steht bis
+  zum Tagesabschluss (5.1) unten im Reiter «Flugtag», ohne eigene Häkchenliste.
+- Der Smoke-Rundgang (`npm run smoke`) öffnet zusätzlich einen Schul-Flugtag von heute (24 Seiten).
+
+**Fund beim Umsetzen:** Auf `event_signups` gab es nur die Policy «Users can update own signup». Die Häkchen der
+Anwesenheit und «Bestätigen» des Schulteams bei anderen Personen wurden darum still ignoriert (0 Zeilen, kein Fehler),
+während ein Schüler bei sich selbst `attended` und `confirmed_by_school` setzen konnte. Beides läuft jetzt über die
+RPCs; ein Trigger (`protect_signup_school_fields`) lässt Anwesenheit, Check-in-Zeit und Schulbestätigung
+unverändert, wenn jemand ausserhalb des Tagesteams eine Anmeldung bearbeitet. An- und Abmelden funktioniert wie
+bisher.
+
+**Abweichungen vom Plan:** (1) Der Pausengrund liegt in einer eigenen Tabelle statt in `event_signups.paused_reason`,
+weil alle Gruppenmitglieder die Anmeldungen lesen können und ein Grund wie «Verletzung» nur das Team etwas angeht.
+(2) Nicht angehakte Anmeldungen vergangener Tage bleiben `expected` («nicht erfasst») statt `absent`, weil die
+meisten früheren Tage nie abgehakt wurden. (3) Auch Starthelfer dürfen pausieren. (4) Ausbildungsblatt F1–F6,
+Schülerflüge und Tagesbuchung erscheinen weiterhin nur für Admin, Fluglehrer und Schulleitung, weil ihre Tabellen
+über `is_group_staff` lesen; sie werden in 4.3–5.1 abgelöst.
+
 ## Flugtag-Cockpit: Schulflüge erfassen – Datenmodell und Rechte (4.1)
 
 Migration `0050_event_school_flights.sql`, Logik in `src/lib/school-flights.ts`, Datenbanktests in

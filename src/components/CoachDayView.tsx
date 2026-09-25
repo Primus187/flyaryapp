@@ -6,10 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Eye, EyeOff, Plane, FileText, Check, PauseCircle, ChevronRight, ArrowRightCircle,
+  Eye, EyeOff, Plane, FileText, Check, ChevronRight, ArrowRightCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
 
 import { coachNoteAutosave, type NoteDraft } from "@/lib/note-autosave";
 import { useActiveStudents } from "@/hooks/use-active-students";
@@ -37,14 +36,12 @@ interface StudentCard {
   user_id: string;
   pilot_name: string;
   flight_count: number;
-  paused: boolean;
   notes: DayNote[]; // index 0-5 = flights 1-6, index 6 = summary
 }
 
 export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [students, setStudents] = useState<StudentCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -163,22 +160,16 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
         carryOver: !!carryOver,
       });
 
-      const pausedNote = studentNotes.find((n: any) => n.flight_number === -1);
-
       return {
         user_id: uid,
         pilot_name: profileMap[uid] || "?",
         flight_count: flightCountMap[uid] || 0,
-        paused: !!pausedNote,
         notes,
       };
     });
 
-    // Sort: non-paused first, then alphabetical
-    cards.sort((a, b) => {
-      if (a.paused !== b.paused) return a.paused ? 1 : -1;
-      return a.pilot_name.localeCompare(b.pilot_name);
-    });
+    // Pausing a student for the day moved to the check-in of the flying day (event_day_pauses).
+    cards.sort((a, b) => a.pilot_name.localeCompare(b.pilot_name));
 
     setStudents(cards);
     } catch {
@@ -222,47 +213,6 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     if (student) editNote(studentId, 6, { is_next_step: !draftNote(studentId, 6, student.notes[6]).is_next_step });
   };
 
-  const togglePaused = async (studentId: string) => {
-    if (!user) return;
-    const student = students.find(s => s.user_id === studentId);
-    if (!student) return;
-
-    const newPaused = !student.paused;
-
-    if (newPaused) {
-      const { error } = await supabase.from("student_day_notes")
-        .insert({
-          event_id: eventId,
-          student_user_id: studentId,
-          flight_number: -1,
-          note: "paused",
-          visible_to_student: false,
-          instructor_id: user.id,
-        } as any);
-      if (error) { toast({ title: t("journeys.saveFailed"), variant: "destructive" }); return; }
-    } else {
-      const { error } = await supabase.from("student_day_notes")
-        .delete()
-        .eq("event_id", eventId)
-        .eq("student_user_id", studentId)
-        .eq("flight_number", -1);
-      if (error) { toast({ title: t("journeys.saveFailed"), variant: "destructive" }); return; }
-    }
-
-    setStudents(prev => {
-      const updated = prev.map(s =>
-        s.user_id === studentId ? { ...s, paused: newPaused } : s
-      );
-      updated.sort((a, b) => {
-        if (a.paused !== b.paused) return a.paused ? 1 : -1;
-        return a.pilot_name.localeCompare(b.pilot_name);
-      });
-      return updated;
-    });
-
-    toast({ title: newPaused ? t("journeys.pausedToday") : t("journeys.resumedToday") });
-  };
-
   const visibleStudents = students.filter(student => !activeDay || !activeStudents.data?.includes(student.user_id));
   if (loadError || (activeDay && activeStudents.isError)) return <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => { void fetchData(); if (activeDay) void activeStudents.refetch(); }}>{t("performance.retry")}</Button></div>;
   if (loading || (activeDay && activeStudents.isPending)) return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
@@ -289,7 +239,6 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
               }}
               className={cn(
                 "w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors",
-                student.paused && "opacity-50",
                 isExpanded && "bg-muted/40"
               )}
             >
@@ -321,28 +270,11 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
                   <ArrowRightCircle className="h-3.5 w-3.5 text-primary shrink-0" />
                 </span>
               )}
-
-              {student.paused && (
-                <PauseCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              )}
             </button>
 
             {/* Expanded content */}
             {isExpanded && (
               <div className="border-t border-border/50">
-                {/* Pause toggle */}
-                <div className="px-3 py-1.5 flex justify-end border-b border-border/30">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn("h-7 text-xs gap-1", student.paused && "text-amber-500")}
-                    onClick={(e) => { e.stopPropagation(); togglePaused(student.user_id); }}
-                  >
-                    <PauseCircle className="h-3.5 w-3.5" />
-                    {student.paused ? t("journeys.resumeToday") : t("journeys.pauseToday")}
-                  </Button>
-                </div>
-
                 {/* Flight tabs F1-F6 */}
                 <div className="flex border-b border-border/30">
                   {[0, 1, 2, 3, 4, 5].map(i => {

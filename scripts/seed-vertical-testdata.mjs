@@ -302,7 +302,7 @@ const past = {
 };
 const signups = [];
 for (const [k, list] of Object.entries(past)) list.forEach((s, i) =>
-  signups.push(signup(k, s, { attended: k !== "height4", confirmed_by_school: true })));
+  signups.push(signup(k, s, { presence: k !== "height4" ? "present" : "expected", confirmed_by_school: true })));
 [P.jonas, P.sara, P.laura, P.mia, P.lukas, P.nina, P.tim, P.david].forEach((s, i) =>
   signups.push(signup("up1", s, i === 7 ? { signed_up: false } : { confirmed_by_school: i < 3 })));
 [P.mia, P.lukas, P.nina].forEach((s) => signups.push(signup("basic2", s)));

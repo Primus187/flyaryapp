@@ -24,6 +24,8 @@ import EventPublishPreviewDialog from "@/components/EventPublishPreviewDialog";
 import EventBriefingTasks from "@/components/EventBriefingTasks";
 import EventStudentFlights from "@/components/EventStudentFlights";
 import CoachDayView from "@/components/CoachDayView";
+import DayCheckIn from "@/components/flightday/DayCheckIn";
+import { opensOnFlightDay, type FlightDayRole } from "@/lib/flight-day";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
 import EmergencyInfoDialog from "@/components/EmergencyInfoDialog";
@@ -41,8 +43,11 @@ export default function EventDetail() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const { hash } = useLocation();
-  // ?tab=… keeps the open tab on reload/back; #coaching is the deep link from the student dossier.
-  const requestedTab = searchParams.get("tab") || (hash === "#coaching" ? "coaching" : "overview");
+  // ?tab=… keeps the open tab on reload/back; #coaching (student dossier) and the former
+  // ?tab=coaching now lead to the flying day tab.
+  const rawTab = searchParams.get("tab") || (hash === "#coaching" ? "day" : null);
+  const requestedTab = rawTab === "coaching" ? "day" : rawTab;
+  const [dayRole, setDayRole] = useState<FlightDayRole | null>(null);
   const [event, setEvent] = useState<any>(null);
   const [signups, setSignups] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
@@ -79,6 +84,11 @@ export default function EventDetail() {
       setGroupName(ev.groups?.name || "");
       setIsCreator(ev.created_by === user.id);
       setSignups(detail.signups || []);
+      // Role on this flying day (instructor / launch helper, also via the event's staff list).
+      if (ev.groups?.group_type === "school") {
+        const { data: role } = await supabase.rpc("flight_day_role", { _user_id: user.id, _event_id: id });
+        setDayRole(role === "instructor" || role === "helper" ? role : null);
+      }
 
       const members: { user_id: string; role: string }[] = detail.members || [];
       const me = members.find(m => m.user_id === user.id);
@@ -180,7 +190,10 @@ export default function EventDetail() {
 
   const toggleSchoolConfirm = async (signup: any) => {
     if (!id) return;
-    await supabase.from("event_signups").update({ confirmed_by_school: !signup.confirmed_by_school, updated_at: new Date().toISOString() } as any).eq("id", signup.id);
+    // RPC: RLS only lets people update their own signup, so the direct UPDATE was silently ignored.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0051 not in generated types.ts yet
+    const { error } = await (supabase as any).rpc("set_signup_confirmed", { _event_id: id, _student_id: signup.user_id, _confirmed: !signup.confirmed_by_school });
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     await refetchSignups();
   };
 
@@ -212,21 +225,26 @@ export default function EventDetail() {
     : `${eventDay.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })} · ${eventDay.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`;
   const canSignUp = !isPast && event.status !== "cancelled";
   const canChangeStatus = isStaff || isAdmin;
-  // Tabs: students and members see what concerns them; planning and coaching are for school staff.
+  // Tabs: students and members see what concerns them; planning is for school staff, the flying
+  // day (check-in, coaching) for the day's team including launch helpers.
+  const showDayTab = isSchool && dayRole !== null;
   const tabs = [
     "overview",
     "participants",
     ...(isStaff ? ["planning"] : []),
-    ...(isStaff && isSchool ? ["coaching"] : []),
+    ...(showDayTab ? ["day"] : []),
     ...(isStudent && isPast ? ["feedback"] : []),
     "chat",
   ];
-  const activeTab = tabs.includes(requestedTab) ? requestedTab : "overview";
+  // On the day of the event the team lands directly on the flying day.
+  const defaultTab = showDayTab && opensOnFlightDay(event.event_date, new Date(), dayRole) ? "day" : "overview";
+  const activeTab = requestedTab && tabs.includes(requestedTab) ? requestedTab : defaultTab;
   const selectTab = (tab: string) => {
     const next = new URLSearchParams(searchParams);
-    if (tab === "overview") next.delete("tab"); else next.set("tab", tab);
+    if (tab === defaultTab) next.delete("tab"); else next.set("tab", tab);
     setSearchParams(next, { replace: true });
   };
+  const presenceLabel = (s: { presence?: string | null }) => s.presence === "present" ? t("flightDay.status.present") : s.presence === "absent" ? t("flightDay.status.absent") : null;
   const changeStatus = async (next: "announced" | "confirmed" | "cancelled") => {
     if (next === event.status) return;
     if (next === "cancelled" && !confirm(t("events.cancelEventConfirm"))) return;
@@ -256,6 +274,9 @@ export default function EventDetail() {
     <div key={s.user_id} className="flex items-center gap-2 py-2">
       <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
       <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>
+      {showDayTab && presenceLabel(s) && (
+        <Badge variant={s.presence === "present" ? "secondary" : "outline"} className="text-[9px] px-1.5 py-0 h-4 shrink-0">{presenceLabel(s)}</Badge>
+      )}
       {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
       {isStaff && <EmergencyInfoDialog eventId={id!} userId={s.user_id} pilotName={profiles[s.user_id] || t("events.pilot")} />}
       {isStaff && (
@@ -455,9 +476,6 @@ export default function EventDetail() {
                 </div>))}</CardContent></Card>
             </div>
           )}
-          {isStaff && (
-            <EventAttendance eventId={id!} groupId={event.group_id} eventDate={event.event_date} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
-          )}
         </TabsContent>
 
         {/* Planning (staff): announcement, team, day programme */}
@@ -469,11 +487,16 @@ export default function EventDetail() {
           </TabsContent>
         )}
 
-        {/* Coaching (school staff): day notes per student and the flights of the day */}
-        {isStaff && isSchool && (
-          <TabsContent value="coaching" className="space-y-3 mt-3">
-            <CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
-            <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+        {/* Flying day (instructors and launch helpers): check-in; instructors also coach and book */}
+        {showDayTab && (
+          <TabsContent value="day" className="space-y-3 mt-3">
+            <DayCheckIn eventId={id!} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
+            {/* Legacy coaching sheet and day booking read through is_group_staff (until 4.3–5.1). */}
+            {isStaff && <>
+              <CoachDayView key={id} eventId={id!} eventDate={event.event_date} groupId={event.group_id} />
+              <EventStudentFlights eventId={id!} eventDate={event.event_date} groupId={event.group_id} isAdmin={isAdmin} />
+              <EventAttendance eventId={id!} groupId={event.group_id} eventDate={event.event_date} signups={visibleConfirmed} />
+            </>}
           </TabsContent>
         )}
 

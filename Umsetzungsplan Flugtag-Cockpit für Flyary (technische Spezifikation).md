@@ -10,7 +10,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅; 4.2–4.5 offen |
+| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅, 4.2 ✅; 4.3–4.5 offen |
 | C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
@@ -50,7 +50,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 | `event_school_flights` | Ein Flug eines Schülers an einem Flugtag, von der Schule erfasst | `id`, `event_id`, `group_id` (denormalisiert für RLS), `student_user_id`, `seq` (laufende Nummer pro Schüler und Tag), `status` (`in_air`/`landed`/`aborted`), `started_at`, `landed_at` (beide nullable), `takeoff_location_id`, `landing_location_id`, `start_note` (Starthelfer, nur Team), `created_by`, `landed_by`, `logbook_flight_id` (nullable, gesetzt nach Übernahme, 6.1), `created_at`, `updated_at` | 4.1 |
 | `event_school_flight_notes` | Rückmeldung an den Schüler und interne Notiz zu einem Flug, nur für Fluglehrer lesbar | `flight_id` (PK), `feedback`, `internal_note`, `updated_by`, `updated_at` | 4.1 |
 | `event_school_flight_items` | Bewertete Manöver pro Flug | `flight_id`, `training_item_id`, `rating` (1–3), PK (`flight_id`, `training_item_id`) | 4.3 |
-| `event_signups` (erweitert) | Tagesstatus pro Teilnehmer | + `presence` (`expected`/`present`/`absent`, Default `expected`), + `paused_reason` (nullable, gesetzt = heute pausiert), + `checked_in_at` | 4.2 |
+| `event_signups` (erweitert) | Tagesstatus pro Teilnehmer | + `presence` (`expected`/`present`/`absent`, Default `expected`), + `checked_in_at`; `attended` wird generierte Spalte | 4.2 |
+| `event_day_pauses` | Pause eines Schülers an diesem Tag (nur Team) | `event_id`, `student_user_id` (PK zusammen), `reason` (`material`/`fatigue`/`injury`/`weather`/`other`), `note`, `paused_by`, `paused_at` | 4.2 |
 | `student_day_notes` (bleibt) | Tageszusammenfassung und nächster Lernschritt | Nur noch `flight_number IS NULL` wird neu geschrieben. Die Zeilen mit 1–6 bleiben als Altbestand, die Zeilen mit `-1` werden nach `paused_reason` migriert und gelöscht | 4.5 |
 | `flight_events` (erweitert) | Tagesabschluss | + `day_closed_at`, + `day_closed_by`, + `feedback_released_at` | 5.1 |
 | `flights` (erweitert) | Verknüpfung Flugbuch ↔ Schulflug | + `school_flight_id` (nullable, UNIQUE) | 6.1 |
@@ -93,7 +94,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Ist-Stand:** Migration `0050_event_school_flights.sql` mit `event_school_flights`, `event_school_flight_notes`, der Rollenfunktion `flight_day_role` und den RPCs `school_flight_start`, `_land`, `_add`, `_abort`, `_update`, `_set_notes`, `_delete`, `set_flight_day_locations` und `my_school_flights`. Datenbanktests in `src/test/school-flights-database.test.ts` (Fluglehrer, Starthelfer mit Funktion und nur im Termin eingeteilt, Fluglehrer nur im Termin eingeteilt, Schüler vor und nach der Freigabe, Team einer fremden Schule, Aussenstehende, nicht angemeldet, Termin eines Clubs, abgeschlossener Tag, direkte Schreibversuche). **Abweichungen:** Die Rückmeldung liegt mit der internen Notiz in `event_school_flight_notes` statt in `event_school_flights`, sonst hätten Starthelfer sie über SELECT und Realtime gelesen. `flight_events` erhält schon hier Standard-Start- und Landeplatz (der Termin kannte das Fluggebiet nur als Text) sowie `day_closed_at`, `day_closed_by` und `feedback_released_at`, damit Sperre und Freigabe von Anfang an gelten. Standardorte: zuletzt an diesem Tag verwendeter Ort, sonst der Termin-Standard.
 
-### 4.2 Check-in und Tagesstatus
+### 4.2 Check-in und Tagesstatus ✅
 
 **Ziel:** Anwesenheit und Pausieren werden Teil des Cockpits; die Anwesenheitskarte im Reiter *Teilnehmende* entfällt.
 
@@ -109,6 +110,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - Die Anmeldeliste im Reiter *Teilnehmende* bleibt (für alle sichtbar), zeigt für das Team aber nur noch den Tagesstatus als Badge
 
 **Datenmodell:** `event_signups.presence`, `paused_reason`, `checked_in_at`; RPC `set_signup_presence`.
+
+**Ist-Stand:** Migration `0051_flight_day_presence.sql` (`presence`, `checked_in_at`, `attended` als generierte Spalte, `event_day_pauses`, RPCs `set_signup_presence`, `set_signups_present`, `set_day_pause`, `set_signup_confirmed`, Trigger `protect_signup_school_fields` und «erster Flug checkt ein»), Oberfläche `src/components/flightday/DayCheckIn.tsx` im neuen Reiter «Flugtag». **Fund:** Die Anwesenheitshäkchen und «Bestätigen» des Schulteams wurden bei anderen Personen bisher still ignoriert (RLS nur «eigene Anmeldung»), ein Schüler konnte dafür bei sich selbst `attended` und `confirmed_by_school` setzen. Beides behoben. **Abweichungen:** Pausengrund in eigener Tabelle `event_day_pauses` (nur Team) statt `event_signups.paused_reason`, weil alle Gruppenmitglieder die Anmeldungen lesen; nicht angehakte frühere Anmeldungen bleiben `expected` statt `absent`; auch Starthelfer dürfen pausieren; Ausbildungsblatt, Schülerflüge und Tagesbuchung stehen bis 4.3–5.1 unten im Reiter, nur für Admin, Fluglehrer und Schulleitung.
 
 ### 4.3 Flug erfassen am Landeplatz (Fluglehrer)
 
