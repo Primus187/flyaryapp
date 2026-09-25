@@ -16,10 +16,12 @@ interface Props {
   profiles: Record<string, string>;
   /** Called after closing or reopening, so the views reload. */
   onChanged: () => void;
+  /** Reports whether the day is closed, so the views turn read-only. */
+  onClosedChange?: (closed: boolean) => void;
 }
 
 /** "Close the day" for the day's instructors, or who closed it and "Reopen" (5.1). */
-export default function DayCloseBar({ eventId, eventDate, profiles, onChanged }: Props) {
+export default function DayCloseBar({ eventId, eventDate, profiles, onChanged, onClosedChange }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [closed, setClosed] = useState<{ at: string; by: string | null } | null>(null);
@@ -28,12 +30,13 @@ export default function DayCloseBar({ eventId, eventDate, profiles, onChanged }:
 
   const load = useCallback(async () => {
     const { data } = await supabase.from("flight_events").select("day_closed_at, day_closed_by").eq("id", eventId).maybeSingle();
+    onClosedChange?.(!!data?.day_closed_at);
     if (!data?.day_closed_at) { setClosed(null); return; }
     const { data: profile } = data.day_closed_by
       ? await supabase.from("profiles").select("pilot_name").eq("user_id", data.day_closed_by).maybeSingle()
       : { data: null };
     setClosed({ at: data.day_closed_at, by: profile?.pilot_name ?? null });
-  }, [eventId]);
+  }, [eventId]); // eslint-disable-line react-hooks/exhaustive-deps -- onClosedChange is a plain callback
 
   useEffect(() => { void load(); }, [load]);
 
@@ -45,8 +48,10 @@ export default function DayCloseBar({ eventId, eventDate, profiles, onChanged }:
     onChanged();
   };
 
-  // Closing becomes possible once the day has begun.
-  const started = new Date(eventDate).getTime() <= Date.now();
+  // Closing becomes possible from the day of the event on (local calendar day, not its start time).
+  const eventDay = new Date(eventDate);
+  eventDay.setHours(0, 0, 0, 0);
+  const started = eventDay.getTime() <= Date.now();
 
   if (closed) {
     return (

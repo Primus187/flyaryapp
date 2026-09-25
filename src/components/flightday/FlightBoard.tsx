@@ -30,13 +30,15 @@ interface Props {
   settingsVersion?: number;
   /** Day summaries are written through is_group_staff (admin, instructor, school lead). */
   canWriteSummary?: boolean;
+  /** The day is closed: show everything, change nothing (5.1). */
+  readOnly?: boolean;
 }
 
 const emptyDraft: FlightDraft = { feedback: "", internal: "", ratings: {} };
 
 /** Instructor view of a flying day: one row per student with the day's flights and one main
  *  action (land / + flight / +1 on the practice slope). Flugtag-Cockpit 4.3. */
-export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0, canWriteSummary = false }: Props) {
+export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0, canWriteSummary = false, readOnly = false }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [flights, setFlights] = useState<BoardFlight[]>([]);
@@ -171,7 +173,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
   return (
     <section className="space-y-1.5">
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("flightDay.board.title")}</h2>
-      <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} onSelect={landFlight} />
+      <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} onSelect={readOnly ? undefined : landFlight} />
       {participants.map((p) => {
         const own = byStudent[p.userId] || [];
         const inAir = own.find((f) => f.status === "in_air");
@@ -198,16 +200,18 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                   </span>
                 </span>
               </button>
-              {action === "add" && (
+              {!readOnly && action === "add" && (
                 <Button size="sm" variant="ghost" className="h-12 shrink-0 px-2 text-xs" disabled={busy === p.userId}
                   onClick={() => void startFlight(p.userId)}>
                   {t("flightDay.board.start")}
                 </Button>
               )}
-              <Button size="sm" className="h-12 min-w-[5.5rem] shrink-0" variant={action === "land" ? "default" : "outline"}
-                disabled={busy === p.userId} onClick={() => mainAction(p.userId, name)}>
-                {t(`flightDay.board.${action}`)}
-              </Button>
+              {!readOnly && (
+                <Button size="sm" className="h-12 min-w-[5.5rem] shrink-0" variant={action === "land" ? "default" : "outline"}
+                  disabled={busy === p.userId} onClick={() => mainAction(p.userId, name)}>
+                  {t(`flightDay.board.${action}`)}
+                </Button>
+              )}
             </div>
 
             {isOpen && (
@@ -218,7 +222,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                   const label = f.status === "aborted" ? t("flightDay.board.aborted") : t("flightDay.board.flightN", { number: numbers[f.id] });
                   const times = f.started_at && f.landed_at ? `${time(f.started_at)}–${time(f.landed_at)}` : time(f.landed_at || f.started_at);
                   return (
-                    <button key={f.id} type="button" disabled={f.status === "aborted"}
+                    <button key={f.id} type="button" disabled={readOnly || f.status === "aborted"}
                       className="block w-full rounded-md bg-muted/40 px-2 py-1.5 text-left disabled:opacity-70"
                       onClick={() => setSheet({ studentId: p.userId,
                         mode: f.status === "in_air" ? { kind: "land", flightId: f.id, number: numbers[f.id] } : { kind: "edit", flightId: f.id, number: numbers[f.id] },
@@ -234,7 +238,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                     </button>
                   );
                 })}
-                {action === "count" && (
+                {!readOnly && action === "count" && (
                   <Button size="sm" variant="ghost" className="h-8 px-2 text-xs"
                     onClick={() => setSheet({ studentId: p.userId, mode: { kind: "add", number: countOf(p.userId) + 1 }, initial: emptyDraft })}>
                     {t("flightDay.board.addWithFeedback")}
@@ -244,7 +248,9 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                   <ArrowRightCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                   <span><span className="font-medium">{t("flightDay.board.lastNextStep")}:</span> {nextSteps[p.userId] || t("flightDay.board.noNextStep")}</span>
                 </div>
-                {canWriteSummary && (
+                {readOnly ? (summaries[p.userId]?.note && (
+                  <p className="border-t pt-2 text-sm whitespace-pre-wrap"><span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("flightDay.summary.title")}</span>{summaries[p.userId].note}</p>
+                )) : canWriteSummary && (
                   <DaySummaryEditor eventId={eventId} studentId={p.userId} summary={summaries[p.userId] || null} lastNextStep={nextSteps[p.userId] || null} />
                 )}
               </div>

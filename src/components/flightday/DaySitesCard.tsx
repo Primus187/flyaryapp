@@ -14,7 +14,7 @@ interface Site { id: string; name: string; type: string }
 
 /** Default take-off and landing site of the flying day (new flights take them over, 4.3) and the
  *  optional landing hint (4.4). */
-export default function DaySitesCard({ eventId, onChanged }: { eventId: string; onChanged?: () => void }) {
+export default function DaySitesCard({ eventId, onChanged, readOnly = false }: { eventId: string; onChanged?: () => void; readOnly?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -78,7 +78,7 @@ export default function DaySitesCard({ eventId, onChanged }: { eventId: string; 
             <p><span className="text-muted-foreground">{t("flightDay.sites.landing")}:</span> {label(landing)}</p>
             <p className="flex items-center gap-1"><Bell className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t("flightDay.sites.hintLabel")}:</span> {hint ? t("flightDay.sites.hintAfter", { minutes: hint }) : t("flightDay.sites.hintOff")}</p>
           </div>
-          {!editing && <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setEditing(true)}>{t("flightDay.sites.change")}</Button>}
+          {!editing && !readOnly && <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setEditing(true)}>{t("flightDay.sites.change")}</Button>}
         </div>
         {editing && (
           <div className="space-y-2">

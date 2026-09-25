@@ -17,6 +17,7 @@ const { from, rpc, channel, removeChannel, tables } = vi.hoisted(() => {
   return { from, rpc: vi.fn(), channel: vi.fn(() => ch), removeChannel: vi.fn(), tables };
 });
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from, rpc, channel, removeChannel } }));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "teacher" } }) }));
 const toast = vi.fn();
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
 vi.mock("react-i18next", () => ({
@@ -97,8 +98,6 @@ it("opens the landing sheet from the in-the-air bar", async () => {
   expect(await screen.findByText("flightDay.sheet.titleLand 2")).toBeInTheDocument();
 });
 
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "teacher" } }) }));
-
 it("lets staff write the day summary and mark it as next step, offering the last step only as a template", async () => {
   tables.student_day_notes = [];
   render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} canWriteSummary />);
@@ -119,4 +118,13 @@ it("hides the summary editor from instructors who only read the day", async () =
   render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} />);
   fireEvent.click(await screen.findByText("Beat"));
   expect(screen.queryByRole("textbox", { name: "flightDay.summary.title" })).not.toBeInTheDocument();
+});
+
+it("shows a closed day without any actions", async () => {
+  render(<FlightBoard eventId="ev" eventCategory="height_flight" signups={signups} profiles={profiles} readOnly />);
+  expect(await screen.findByText("Beat")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "flightDay.board.add" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "flightDay.board.land" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "flightDay.board.start" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /flightDay\.inAir\.entry/ })).toBeDisabled();
 });

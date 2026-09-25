@@ -1,6 +1,6 @@
 # Umsetzungsplan: Flugtag-Cockpit für Flyary
 
-2026-09-25 · Tobias Bolliger · Stand: C1 abgeschlossen und abnahmegeprüft (Betriebshandbuch offen), C2 umgesetzt (Abnahmeprüfung offen); C3 offen
+2026-09-25 · Tobias Bolliger · Stand: C1 abgeschlossen und abnahmegeprüft (Betriebshandbuch offen), C2 abgeschlossen und abnahmegeprüft; C3 offen
 
 Dieses Dokument beschreibt, wie das Schulteam am eigentlichen Flugtag erfasst, wer da ist, wer welche Flüge gemacht hat und welche Rückmeldungen dazugehören. Heute ist das auf vier Stellen verteilt (Anwesenheit, Ausbildungsblatt F1–F6, Schülerflüge, geplante Manöver), und Schulteam und Schüler erfassen dieselben Flüge doppelt und ohne Abgleich. Das Flugtag-Cockpit ersetzt das durch **einen Bildschirm pro Flugtag**, auf dem jeder Flug ein **echter Eintrag der Schule** ist.
 
@@ -11,7 +11,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
 | C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
-| C2 – Tagesabschluss | 🚧 Umgesetzt, Abnahmeprüfung offen | 5.1 ✅, 5.2 ✅ |
+| C2 – Tagesabschluss | ✅ Abgeschlossen | 5.1–5.2 umgesetzt und abnahmegeprüft |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
@@ -317,4 +317,5 @@ Speziell für das Flugtag-Cockpit:
 - **Abnahmeprüfung C1:** vier Funde, alle behoben – Einstellungen des Tages luden nicht neu, kein Neuladen nach einem Funkloch bei offener App, Touch-Ziele unter 48 px, Reihenfolge der pausierten Schüler (README, «Nachtrag Abnahmeprüfung C1»).
 - **Arbeitsablauf pro Auftrag** wie beim Marktplatz: Commit → Tobias spielt die Migration ein → lesende Prüfung der Live-Datenbank → Push → Vercel-Build abwarten → Typen neu erzeugen und vorübergehende Casts entfernen.
 - **Testlauf auf diesem Rechner:** Die ganze Suite braucht `npx vitest run --maxWorkers=2`; mit den Standard-Workern bricht sie wegen Speichermangel ab (viele PGlite-Datenbanken parallel).
-
+- **Abnahmeprüfung C2:** zwei Funde, behoben – ein abgeschlossener Tag war in der Oberfläche nicht schreibgeschützt (erst der Server lehnte ab), und «Tag abschliessen» erschien erst ab der Startzeit statt ab dem Kalendertag (README, «Nachtrag Abnahmeprüfung C2»).
+- **Tagesabschluss als eine Serverfunktion:** Rückgaben, Guthaben, Mietposten, Abschluss, Freigabe und Push in einer Transaktion; eindeutige Indizes statt Client-Prüfung gegen Doppelbuchungen. Die tägliche Routine ist idempotent (Merker `feedback_notified_at`, `close_reminded_at`) und berücksichtigt nur Termine ab dem Start des Cockpits.

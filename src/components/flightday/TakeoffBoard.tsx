@@ -24,11 +24,13 @@ interface Props {
   profiles: Record<string, string>;
   /** Bumped when the day's settings (sites, landing hint) change. */
   settingsVersion?: number;
+  /** The day is closed: show everything, change nothing (5.1). */
+  readOnly?: boolean;
 }
 
 /** Take-off view for launch helpers (and instructors working the take-off): "Start" per student,
  *  aborted launches with a reason and a start note; no feedback, no dossier. Flugtag-Cockpit 4.4. */
-export default function TakeoffBoard({ eventId, signups, profiles, settingsVersion = 0 }: Props) {
+export default function TakeoffBoard({ eventId, signups, profiles, settingsVersion = 0, readOnly = false }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [flights, setFlights] = useState<TakeoffFlight[]>([]);
@@ -113,7 +115,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
                 {!current && !p.pause && last?.start_note && <span className="truncate">{last.start_note}</span>}
               </p>
             </div>
-            {action === "start" ? (
+            {readOnly ? null : action === "start" ? (
               <Button className="h-12 min-w-[5.5rem]" disabled={busy === p.userId} onClick={() => void start(p.userId, name, !!p.pause)}>
                 {t("flightDay.takeoff.start")}
               </Button>
@@ -123,7 +125,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
                 {t("flightDay.takeoff.abort")}
               </Button>
             )}
-            <DropdownMenu>
+            {!readOnly && <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className="flex h-12 w-10 items-center justify-center text-muted-foreground" disabled={!last}
                   aria-label={t("flightDay.moreFor", { name })}>
@@ -133,7 +135,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
               <DropdownMenuContent align="end">
                 {last && <DropdownMenuItem onClick={() => setDialog({ kind: "note", flight: last, text: last.start_note || "" })}>{t("flightDay.takeoff.startNote")}</DropdownMenuItem>}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu>}
           </div>
         );
       })}

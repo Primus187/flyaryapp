@@ -32,6 +32,7 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
   const { t } = useTranslation();
   const [station, setStation] = useState<Station>(storedStation);
   const [settingsVersion, setSettingsVersion] = useState(0);
+  const [closed, setClosed] = useState(false);
 
   if (role === "helper") return <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} />;
 
@@ -42,7 +43,9 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
 
   return (
     <div className="space-y-3">
-      <DaySitesCard eventId={eventId} onChanged={() => setSettingsVersion((v) => v + 1)} />
+      <DayCloseBar eventId={eventId} eventDate={eventDate} profiles={profiles} onClosedChange={setClosed}
+        onChanged={() => { setSettingsVersion((v) => v + 1); onDayChanged?.(); }} />
+      <DaySitesCard eventId={eventId} readOnly={closed} onChanged={() => setSettingsVersion((v) => v + 1)} />
       <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1" role="radiogroup" aria-label={t("flightDay.view.label")}>
         {(["landing", "takeoff"] as const).map((s) => (
           <button key={s} type="button" role="radio" aria-checked={station === s} onClick={() => choose(s)}
@@ -52,10 +55,8 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
         ))}
       </div>
       {station === "landing"
-        ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} canWriteSummary={canWriteSummary} />
-        : <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} settingsVersion={settingsVersion} />}
-      <DayCloseBar eventId={eventId} eventDate={eventDate} profiles={profiles}
-        onChanged={() => { setSettingsVersion((v) => v + 1); onDayChanged?.(); }} />
+        ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} canWriteSummary={canWriteSummary} readOnly={closed} />
+        : <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} settingsVersion={settingsVersion} readOnly={closed} />}
     </div>
   );
 }

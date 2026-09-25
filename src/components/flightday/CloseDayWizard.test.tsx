@@ -88,3 +88,11 @@ it("offers closing only once the day has begun", async () => {
   await waitFor(() => expect(from).toHaveBeenCalledWith("flight_events"));
   expect(screen.queryByRole("button", { name: "flightDay.close.open" })).not.toBeInTheDocument();
 });
+
+it("reports whether the day is closed and offers closing all day long on the event day", async () => {
+  const onClosedChange = vi.fn();
+  const later = new Date(); later.setHours(23, 0, 0, 0);
+  render(<DayCloseBar eventId="ev" eventDate={later.toISOString()} profiles={profiles} onChanged={vi.fn()} onClosedChange={onClosedChange} />);
+  await waitFor(() => expect(onClosedChange).toHaveBeenCalledWith(false));
+  expect(screen.getByRole("button", { name: "flightDay.close.open" })).toBeInTheDocument();
+});

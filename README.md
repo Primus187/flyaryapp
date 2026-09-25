@@ -1,5 +1,18 @@
 # Flyary
 
+## Flugtag-Cockpit: Nachtrag Abnahmeprüfung C2
+
+Alle Akzeptanzkriterien von 5.1 und 5.2 gegen den Code geprüft. Zwei Funde, behoben:
+
+- **Abgeschlossener Tag war nicht schreibgeschützt:** Flugliste, Startplatz-Ansicht und «Plätze des Tages» zeigten
+  weiter ihre Aktionen; erst der Server lehnte mit «Der Flugtag ist abgeschlossen» ab. Jetzt meldet `DayCloseBar`
+  den Zustand an `FlightDayStations`, die Ansichten blenden alle Aktionen aus, die Zusammenfassung erscheint nur
+  noch als Text. «Abgeschlossen am …» steht oben im Reiter.
+- **«Tag abschliessen» erst ab der Startzeit:** Bei einem Termin um 09:00 fehlte der Knopf davor. Jetzt ab dem
+  Kalendertag des Termins.
+
+Der Check-in bleibt auf einem abgeschlossenen Tag bedienbar, lehnt aber serverseitig mit einer Meldung ab.
+
 ## Flugtag-Cockpit: Tagesabschluss und Mitteilungen (C2: 5.1, 5.2)
 
 Migrationen `0055_flight_day_close.sql` und `0056_flight_day_schedule.sql`, Oberfläche

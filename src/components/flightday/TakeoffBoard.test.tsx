@@ -66,3 +66,10 @@ it("asks before starting a paused student and shows no feedback", async () => {
   expect(screen.queryByText("Anflug sauber")).not.toBeInTheDocument();
   confirm.mockRestore();
 });
+
+it("shows a closed day without start or abort", async () => {
+  render(<TakeoffBoard eventId="ev" signups={signups} profiles={profiles} readOnly />);
+  expect(await screen.findByText("Beat")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "flightDay.takeoff.start" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "flightDay.takeoff.abort" })).not.toBeInTheDocument();
+});
