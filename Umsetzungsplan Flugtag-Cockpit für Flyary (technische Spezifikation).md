@@ -1,6 +1,6 @@
 # Umsetzungsplan: Flugtag-Cockpit für Flyary
 
-2026-09-25 · Tobias Bolliger · Stand: C1 umgesetzt (4.1–4.5), Abnahmeprüfung C1 offen; C2 und C3 offen
+2026-09-25 · Tobias Bolliger · Stand: C1 abgeschlossen und abnahmegeprüft (Betriebshandbuch offen); C2 und C3 offen
 
 Dieses Dokument beschreibt, wie das Schulteam am eigentlichen Flugtag erfasst, wer da ist, wer welche Flüge gemacht hat und welche Rückmeldungen dazugehören. Heute ist das auf vier Stellen verteilt (Anwesenheit, Ausbildungsblatt F1–F6, Schülerflüge, geplante Manöver), und Schulteam und Schüler erfassen dieselben Flüge doppelt und ohne Abgleich. Das Flugtag-Cockpit ersetzt das durch **einen Bildschirm pro Flugtag**, auf dem jeder Flug ein **echter Eintrag der Schule** ist.
 
@@ -10,7 +10,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| C1 – Cockpit und Flugerfassung (MVP) | 🚧 Umgesetzt, Abnahmeprüfung offen | 4.1–4.5 ✅; Betriebshandbuch noch nicht nachgeführt |
+| C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
 | C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 (Freigabe-Regel und Schüleransicht aus 5.2 schon mit 4.5 umgesetzt) |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
@@ -294,7 +294,9 @@ Speziell für das Flugtag-Cockpit:
 
 ## 10. Offene Punkte
 
-- Keine offenen Punkte vor dem Start von C1. Zurückgestellt: Herkunft der «SHV Soloflug-Bestätigung» im Pilotenauszug (7.6)
+- Betriebshandbuch Kapitel 14, 15 und 27 an das Flugtag-Cockpit anpassen, Screenshots neu erstellen (4.5)
+- Sollen Starthelfer Schüler mit pausierter oder abgebrochener Ausbildung ausgeblendet sehen? Dazu müsste `inactive_school_students` für Starthelfer lesbar werden (nur IDs, keine Gründe)
+- Zurückgestellt: Herkunft der «SHV Soloflug-Bestätigung» im Pilotenauszug (7.6)
 
 **Geklärt am 2026-09-25:**
 
@@ -304,3 +306,13 @@ Speziell für das Flugtag-Cockpit:
 - Starthelfer haben im Einsatz immer ein Handy; der Ablauf Start → Landung ist der Normalfall (4.4)
 - Keine feste Schwelle für «in der Luft», weil Flüge 5 bis 30 min und später länger dauern; optionaler Hinweis pro Flugtag, Standard aus (4.4)
 - Mietposten nur bei erfasster Ausleihe (5.1)
+
+## 11. Erkenntnisse aus der Umsetzung von C1
+
+- **Zwei stille RLS-Lücken gefunden (4.2):** Auf `event_signups` durfte nur die eigene Anmeldung geändert werden. Die Anwesenheitshäkchen und «Bestätigen» des Schulteams wirkten darum bei anderen Personen nie (0 Zeilen, kein Fehler), während Schüler bei sich selbst `attended` und `confirmed_by_school` setzen konnten. Gleiches Muster wie beim Terminstatus (0024): Schreiben über RPCs, dazu ein Schutz-Trigger.
+- **Orte gehören einer Person (4.3):** Ohne zusätzliche Lese-Policy hätten zweiter Fluglehrer und Starthelfer die Namen der Plätze des Tages nicht gesehen. Für die Übernahme ins Flugbuch (6.1) wichtig: Die Orte der Schulflüge gehören dem Fluglehrer.
+- **Freigabe ohne geplanten Job (4.5):** «Freigegeben» ist eine Funktion (Tagesabschluss oder Folgetag 06:00 Schweizer Zeit) statt eines nächtlichen Laufs. Frühere Termine gelten damit automatisch als freigegeben, und die Regel wirkt gleich für Schulflüge und Zusammenfassungen.
+- **Abnahmeprüfung C1:** vier Funde, alle behoben – Einstellungen des Tages luden nicht neu, kein Neuladen nach einem Funkloch bei offener App, Touch-Ziele unter 48 px, Reihenfolge der pausierten Schüler (README, «Nachtrag Abnahmeprüfung C1»).
+- **Arbeitsablauf pro Auftrag** wie beim Marktplatz: Commit → Tobias spielt die Migration ein → lesende Prüfung der Live-Datenbank → Push → Vercel-Build abwarten → Typen neu erzeugen und vorübergehende Casts entfernen.
+- **Testlauf auf diesem Rechner:** Die ganze Suite braucht `npx vitest run --maxWorkers=2`; mit den Standard-Workern bricht sie wegen Speichermangel ab (viele PGlite-Datenbanken parallel).
+

@@ -4,7 +4,7 @@ import { dayParticipants, nextPresenceOnTap, opensOnFlightDay, presenceSummary }
 const names = { a: "Anna", b: "Beat", c: "Carla", d: "Dario", e: "Eva" };
 
 describe("dayParticipants", () => {
-  it("orders on site, paused, not yet checked in, absent; alphabetical within", () => {
+  it("orders on site, not yet checked in, paused, absent; alphabetical within", () => {
     const list = dayParticipants(
       [
         { user_id: "e", presence: "absent" },
@@ -16,9 +16,9 @@ describe("dayParticipants", () => {
       names,
       [{ student_user_id: "b", reason: "injury", note: "Knie" }],
     );
-    expect(list.map((p) => p.name)).toEqual(["Carla", "Beat", "Anna", "Dario", "Eva"]);
-    expect(list[1].pause?.reason).toBe("injury");
-    expect(list[2].presence).toBe("expected");
+    expect(list.map((p) => p.name)).toEqual(["Carla", "Anna", "Dario", "Beat", "Eva"]);
+    expect(list[3].pause?.reason).toBe("injury");
+    expect(list[1].presence).toBe("expected");
   });
 });
 

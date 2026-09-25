@@ -116,7 +116,7 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
                       aria-pressed={draft.ratings[m.id] === r}
                       onClick={() => setDraft((d) => ({ ...d, ratings: toggleRating(d.ratings, m.id, r) }))}
                       className={cn(
-                        "h-10 min-w-[4.25rem] rounded-md border px-2 text-xs font-medium transition-colors",
+                        "h-12 min-w-[4.25rem] rounded-md border px-2 text-xs font-medium transition-colors",
                         draft.ratings[m.id] === r
                           ? r === 1 ? "border-red-500 bg-red-500 text-white" : r === 2 ? "border-amber-500 bg-amber-500 text-white" : "border-green-600 bg-green-600 text-white"
                           : "bg-background text-muted-foreground",
@@ -134,7 +134,7 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
             <label htmlFor="flight-feedback" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("flightDay.sheet.feedback")}</label>
             <div className="flex flex-wrap gap-1.5">
               {FEEDBACK_SNIPPETS.map((key) => (
-                <button key={key} type="button" className="rounded-full border px-3 py-1.5 text-xs"
+                <button key={key} type="button" className="min-h-10 rounded-full border px-3 py-2 text-xs"
                   onClick={() => setDraft((d) => ({ ...d, feedback: appendSnippet(d.feedback, t(`flightDay.snippets.${key}`)) }))}>
                   {t(`flightDay.snippets.${key}`)}
                 </button>

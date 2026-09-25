@@ -114,18 +114,18 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
               </p>
             </div>
             {action === "start" ? (
-              <Button className="h-11 min-w-[5.5rem]" disabled={busy === p.userId} onClick={() => void start(p.userId, name, !!p.pause)}>
+              <Button className="h-12 min-w-[5.5rem]" disabled={busy === p.userId} onClick={() => void start(p.userId, name, !!p.pause)}>
                 {t("flightDay.takeoff.start")}
               </Button>
             ) : (
-              <Button variant="outline" className="h-11 min-w-[5.5rem]" disabled={busy === current!.id}
+              <Button variant="outline" className="h-12 min-w-[5.5rem]" disabled={busy === current!.id}
                 onClick={() => setDialog({ kind: "abort", flight: current!, text: current!.start_note || "" })}>
                 {t("flightDay.takeoff.abort")}
               </Button>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="flex h-11 w-8 items-center justify-center text-muted-foreground" disabled={!last}
+                <button type="button" className="flex h-12 w-10 items-center justify-center text-muted-foreground" disabled={!last}
                   aria-label={t("flightDay.moreFor", { name })}>
                   <MoreVertical className="h-4 w-4" />
                 </button>

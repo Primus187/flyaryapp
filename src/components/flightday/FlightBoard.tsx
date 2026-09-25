@@ -199,12 +199,12 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                 </span>
               </button>
               {action === "add" && (
-                <Button size="sm" variant="ghost" className="h-10 shrink-0 px-2 text-xs" disabled={busy === p.userId}
+                <Button size="sm" variant="ghost" className="h-12 shrink-0 px-2 text-xs" disabled={busy === p.userId}
                   onClick={() => void startFlight(p.userId)}>
                   {t("flightDay.board.start")}
                 </Button>
               )}
-              <Button size="sm" className="h-10 min-w-[5.5rem] shrink-0" variant={action === "land" ? "default" : "outline"}
+              <Button size="sm" className="h-12 min-w-[5.5rem] shrink-0" variant={action === "land" ? "default" : "outline"}
                 disabled={busy === p.userId} onClick={() => mainAction(p.userId, name)}>
                 {t(`flightDay.board.${action}`)}
               </Button>

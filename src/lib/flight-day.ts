@@ -34,11 +34,11 @@ export interface PresenceSummary {
 /** Tap on a tile: expected/absent → present, present → expected (undo a mistaken tap). */
 export const nextPresenceOnTap = (presence: Presence): Presence => (presence === "present" ? "expected" : "present");
 
-/** Participants of the day: on site first, then not yet checked in, absent last; paused after the
- *  active ones on site; alphabetical within each group. */
+/** Participants of the day: on site first, then not yet checked in, then paused, absent last;
+ *  alphabetical within each group. */
 export function dayParticipants(signups: DaySignup[], names: Record<string, string>, pauses: DayPause[]): DayParticipant[] {
   const pauseBy = new Map(pauses.map((p) => [p.student_user_id, p]));
-  const rank = (p: DayParticipant) => (p.presence === "present" ? (p.pause ? 1 : 0) : p.presence === "expected" ? 2 : 3);
+  const rank = (p: DayParticipant) => (p.presence === "absent" ? 3 : p.pause ? 2 : p.presence === "present" ? 0 : 1);
   return signups
     .map((s) => ({ userId: s.user_id, name: names[s.user_id] || "", presence: s.presence || "expected", pause: pauseBy.get(s.user_id) || null }))
     .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));

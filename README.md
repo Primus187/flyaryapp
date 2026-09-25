@@ -1,5 +1,21 @@
 # Flyary
 
+## Flugtag-Cockpit: Nachtrag Abnahmeprüfung C1
+
+Alle Akzeptanzkriterien von 4.1–4.5 gegen den Code geprüft. Vier Funde, behoben:
+
+- **Einstellungen des Tages luden nicht neu:** Nach dem Speichern von Plätzen oder Landehinweis zeigten Flugliste und
+  Startplatz-Ansicht die alten Werte bis zum nächsten Realtime-Ereignis; `useFlightDayLive` ignorierte eine neue
+  Ladefunktion. Jetzt lädt der Hook bei jeder neuen Ladefunktion neu (Test `use-flight-day-live.test.ts`).
+- **Funkloch bei offener App:** Neu geladen wurde nur beim Zurückkehren in die App. Jetzt auch nach jedem
+  Wiederverbinden des Realtime-Kanals und beim Ereignis «wieder online» – im Hook und im Check-in.
+- **Touch-Ziele unter 48 px:** Hauptaktionen, Bewertungsknöpfe und Start/Abbruch waren 40–44 px hoch; jetzt 48 px.
+- **Pausierte Schüler** standen vor den noch nicht Eingecheckten; jetzt nach ihnen (vor «fehlt»), wie im Plan.
+
+**Offen:** Starthelfer sehen auch Schüler, deren Ausbildung pausiert oder abgebrochen ist, sofern sie angemeldet
+sind – die Liste inaktiver Schüler (`inactive_school_students`) ist nur für Fluglehrer und Schulleitung lesbar.
+Das Betriebshandbuch (Kapitel 14, 15, 27) ist noch nicht nachgeführt.
+
 ## Flugtag-Cockpit: Ablösung des Ausbildungsblatts, Freigabe für Schüler (4.5)
 
 Migration `0054_flight_day_feedback_release.sql`, Oberfläche `src/components/flightday/DaySummaryEditor.tsx`,

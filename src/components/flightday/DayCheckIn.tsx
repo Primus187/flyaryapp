@@ -42,17 +42,26 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
     setPauses((data || []) as DayPause[]);
   }, [eventId]);
 
-  // Check-ins and pauses from the other phone (take-off / landing) arrive live; after the app was
-  // in the background everything is reloaded, so no missed message leaves a stale list.
+  // Check-ins and pauses from the other phone (take-off / landing) arrive live; after a reconnect,
+  // back online or back in the foreground everything is reloaded, so no missed message leaves a
+  // stale list.
   useEffect(() => {
     void loadPauses();
+    let subscribedOnce = false;
+    const reloadAll = () => { void loadPauses(); void refresh(); };
     const channel = supabase.channel(`flight-day-checkin-${eventId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "event_signups", filter: `event_id=eq.${eventId}` }, () => { void refresh(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "event_day_pauses", filter: `event_id=eq.${eventId}` }, () => { void loadPauses(); })
-      .subscribe();
-    const onVisible = () => { if (document.visibilityState === "visible") { void loadPauses(); void refresh(); } };
+      .subscribe((status: string) => {
+        // The first SUBSCRIBED duplicates the initial load; later ones follow a reconnect.
+        if (status !== "SUBSCRIBED") return;
+        if (subscribedOnce) reloadAll();
+        subscribedOnce = true;
+      });
+    const onVisible = () => { if (document.visibilityState === "visible") reloadAll(); };
     document.addEventListener("visibilitychange", onVisible);
-    return () => { document.removeEventListener("visibilitychange", onVisible); void supabase.removeChannel(channel); };
+    window.addEventListener("online", reloadAll);
+    return () => { document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("online", reloadAll); void supabase.removeChannel(channel); };
   }, [eventId, loadPauses, refresh]);
 
   const participants = useMemo(() => dayParticipants(signups, profiles, pauses), [signups, profiles, pauses]);
