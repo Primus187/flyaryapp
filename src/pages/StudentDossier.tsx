@@ -16,6 +16,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import StudentEquipmentCheck from "@/components/school/StudentEquipmentCheck";
+import SchoolProofPanel from "@/components/school/SchoolProofPanel";
+
+// The training proof (6.2) has its own RPC, so it is not one of the dossier RPC sections.
+const tabs = [...dossierSections, "proof"] as const;
+type Tab = typeof tabs[number];
 
 export default function StudentDossier() {
   const { groupId = "", studentId = "" } = useParams();
@@ -60,21 +65,22 @@ function useDossierSection<S extends DossierSection>({ groupId, studentId }: Con
 
 function Dossier({ groupId, studentId, schoolName }: Context & { schoolName: string }) {
   const { t } = useTranslation();
-  const [section, setSection] = useState<DossierSection>("overview");
+  const [section, setSection] = useState<Tab>("overview");
   const overview = useDossierSection({ groupId, studentId }, "overview");
   const context = { groupId, studentId };
   return <PageContainer className="space-y-5">
     <PageHeader back="/school/students" title={overview.data?.name || t("dossier.title")} subtitle={`${schoolName} · ${t("dossier.title")}`} />
     {overview.isPending ? <p role="status">{t("common.loading")}</p> : overview.isError ? <Retry onRetry={() => void overview.refetch()} /> : <>
       <div className="flex flex-wrap gap-2"><Badge>{t(`school.studentStatus.${overview.data.status.status}`)}</Badge><Badge variant="secondary">{overview.data.level ? t(`dossier.levels.${overview.data.level}`, { defaultValue: overview.data.level }) : t("dossier.noLevel")}</Badge><Badge variant="outline">{overview.data.flightCount} {t("school.flights")}</Badge></div>
-      <Tabs value={section} onValueChange={value => setSection(value as DossierSection)}>
-        <div className="overflow-x-auto pb-2"><TabsList aria-label={t("dossier.title")} className="w-max">{dossierSections.map(key => <TabsTrigger key={key} value={key}>{t(`dossier.sections.${key}`)}</TabsTrigger>)}</TabsList></div>
+      <Tabs value={section} onValueChange={value => setSection(value as Tab)}>
+        <div className="overflow-x-auto pb-2"><TabsList aria-label={t("dossier.title")} className="w-max">{tabs.map(key => <TabsTrigger key={key} value={key}>{t(`dossier.sections.${key}`)}</TabsTrigger>)}</TabsList></div>
         <TabsContent value="overview"><OverviewPanel {...context} data={overview.data} /></TabsContent>
         <TabsContent value="training"><TrainingPanel {...context} level={overview.data.level} /></TabsContent>
         <TabsContent value="flights"><PagedPanel {...context} section="flights" /></TabsContent>
         <TabsContent value="notes"><PagedPanel {...context} section="notes" /></TabsContent>
         <TabsContent value="equipment"><EquipmentPanel {...context} gliderInfo={overview.data.gliderInfo} /></TabsContent>
         <TabsContent value="billing"><PagedPanel {...context} section="billing" /></TabsContent>
+        <TabsContent value="proof"><SchoolProofPanel {...context} /></TabsContent>
       </Tabs>
     </>}
   </PageContainer>;

@@ -22,12 +22,14 @@ beforeAll(async () => {
     CREATE ROLE authenticated; CREATE ROLE anon; CREATE SCHEMA auth;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id',true),'')::uuid $$;
     GRANT USAGE ON SCHEMA auth TO authenticated,anon;
-    CREATE TABLE groups(id uuid PRIMARY KEY, group_type text);
+    CREATE TABLE groups(id uuid PRIMARY KEY, group_type text, name text);
+    CREATE TABLE group_members(group_id uuid, user_id uuid);
+    CREATE TABLE profiles(user_id uuid PRIMARY KEY, pilot_name text, shv_number text);
     CREATE TABLE locations(id uuid PRIMARY KEY, name text, user_id uuid);
     CREATE TABLE flights(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, date date, takeoff_location_id uuid,
       landing_location_id uuid, duration_minutes integer, group_id uuid, event_id uuid, created_at timestamptz DEFAULT now());
     CREATE TABLE training_items(id uuid PRIMARY KEY, name text, sort_order integer);
-    CREATE TABLE flight_events(id uuid PRIMARY KEY, group_id uuid, title text, event_date timestamptz, status text, end_date date);
+    CREATE TABLE flight_events(id uuid PRIMARY KEY, group_id uuid, title text, event_date timestamptz, status text, end_date date, event_category text DEFAULT 'height_flight');
     CREATE TABLE event_signups(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), event_id uuid, user_id uuid, signed_up boolean,
       status text DEFAULT 'confirmed', confirmed_by_school boolean NOT NULL DEFAULT false, attended boolean NOT NULL DEFAULT false,
       updated_at timestamptz DEFAULT now(), UNIQUE(event_id, user_id));
@@ -45,14 +47,17 @@ beforeAll(async () => {
     CREATE POLICY own_insert ON flights FOR INSERT WITH CHECK (user_id = auth.uid());
     CREATE POLICY own_update ON flights FOR UPDATE USING (user_id = auth.uid());
     CREATE POLICY own_delete ON flights FOR DELETE USING (user_id = auth.uid());
-    INSERT INTO groups VALUES ('${school}','school');
+    INSERT INTO groups VALUES ('${school}','school','Vertical');
+    INSERT INTO group_members VALUES ('${school}','${anna}'),('${school}','${beat}'),('${school}','${instructor}');
+    INSERT INTO profiles VALUES ('${anna}','Anna','12345'),('${instructor}','Iris',NULL);
     INSERT INTO locations VALUES ('${takeoff}','Niederbauen','${instructor}'),('${landing}','Emmetten','${instructor}');
     INSERT INTO flight_events(id,group_id,title,event_date,status) VALUES ('${event}','${school}','Höhenflüge',now(),'confirmed');
     INSERT INTO event_signups(event_id,user_id,signed_up) VALUES ('${event}','${anna}',true),('${event}','${beat}',true);
     INSERT INTO flights(id,user_id,date,group_id,event_id,duration_minutes) VALUES ('${ownFlight}','${anna}',current_date,'${school}','${event}',11);
   `);
   for (const m of ["0050_event_school_flights.sql", "0051_flight_day_presence.sql", "0052_school_flight_items.sql",
-    "0053_flight_day_landing_hint.sql", "0054_flight_day_feedback_release.sql", "0057_school_flight_logbook.sql"]) {
+    "0053_flight_day_landing_hint.sql", "0054_flight_day_feedback_release.sql", "0057_school_flight_logbook.sql",
+    "0058_school_student_proof.sql"]) {
     await db.exec(migration(m));
   }
   await db.exec(`SET app.user_id='${instructor}'; SET ROLE authenticated;`);
@@ -140,3 +145,37 @@ describe("taking school flights into the logbook", () => {
     expect(await imports()).toEqual([]);
   });
 });
+
+describe("training proof", () => {
+  type Proof = { school: string; student: { name: string; shvNumber: string }; total: number; practice: number; altitude: number;
+    sites: number; days: number; flights: { takeoff: string | null; instructor: string | null; category: string }[] };
+  const proof = async (from: string | null = null) =>
+    (await db.query<{ p: Proof }>("SELECT school_student_proof($1,$2,$3) AS p", [school, anna, from])).rows[0].p;
+
+  it("counts the school's landed flights and flying sites, not the logbook", async () => {
+    await asUser(instructor);
+    const p = await proof();
+    expect(p).toMatchObject({ school: "Vertical", student: { name: "Anna", shvNumber: "12345" }, total: 2, practice: 0, altitude: 2, sites: 1, days: 1 });
+    expect(p.flights.map((f) => f.takeoff)).toEqual(["Niederbauen", "Niederbauen"]);
+    expect(p.flights[0].instructor).toBe("Iris");
+  });
+
+  it("filters by period and never counts aborted launches", async () => {
+    await asUser(instructor);
+    await db.query("SELECT school_flight_start($1,$2)", [event, anna]);
+    const inAir = (await db.query<{ id: string }>("SELECT id FROM event_school_flights WHERE status='in_air'")).rows[0];
+    await db.query("SELECT school_flight_abort($1)", [inAir.id]);
+    expect((await proof()).total).toBe(2);
+    expect((await proof("2999-01-01")).total).toBe(0);
+  });
+
+  it("is only for the school's staff and its own students", async () => {
+    for (const user of [anna, beat, ""]) {
+      await asUser(user);
+      await expect(proof()).rejects.toThrow("School student access required");
+    }
+    await asUser(instructor);
+    await expect(db.query("SELECT school_student_proof($1,$2)", [school, "00000000-0000-0000-0000-000000000099"])).rejects.toThrow("School student access required");
+  });
+});
+

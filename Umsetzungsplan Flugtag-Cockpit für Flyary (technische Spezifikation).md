@@ -12,7 +12,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 | --- | --- | --- |
 | C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
 | C2 – Tagesabschluss | ✅ Abgeschlossen | 5.1–5.2 umgesetzt und abnahmegeprüft |
-| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | 🚧 In Arbeit | 6.1 ✅; 6.2–6.3 offen |
+| C3 – Flugbuch-Abgleich und Ausbildungsnachweis | 🚧 In Arbeit | 6.1 ✅, 6.2 ✅; 6.3 offen |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
 ## 1. Ausgangslage
@@ -232,7 +232,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Ist-Stand:** Migration `0057_school_flight_logbook.sql` (`flights.school_flight_id` mit Schutz-Trigger, `event_signups.logbook_import_dismissed_at`, RPCs `my_school_flight_imports`, `import_school_flights`, `dismiss_school_flight_import`), `SchoolFlightImportCard.tsx` auf Startseite, «Flüge» und im Formular für neue Flüge (das ersetzt den eigenen Hinweis im Formular). **Abweichungen:** Die Zuordnung paart nach Reihenfolge (Schulflug-Nummer ↔ Erfassungszeit des eigenen Eintrags), weil eigene Einträge keine Uhrzeit haben; verknüpfte Einträge behalten ihre eigenen Angaben; nur Tage ab 2026-09-25. Die Orte der Schulflüge gehören dem Fluglehrer; im Bearbeiten-Formular sieht der Schüler nur seine eigenen Orte.
 
-### 6.2 Ausbildungsnachweis im Dossier
+### 6.2 Ausbildungsnachweis im Dossier ✅
 
 **Ziel:** Die Schule kann gegenüber dem SHV belegen, welche Flüge und Manöver ein Schüler bei ihr absolviert hat.
 
@@ -249,6 +249,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - **Fluggebiet** = Startplatz (`takeoff_location_id`). Weil die Anzahl Fluggebiete verlangt ist, muss der Startplatz jedes Schulflugs gesetzt sein: vorausgefüllt aus dem Termin; fehlt er, weist das Cockpit beim Tagesabschluss darauf hin (5.1, Schritt 1)
 - Jahresbericht (`AnnualReport`) nutzt dieselbe Quelle, falls dort Flugzahlen verlangt sind
 - Historische Flüge vor der Einführung: Hinweis «Nachweis ab [Datum der Einführung]; frühere Flüge siehe Flugbuch des Schülers»
+
+**Ist-Stand:** Migration `0058_school_student_proof.sql` (RPC `school_student_proof` mit Zeitraum), Edge Function `export-flightbook-pdf` mit Modus `school_proof` (Aufbereitung in `school-proof.ts`, von Vitest getestet), Dossier-Reiter «Nachweis» (`SchoolProofPanel.tsx`) mit Totalen, Flugtagen, PDF und CSV. **Abweichungen:** Der Zähler im Dossier-Kopf zeigt weiterhin die selbst erfassten Flüge; der Nachweis steht im eigenen Reiter mit beiden Zahlen. Der Jahresbericht (`AnnualReport`) verlangt keine Flugzahlen pro Schüler und bleibt unverändert. Die Edge Function muss neu bereitgestellt werden; Deno ist lokal nicht installiert.
 
 ### 6.3 Bewertungen im Ausbildungsstand
 

@@ -1,5 +1,28 @@
 # Flyary
 
+## Flugtag-Cockpit: Ausbildungsnachweis für den SHV (6.2)
+
+Migration `0058_school_student_proof.sql`, Edge Function `supabase/functions/export-flightbook-pdf` (neuer Modus
+`school_proof`, Aufbereitung in `school-proof.ts`), Oberfläche `src/components/school/SchoolProofPanel.tsx` im
+Dossier (Reiter «Nachweis»), Tests in `src/test/school-flight-logbook-database.test.ts`, `src/lib/school-proof.test.ts`
+und `SchoolProofPanel.test.tsx`.
+
+- **Quelle ist der Schulnachweis** (`event_school_flights`, nur gelandete Flüge, nie Startabbrüche), nicht das private
+  Flugbuch. `school_student_proof(group, student, from, to)` liefert Schule, Schüler (mit SHV-Nummer), Zeitraum,
+  **Anzahl Flüge** (davon Übungshang/Höhenflüge), **Anzahl Fluggebiete** (verschiedene Startplätze), Flugtage und die
+  Flüge mit Datum, Start- und Landeplatz, Art und Fluglehrer. Nur für Admin, Fluglehrer und Schulleitung der
+  Schule und nur für Mitglieder der Schule.
+- **Dossier, Reiter «Nachweis»:** Totale, Liste der Flugtage, optionaler Zeitraum, dazu zum Vergleich die Zahl der
+  selbst im Flugbuch erfassten Flüge.
+- **PDF für den SHV** im Format des Pilotenauszugs (gleiche Schrift, Tabelle mit Zebra-Zeilen, Fusszeile), mit
+  Bestätigungssatz sowie Feldern für Ort/Datum und Stempel/Unterschrift der Flugschule zum Ausdrucken. Die Edge
+  Function ruft die RPC mit der Sitzung des Fluglehrers auf – keine Service-Rolle.
+- **CSV** (Semikolon, UTF-8 mit BOM für Excel) für die eigene Ablage, direkt im Browser erzeugt.
+
+**Hinweise:** Die Edge Function muss neu bereitgestellt werden (`supabase functions deploy export-flightbook-pdf`).
+Deno ist hier nicht installiert; geprüft sind die Syntax (esbuild) und die Aufbereitung (Vitest), das Zeichnen des
+PDFs erst nach dem Deploy. Der Zähler «Flüge» im Kopf des Dossiers zeigt weiterhin die selbst erfassten Flüge.
+
 ## Flugtag-Cockpit: Übernahme ins Flugbuch (6.1)
 
 Migration `0057_school_flight_logbook.sql`, Oberfläche `src/components/SchoolFlightImportCard.tsx` (Startseite,

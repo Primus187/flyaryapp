@@ -407,6 +407,13 @@
       "when": 1793577600000,
       "tag": "0057_school_flight_logbook",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1793664000000,
+      "tag": "0058_school_student_proof",
+      "breakpoints": true
     }
   ]
 }

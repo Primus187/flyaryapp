@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
+import { PROOF_COLUMNS, proofFileName, proofHeaderLines, proofRows, proofTotalLines, type SchoolProof } from "./school-proof.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,6 +57,96 @@ function drawZebraRow(doc: jsPDF, rowIndex: number, x: number, yPos: number, wid
   }
 }
 
+// Training proof of a school student for the SHV (Flugtag-Cockpit 6.2): all school flights, the number of
+// flying sites and a field for the school's stamp and signature. The RPC checks that the caller is
+// staff of that school; the data comes from the school's record, not the private logbook.
+// deno-lint-ignore no-explicit-any
+async function schoolProofPdf(supabase: any, url: URL): Promise<Response> {
+  const groupId = url.searchParams.get("group_id");
+  const studentId = url.searchParams.get("student_id");
+  if (!groupId || !studentId) {
+    return new Response(JSON.stringify({ error: "group_id and student_id required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  const { data, error } = await supabase.rpc("school_student_proof", {
+    _group_id: groupId, _student_id: studentId, _from: url.searchParams.get("from") || null, _to: url.searchParams.get("to") || null,
+  });
+  if (error || !data) {
+    return new Response(JSON.stringify({ error: error?.message || "No data" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  const proof = data as SchoolProof;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const marginL = 12, marginR = 12, pW = 210, pH = 297, rowH = 5;
+  const colX = [marginL, marginL + 10, marginL + 32, marginL + 77, marginL + 122, marginL + 146];
+  const colW = [10, 22, 45, 45, 24, pW - marginR - (marginL + 146)];
+  const today = formatDate(new Date().toISOString());
+  let y = 15;
+
+  const footer = () => {
+    doc.setFontSize(7);
+    doc.setTextColor(150);
+    doc.text(`Ausbildungsnachweis · ${proof.student?.name || ""}`, marginL, pH - 10);
+    doc.text(`${doc.getNumberOfPages()}`, pW / 2, pH - 10, { align: "center" });
+    doc.text(today, pW - marginR, pH - 10, { align: "right" });
+    doc.setTextColor(0);
+  };
+  const tableHeader = () => {
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    PROOF_COLUMNS.forEach((label, i) => doc.text(label, colX[i], y));
+    y += 1;
+    doc.setLineWidth(0.3);
+    doc.line(marginL, y, pW - marginR, y);
+    y += 4;
+    doc.setFont("helvetica", "normal");
+  };
+  const ensureSpace = (needed: number, withHeader: boolean) => {
+    if (y + needed <= pH - 20) return;
+    footer();
+    doc.addPage("a4", "p");
+    y = 15;
+    if (withHeader) tableHeader();
+  };
+
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("Ausbildungsnachweis", marginL, y + 5);
+  y += 16;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  for (const line of proofHeaderLines(proof)) { doc.text(line, marginL, y); y += 6; }
+  y += 2;
+  doc.setFont("helvetica", "bold");
+  for (const line of proofTotalLines(proof)) { doc.text(line, marginL, y); y += 6; }
+  doc.setFont("helvetica", "normal");
+  y += 6;
+
+  tableHeader();
+  doc.setFontSize(8);
+  proofRows(proof).forEach((row, i) => {
+    ensureSpace(rowH, true);
+    doc.setFontSize(8);
+    drawZebraRow(doc, i, marginL, y, pW - marginL - marginR, rowH);
+    row.forEach((cell, c) => doc.text(doc.splitTextToSize(cell, colW[c] - 2)[0] || "", colX[c], y));
+    y += rowH;
+  });
+
+  ensureSpace(60, false);
+  y += 12;
+  doc.setFontSize(9);
+  for (const line of doc.splitTextToSize(
+    "Die Flugschule bestätigt, dass die oben aufgeführten Flüge im Rahmen der Ausbildung unter ihrer Aufsicht durchgeführt wurden.",
+    pW - marginL - marginR)) { doc.text(line, marginL, y); y += 5; }
+  y += 15;
+  doc.text("Ort, Datum: ___________________________________", marginL, y);
+  y += 15;
+  doc.text("Stempel und Unterschrift der Flugschule: ___________________________________", marginL, y);
+  footer();
+
+  return new Response(doc.output("arraybuffer"), {
+    headers: { ...corsHeaders, "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${proofFileName(proof, "pdf")}"` },
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -79,6 +170,7 @@ Deno.serve(async (req) => {
     }
 
     const url = new URL(req.url);
+    if (url.searchParams.get("mode") === "school_proof") return await schoolProofPdf(supabase, url);
     const groupIdsParam = url.searchParams.get("group_ids");
     const includeNoGroupParam = url.searchParams.get("include_no_group");
     const hasFilter = groupIdsParam !== null || includeNoGroupParam !== null;
