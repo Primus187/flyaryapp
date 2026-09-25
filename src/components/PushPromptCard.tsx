@@ -12,12 +12,12 @@ export default function PushPromptCard() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isSupported, isSubscribed, loading, subscribe } = usePushNotifications();
+  const { isSupported, isSubscribed, checked, loading, subscribe } = usePushNotifications();
   const [dismissed, setDismissed] = useState(false);
   const [testing, setTesting] = useState(false);
   const [justEnabled, setJustEnabled] = useState(false);
 
-  if (!isSupported || dismissed) return null;
+  if (!isSupported || !checked || dismissed) return null;
   if (isSubscribed && !justEnabled) return null;
 
   const enable = async () => {

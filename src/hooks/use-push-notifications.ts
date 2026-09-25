@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { forgetPushEnabled, getRememberedPushEndpoint, rememberPushEnabled, shouldRestorePush } from "@/lib/push-restore";
 
 // VAPID public key - must match the one stored as secret
 const VAPID_PUBLIC_KEY = "BIEnpSUrBz_zhtCQpVsNxSlHd3NPqKWXvphXlssKzs7idyEtvGsY6w3ckKN2RDTthZZkLoGOlu01ntX1iFARvCE";
@@ -27,10 +28,76 @@ export type PushSubscribeReason =
 
 export type PushSubscribeResult = { ok: boolean; reason?: PushSubscribeReason; message?: string };
 
+/**
+ * Creates (or reuses) the push subscription of this device and saves it. Needs the permission already granted.
+ * Several components use the hook at once: parallel calls share one run.
+ */
+let pendingSubscription: Promise<PushSubscribeResult> | null = null;
+function ensureSubscription(userId: string): Promise<PushSubscribeResult> {
+  pendingSubscription ??= createSubscription(userId).finally(() => { pendingSubscription = null; });
+  return pendingSubscription;
+}
+
+async function createSubscription(userId: string): Promise<PushSubscribeResult> {
+  const registration = await navigator.serviceWorker.ready;
+  const appServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
+  // Drop a subscription created with an older server key — it can no longer receive messages.
+  const existing = await registration.pushManager.getSubscription();
+  if (existing) {
+    const currentKey = existing.options?.applicationServerKey;
+    const matches =
+      !!currentKey &&
+      new Uint8Array(currentKey as ArrayBuffer).every((b, i) => b === appServerKey[i]) &&
+      (currentKey as ArrayBuffer).byteLength === appServerKey.length;
+    if (!matches) {
+      await existing.unsubscribe();
+      await supabase
+        .from("push_subscriptions" as any)
+        .delete()
+        .eq("user_id", userId)
+        .eq("endpoint", existing.endpoint);
+    }
+  }
+
+  const subscription =
+    (await registration.pushManager.getSubscription()) ??
+    (await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: appServerKey.buffer as ArrayBuffer,
+    }));
+
+  const json = subscription.toJSON();
+  const { error } = await supabase.from("push_subscriptions" as any).upsert(
+    {
+      user_id: userId,
+      endpoint: json.endpoint,
+      keys_p256dh: json.keys?.p256dh || "",
+      keys_auth: json.keys?.auth || "",
+    },
+    { onConflict: "user_id,endpoint" }
+  );
+  if (error) {
+    console.error("Push subscription save error:", error);
+    return { ok: false, reason: "save_failed", message: error.message };
+  }
+
+  // The previous subscription of this device died with the old service worker: drop its row.
+  const previous = getRememberedPushEndpoint(userId);
+  if (previous && previous !== subscription.endpoint) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
+    await supabase.from("push_subscriptions" as any).delete().eq("user_id", userId).eq("endpoint", previous);
+  }
+  rememberPushEnabled(userId, subscription.endpoint);
+  return { ok: true };
+}
+
 export function usePushNotifications() {
   const { user } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  // false until the subscription state is known – keeps the dashboard prompt from flashing up
+  const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -43,12 +110,23 @@ export function usePushNotifications() {
   }, [isSupported, user]);
 
   const checkSubscription = async () => {
+    if (!user) return;
     try {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
-      setIsSubscribed(!!subscription);
+      if (shouldRestorePush(Notification.permission, getRememberedPushEndpoint(user.id), !!subscription)) {
+        // An app update dropped the subscription while push was on: switch it back on silently.
+        const restored = await ensureSubscription(user.id);
+        setIsSubscribed(restored.ok);
+      } else {
+        // Also marks subscriptions made before this marker existed, so the next update restores them.
+        if (subscription) rememberPushEnabled(user.id, subscription.endpoint);
+        setIsSubscribed(!!subscription);
+      }
     } catch {
       setIsSubscribed(false);
+    } finally {
+      setChecked(true);
     }
   };
 
@@ -77,49 +155,8 @@ export function usePushNotifications() {
         return { ok: false, reason: permission === "denied" ? "blocked" : "dismissed" };
       }
 
-      const registration = await navigator.serviceWorker.ready;
-      const appServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-
-      // Drop a subscription created with an older server key — it can no longer receive messages.
-      const existing = await registration.pushManager.getSubscription();
-      if (existing) {
-        const currentKey = existing.options?.applicationServerKey;
-        const matches =
-          !!currentKey &&
-          new Uint8Array(currentKey as ArrayBuffer).every((b, i) => b === appServerKey[i]) &&
-          (currentKey as ArrayBuffer).byteLength === appServerKey.length;
-        if (!matches) {
-          await existing.unsubscribe();
-          await supabase
-            .from("push_subscriptions" as any)
-            .delete()
-            .eq("user_id", user.id)
-            .eq("endpoint", existing.endpoint);
-        }
-      }
-
-      const subscription =
-        (await registration.pushManager.getSubscription()) ??
-        (await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: appServerKey.buffer as ArrayBuffer,
-        }));
-
-      const json = subscription.toJSON();
-      const { error } = await supabase.from("push_subscriptions" as any).upsert(
-        {
-          user_id: user.id,
-          endpoint: json.endpoint,
-          keys_p256dh: json.keys?.p256dh || "",
-          keys_auth: json.keys?.auth || "",
-        },
-        { onConflict: "user_id,endpoint" }
-      );
-      if (error) {
-        console.error("Push subscription save error:", error);
-        return { ok: false, reason: "save_failed", message: error.message };
-      }
-
+      const result = await ensureSubscription(user.id);
+      if (!result.ok) return result;
       setIsSubscribed(true);
       return { ok: true };
     } catch (e: any) {
@@ -140,6 +177,7 @@ export function usePushNotifications() {
         await subscription.unsubscribe();
         await supabase.from("push_subscriptions" as any).delete().eq("user_id", user.id).eq("endpoint", subscription.endpoint);
       }
+      forgetPushEnabled(user.id);
       setIsSubscribed(false);
     } catch (e) {
       console.error("Push unsubscribe error:", e);
@@ -155,5 +193,5 @@ export function usePushNotifications() {
     }
   }, [isSubscribed, subscribe, unsubscribe]);
 
-  return { isSupported, isSubscribed, loading, subscribe, unsubscribe, toggle };
+  return { isSupported, isSubscribed, checked, loading, subscribe, unsubscribe, toggle };
 }
