@@ -1,5 +1,19 @@
 # Flyary
 
+## Betrieb: Fehlerprotokoll
+
+Migration `0049_client_errors.sql`, Logik in `src/lib/error-reporting.ts`, Seite `src/pages/AdminErrors.tsx`
+(`/admin/errors`, unter «Mehr» nur für Flyary-Admins sichtbar).
+
+- Die App meldet abgefangene Fehler still an `report_client_error()`: Seiten, die nicht rendern (Fehler-Auffang
+  `PageErrorBoundary`, mit Komponenten-Stack), nicht abgefangene Fehler und abgelehnte Promises (`main.tsx`) sowie
+  fehlende Seitendateien nach einem Deploy («Veraltete Version»). Mitgeschickt werden Pfad, App-Version und Browser.
+- Kein Rauschen: Browser-Erweiterungen, ResizeObserver-Warnungen, «Script error.» und Netzwerkfehler im Offline-Modus
+  werden verworfen; pro Seitenaufruf jeder Fehler einmal, höchstens 10.
+- Die Datenbank fasst gleiche Fehler (Art, Meldung, Version) zu einer Zeile mit Zähler und betroffenen Personen zusammen,
+  begrenzt auf 30 Meldungen pro Person und Stunde (abgemeldet: 200 insgesamt) und löscht Einträge nach 90 Tagen ohne
+  Wiederholung. Ein erledigter Fehler, der wiederkommt, erscheint neu. Lesen und erledigen nur Admins (RLS).
+
 ## Betrieb: Datenbank-Typen, Typprüfung und Backup
 
 - **Typprüfung:** `npm run typecheck` (= `tsc --noEmit -p tsconfig.app.json`). Ein blosses `npx tsc --noEmit` prüft

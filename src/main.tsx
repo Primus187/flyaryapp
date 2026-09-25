@@ -6,6 +6,7 @@ import i18n, { i18nReady } from "./i18n";
 import { toast } from "sonner";
 import { captureAuthRedirectError } from "./lib/auth-redirect-error";
 import { forceAppUpdate, isAppAsset, mayRecover } from "./lib/app-update";
+import { reportError } from "./lib/error-reporting";
 
 // Never let an older installed build cache the editable preview.
 if (import.meta.env.DEV && "serviceWorker" in navigator) {
@@ -62,7 +63,8 @@ const updateSW = registerSW({
 // A device can end up with an old start page from the service worker whose CSS/JS files are gone on the
 // server (many deploys in a row): no styles, white page on lazy routes. A plain reload comes from the same
 // cache, so the repair drops service worker and caches (forceAppUpdate). At most once a minute.
-const recoverFromStaleChunk = () => {
+const recoverFromStaleChunk = (cause?: unknown) => {
+  reportError("chunk", cause ?? "Missing app file");
   let last = 0;
   try { last = Number(sessionStorage.getItem("stale-asset-recovery") || 0); } catch { /* private mode */ }
   if (!mayRecover(last, Date.now())) return;
@@ -75,17 +77,21 @@ window.addEventListener("error", (event) => {
   const target = event.target;
   if (target instanceof HTMLLinkElement || target instanceof HTMLScriptElement) {
     const url = target instanceof HTMLLinkElement ? target.href : target.src;
-    if (isAppAsset(url)) recoverFromStaleChunk();
+    if (isAppAsset(url)) recoverFromStaleChunk(`Missing app file: ${url}`);
     return;
   }
+  // other failed resources (images, videos) are not app errors
+  if (target instanceof Element) return;
   const message = event.message || (event.error instanceof Error ? event.error.message : "");
   if (message.includes("Failed to fetch dynamically imported module")) {
-    recoverFromStaleChunk();
+    recoverFromStaleChunk(event.error ?? message);
+    return;
   }
+  reportError("error", event.error ?? message);
 }, true);
 
 // Vite reports failed preloads of lazy routes here.
-window.addEventListener("vite:preloadError", () => recoverFromStaleChunk());
+window.addEventListener("vite:preloadError", (event) => recoverFromStaleChunk((event as Event & { payload?: unknown }).payload));
 
 // The stylesheet in index.html may have failed before this script ran: check once the page has loaded.
 window.addEventListener("load", () => {
@@ -98,8 +104,10 @@ window.addEventListener("unhandledrejection", (event) => {
   const reason = event.reason;
   const message = reason instanceof Error ? reason.message : String(reason || "");
   if (message.includes("Failed to fetch dynamically imported module")) {
-    recoverFromStaleChunk();
+    recoverFromStaleChunk(reason);
+    return;
   }
+  reportError("rejection", reason);
 });
 
 // Keep a failed Google sign-in visible: the redirect to /auth would otherwise drop the error.

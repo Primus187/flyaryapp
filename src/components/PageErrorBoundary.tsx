@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, RefreshCw } from "lucide-react";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import PageContainer from "@/components/layout/PageContainer";
 import { forceAppUpdate } from "@/lib/app-update";
+import { reportError } from "@/lib/error-reporting";
 
 function PageError() {
   const { t } = useTranslation();
@@ -40,8 +41,10 @@ class Boundary extends Component<{ resetKey: string; children: ReactNode }, { fa
     return props.resetKey !== state.key ? { failed: false, key: props.resetKey } : null;
   }
 
-  componentDidCatch(error: unknown) {
+  componentDidCatch(error: unknown, info: ErrorInfo) {
     console.error("Page failed:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    reportError(message.includes("dynamically imported module") ? "chunk" : "render", error, info.componentStack);
   }
 
   render() {

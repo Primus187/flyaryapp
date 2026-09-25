@@ -631,6 +631,54 @@ export type Database = {
           },
         ]
       }
+      client_errors: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          fingerprint: string
+          id: string
+          kind: string
+          last_seen_at: string
+          message: string
+          occurrences: number
+          path: string | null
+          resolved_at: string | null
+          stack: string | null
+          user_agent: string | null
+          user_ids: string[]
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          fingerprint: string
+          id?: string
+          kind: string
+          last_seen_at?: string
+          message: string
+          occurrences?: number
+          path?: string | null
+          resolved_at?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_ids?: string[]
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          fingerprint?: string
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          message?: string
+          occurrences?: number
+          path?: string | null
+          resolved_at?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_ids?: string[]
+        }
+        Relationships: []
+      }
       comment_likes: {
         Row: {
           comment_id: string
@@ -3998,6 +4046,17 @@ export type Database = {
       }
       marketplace_storage_usage: { Args: never; Returns: Json }
       marketplace_trigger_cleanup: { Args: never; Returns: undefined }
+      report_client_error: {
+        Args: {
+          _app_version?: string
+          _kind: string
+          _message: string
+          _path?: string
+          _stack?: string
+          _user_agent?: string
+        }
+        Returns: undefined
+      }
       school_dashboard_data: {
         Args: { _group_id: string; _section?: string; _viewer_id?: string }
         Returns: Json

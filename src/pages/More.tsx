@@ -10,9 +10,10 @@ import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { canOpenSchoolSection } from "@/lib/school-sections";
 import { APP_VERSION, forceAppUpdate } from "@/lib/app-update";
 import { toast } from "sonner";
+import { useAppAdmin } from "@/hooks/use-app-admin";
 import {
   User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store,
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, Bug,
 } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
@@ -82,6 +83,7 @@ export default function More() {
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const { mode, canSwitch, canManageSchool, canShopSchool, setMode } = useRoleMode();
+  const isAppAdmin = useAppAdmin();
 
   const groups = mode === "school" ? schoolGroups.map(group => ({ ...group,
     tiles: group.tiles.filter(tile => canOpenSchoolSection(tile.path.split("/")[2], canManageSchool, canShopSchool)),
@@ -157,6 +159,9 @@ export default function More() {
             onClick={sendFeedback}
           />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
+          {isAppAdmin && (
+            <ListRow icon={Bug} label={t("adminErrors.title")} description={t("adminErrors.subtitle")} onClick={() => navigate("/admin/errors")} />
+          )}
           <ListRow
             icon={RefreshCw}
             label={t("more.updateApp")}
