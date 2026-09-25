@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { DaySignup, FlightDayRole } from "@/lib/flight-day";
+import DayCloseBar from "./DayCloseBar";
 import DaySitesCard from "./DaySitesCard";
 import FlightBoard from "./FlightBoard";
 import TakeoffBoard from "./TakeoffBoard";
@@ -16,15 +17,18 @@ function storedStation(): Station {
 interface Props {
   eventId: string;
   eventCategory: string | null;
+  eventDate: string;
   role: FlightDayRole;
   signups: DaySignup[];
   profiles: Record<string, string>;
   canWriteSummary?: boolean;
+  /** Called after the day was closed or reopened (presence may have changed in the wizard). */
+  onDayChanged?: () => void;
 }
 
 /** Launch helpers work the take-off; instructors the landing field and can switch to the take-off
  *  view when they are up there themselves (remembered per device). Flugtag-Cockpit 4.4. */
-export default function FlightDayStations({ eventId, eventCategory, role, signups, profiles, canWriteSummary = false }: Props) {
+export default function FlightDayStations({ eventId, eventCategory, eventDate, role, signups, profiles, canWriteSummary = false, onDayChanged }: Props) {
   const { t } = useTranslation();
   const [station, setStation] = useState<Station>(storedStation);
   const [settingsVersion, setSettingsVersion] = useState(0);
@@ -50,6 +54,8 @@ export default function FlightDayStations({ eventId, eventCategory, role, signup
       {station === "landing"
         ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} canWriteSummary={canWriteSummary} />
         : <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} settingsVersion={settingsVersion} />}
+      <DayCloseBar eventId={eventId} eventDate={eventDate} profiles={profiles}
+        onChanged={() => { setSettingsVersion((v) => v + 1); onDayChanged?.(); }} />
     </div>
   );
 }

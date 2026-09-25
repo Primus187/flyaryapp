@@ -1,5 +1,37 @@
 # Flyary
 
+## Flugtag-Cockpit: Tagesabschluss und Mitteilungen (C2: 5.1, 5.2)
+
+Migrationen `0055_flight_day_close.sql` und `0056_flight_day_schedule.sql`, Oberfläche
+`src/components/flightday/CloseDayWizard.tsx` und `DayCloseBar.tsx`, Logik in `src/lib/flight-day-close.ts`, Tests in
+`src/test/flight-day-close-database.test.ts`, `src/lib/flight-day-close.test.ts` und `CloseDayWizard.test.tsx`.
+Entfernt: `EventAttendance.tsx` (Buchung im Browser) samt Texten `school.attendance.*`.
+
+- **Tag abschliessen** (Fluglehrer des Tages, ab Beginn des Termins) öffnet einen Assistenten in vier Schritten:
+  1. *Alle gelandet?* – Flüge in der Luft blockieren den Abschluss; noch nicht Eingecheckte mit «Da»/«Fehlt»;
+     Flüge ohne Startplatz mit «Startplatz des Tages einsetzen» (`school_flight_fill_takeoff`, nötig für die Anzahl
+     Fluggebiete im Nachweis).
+  2. *Zusammenfassungen* – für Anwesende ohne Zusammenfassung ein Vorschlag aus den Rückmeldungen des Tages
+     («F1: …»), anpassbar, übernehmen oder überspringen.
+  3. *Material* – offene Ausleihen der Teilnehmenden, einzeln oder «Alle zurück».
+  4. *Abrechnung* – Startleiter-Guthaben für die eingeteilten Starthelfer, Materialmiete vorausgewählt nur für
+     Anwesende **mit Ausleihe an diesem Tag** (Entscheid 2026-09-25), jede Zeile abwählbar, «schon gebucht»
+     erkennbar, Summen in CHF.
+- **`close_flight_day`** erledigt Rückgaben, Guthaben, Mietposten, Abschluss und Freigabe in **einer**
+  Transaktion. Eindeutige Indizes verhindern doppelte Guthaben bzw. Mietposten pro Termin und Person.
+  Ansatz = zuletzt gültiger `school_rates`-Eintrag am Termindatum; Ansatz 0 bucht nichts.
+- Danach steht im Reiter «Abgeschlossen am … von …» mit **Wieder öffnen** (`reopen_flight_day`; Buchungen bleiben,
+  keine Stornierung). Alle Schreib-RPCs des Tages lehnen ab, solange er abgeschlossen ist.
+- **Mitteilungen (5.2):** Beim ersten Abschluss erhält jeder Schüler mit gelandetem Schulflug oder Zusammenfassung
+  eine Push-Mitteilung (Link auf den Reiter «Feedback»). Die stündliche Routine `flight_day_daily_run` (pg_cron,
+  0056) übernimmt Tage, die niemand abschliesst: ab 06:00 am Folgetag Freigabe markieren und die Schüler einmal
+  benachrichtigen; einmal eine Erinnerung «Flugtag noch offen» an die eingeteilten Fluglehrer (sonst Fluglehrer und
+  Schulleitung der Schule). Nur Termine ab 2026-09-25, damit ältere Tage keine Mitteilungen auslösen.
+
+**Abweichungen vom Plan:** (1) Die Freigabe-Regel war schon mit 4.5 umgesetzt; 0055 ergänzt nur die Mitteilungen.
+(2) Der Assistent übernimmt Zusammenfassungen direkt (statt nur zu verlinken). (3) Die Mietposten-Beschreibung
+«Materialmiete Flugtag» ist in der Datenbank fix auf Deutsch, wie die bisherigen Push-Texte.
+
 ## Flugtag-Cockpit: Nachtrag Abnahmeprüfung C1
 
 Alle Akzeptanzkriterien von 4.1–4.5 gegen den Code geprüft. Vier Funde, behoben:

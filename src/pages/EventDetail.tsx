@@ -15,7 +15,6 @@ import EventChannel from "@/components/chat/EventChannel";
 import EventStaff from "@/components/EventStaff";
 import EventProgram from "@/components/EventProgram";
 import EventCarpools from "@/components/EventCarpools";
-import EventAttendance from "@/components/school/EventAttendance";
 import EquipmentQuotaHint from "@/components/school/EquipmentQuotaHint";
 import StudentEquipmentHint from "@/components/school/StudentEquipmentHint";
 import IncidentReportDialog from "@/components/school/IncidentReportDialog";
@@ -490,13 +489,9 @@ export default function EventDetail() {
         {showDayTab && (
           <TabsContent value="day" className="space-y-3 mt-3">
             <DayCheckIn eventId={id!} signups={visibleConfirmed} profiles={profiles} onChanged={refetchSignups} />
-            {dayRole && <FlightDayStations eventId={id!} eventCategory={event.event_category || null} role={dayRole} signups={visibleConfirmed} profiles={profiles} canWriteSummary={isStaff} />}
-            {/* Former coaching sheet (F1–F6, read only) and the day booking read through is_group_staff;
-                the booking moves into the day closing with 5.1. */}
-            {isStaff && <>
-              <LegacyCoachNotes eventId={id!} profiles={profiles} />
-              <EventAttendance eventId={id!} groupId={event.group_id} eventDate={event.event_date} signups={visibleConfirmed} />
-            </>}
+            {dayRole && <FlightDayStations eventId={id!} eventCategory={event.event_category || null} eventDate={event.event_date} role={dayRole} signups={visibleConfirmed} profiles={profiles} canWriteSummary={isStaff} onDayChanged={refetchSignups} />}
+            {/* Former coaching sheet (F1–F6, read only), readable through is_group_staff. */}
+            {isStaff && <LegacyCoachNotes eventId={id!} profiles={profiles} />}
           </TabsContent>
         )}
 

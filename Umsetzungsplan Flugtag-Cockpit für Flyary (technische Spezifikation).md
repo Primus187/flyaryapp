@@ -1,6 +1,6 @@
 # Umsetzungsplan: Flugtag-Cockpit für Flyary
 
-2026-09-25 · Tobias Bolliger · Stand: C1 abgeschlossen und abnahmegeprüft (Betriebshandbuch offen); C2 und C3 offen
+2026-09-25 · Tobias Bolliger · Stand: C1 abgeschlossen und abnahmegeprüft (Betriebshandbuch offen), C2 umgesetzt (Abnahmeprüfung offen); C3 offen
 
 Dieses Dokument beschreibt, wie das Schulteam am eigentlichen Flugtag erfasst, wer da ist, wer welche Flüge gemacht hat und welche Rückmeldungen dazugehören. Heute ist das auf vier Stellen verteilt (Anwesenheit, Ausbildungsblatt F1–F6, Schülerflüge, geplante Manöver), und Schulteam und Schüler erfassen dieselben Flüge doppelt und ohne Abgleich. Das Flugtag-Cockpit ersetzt das durch **einen Bildschirm pro Flugtag**, auf dem jeder Flug ein **echter Eintrag der Schule** ist.
 
@@ -11,7 +11,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
 | C1 – Cockpit und Flugerfassung (MVP) | ✅ Abgeschlossen | 4.1–4.5 umgesetzt und abnahmegeprüft; Betriebshandbuch noch nicht nachgeführt |
-| C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 (Freigabe-Regel und Schüleransicht aus 5.2 schon mit 4.5 umgesetzt) |
+| C2 – Tagesabschluss | 🚧 Umgesetzt, Abnahmeprüfung offen | 5.1 ✅, 5.2 ✅ |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
 
@@ -181,7 +181,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 ## 5. C2 – Tagesabschluss
 
-### 5.1 Abschluss-Assistent mit Abrechnung
+### 5.1 Abschluss-Assistent mit Abrechnung ✅
 
 **Ziel:** Ein geführter Abschluss am Ende des Tages ersetzt die Sammelbuchung im Browser.
 
@@ -199,7 +199,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Logik in `src/lib/flight-day-close.ts`:** Vorschau der Buchungen aus Anwesenheit, Einteilung, Ausleihen und Ansätzen; Vorschlag der Zusammenfassung. Vitest-Tests für Fälle wie Ansatz null, bereits gebucht, Ausleihe über mehrere Tage oder Starthelfer, der zugleich Teilnehmer ist.
 
-### 5.2 Rückmeldung an die Schüler
+### 5.2 Rückmeldung an die Schüler ✅
 
 **Ziel:** Schüler erhalten ihre Rückmeldungen gebündelt und zuverlässig.
 
@@ -209,6 +209,8 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 - Fallback ohne Abschluss: Ein nächtlicher Lauf gibt Rückmeldungen am Folgetag um 06:00 frei (E8), falls `pg_cron` verfügbar ist (wie beim Marktplatz-Aufräumen). Sonst erfolgt die Freigabe beim ersten Öffnen des Termins durch das Team am Folgetag
 - `StudentDayFeedback` zeigt pro Flug Nummer, Zeiten, bewertete Manöver (als Stufe, nicht als Zahl) und die Rückmeldung, darunter die Zusammenfassung und den nächsten Lernschritt
 - Interne Notizen und Startnotizen erscheinen nie (Test)
+
+**Ist-Stand C2:** Migration `0055_flight_day_close.sql` (`flight_day_close_preview`, `close_flight_day` in einer Transaktion mit Rückgaben, Guthaben, Mietposten, Abschluss, Freigabe und Push; `reopen_flight_day`; `school_flight_fill_takeoff`; eindeutige Indizes gegen Doppelbuchungen; `flight_day_daily_run` für Folgetag-Freigabe mit Push und Erinnerung an die Fluglehrer) und `0056_flight_day_schedule.sql` (stündlich über pg_cron). Oberfläche `CloseDayWizard.tsx`, `DayCloseBar.tsx`; `EventAttendance.tsx` entfernt. **Abweichungen:** Freigabe-Regel und Schüleranzeige schon mit 4.5; der Assistent übernimmt Zusammenfassungen direkt; die Routine berücksichtigt nur Termine ab 2026-09-25, damit ältere Tage keine Mitteilungen auslösen; die Mietposten-Beschreibung ist fix «Materialmiete Flugtag».
 
 ## 6. C3 – Flugbuch-Abgleich und Ausbildungsnachweis
 
