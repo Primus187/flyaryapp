@@ -7,9 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { schoolFlightErrorKey } from "@/lib/school-flights";
 import CloseDayWizard from "./CloseDayWizard";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0055 not in generated types.ts yet
-const db = supabase as any;
-
 interface Props {
   eventId: string;
   eventDate: string;
@@ -42,7 +39,7 @@ export default function DayCloseBar({ eventId, eventDate, profiles, onChanged, o
 
   const reopen = async () => {
     if (!confirm(t("flightDay.close.reopenConfirm"))) return;
-    const { error } = await db.rpc("reopen_flight_day", { _event_id: eventId });
+    const { error } = await supabase.rpc("reopen_flight_day", { _event_id: eventId });
     if (error) { toast({ title: t(`flightDay.errors.${schoolFlightErrorKey(error.message)}`), variant: "destructive" }); return; }
     await load();
     onChanged();

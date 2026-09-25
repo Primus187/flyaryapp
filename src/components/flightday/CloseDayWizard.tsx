@@ -15,9 +15,6 @@ import {
 } from "@/lib/flight-day-close";
 import { schoolFlightErrorKey } from "@/lib/school-flights";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0055 not in generated types.ts yet
-const db = supabase as any;
-
 const STEPS = ["landed", "summaries", "equipment", "billing"] as const;
 
 interface Props {
@@ -43,9 +40,9 @@ export default function CloseDayWizard({ eventId, open, profiles, onOpenChange, 
   const fail = (message?: string) => toast({ title: t(`flightDay.errors.${schoolFlightErrorKey(message)}`), variant: "destructive" });
 
   const load = useCallback(async (resetSelection: boolean) => {
-    const { data, error } = await db.rpc("flight_day_close_preview", { _event_id: eventId });
+    const { data, error } = await supabase.rpc("flight_day_close_preview", { _event_id: eventId });
     if (error) { fail(error.message); return; }
-    const p = data as ClosePreview;
+    const p = data as unknown as ClosePreview;
     setPreview(p);
     if (resetSelection) setSelection(defaultSelection(p));
     setDrafts((d) => Object.fromEntries(p.summaries.filter((s) => !s.hasSummary).map((s) => [s.studentId, d[s.studentId] ?? summarySuggestion(s.feedback)])));
@@ -62,7 +59,7 @@ export default function CloseDayWizard({ eventId, open, profiles, onOpenChange, 
 
   const fillTakeoff = async () => {
     setBusy(true);
-    const { error } = await db.rpc("school_flight_fill_takeoff", { _event_id: eventId });
+    const { error } = await supabase.rpc("school_flight_fill_takeoff", { _event_id: eventId });
     setBusy(false);
     if (error) fail(error.message); else await load(false);
   };
@@ -84,12 +81,12 @@ export default function CloseDayWizard({ eventId, open, profiles, onOpenChange, 
 
   const close = async () => {
     setBusy(true);
-    const { data, error } = await db.rpc("close_flight_day", {
+    const { data, error } = await supabase.rpc("close_flight_day", {
       _event_id: eventId, _credit_user_ids: selection.credits, _rental_user_ids: selection.rentals, _return_assignment_ids: selection.returns,
     });
     setBusy(false);
     if (error) { fail(error.message); return; }
-    toast({ title: t("flightDay.close.done"), description: t("flightDay.close.doneDetail", data as Record<string, number>) });
+    toast({ title: t("flightDay.close.done"), description: t("flightDay.close.doneDetail", data as unknown as Record<string, number>) });
     onOpenChange(false);
     await onClosed();
   };

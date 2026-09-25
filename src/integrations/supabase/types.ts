@@ -1685,6 +1685,7 @@ export type Database = {
       flight_events: {
         Row: {
           chat_link: string | null
+          close_reminded_at: string | null
           created_at: string
           created_by: string
           day_closed_at: string | null
@@ -1699,6 +1700,7 @@ export type Database = {
           event_date: string
           event_type: string | null
           feed_description: string | null
+          feedback_notified_at: string | null
           feedback_released_at: string | null
           flight_area: string | null
           flight_prep_notes: string | null
@@ -1718,6 +1720,7 @@ export type Database = {
         }
         Insert: {
           chat_link?: string | null
+          close_reminded_at?: string | null
           created_at?: string
           created_by: string
           day_closed_at?: string | null
@@ -1732,6 +1735,7 @@ export type Database = {
           event_date: string
           event_type?: string | null
           feed_description?: string | null
+          feedback_notified_at?: string | null
           feedback_released_at?: string | null
           flight_area?: string | null
           flight_prep_notes?: string | null
@@ -1751,6 +1755,7 @@ export type Database = {
         }
         Update: {
           chat_link?: string | null
+          close_reminded_at?: string | null
           created_at?: string
           created_by?: string
           day_closed_at?: string | null
@@ -1765,6 +1770,7 @@ export type Database = {
           event_date?: string
           event_type?: string | null
           feed_description?: string | null
+          feedback_notified_at?: string | null
           feedback_released_at?: string | null
           flight_area?: string | null
           flight_prep_notes?: string | null
@@ -3905,6 +3911,15 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      close_flight_day: {
+        Args: {
+          _credit_user_ids?: string[]
+          _event_id: string
+          _rental_user_ids?: string[]
+          _return_assignment_ids?: string[]
+        }
+        Returns: Json
+      }
       event_detail_data: { Args: { _event_id: string }; Returns: Json }
       feed_achievement_item: { Args: { _id: string }; Returns: Json }
       feed_event_item: { Args: { _id: string }; Returns: Json }
@@ -3912,9 +3927,28 @@ export type Database = {
       feed_mention_members: { Args: never; Returns: Json }
       feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
       feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
+      flight_day_close_preview: { Args: { _event_id: string }; Returns: Json }
+      flight_day_daily_run: { Args: { _since?: string }; Returns: Json }
+      flight_day_feedback_recipients: {
+        Args: { _event_id: string }
+        Returns: string[]
+      }
       flight_day_feedback_released: {
         Args: { _event_id: string }
         Returns: boolean
+      }
+      flight_day_has_loan: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
+      }
+      flight_day_local_date: { Args: { _event_id: string }; Returns: string }
+      flight_day_notify_students: {
+        Args: { _event_id: string }
+        Returns: number
+      }
+      flight_day_rate: {
+        Args: { _day: string; _group_id: string; _key: string }
+        Returns: number
       }
       flight_day_require_signup: {
         Args: { _event_id: string; _student_id: string }
@@ -4314,6 +4348,7 @@ export type Database = {
       marketplace_storage_usage: { Args: never; Returns: Json }
       marketplace_trigger_cleanup: { Args: never; Returns: undefined }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
+      reopen_flight_day: { Args: { _event_id: string }; Returns: undefined }
       report_client_error: {
         Args: {
           _app_version?: string
@@ -4395,10 +4430,15 @@ export type Database = {
         Returns: string
       }
       school_flight_delete: { Args: { _flight_id: string }; Returns: undefined }
+      school_flight_fill_takeoff: {
+        Args: { _event_id: string }
+        Returns: number
+      }
       school_flight_guard: {
         Args: { _event_id: string; _need: string }
         Returns: {
           chat_link: string | null
+          close_reminded_at: string | null
           created_at: string
           created_by: string
           day_closed_at: string | null
@@ -4413,6 +4453,7 @@ export type Database = {
           event_date: string
           event_type: string | null
           feed_description: string | null
+          feedback_notified_at: string | null
           feedback_released_at: string | null
           flight_area: string | null
           flight_prep_notes: string | null
