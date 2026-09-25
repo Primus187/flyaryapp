@@ -24,12 +24,10 @@ export function paymentRisk(text: string): PaymentRisk | null {
  * suggested first question in the composer.
  */
 export async function openListingChat(listingId: string, firstQuestion: string): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_open_chat" as any, { _listing: listingId });
+  const { data, error } = await supabase.rpc("marketplace_open_chat", { _listing: listingId });
   if (error) throw error;
   const channelId = data as unknown as string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- column not in generated types.ts yet
-  const { data: channel } = await supabase.from("chat_channels" as any).select("last_message_at").eq("id", channelId).maybeSingle();
+  const { data: channel } = await supabase.from("chat_channels").select("last_message_at").eq("id", channelId).maybeSingle();
   const empty = !(channel as unknown as { last_message_at: string | null } | null)?.last_message_at;
   return empty ? `/messages/${channelId}?text=${encodeURIComponent(firstQuestion)}` : `/messages/${channelId}`;
 }

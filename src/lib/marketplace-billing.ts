@@ -7,16 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 export interface SaleCandidate { user_id: string; pilot_name: string }
 
 export async function fetchSaleCandidates(listingId: string): Promise<SaleCandidate[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_sale_candidates" as any, { _listing: listingId });
+  const { data, error } = await supabase.rpc("marketplace_sale_candidates", { _listing: listingId });
   if (error) throw error;
   return (data ?? []) as unknown as SaleCandidate[];
 }
 
 /** Returns the id of the new billing item; the listing is marked sold (or one piece less). */
 export async function sellToMember(listingId: string, buyerId: string, priceCents: number | null): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_sell_to_member" as any, { _listing: listingId, _buyer: buyerId, _price_cents: priceCents });
+  const { data, error } = await supabase.rpc("marketplace_sell_to_member", { _listing: listingId, _buyer: buyerId, _price_cents: priceCents });
   if (error) throw error;
   return data as unknown as string;
 }

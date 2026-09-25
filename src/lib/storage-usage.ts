@@ -26,8 +26,7 @@ export function usageLevel(totalBytes: number): { percent: number; warn: boolean
 export const bucketsBySize = (u: StorageUsage) => Object.entries(u.buckets).sort((a, b) => b[1] - a[1]);
 
 export async function fetchStorageUsage(): Promise<StorageUsage> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_storage_usage" as any);
+  const { data, error } = await supabase.rpc("marketplace_storage_usage");
   if (error) throw error;
   return data as unknown as StorageUsage;
 }

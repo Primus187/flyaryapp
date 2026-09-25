@@ -9,15 +9,13 @@ export const MARKET_TERMS_VERSION = 1;
 
 export async function hasAcceptedTerms(userId: string): Promise<boolean> {
   const { data } = await supabase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    .from("marketplace_terms_acceptances" as any).select("version").eq("user_id", userId).maybeSingle();
+    .from("marketplace_terms_acceptances").select("version").eq("user_id", userId).maybeSingle();
   return ((data as unknown as { version: number } | null)?.version ?? 0) >= MARKET_TERMS_VERSION;
 }
 
 export async function acceptTerms(userId: string): Promise<void> {
   const { error } = await supabase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    .from("marketplace_terms_acceptances" as any)
+    .from("marketplace_terms_acceptances")
     .upsert({ user_id: userId, version: MARKET_TERMS_VERSION, accepted_at: new Date().toISOString() }, { onConflict: "user_id" });
   if (error) throw error;
 }

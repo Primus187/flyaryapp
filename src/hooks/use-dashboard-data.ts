@@ -112,8 +112,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
     supabase.from("pilot_gliders").select("manufacturer, model, next_check_date, reserve_repack_date").eq("user_id", userId),
     // Events hidden from the home screen with a left swipe (migration 0027; no error handling
     // needed: without the table nothing is hidden).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    supabase.from("hidden_events" as any).select("event_id").eq("user_id", userId),
+    supabase.from("hidden_events").select("event_id").eq("user_id", userId),
   ]);
 
   // Parse stats
@@ -303,8 +302,7 @@ export function useDashboardData() {
   const hideEvent = async (eventId: string) => {
     if (!user) return false;
     queryClient.setQueryData<DashboardData>(["dashboard", user.id], (old) => old && { ...old, events: old.events.filter((e) => e.id !== eventId) });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    const { error } = await supabase.from("hidden_events" as any).insert({ user_id: user.id, event_id: eventId } as any);
+    const { error } = await supabase.from("hidden_events").insert({ user_id: user.id, event_id: eventId });
     void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
     if (error && error.code !== "23505") {
       toast({ title: i18n.t("common.error"), description: error.message, variant: "destructive" });
@@ -314,8 +312,7 @@ export function useDashboardData() {
   };
   const unhideEvent = async (eventId: string) => {
     if (!user) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    await supabase.from("hidden_events" as any).delete().eq("user_id", user.id).eq("event_id", eventId);
+    await supabase.from("hidden_events").delete().eq("user_id", user.id).eq("event_id", eventId);
     void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
   };
 

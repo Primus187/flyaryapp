@@ -3,6 +3,7 @@
  * and the call of the `marketplace_search` RPC (migration 0035).
  */
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import {
   LISTING_CATEGORIES, LISTING_CONDITIONS, type ListingCategory, type ListingCondition, type ListingStatus, type ListingType,
   type PriceType,
@@ -151,8 +152,7 @@ export interface SearchItem {
 export interface SearchPage { items: SearchItem[]; next_cursor: Record<string, unknown> | null }
 
 export async function searchListings(f: SearchFilters, cursor: SearchPage["next_cursor"] = null, near: LatLng | null = null): Promise<SearchPage> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_search" as any, { _filters: toRpcFilters(f, near), _cursor: cursor, _limit: PAGE_SIZE });
+  const { data, error } = await supabase.rpc("marketplace_search", { _filters: toRpcFilters(f, near) as Json, _cursor: cursor as Json, _limit: PAGE_SIZE });
   if (error) throw error;
   return data as unknown as SearchPage;
 }

@@ -48,8 +48,7 @@ export default function TeamPolls({ groupId, canManage = true }: Props) {
   const load = useCallback(async () => {
     setLoading(true);
     const { data: pollRows } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("team_polls" as any)
+      .from("team_polls")
       .select("*")
       .eq("group_id", groupId)
       .order("created_at", { ascending: false });
@@ -58,8 +57,7 @@ export default function TeamPolls({ groupId, canManage = true }: Props) {
 
     if (pollList.length > 0) {
       const { data: responseRows } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        .from("team_poll_responses" as any)
+        .from("team_poll_responses")
         .select("poll_id, user_id, response")
         .in("poll_id", pollList.map((p) => p.id));
       const map: Record<string, PollResponse[]> = {};
@@ -73,8 +71,7 @@ export default function TeamPolls({ groupId, canManage = true }: Props) {
 
     const [{ data: members }, { data: funcs }] = await Promise.all([
       supabase.from("group_members").select("user_id, role").eq("group_id", groupId),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      supabase.from("group_member_functions" as any).select("user_id, function").eq("group_id", groupId),
+      supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
     ]);
     const admins = (members || []).filter((m) => m.role === "admin").map((m) => m.user_id);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
@@ -111,8 +108,7 @@ export default function TeamPolls({ groupId, canManage = true }: Props) {
       closes_at: closesAt ? new Date(closesAt).toISOString() : null,
       created_by: user.id,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    const { error } = await supabase.from("team_polls" as any).insert(newPoll as any);
+    const { error } = await supabase.from("team_polls").insert(newPoll);
     setSaving(false);
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
@@ -124,8 +120,7 @@ export default function TeamPolls({ groupId, canManage = true }: Props) {
   };
 
   const deletePoll = async (pollId: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    await supabase.from("team_polls" as any).delete().eq("id", pollId);
+    await supabase.from("team_polls").delete().eq("id", pollId);
     setPolls((prev) => prev.filter((p) => p.id !== pollId));
   };
 
@@ -133,7 +128,7 @@ export default function TeamPolls({ groupId, canManage = true }: Props) {
     if (!user) return;
     const newResponse = { poll_id: poll.id, user_id: user.id, response: option };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    const { error } = await supabase.from("team_poll_responses" as any).upsert(newResponse as any, { onConflict: "poll_id,user_id" });
+    const { error } = await supabase.from("team_poll_responses").upsert(newResponse as any, { onConflict: "poll_id,user_id" });
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       return;

@@ -94,11 +94,11 @@ export default function Profile() {
         }
       }
     });
-    supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
-    supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
-    supabase.from("pilot_badges" as any).select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    supabase.from("pilot_gliders").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
+    supabase.from("pilot_xp").select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
+    supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
     // Load profile photos
-    supabase.from("profile_photos" as any).select("id, storage_path").eq("user_id", user.id).order("sort_order").then(async ({ data }) => {
+    supabase.from("profile_photos").select("id, storage_path").eq("user_id", user.id).order("sort_order").then(async ({ data }) => {
       if (data && data.length > 0) {
         const photos = await Promise.all((data as any[]).map(async (p) => {
           const url = await resolveSignedUrl(p.storage_path);
@@ -107,9 +107,9 @@ export default function Profile() {
         setProfilePhotos(photos);
       }
     });
-    supabase.from("pilot_gliders" as any).select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
-    supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
-    supabase.from("pilot_badges" as any).select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    supabase.from("pilot_gliders").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
+    supabase.from("pilot_xp").select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
+    supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
     // Load stats for badge progress
     supabase.from("flights").select("duration_minutes, altitude_gain, distance_km, takeoff_location_id").eq("user_id", user.id).then(({ data }) => {
       if (data) {
@@ -216,7 +216,7 @@ export default function Profile() {
         const path = `${user.id}/profile_${Date.now()}_${i}.jpg`;
         const { error } = await supabase.storage.from("flight-photos").upload(path, compressed);
         if (error) throw error;
-        const { data } = await supabase.from("profile_photos" as any).insert({ user_id: user.id, storage_path: path, sort_order: profilePhotos.length + i } as any).select().single();
+        const { data } = await supabase.from("profile_photos").insert({ user_id: user.id, storage_path: path, sort_order: profilePhotos.length + i } as any).select().single();
         if (data) {
           const url = await resolveSignedUrl(path);
           setProfilePhotos(prev => [...prev, { ...(data as any), signedUrl: url || "" }]);
@@ -230,7 +230,7 @@ export default function Profile() {
   };
 
   const handleDeleteProfilePhoto = async (photoId: string, storagePath: string) => {
-    await supabase.from("profile_photos" as any).delete().eq("id", photoId);
+    await supabase.from("profile_photos").delete().eq("id", photoId);
     await supabase.storage.from("flight-photos").remove([storagePath]);
     setProfilePhotos(prev => prev.filter(p => p.id !== photoId));
     toast({ title: t("profile.photoRemoved") });
@@ -238,9 +238,9 @@ export default function Profile() {
 
   const handleAddGlider = async () => {
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
-    if (newGlider.is_default) await supabase.from("pilot_gliders" as any).update({ is_default: false } as any).eq("user_id", user.id);
+    if (newGlider.is_default) await supabase.from("pilot_gliders").update({ is_default: false } as any).eq("user_id", user.id);
     const insertData: any = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null };
-    const { data, error } = await supabase.from("pilot_gliders" as any).insert(insertData).select().single();
+    const { data, error } = await supabase.from("pilot_gliders").insert(insertData).select().single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     if (newGlider.is_default) setGliders(prev => [...prev.map(g => ({ ...g, is_default: false })), data as any]);
     else setGliders(prev => [...prev, data as any]);
@@ -250,7 +250,7 @@ export default function Profile() {
 
   const handleUpdateGlider = async (glider: Glider) => {
     if (!glider.id) return;
-    const { error } = await supabase.from("pilot_gliders" as any).update({
+    const { error } = await supabase.from("pilot_gliders").update({
       manufacturer: glider.manufacturer, model: glider.model, size: glider.size || null,
       last_check_date: glider.last_check_date || null, next_check_date: glider.next_check_date || null,
       reserve_repack_date: glider.reserve_repack_date || null,
@@ -261,8 +261,8 @@ export default function Profile() {
     toast({ title: t("profile.gliderUpdated") });
   };
 
-  const handleDeleteGlider = async (id: string) => { await supabase.from("pilot_gliders" as any).delete().eq("id", id); setGliders(prev => prev.filter(g => g.id !== id)); toast({ title: t("profile.gliderRemoved") }); };
-  const handleSetDefault = async (id: string) => { if (!user) return; await supabase.from("pilot_gliders" as any).update({ is_default: false } as any).eq("user_id", user.id); await supabase.from("pilot_gliders" as any).update({ is_default: true } as any).eq("id", id); setGliders(prev => prev.map(g => ({ ...g, is_default: g.id === id }))); };
+  const handleDeleteGlider = async (id: string) => { await supabase.from("pilot_gliders").delete().eq("id", id); setGliders(prev => prev.filter(g => g.id !== id)); toast({ title: t("profile.gliderRemoved") }); };
+  const handleSetDefault = async (id: string) => { if (!user) return; await supabase.from("pilot_gliders").update({ is_default: false } as any).eq("user_id", user.id); await supabase.from("pilot_gliders").update({ is_default: true } as any).eq("id", id); setGliders(prev => prev.map(g => ({ ...g, is_default: g.id === id }))); };
 
   const isOverdue = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;

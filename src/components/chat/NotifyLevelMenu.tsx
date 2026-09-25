@@ -30,8 +30,7 @@ export default function NotifyLevelMenu({ channel }: { channel: ChatChannel }) {
 
   const choose = async (level: NotifyLevel) => {
     if (level === current) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-    const { error } = await supabase.rpc("chat_set_notify_level" as any, { _channel: channel.id, _level: level } as any);
+    const { error } = await supabase.rpc("chat_set_notify_level", { _channel: channel.id, _level: level });
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       return;

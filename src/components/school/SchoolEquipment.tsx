@@ -118,10 +118,10 @@ export default function SchoolEquipment({ groupId }: Props) {
 
   const load = async () => {
     const [eqRes, asRes, memRes, rateRes, maintenanceRes] = await Promise.all([
-      supabase.from("school_equipment" as any).select("*").eq("group_id", groupId).order("name"),
-      supabase.from("equipment_assignments" as any).select("*").eq("group_id", groupId).order("assigned_on", { ascending: false }),
+      supabase.from("school_equipment").select("*").eq("group_id", groupId).order("name"),
+      supabase.from("equipment_assignments").select("*").eq("group_id", groupId).order("assigned_on", { ascending: false }),
       supabase.from("group_members").select("user_id").eq("group_id", groupId),
-      supabase.from("school_rates" as any).select("*").eq("group_id", groupId).order("valid_from", { ascending: false }),
+      supabase.from("school_rates").select("*").eq("group_id", groupId).order("valid_from", { ascending: false }),
       supabase.from("equipment_maintenance").select("equipment_id, due_at, completed_at").eq("group_id", groupId).is("completed_at", null),
     ]);
     setEquipment(((eqRes.data as any[]) || []) as Equipment[]);
@@ -129,8 +129,7 @@ export default function SchoolEquipment({ groupId }: Props) {
     setRates(((rateRes.data as any[]) || []) as Rate[]);
     setMaintenance(maintenanceRes.data || []);
     setMaintenanceError(!!maintenanceRes.error);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    const { data: running } = await supabase.from("marketplace_listings" as any).select("id, school_equipment_id")
+    const { data: running } = await supabase.from("marketplace_listings").select("id, school_equipment_id")
       .eq("seller_group_id", groupId).not("school_equipment_id", "is", null).in("status", ["draft", "active", "reserved"]);
     const rows = (running ?? []) as unknown as { id: string; school_equipment_id: string }[];
     setListed(Object.fromEntries(rows.map((l) => [l.school_equipment_id, l.id])));
@@ -225,8 +224,8 @@ export default function SchoolEquipment({ groupId }: Props) {
           }))
         : [payload];
     const { error } = editing
-      ? await supabase.from("school_equipment" as any).update(payload).eq("id", editing.id)
-      : await supabase.from("school_equipment" as any).insert(rows as any);
+      ? await supabase.from("school_equipment").update(payload).eq("id", editing.id)
+      : await supabase.from("school_equipment").insert(rows as any);
     setSaving(false);
     if (error) {
       toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
@@ -240,7 +239,7 @@ export default function SchoolEquipment({ groupId }: Props) {
   const retire = async (item: Equipment) => {
     if (!confirm(t("school.equipment.retireConfirm"))) return;
     const { error } = await supabase
-      .from("school_equipment" as any)
+      .from("school_equipment")
       .update({ status: "retired", retired_at: new Date().toISOString().slice(0, 10) })
       .eq("id", item.id);
     if (error) {
@@ -253,7 +252,7 @@ export default function SchoolEquipment({ groupId }: Props) {
 
   const reactivate = async (item: Equipment) => {
     const { error } = await supabase
-      .from("school_equipment" as any)
+      .from("school_equipment")
       .update({ status: "in_stock", retired_at: null })
       .eq("id", item.id);
     if (error) {
@@ -274,7 +273,7 @@ export default function SchoolEquipment({ groupId }: Props) {
   const saveAssignment = async () => {
     if (!assignTarget || !assignUser) return;
     setSaving(true);
-    const { error } = await supabase.from("equipment_assignments" as any).insert({
+    const { error } = await supabase.from("equipment_assignments").insert({
       equipment_id: assignTarget.id,
       group_id: groupId,
       user_id: assignUser,
@@ -283,7 +282,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       note: assignNote.trim() || null,
     } as any);
     if (!error) {
-      await supabase.from("school_equipment" as any).update({ status: "assigned" }).eq("id", assignTarget.id);
+      await supabase.from("school_equipment").update({ status: "assigned" }).eq("id", assignTarget.id);
     }
     setSaving(false);
     if (error) {
@@ -297,11 +296,11 @@ export default function SchoolEquipment({ groupId }: Props) {
 
   const returnAssignment = async (a: Assignment) => {
     const { error } = await supabase
-      .from("equipment_assignments" as any)
+      .from("equipment_assignments")
       .update({ returned_on: new Date().toISOString().slice(0, 10) })
       .eq("id", a.id);
     if (!error) {
-      await supabase.from("school_equipment" as any).update({ status: "in_stock" }).eq("id", a.equipment_id);
+      await supabase.from("school_equipment").update({ status: "in_stock" }).eq("id", a.equipment_id);
     }
     if (error) {
       toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
@@ -313,7 +312,7 @@ export default function SchoolEquipment({ groupId }: Props) {
 
   const applySuggestedRates = async () => {
     setSaving(true);
-    const { error } = await supabase.from("school_rates" as any).insert(
+    const { error } = await supabase.from("school_rates").insert(
       SUGGESTED_RATES.map((r) => ({
         group_id: groupId,
         rate_key: r.key,
@@ -343,8 +342,8 @@ export default function SchoolEquipment({ groupId }: Props) {
       unit,
     };
     const { error } = existing
-      ? await supabase.from("school_rates" as any).update({ amount: value, unit }).eq("id", existing.id)
-      : await supabase.from("school_rates" as any).insert(payload);
+      ? await supabase.from("school_rates").update({ amount: value, unit }).eq("id", existing.id)
+      : await supabase.from("school_rates").insert(payload);
     if (error) {
       toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
       return;

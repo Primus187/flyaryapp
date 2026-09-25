@@ -85,7 +85,7 @@ export default function FlightForm() {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
     // Load flight templates
-    supabase.from("flight_templates" as any).select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
+    supabase.from("flight_templates").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
       if (data) setTemplates(data as any as FlightTemplate[]);
     });
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
@@ -112,7 +112,7 @@ export default function FlightForm() {
         setYoutubeUrls(data.filter((v: any) => v.youtube_url).map((v: any) => v.youtube_url));
         setExistingUploadedVideos(data.filter((v: any) => v.storage_path).map((v: any) => ({ id: v.id, storage_path: v.storage_path, poster_path: v.poster_path })));
       });
-      supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
+      supabase.from("flight_training_items").select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
     }
     // Load tag suggestions from user's existing flights
     supabase.from("flights").select("tags").eq("user_id", user.id).limit(200).then(({ data }) => {
@@ -400,8 +400,8 @@ export default function FlightForm() {
         }
       }
       // Save training items
-      if (isEdit) { await supabase.from("flight_training_items" as any).delete().eq("flight_id", flightId); }
-      if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items" as any).insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
+      if (isEdit) { await supabase.from("flight_training_items").delete().eq("flight_id", flightId); }
+      if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items").insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
       // Auto-verify challenge goals if IGC data exists
       if (igcData && igcData.points.length > 0) {
         try {
@@ -411,15 +411,15 @@ export default function FlightForm() {
           if (memberships && memberships.length > 0) {
             const groupIds = memberships.map(m => m.group_id);
             const today = new Date().toISOString().split("T")[0];
-            const { data: activeChallenges } = await supabase.from("challenges" as any).select("id").in("group_id", groupIds);
+            const { data: activeChallenges } = await supabase.from("challenges").select("id").in("group_id", groupIds);
             const filteredChallenges = (activeChallenges as any[] || []);
             if (filteredChallenges.length > 0) {
               const challengeIds = filteredChallenges.map(c => c.id);
-              const { data: goalsData } = await supabase.from("challenge_goals" as any).select("id, challenge_id, latitude, longitude, radius_meters, goal_type").in("challenge_id", challengeIds);
+              const { data: goalsData } = await supabase.from("challenge_goals").select("id, challenge_id, latitude, longitude, radius_meters, goal_type").in("challenge_id", challengeIds);
               const goalsWithCoords = (goalsData as any[] || []).filter(g => g.latitude && g.longitude);
               if (goalsWithCoords.length > 0) {
                 // Check already completed
-                const { data: existingProgress } = await supabase.from("challenge_progress" as any).select("goal_id").eq("user_id", user.id);
+                const { data: existingProgress } = await supabase.from("challenge_progress").select("goal_id").eq("user_id", user.id);
                 const completedIds = new Set((existingProgress as any[] || []).map(p => p.goal_id));
                 const uncompleted = goalsWithCoords.filter(g => !completedIds.has(g.id));
                 if (uncompleted.length > 0) {
@@ -429,12 +429,12 @@ export default function FlightForm() {
                       const goal = uncompleted.find(g => g.id === goalId)!;
                       return { challenge_id: goal.challenge_id, user_id: user.id, goal_id: goalId, flight_id: flightId };
                     });
-                    await supabase.from("challenge_progress" as any).insert(inserts as any);
+                    await supabase.from("challenge_progress").insert(inserts as any);
 
                     // Create feed achievements for each reached goal
                     for (const goalId of reachedIds) {
                       const goal = uncompleted.find(g => g.id === goalId)!;
-                      await supabase.from("feed_achievements" as any).insert({
+                      await supabase.from("feed_achievements").insert({
                         user_id: user.id, challenge_id: goal.challenge_id,
                         goal_id: goalId, achievement_type: "goal_reached",
                       } as any);
@@ -444,10 +444,10 @@ export default function FlightForm() {
                     const affectedChallengeIds = [...new Set(reachedIds.map(gId => uncompleted.find(g => g.id === gId)!.challenge_id))];
                     for (const cId of affectedChallengeIds) {
                       const totalGoals = goalsWithCoords.filter(g => g.challenge_id === cId).length;
-                      const { data: allProgress } = await supabase.from("challenge_progress" as any)
+                      const { data: allProgress } = await supabase.from("challenge_progress")
                         .select("goal_id").eq("challenge_id", cId).eq("user_id", user.id);
                       if ((allProgress as any[] || []).length >= totalGoals) {
-                        await supabase.from("feed_achievements" as any).insert({
+                        await supabase.from("feed_achievements").insert({
                           user_id: user.id, challenge_id: cId,
                           goal_id: null, achievement_type: "challenge_completed",
                         } as any);
@@ -465,7 +465,7 @@ export default function FlightForm() {
 
       // Check for newly awarded badges
       try {
-        const { data: newBadges } = await supabase.from("pilot_badges" as any)
+        const { data: newBadges } = await supabase.from("pilot_badges")
           .select("badge_key, unlocked_at").eq("user_id", user.id)
           .gte("unlocked_at", new Date(Date.now() - 10000).toISOString());
         if (newBadges && (newBadges as any[]).length > 0) {
@@ -495,7 +495,7 @@ export default function FlightForm() {
 
   const saveTemplate = async () => {
     if (!user || !templateName.trim()) return;
-    const { data, error } = await supabase.from("flight_templates" as any).insert({
+    const { data, error } = await supabase.from("flight_templates").insert({
       user_id: user.id,
       name: templateName.trim(),
       takeoff_location_id: form.takeoff_location_id || null,
@@ -511,7 +511,7 @@ export default function FlightForm() {
   };
 
   const deleteTemplate = async (tplId: string) => {
-    await supabase.from("flight_templates" as any).delete().eq("id", tplId);
+    await supabase.from("flight_templates").delete().eq("id", tplId);
     setTemplates(prev => prev.filter(t => t.id !== tplId));
     toast({ title: t("flights.templateDeleted") });
   };

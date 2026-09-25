@@ -40,9 +40,9 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
   const loadContext = async () => {
     const [ratesRes, staffRes, creditsRes, itemsRes] = await Promise.all([
       supabase.from("school_rates").select("rate_key, amount").eq("group_id", groupId),
-      supabase.from("event_staff" as any).select("user_id, role").eq("event_id", eventId),
-      supabase.from("launch_leader_credits" as any).select("user_id").eq("event_id", eventId),
-      supabase.from("billing_items" as any).select("user_id, item_type").eq("event_id", eventId),
+      supabase.from("event_staff").select("user_id, role").eq("event_id", eventId),
+      supabase.from("launch_leader_credits").select("user_id").eq("event_id", eventId),
+      supabase.from("billing_items").select("user_id, item_type").eq("event_id", eventId),
     ]);
     const map: Record<string, number> = {};
     (ratesRes.data || []).forEach((r: any) => { map[r.rate_key] = Number(r.amount) || 0; });
@@ -81,7 +81,7 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
 
     if (helpers.length > 0 && creditRate > 0) {
       const { data: existing } = await supabase
-        .from("launch_leader_credits" as any)
+        .from("launch_leader_credits")
         .select("user_id")
         .eq("event_id", eventId);
       const already = new Set(((existing as any[]) || []).map((r) => r.user_id));
@@ -90,7 +90,7 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
         booking_date: bookingDate, days: 1, amount: creditRate, created_by: user.id,
       }));
       if (rows.length > 0) {
-        const { error } = await supabase.from("launch_leader_credits" as any).insert(rows as any);
+        const { error } = await supabase.from("launch_leader_credits").insert(rows as any);
         if (error) {
           setBooking(false);
           toast({ title: t("common.error"), description: error.message, variant: "destructive" });
@@ -102,7 +102,7 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
 
     if (attendedIds.length > 0 && rentalRate > 0) {
       const { data: existing } = await supabase
-        .from("billing_items" as any)
+        .from("billing_items")
         .select("user_id, item_type")
         .eq("event_id", eventId);
       const already = new Set(
@@ -114,7 +114,7 @@ export default function EventAttendance({ eventId, groupId, eventDate, signups, 
         unit_amount: rentalRate, amount: rentalRate, billing_date: bookingDate, created_by: user.id,
       }));
       if (rows.length > 0) {
-        const { error } = await supabase.from("billing_items" as any).insert(rows as any);
+        const { error } = await supabase.from("billing_items").insert(rows as any);
         if (error) {
           setBooking(false);
           toast({ title: t("common.error"), description: error.message, variant: "destructive" });

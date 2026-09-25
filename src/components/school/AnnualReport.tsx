@@ -49,8 +49,7 @@ export default function AnnualReport({ groupId }: Props) {
         supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
         supabase.from("instructor_certifications").select("user_id, cert_type, valid_until").eq("group_id", groupId),
         supabase.from("annual_report_submissions").select("id, year, submitted_at").eq("group_id", groupId),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("training_level_history" as any).select("user_id, training_level, changed_at").eq("group_id", groupId),
+        supabase.from("training_level_history").select("user_id, training_level, changed_at").eq("group_id", groupId),
       ]);
 
       const studentIds = (membersRes.data || []).filter((m) => m.role === "member").map((m) => m.user_id);

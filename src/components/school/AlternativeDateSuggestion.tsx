@@ -30,8 +30,7 @@ export default function AlternativeDateSuggestion({ eventId, groupId, eventDate 
       const [funcRes, availRes] = await Promise.all([
         supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
         supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-          .from("instructor_availability" as any)
+          .from("instructor_availability")
           .select("user_id, date")
           .eq("group_id", groupId)
           .eq("status", "available")

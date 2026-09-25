@@ -9,6 +9,8 @@
     "build:analyze": "vite build --mode analyze",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "gen-types": "node scripts/gen-types.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

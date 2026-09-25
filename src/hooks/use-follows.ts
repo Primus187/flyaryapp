@@ -14,10 +14,10 @@ export function useFollows(targetUserId?: string) {
 
     const [followingRes, followerCountRes, followingCountRes] = await Promise.all([
       user
-        ? supabase.from("follows" as any).select("id").eq("follower_id", user.id).eq("following_id", targetUserId).maybeSingle()
+        ? supabase.from("follows").select("id").eq("follower_id", user.id).eq("following_id", targetUserId).maybeSingle()
         : Promise.resolve({ data: null }),
-      supabase.from("follows" as any).select("id", { count: "exact", head: true }).eq("following_id", targetUserId),
-      supabase.from("follows" as any).select("id", { count: "exact", head: true }).eq("follower_id", targetUserId),
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", targetUserId),
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", targetUserId),
     ]);
 
     setIsFollowing(!!followingRes.data);
@@ -34,11 +34,11 @@ export function useFollows(targetUserId?: string) {
     setLoading(true);
 
     if (isFollowing) {
-      await supabase.from("follows" as any).delete().eq("follower_id", user.id).eq("following_id", targetUserId);
+      await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", targetUserId);
       setIsFollowing(false);
       setFollowerCount((c) => Math.max(0, c - 1));
     } else {
-      await supabase.from("follows" as any).insert({ follower_id: user.id, following_id: targetUserId });
+      await supabase.from("follows").insert({ follower_id: user.id, following_id: targetUserId });
       setIsFollowing(true);
       setFollowerCount((c) => c + 1);
     }

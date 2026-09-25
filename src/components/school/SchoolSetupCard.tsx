@@ -24,15 +24,15 @@ export default function SchoolSetupCard({ groupId }: Props) {
     const load = async () => {
       const [funcs, rates, equip, events, push] = await Promise.all([
         supabase
-          .from("group_member_functions" as any)
+          .from("group_member_functions")
           .select("id", { count: "exact", head: true })
           .eq("group_id", groupId)
           .in("function", ["school_lead", "instructor", "launch_helper"] as any),
-        supabase.from("school_rates" as any).select("id", { count: "exact", head: true }).eq("group_id", groupId),
-        supabase.from("school_equipment" as any).select("id", { count: "exact", head: true }).eq("group_id", groupId),
+        supabase.from("school_rates").select("id", { count: "exact", head: true }).eq("group_id", groupId),
+        supabase.from("school_equipment").select("id", { count: "exact", head: true }).eq("group_id", groupId),
         supabase.from("flight_events").select("id", { count: "exact", head: true }).eq("group_id", groupId),
         user
-          ? supabase.from("push_subscriptions" as any).select("id", { count: "exact", head: true }).eq("user_id", user.id)
+          ? supabase.from("push_subscriptions").select("id", { count: "exact", head: true }).eq("user_id", user.id)
           : Promise.resolve({ count: 0 } as any),
       ]);
       if (cancelled) return;

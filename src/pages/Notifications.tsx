@@ -52,7 +52,7 @@ export default function NotificationsPage() {
       setGroups(grps);
       const entries = await Promise.all(
         grps.map(async (g) => {
-          const { data } = await supabase.rpc("get_group_push_status" as any, { _group_id: g.id } as any);
+          const { data } = await supabase.rpc("get_group_push_status", { _group_id: g.id } as any);
           return [g.id, ((data as any[]) || []) as PushPerson[]] as const;
         })
       );

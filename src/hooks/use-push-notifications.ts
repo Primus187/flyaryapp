@@ -53,7 +53,7 @@ async function createSubscription(userId: string): Promise<PushSubscribeResult> 
     if (!matches) {
       await existing.unsubscribe();
       await supabase
-        .from("push_subscriptions" as any)
+        .from("push_subscriptions")
         .delete()
         .eq("user_id", userId)
         .eq("endpoint", existing.endpoint);
@@ -68,7 +68,7 @@ async function createSubscription(userId: string): Promise<PushSubscribeResult> 
     }));
 
   const json = subscription.toJSON();
-  const { error } = await supabase.from("push_subscriptions" as any).upsert(
+  const { error } = await supabase.from("push_subscriptions").upsert(
     {
       user_id: userId,
       endpoint: json.endpoint,
@@ -85,8 +85,7 @@ async function createSubscription(userId: string): Promise<PushSubscribeResult> 
   // The previous subscription of this device died with the old service worker: drop its row.
   const previous = getRememberedPushEndpoint(userId);
   if (previous && previous !== subscription.endpoint) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    await supabase.from("push_subscriptions" as any).delete().eq("user_id", userId).eq("endpoint", previous);
+    await supabase.from("push_subscriptions").delete().eq("user_id", userId).eq("endpoint", previous);
   }
   rememberPushEnabled(userId, subscription.endpoint);
   return { ok: true };
@@ -175,7 +174,7 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         await subscription.unsubscribe();
-        await supabase.from("push_subscriptions" as any).delete().eq("user_id", user.id).eq("endpoint", subscription.endpoint);
+        await supabase.from("push_subscriptions").delete().eq("user_id", user.id).eq("endpoint", subscription.endpoint);
       }
       forgetPushEnabled(user.id);
       setIsSubscribed(false);

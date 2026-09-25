@@ -71,14 +71,14 @@ export default function ChallengeDetail() {
 
   const loadData = async () => {
     setLoading(true);
-    const { data: c } = await supabase.from("challenges" as any).select("*").eq("id", id).single();
+    const { data: c } = await supabase.from("challenges").select("*").eq("id", id).single();
     if (!c) { navigate(-1); return; }
     setChallenge(c);
 
     const { data: adminCheck } = await supabase.rpc("is_group_admin", { _user_id: user!.id, _group_id: (c as any).group_id });
     setIsAdmin(!!adminCheck);
 
-    const { data: goalsData } = await supabase.from("challenge_goals" as any).select("*").eq("challenge_id", id).order("sort_order" as any);
+    const { data: goalsData } = await supabase.from("challenge_goals").select("*").eq("challenge_id", id).order("sort_order" as any);
     const goalsList = (goalsData as any[] || []) as Goal[];
 
     const locationIds = goalsList.filter(g => g.location_id).map(g => g.location_id!);
@@ -89,7 +89,7 @@ export default function ChallengeDetail() {
     }
     setGoals(goalsList);
 
-    const { data: progressData } = await supabase.from("challenge_progress" as any).select("user_id, goal_id").eq("challenge_id", id);
+    const { data: progressData } = await supabase.from("challenge_progress").select("user_id, goal_id").eq("challenge_id", id);
     const progressList = (progressData as any[] || []);
     const myGoalIds = new Set(progressList.filter(p => p.user_id === user!.id).map(p => p.goal_id));
     setMyProgress(myGoalIds);
@@ -133,10 +133,10 @@ export default function ChallengeDetail() {
   const handleToggleGoal = async (goalId: string) => {
     if (!user || !id) return;
     if (myProgress.has(goalId)) {
-      await supabase.from("challenge_progress" as any).delete().eq("challenge_id", id).eq("user_id", user.id).eq("goal_id", goalId);
+      await supabase.from("challenge_progress").delete().eq("challenge_id", id).eq("user_id", user.id).eq("goal_id", goalId);
       setMyProgress(prev => { const n = new Set(prev); n.delete(goalId); return n; });
     } else {
-      await supabase.from("challenge_progress" as any).insert({ challenge_id: id, user_id: user.id, goal_id: goalId } as any);
+      await supabase.from("challenge_progress").insert({ challenge_id: id, user_id: user.id, goal_id: goalId } as any);
       setMyProgress(prev => new Set(prev).add(goalId));
     }
     loadData();
@@ -144,7 +144,7 @@ export default function ChallengeDetail() {
 
   const handleAddGoal = async (goal: { label: string; points: number; goal_type: string; latitude: number | null; longitude: number | null; radius_meters: number; location_id: string | null }) => {
     if (!id) return;
-    await supabase.from("challenge_goals" as any).insert({
+    await supabase.from("challenge_goals").insert({
       challenge_id: id,
       label: goal.label,
       points: goal.points,
@@ -161,13 +161,13 @@ export default function ChallengeDetail() {
   };
 
   const handleDeleteGoal = async (goalId: string) => {
-    await supabase.from("challenge_goals" as any).delete().eq("id", goalId);
+    await supabase.from("challenge_goals").delete().eq("id", goalId);
     loadData();
     toast({ title: t("challenges.goalRemoved") });
   };
 
   const handleEditGoal = async (goalId: string, goal: { label: string; points: number; goal_type: string; latitude: number | null; longitude: number | null; radius_meters: number; location_id: string | null }) => {
-    await supabase.from("challenge_goals" as any).update({
+    await supabase.from("challenge_goals").update({
       label: goal.label,
       points: goal.points,
       goal_type: goal.goal_type,
@@ -183,7 +183,7 @@ export default function ChallengeDetail() {
 
   const handleDeleteChallenge = async () => {
     if (!confirm(t("challenges.deleteConfirm"))) return;
-    await supabase.from("challenges" as any).delete().eq("id", id);
+    await supabase.from("challenges").delete().eq("id", id);
     navigate(-1);
     toast({ title: t("challenges.challengeDeleted") });
   };
@@ -199,7 +199,7 @@ export default function ChallengeDetail() {
   const handleSaveChallenge = async () => {
     if (!editTitle.trim() || !id) return;
     setSaving(true);
-    const { error } = await supabase.from("challenges" as any).update({
+    const { error } = await supabase.from("challenges").update({
       title: editTitle.trim(),
       description: editDesc.trim() || null,
       end_date: editEndDate || null,

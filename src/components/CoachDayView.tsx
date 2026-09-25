@@ -95,7 +95,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const [profilesRes, flightsRes, notesRes] = await Promise.all([
       supabase.from("profiles").select("user_id, pilot_name").in("user_id", studentIds),
       supabase.from("flights").select("user_id").in("user_id", studentIds).eq("date", dateStr),
-      supabase.from("student_day_notes" as any).select("*").eq("event_id", eventId),
+      supabase.from("student_day_notes").select("*").eq("event_id", eventId),
     ]);
     if (profilesRes.error || flightsRes.error || notesRes.error) throw profilesRes.error || flightsRes.error || notesRes.error;
 
@@ -126,7 +126,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
 
       if (prevEvents && prevEvents.length > 0) {
         const { data: prevNotes } = await supabase
-          .from("student_day_notes" as any)
+          .from("student_day_notes")
           .select("student_user_id, note")
           .eq("event_id", prevEvents[0].id)
           .is("flight_number", null)
@@ -204,7 +204,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const value: NoteDraft = { id: original.id || crypto.randomUUID(), note: original.note,
       visible_to_student: original.visible_to_student, is_next_step: original.is_next_step ?? false, ...patch };
     coachNoteAutosave.edit(keyFor(studentId, index), value, async (snapshot) => {
-      const { error } = await supabase.from("student_day_notes" as any).upsert({
+      const { error } = await supabase.from("student_day_notes").upsert({
         ...snapshot, event_id: eventId, student_user_id: studentId,
         flight_number: student.notes[index].flight_number, instructor_id: user.id,
       } as any).select("id").single();
@@ -230,7 +230,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
     const newPaused = !student.paused;
 
     if (newPaused) {
-      const { error } = await supabase.from("student_day_notes" as any)
+      const { error } = await supabase.from("student_day_notes")
         .insert({
           event_id: eventId,
           student_user_id: studentId,
@@ -241,7 +241,7 @@ export default function CoachDayView({ eventId, eventDate, groupId }: Props) {
         } as any);
       if (error) { toast({ title: t("journeys.saveFailed"), variant: "destructive" }); return; }
     } else {
-      const { error } = await supabase.from("student_day_notes" as any)
+      const { error } = await supabase.from("student_day_notes")
         .delete()
         .eq("event_id", eventId)
         .eq("student_user_id", studentId)

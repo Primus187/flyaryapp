@@ -57,8 +57,7 @@ export default function PilotProfile() {
   // Direct messages are possible with people sharing a group.
   useEffect(() => {
     if (!user || !userId || user.id === userId) { setCanMessage(false); return; }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-    supabase.rpc("chat_shares_group" as any, { _a: user.id, _b: userId } as any).then(({ data }) => setCanMessage(data === true));
+    supabase.rpc("chat_shares_group", { _a: user.id, _b: userId }).then(({ data }) => setCanMessage(data === true));
   }, [user, userId]);
 
   const startChat = async () => {
@@ -90,11 +89,11 @@ export default function PilotProfile() {
     try {
       const [profileRes, xpRes, badgesRes, glidersRes, flightsRes, photosRes] = await Promise.all([
         supabase.from("profiles").select("pilot_name, bio, avatar_url, cover_photo_url, flight_school").eq("user_id", userId!).single(),
-        supabase.from("pilot_xp" as any).select("total_xp, level").eq("user_id", userId!).single(),
+        supabase.from("pilot_xp").select("total_xp, level").eq("user_id", userId!).single(),
         supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", userId!),
         supabase.from("pilot_gliders").select("manufacturer, model, size, is_default").eq("user_id", userId!),
         supabase.from("flights").select("duration_minutes, altitude_gain, distance_km, takeoff_location_id").eq("user_id", userId!),
-        supabase.from("profile_photos" as any).select("storage_path").eq("user_id", userId!).order("sort_order"),
+        supabase.from("profile_photos").select("storage_path").eq("user_id", userId!).order("sort_order"),
       ]);
 
       if (profileRes.data) {

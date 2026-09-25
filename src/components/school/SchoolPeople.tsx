@@ -79,7 +79,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
     setLoading(true);
     const [{ data: members }, { data: funcs }] = await Promise.all([
       supabase.from("group_members").select("user_id, role").eq("group_id", groupId),
-      supabase.from("group_member_functions" as any).select("user_id, function").eq("group_id", groupId),
+      supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
     ]);
     const memberList = members || [];
     const userIds = memberList.map((m) => m.user_id);
@@ -141,20 +141,20 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
       const toAdd = editFunctions.filter((f) => !editing.functions.includes(f));
       const toRemove = editing.functions.filter((f) => !editFunctions.includes(f));
       if (toAdd.length > 0) {
-        const { error } = await supabase.from("group_member_functions" as any).insert(
+        const { error } = await supabase.from("group_member_functions").insert(
           toAdd.map((f) => ({ group_id: groupId, user_id: editing.userId, function: f })) as any
         );
         if (error) throw error;
       }
       for (const f of toRemove) {
-        const { error } = await supabase.from("group_member_functions" as any).delete()
+        const { error } = await supabase.from("group_member_functions").delete()
           .eq("group_id", groupId).eq("user_id", editing.userId).eq("function", f);
         if (error) throw error;
       }
       // training level
       const newLevel = editLevel || null;
       if (newLevel !== editing.trainingLevel) {
-        const { error } = await supabase.rpc("set_member_training_level" as any, {
+        const { error } = await supabase.rpc("set_member_training_level", {
           _group_id: groupId,
           _user_id: editing.userId,
           _training_level: newLevel,
@@ -175,9 +175,9 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
     const has = p.functions.includes(f);
     setAssignBusy(`${p.userId}-${f}`);
     const { error } = has
-      ? await supabase.from("group_member_functions" as any).delete()
+      ? await supabase.from("group_member_functions").delete()
           .eq("group_id", groupId).eq("user_id", p.userId).eq("function", f)
-      : await supabase.from("group_member_functions" as any).insert({ group_id: groupId, user_id: p.userId, function: f } as any);
+      : await supabase.from("group_member_functions").insert({ group_id: groupId, user_id: p.userId, function: f } as any);
     setAssignBusy(null);
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });

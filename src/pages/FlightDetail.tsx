@@ -83,7 +83,7 @@ export default function FlightDetail() {
     loadPhotos();
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
-    supabase.from("flight_training_items" as any).select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
+    supabase.from("flight_training_items").select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
       if (data) setTrainedManeuvers((data as any[]).map((d: any) => d.training_items?.name).filter(Boolean));
     });
     // Load pilot profile
@@ -139,9 +139,9 @@ export default function FlightDetail() {
       } as any).select("id").single();
       if (error) throw error;
       if (trainedManeuvers.length > 0) {
-        const { data: items } = await supabase.from("flight_training_items" as any).select("item_id").eq("flight_id", id);
+        const { data: items } = await supabase.from("flight_training_items").select("item_id").eq("flight_id", id);
         if (items && items.length > 0) {
-          await supabase.from("flight_training_items" as any).insert((items as any[]).map((i: any) => ({ flight_id: data.id, item_id: i.item_id })) as any);
+          await supabase.from("flight_training_items").insert((items as any[]).map((i: any) => ({ flight_id: data.id, item_id: i.item_id })) as any);
         }
       }
       toast({ title: t("flights.flightDuplicated") });

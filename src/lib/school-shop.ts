@@ -50,15 +50,13 @@ export function shopProblems(p: ShopProfile): ShopProblem[] {
 }
 
 export async function fetchMyShops(): Promise<MyShop[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_my_shops" as any);
+  const { data, error } = await supabase.rpc("marketplace_my_shops");
   if (error) throw error;
   return (data ?? []) as unknown as MyShop[];
 }
 
 export async function fetchShopProfile(groupId: string): Promise<ShopProfile | null> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-  const { data } = await supabase.from("school_shop_profiles" as any).select("*").eq("group_id", groupId).maybeSingle();
+  const { data } = await supabase.from("school_shop_profiles").select("*").eq("group_id", groupId).maybeSingle();
   return (data as unknown as ShopProfile | null) ?? null;
 }
 
@@ -68,7 +66,6 @@ export async function saveShopProfile(p: ShopProfile): Promise<void> {
     ...p, legal_name: p.legal_name.trim(), street: p.street.trim(), locality: p.locality.trim(), email: p.email.trim(),
     warranty_text: p.warranty_text.trim(), phone: p.phone?.trim() || null, uid_number: p.uid_number?.trim() ? normalizeUid(p.uid_number) : null,
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-  const { error } = await supabase.from("school_shop_profiles" as any).upsert(row, { onConflict: "group_id" });
+  const { error } = await supabase.from("school_shop_profiles").upsert(row, { onConflict: "group_id" });
   if (error) throw error;
 }

@@ -65,7 +65,7 @@ export function useOfflineSync() {
 
         // Insert training items
         if (flight.selectedTrainingIds.length > 0) {
-          await supabase.from("flight_training_items" as any).insert(
+          await supabase.from("flight_training_items").insert(
             flight.selectedTrainingIds.map((item_id) => ({
               flight_id: flightId,
               item_id,

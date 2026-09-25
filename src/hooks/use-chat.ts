@@ -15,8 +15,7 @@ export function useChatInbox() {
     staleTime: 30_000,
     refetchInterval: 120_000,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-      const { data, error } = await supabase.rpc("chat_inbox" as any);
+      const { data, error } = await supabase.rpc("chat_inbox");
       if (error) throw error;
       return (data as unknown as ChatChannel[]) || [];
     },
@@ -50,10 +49,8 @@ export function useChatChannel(params: { channelId?: string; eventId?: string })
     staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = channelId
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-        ? await supabase.rpc("chat_channel_json" as any, { _channel: channelId } as any)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-        : await supabase.rpc("chat_event_channel" as any, { _event: eventId } as any);
+        ? await supabase.rpc("chat_channel_json", { _channel: channelId })
+        : await supabase.rpc("chat_event_channel", { _event: eventId });
       if (error) throw error;
       return (data as unknown as ChatChannel | null) ?? null;
     },
@@ -70,8 +67,7 @@ export function useDirectCandidates(enabled = true) {
     enabled: !!user && enabled,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-      const { data, error } = await supabase.rpc("chat_direct_candidates" as any);
+      const { data, error } = await supabase.rpc("chat_direct_candidates");
       if (error) throw error;
       return (data as unknown as DirectCandidate[]) || [];
     },
@@ -80,8 +76,7 @@ export function useDirectCandidates(enabled = true) {
 
 /** Opens (creates if needed) the direct channel with another person; returns its id. */
 export async function openDirectChannel(otherUserId: string): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-  const { data, error } = await supabase.rpc("chat_open_direct" as any, { _other: otherUserId } as any);
+  const { data, error } = await supabase.rpc("chat_open_direct", { _other: otherUserId });
   if (error) throw error;
   return data as unknown as string;
 }
@@ -100,8 +95,7 @@ export function useChatSearch(query: string) {
     enabled: !!user && q.length >= 2,
     staleTime: 30_000,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-      const { data, error } = await supabase.rpc("chat_search" as any, { _q: q } as any);
+      const { data, error } = await supabase.rpc("chat_search", { _q: q });
       if (error) throw error;
       return (data as unknown as ChatSearchHit[]) || [];
     },

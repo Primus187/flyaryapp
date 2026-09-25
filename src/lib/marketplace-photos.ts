@@ -89,8 +89,7 @@ export async function uploadListingPhoto(listingId: string, file: File, position
       uploaded.push(p);
     }
     const { data, error } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("marketplace_listing_photos" as any)
+      .from("marketplace_listing_photos")
       .insert({ id: photoId, listing_id: listingId, path, thumb_path, position })
       .select("id, listing_id, path, thumb_path, position")
       .single();
@@ -109,21 +108,18 @@ export async function uploadListingPhoto(listingId: string, file: File, position
 export async function deleteListingPhoto(photo: Pick<ListingPhoto, "id" | "path" | "thumb_path">): Promise<void> {
   const { error: storageError } = await supabase.storage.from(MARKET_PHOTO_BUCKET).remove([photo.path, photo.thumb_path]);
   if (storageError) throw storageError;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-  const { error } = await supabase.from("marketplace_listing_photos" as any).delete().eq("id", photo.id);
+  const { error } = await supabase.from("marketplace_listing_photos").delete().eq("id", photo.id);
   if (error) throw error;
 }
 
 export async function reorderListingPhotos(listingId: string, photoIds: string[]): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { error } = await supabase.rpc("marketplace_reorder_photos" as any, { _listing: listingId, _photo_ids: photoIds });
+  const { error } = await supabase.rpc("marketplace_reorder_photos", { _listing: listingId, _photo_ids: photoIds });
   if (error) throw error;
 }
 
 /** Deletes a listing: first its files (the row's cascade would leave them in the bucket), then the listing. */
 export async function deleteListing(listingId: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-  const { data, error: readError } = await supabase.from("marketplace_listing_photos" as any)
+  const { data, error: readError } = await supabase.from("marketplace_listing_photos")
     .select("path, thumb_path").eq("listing_id", listingId);
   if (readError) throw readError;
   const files = ((data ?? []) as unknown as { path: string; thumb_path: string }[]).flatMap((p) => [p.path, p.thumb_path]);
@@ -131,16 +127,14 @@ export async function deleteListing(listingId: string): Promise<void> {
     const { error } = await supabase.storage.from(MARKET_PHOTO_BUCKET).remove(files);
     if (error) throw error;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-  const { error } = await supabase.from("marketplace_listings" as any).delete().eq("id", listingId);
+  const { error } = await supabase.from("marketplace_listings").delete().eq("id", listingId);
   if (error) throw error;
 }
 
 /** Cover photo (lowest position) per listing, as signed thumbnail URL. */
 export async function coverThumbnails(listingIds: readonly string[]): Promise<Record<string, string>> {
   if (listingIds.length === 0) return {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-  const { data } = await supabase.from("marketplace_listing_photos" as any)
+  const { data } = await supabase.from("marketplace_listing_photos")
     .select("id, listing_id, path, thumb_path, position").in("listing_id", listingIds as string[]);
   const covers = new Map<string, ListingPhoto>();
   for (const p of (data ?? []) as unknown as ListingPhoto[]) {

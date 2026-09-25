@@ -75,14 +75,10 @@ export default function MarketListingDetail() {
     if (!id || !user) return;
     (async () => {
       const [{ data: l }, { data: p }, { data: s }, { data: manage }] = await Promise.all([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("marketplace_listings" as any).select("*").eq("id", id).maybeSingle(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("marketplace_listing_photos" as any).select("id, listing_id, path, thumb_path, position").eq("listing_id", id),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-        supabase.rpc("marketplace_seller_cards" as any, { _listing_ids: [id] }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-        supabase.rpc("market_can_manage_listing" as any, { _uid: user.id, _listing: id }),
+        supabase.from("marketplace_listings").select("*").eq("id", id).maybeSingle(),
+        supabase.from("marketplace_listing_photos").select("id, listing_id, path, thumb_path, position").eq("listing_id", id),
+        supabase.rpc("marketplace_seller_cards", { _listing_ids: [id] }),
+        supabase.rpc("market_can_manage_listing", { _uid: user.id, _listing: id }),
       ]);
       if (!l) { setLoading(false); return; }
       const sorted = sortPhotos((p ?? []) as unknown as ListingPhoto[]);

@@ -33,7 +33,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
 
   const load = async () => {
     const { data } = await supabase
-      .from("event_program_items" as any)
+      .from("event_program_items")
       .select("*")
       .eq("event_id", eventId)
       .order("item_date")
@@ -46,7 +46,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
 
   const addItem = async () => {
     if (!form.title.trim() || !form.date) return;
-    const { error } = await supabase.from("event_program_items" as any).insert({
+    const { error } = await supabase.from("event_program_items").insert({
       event_id: eventId,
       item_date: form.date,
       item_time: form.time || null,
@@ -64,7 +64,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
   };
 
   const removeItem = async (id: string) => {
-    await supabase.from("event_program_items" as any).delete().eq("id", id);
+    await supabase.from("event_program_items").delete().eq("id", id);
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
 

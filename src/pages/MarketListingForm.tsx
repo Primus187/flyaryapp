@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AlertTriangle, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
@@ -99,8 +100,7 @@ export default function MarketListingForm() {
   useEffect(() => {
     const eq = searchParams.get("equipment");
     if (isEdit || !eq) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    supabase.from("school_equipment" as any).select("id, group_id, name, equipment_type, size, purchase_date, last_check_date").eq("id", eq).maybeSingle()
+    supabase.from("school_equipment").select("id, group_id, name, equipment_type, size, purchase_date, last_check_date").eq("id", eq).maybeSingle()
       .then(({ data }) => {
         const row = data as unknown as EquipmentRow | null;
         if (!row) return;
@@ -140,10 +140,8 @@ export default function MarketListingForm() {
     if (!id) return;
     (async () => {
       const [{ data: listing }, { data: photoRows }] = await Promise.all([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("marketplace_listings" as any).select(LISTING_COLUMNS).eq("id", id).maybeSingle(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("marketplace_listing_photos" as any).select("id, listing_id, path, thumb_path, position").eq("listing_id", id),
+        supabase.from("marketplace_listings").select(LISTING_COLUMNS).eq("id", id).maybeSingle(),
+        supabase.from("marketplace_listing_photos").select("id, listing_id, path, thumb_path, position").eq("listing_id", id),
       ]);
       if (!listing) {
         toast.error(t("market.errors.not_found"));
@@ -205,14 +203,12 @@ export default function MarketListingForm() {
     try {
       let savedId = listingId;
       if (savedId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        const { error } = await supabase.from("marketplace_listings" as any).update(content).eq("id", savedId);
+        const { error } = await supabase.from("marketplace_listings").update({ ...content, attributes: content.attributes as Json }).eq("id", savedId);
         if (error) throw error;
       } else {
         const { data, error } = await supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-          .from("marketplace_listings" as any)
-          .insert({ ...content, seller_user_id: sellerGroup ? null : user.id, seller_group_id: sellerGroup || null, created_by: user.id, status: "draft",
+          .from("marketplace_listings")
+          .insert({ ...content, attributes: content.attributes as Json, seller_user_id: sellerGroup ? null : user.id, seller_group_id: sellerGroup || null, created_by: user.id, status: "draft",
             ...(equipmentId && sellerGroup ? { school_equipment_id: equipmentId } : {}) })
           .select("id").single();
         if (error || !data) throw error ?? new Error("insert failed");

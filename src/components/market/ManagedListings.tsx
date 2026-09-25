@@ -53,8 +53,7 @@ export default function ManagedListings({ seller, newPath }: Props) {
   const sellerId = "userId" in seller ? seller.userId : seller.groupId;
   const load = useCallback(async () => {
     const { data } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("marketplace_listings" as any)
+      .from("marketplace_listings")
       .select("id, title, status, listing_type, category, price_type, price_cents, expires_at, bumped_at, updated_at, removed_reason")
       .eq(sellerColumn, sellerId)
       .order("updated_at", { ascending: false });

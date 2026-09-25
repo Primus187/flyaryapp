@@ -36,11 +36,11 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
   const [form, setForm] = useState({ seats: "3", departure_place: "", departure_time: "" });
 
   const load = async () => {
-    const { data: cps } = await supabase.from("event_carpools" as any).select("*").eq("event_id", eventId);
+    const { data: cps } = await supabase.from("event_carpools").select("*").eq("event_id", eventId);
     const carpoolList = (cps as any[]) || [];
     setCarpools(carpoolList);
     if (carpoolList.length > 0) {
-      const { data: rds } = await supabase.from("event_carpool_riders" as any).select("*").in("carpool_id", carpoolList.map((c) => c.id));
+      const { data: rds } = await supabase.from("event_carpool_riders").select("*").in("carpool_id", carpoolList.map((c) => c.id));
       setRiders((rds as any[]) || []);
       const userIds = [...new Set([...carpoolList.map((c) => c.driver_user_id), ...(((rds as any[]) || []).map((r) => r.user_id))])];
       if (userIds.length > 0) {
@@ -62,7 +62,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
   const createCarpool = async () => {
     if (!user) return;
     const seats = parseInt(form.seats) || 1;
-    const { error } = await supabase.from("event_carpools" as any).insert({
+    const { error } = await supabase.from("event_carpools").insert({
       event_id: eventId,
       driver_user_id: user.id,
       seats,
@@ -78,16 +78,16 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
   };
 
   const deleteCarpool = async (id: string) => {
-    await supabase.from("event_carpools" as any).delete().eq("id", id);
+    await supabase.from("event_carpools").delete().eq("id", id);
     await load();
   };
 
   const joinCarpool = async (carpoolId: string) => {
     if (!user) return;
     if (myRiderEntry) {
-      await supabase.from("event_carpool_riders" as any).delete().eq("id", myRiderEntry.id);
+      await supabase.from("event_carpool_riders").delete().eq("id", myRiderEntry.id);
     }
-    const { error } = await supabase.from("event_carpool_riders" as any).insert({ carpool_id: carpoolId, user_id: user.id } as any);
+    const { error } = await supabase.from("event_carpool_riders").insert({ carpool_id: carpoolId, user_id: user.id } as any);
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } else {
@@ -97,7 +97,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
 
   const leaveCarpool = async () => {
     if (!myRiderEntry) return;
-    await supabase.from("event_carpool_riders" as any).delete().eq("id", myRiderEntry.id);
+    await supabase.from("event_carpool_riders").delete().eq("id", myRiderEntry.id);
     await load();
   };
 

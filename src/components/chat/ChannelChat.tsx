@@ -122,15 +122,13 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
 
   // Opening (and reading new messages in) the channel resets its unread count.
   const markRead = useCallback(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-    await supabase.rpc("chat_mark_read" as any, { _channel: channelId } as any);
+    await supabase.rpc("chat_mark_read", { _channel: channelId });
     void queryClient.invalidateQueries({ queryKey: CHAT_INBOX_KEY(user?.id) });
   }, [channelId, queryClient, user?.id]);
 
   useEffect(() => {
     // Who can read the channel: for "X of Y confirmed" and author names.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-    supabase.rpc("chat_channel_readers" as any, { _channel: channelId } as any).then(({ data }) => {
+    supabase.rpc("chat_channel_readers", { _channel: channelId }).then(({ data }) => {
       const rows = (data as { user_id: string; pilot_name: string }[] | null) || [];
       setReaders(rows.map((r) => ({ user_id: r.user_id, name: r.pilot_name || "" })));
       setProfiles((prev) => ({ ...prev, ...Object.fromEntries(rows.map((r) => [r.user_id, r.pilot_name || "Pilot"])) }));
@@ -298,8 +296,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
     setSending(true);
     try {
       const mentions = mentionsEnabled(channel) ? extractMentions(text, readers) : [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-      const { error } = await supabase.rpc("chat_edit_message" as any, { _message: editing.id, _text: text, _mentions: mentions } as any);
+      const { error } = await supabase.rpc("chat_edit_message", { _message: editing.id, _text: text, _mentions: mentions });
       if (error) {
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
         return;

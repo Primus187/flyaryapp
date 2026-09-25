@@ -108,7 +108,7 @@ export default function EventForm() {
       if (ids.length === 0) { setMembers([]); return; }
       const [{ data: profs }, { data: funcs }] = await Promise.all([
         supabase.from("profiles").select("user_id, pilot_name").in("user_id", ids),
-        supabase.from("group_member_functions" as any).select("user_id, function").eq("group_id", form.group_id),
+        supabase.from("group_member_functions").select("user_id, function").eq("group_id", form.group_id),
       ]);
       const funcMap: Record<string, string[]> = {};
       ((funcs as any[]) || []).forEach((f: any) => {
@@ -150,13 +150,13 @@ export default function EventForm() {
       setMeetingRows(parseMeetingRows(data.meeting_point || ""));
 
       // Load briefing tasks
-      const { data: tasks } = await supabase.from("event_briefing_tasks" as any).select("*").eq("event_id", loadId).order("sort_order" as any);
+      const { data: tasks } = await supabase.from("event_briefing_tasks").select("*").eq("event_id", loadId).order("sort_order" as any);
       if (tasks) setBriefingTasks((tasks as any[]).map((t: any) => ({
         id: duplicateId ? undefined : t.id, label: t.label, task_type: t.task_type,
         assigned_user_id: duplicateId ? "" : t.assigned_user_id || "", sort_order: t.sort_order,
       })));
 
-      const { data: maneuvers } = await supabase.from("event_maneuvers" as any).select("training_item_id").eq("event_id", loadId);
+      const { data: maneuvers } = await supabase.from("event_maneuvers").select("training_item_id").eq("event_id", loadId);
       if (maneuvers) setSelectedManeuverIds((maneuvers as any[]).map((m: any) => m.training_item_id));
     };
     loadEvent();
@@ -224,9 +224,9 @@ export default function EventForm() {
     }
 
     // Save briefing tasks
-    if (isEdit) await supabase.from("event_briefing_tasks" as any).delete().eq("event_id", eventId);
+    if (isEdit) await supabase.from("event_briefing_tasks").delete().eq("event_id", eventId);
     if (isHeight && briefingTasks.length > 0) {
-      await supabase.from("event_briefing_tasks" as any).insert(
+      await supabase.from("event_briefing_tasks").insert(
         briefingTasks.map((t, i) => ({
           event_id: eventId, label: t.label, task_type: t.task_type,
           assigned_user_id: t.assigned_user_id || null, sort_order: i,
@@ -235,9 +235,9 @@ export default function EventForm() {
     }
 
     // Save maneuvers
-    if (isEdit) await supabase.from("event_maneuvers" as any).delete().eq("event_id", eventId);
+    if (isEdit) await supabase.from("event_maneuvers").delete().eq("event_id", eventId);
     if (isHeight && selectedManeuverIds.length > 0) {
-      await supabase.from("event_maneuvers" as any).insert(
+      await supabase.from("event_maneuvers").insert(
         selectedManeuverIds.map((itemId, i) => ({
           event_id: eventId, training_item_id: itemId, sort_order: i,
         })) as any

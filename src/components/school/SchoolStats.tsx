@@ -85,10 +85,8 @@ export default function SchoolStats({ groupId }: Props) {
       // dadurch nicht aussagekräftig. Stattdessen ein Gesamt-Kennwert über alle Schüler der Schule.
       const [membersRes, historyRes, statusRes] = await Promise.all([
         supabase.from("group_members").select("user_id, role").eq("group_id", groupId),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("training_level_history" as any).select("user_id, training_level, changed_at").eq("group_id", groupId),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        supabase.from("student_status_history" as any).select("student_id, status, reason, changed_at").eq("group_id", groupId).order("changed_at", { ascending: false }),
+        supabase.from("training_level_history").select("user_id, training_level, changed_at").eq("group_id", groupId),
+        supabase.from("student_status_history").select("student_id, status, reason, changed_at").eq("group_id", groupId).order("changed_at", { ascending: false }),
       ]);
       const studentIds = (membersRes.data || []).filter((m) => m.role === "member").map((m) => m.user_id);
       const history = (historyRes.data as unknown as { user_id: string; training_level: string; changed_at: string }[]) || [];

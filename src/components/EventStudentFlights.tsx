@@ -68,7 +68,7 @@ export default function EventStudentFlights({ eventId, eventDate, groupId, isAdm
 
       // Get training items for these flights
       const flightIds = flightsData.map(f => f.id);
-      const { data: ftiData } = await supabase.from("flight_training_items" as any)
+      const { data: ftiData } = await supabase.from("flight_training_items")
         .select("flight_id, item_id, instructor_rating, instructor_note")
         .in("flight_id", flightIds);
 
@@ -110,7 +110,7 @@ export default function EventStudentFlights({ eventId, eventDate, groupId, isAdm
     const current = flights.find(f => f.id === flightId)?.training_items.find(ti => ti.item_id === itemId);
     const newRating = current?.instructor_rating === rating ? rating - 1 : rating;
 
-    await supabase.from("flight_training_items" as any)
+    await supabase.from("flight_training_items")
       .update({ instructor_rating: newRating, instructor_id: user.id } as any)
       .eq("flight_id", flightId)
       .eq("item_id", itemId);

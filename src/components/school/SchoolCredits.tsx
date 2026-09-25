@@ -57,7 +57,7 @@ export default function SchoolCredits({ groupId }: Props) {
     if (!groupId) return;
     setLoading(true);
     const [creditsRes, membersRes, eventsRes, ratesRes] = await Promise.all([
-      supabase.from("launch_leader_credits" as any).select("id, user_id, event_id, entry_type, booking_date, days, amount, note").eq("group_id", groupId).order("booking_date", { ascending: false }),
+      supabase.from("launch_leader_credits").select("id, user_id, event_id, entry_type, booking_date, days, amount, note").eq("group_id", groupId).order("booking_date", { ascending: false }),
       supabase.from("group_members").select("user_id").eq("group_id", groupId),
       supabase.from("flight_events").select("id, title, event_date").eq("group_id", groupId).order("event_date", { ascending: false }).limit(50),
       supabase.from("school_rates").select("rate_key, amount").eq("group_id", groupId),
@@ -117,7 +117,7 @@ export default function SchoolCredits({ groupId }: Props) {
   const save = async () => {
     if (!user || !form.user_id) return;
     setSaving(true);
-    const { error } = await supabase.from("launch_leader_credits" as any).insert({
+    const { error } = await supabase.from("launch_leader_credits").insert({
       group_id: groupId,
       user_id: form.user_id,
       event_id: form.event_id === "none" ? null : form.event_id,
@@ -140,7 +140,7 @@ export default function SchoolCredits({ groupId }: Props) {
 
   const remove = async (id: string) => {
     if (!confirm(t("school.credits.deleteConfirm"))) return;
-    const { error } = await supabase.from("launch_leader_credits" as any).delete().eq("id", id);
+    const { error } = await supabase.from("launch_leader_credits").delete().eq("id", id);
     if (error) {
       toast({ title: t("school.credits.saveFailed"), description: error.message, variant: "destructive" });
       return;

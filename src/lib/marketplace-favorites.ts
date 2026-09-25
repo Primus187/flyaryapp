@@ -21,8 +21,7 @@ export interface FavoriteItem {
   saved_at: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-const favorites = () => supabase.from("marketplace_favorites" as any);
+const favorites = () => supabase.from("marketplace_favorites");
 
 export async function fetchFavoriteIds(): Promise<Set<string>> {
   const { data } = await favorites().select("listing_id");
@@ -43,8 +42,7 @@ export function sortFavorites(items: readonly FavoriteItem[]): FavoriteItem[] {
 }
 
 export async function fetchMyFavorites(): Promise<FavoriteItem[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_my_favorites" as any);
+  const { data, error } = await supabase.rpc("marketplace_my_favorites");
   if (error) throw error;
   return sortFavorites((data ?? []) as unknown as FavoriteItem[]);
 }

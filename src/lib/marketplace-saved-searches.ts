@@ -3,6 +3,7 @@
  * marketplace_search (for matching new listings) and the URL query (to open the search again).
  */
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { EMPTY_FILTERS, filtersFromParams, filtersToParams, toRpcFilters, type SearchFilters } from "./marketplace-search";
 import { geocodeSwissPostalCode, type LatLng } from "./geo-ch";
 
@@ -34,21 +35,19 @@ export function suggestName(f: SearchFilters, categoryLabel: (c: string) => stri
   return name.slice(0, 60);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-const table = () => supabase.from("marketplace_saved_searches" as any);
+const table = () => supabase.from("marketplace_saved_searches");
 
 export async function saveSearch(userId: string, name: string, f: SearchFilters): Promise<string> {
   const near = f.nearPlz ? await geocodeSwissPostalCode(f.nearPlz) : null;
   const { data, error } = await table()
-    .insert({ user_id: userId, name: name.trim().slice(0, 60), filters: savedFilters(f, near), query: filtersToParams(f).toString() })
+    .insert({ user_id: userId, name: name.trim().slice(0, 60), filters: savedFilters(f, near) as Json, query: filtersToParams(f).toString() })
     .select("id").single();
   if (error) throw error;
   return (data as unknown as { id: string }).id;
 }
 
 export async function fetchSavedSearches(): Promise<SavedSearch[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function not in generated types.ts yet
-  const { data, error } = await supabase.rpc("marketplace_saved_searches_overview" as any);
+  const { data, error } = await supabase.rpc("marketplace_saved_searches_overview");
   if (error) throw error;
   return (data ?? []) as unknown as SavedSearch[];
 }

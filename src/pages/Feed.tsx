@@ -76,11 +76,9 @@ export default function Feed() {
     if (!user) return;
     try {
       const [pageRes, membersRes] = await Promise.all([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-        supabase.rpc("feed_page" as any, { _cursor: cursor ?? null, _limit: PAGE_SIZE } as any),
+        supabase.rpc("feed_page", { _cursor: cursor ?? null, _limit: PAGE_SIZE }),
         // Mention list only on the first load; it does not change while scrolling.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-        !cursor && !groupMembersLoadedRef.current ? supabase.rpc("feed_mention_members" as any) : Promise.resolve(null),
+        !cursor && !groupMembersLoadedRef.current ? supabase.rpc("feed_mention_members") : Promise.resolve(null),
       ]);
       if (pageRes.error) throw pageRes.error;
       const page = pageRes.data as unknown as RawFeedPage;

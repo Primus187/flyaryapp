@@ -71,8 +71,7 @@ export default function EventDetail() {
     // One RPC (RLS-checked, see migration 0019) instead of ~11 sequential requests; avatar and
     // photos are then signed in a single parallel step.
     const fetchData = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-      const { data, error } = await supabase.rpc("event_detail_data" as any, { _event_id: id } as any);
+      const { data, error } = await supabase.rpc("event_detail_data", { _event_id: id });
       const detail = data as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped RPC payload
       if (error || !detail?.event) { navigate("/events"); return; }
       const ev = detail.event;
@@ -232,8 +231,7 @@ export default function EventDetail() {
     if (next === event.status) return;
     if (next === "cancelled" && !confirm(t("events.cancelEventConfirm"))) return;
     // RPC: school staff (not only admins) may change the status, and a refusal is reported.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-    const { error } = await supabase.rpc("set_event_status" as any, { _event_id: id, _status: next } as any);
+    const { error } = await supabase.rpc("set_event_status", { _event_id: id, _status: next });
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setEvent((prev: any) => ({ ...prev, status: next }));
     toast({ title: t("events.statusChanged") });

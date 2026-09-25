@@ -62,8 +62,7 @@ export default function TeamAvailability({ groupId, canManage = true }: Props) {
       const [funcRes, availRes] = await Promise.all([
         supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
         supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-          .from("instructor_availability" as any)
+          .from("instructor_availability")
           .select("id, user_id, date, status, note")
           .eq("group_id", groupId)
           .gte("date", weekStartIso)
@@ -104,15 +103,13 @@ export default function TeamAvailability({ groupId, canManage = true }: Props) {
     const next = nextAvailabilityStatus(existing?.status ?? null);
     if (next === null) {
       if (!existing) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      const { error } = await supabase.from("instructor_availability" as any).delete().eq("id", existing.id);
+      const { error } = await supabase.from("instructor_availability").delete().eq("id", existing.id);
       if (error) return;
       setEntries((prev) => { const copy = { ...prev }; delete copy[key(userId, date)]; return copy; });
       return;
     }
     const { data, error } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-      .from("instructor_availability" as any)
+      .from("instructor_availability")
       .upsert(
         { group_id: groupId, user_id: userId, date, status: next, note: existing?.note ?? null },
         { onConflict: "group_id,user_id,date" },
@@ -129,8 +126,7 @@ export default function TeamAvailability({ groupId, canManage = true }: Props) {
     if (!existing) return;
     const trimmed = note.trim() || null;
     if (trimmed === existing.note) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-    const { error } = await supabase.from("instructor_availability" as any).update({ note: trimmed }).eq("id", existing.id);
+    const { error } = await supabase.from("instructor_availability").update({ note: trimmed }).eq("id", existing.id);
     if (error) return;
     setEntries((prev) => ({ ...prev, [key(userId, date)]: { ...existing, note: trimmed } }));
   };

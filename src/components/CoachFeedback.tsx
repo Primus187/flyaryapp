@@ -51,7 +51,7 @@ export default function CoachFeedback({ flightId, flightUserId, groupId }: Coach
 
       // Load training items with feedback
       const { data: trainingData } = await supabase
-        .from("flight_training_items" as any)
+        .from("flight_training_items")
         .select("flight_id, item_id, instructor_rating, instructor_note, instructor_id, training_items(name)")
         .eq("flight_id", flightId);
 
@@ -90,7 +90,7 @@ export default function CoachFeedback({ flightId, flightUserId, groupId }: Coach
   const handleSaveFeedback = async (itemId: string, rating: number, note: string) => {
     if (!user) return;
     await supabase
-      .from("flight_training_items" as any)
+      .from("flight_training_items")
       .update({
         instructor_rating: rating || null,
         instructor_note: note || null,

@@ -54,7 +54,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
   const [availability, setAvailability] = useState<Record<string, AvailabilityStatus>>({});
 
   const load = async () => {
-    const { data } = await supabase.from("event_staff" as any).select("*").eq("event_id", eventId);
+    const { data } = await supabase.from("event_staff").select("*").eq("event_id", eventId);
     const rows = (data as any[]) || [];
     setStaff(rows);
     if (rows.length > 0) {
@@ -70,7 +70,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
     // Load potential staff: group members with instructor/launch_helper function
     const loadOptions = async () => {
       const { data: funcs } = await supabase
-        .from("group_member_functions" as any)
+        .from("group_member_functions")
         .select("user_id, function")
         .eq("group_id", groupId)
         .in("function", ["instructor", "launch_helper"]);
@@ -110,8 +110,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
     const day = eventDate.slice(0, 10);
     const loadAvailability = async () => {
       const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet
-        .from("instructor_availability" as any)
+        .from("instructor_availability")
         .select("user_id, status")
         .eq("group_id", groupId)
         .eq("date", day);
@@ -124,7 +123,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
 
   const addStaff = async () => {
     if (!newUserId) return;
-    const { error } = await supabase.from("event_staff" as any).insert({
+    const { error } = await supabase.from("event_staff").insert({
       event_id: eventId,
       user_id: newUserId,
       role: newRole,
@@ -139,7 +138,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
   };
 
   const removeStaff = async (id: string) => {
-    await supabase.from("event_staff" as any).delete().eq("id", id);
+    await supabase.from("event_staff").delete().eq("id", id);
     setStaff((prev) => prev.filter((s) => s.id !== id));
   };
 

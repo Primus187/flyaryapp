@@ -63,7 +63,7 @@ export default function SchoolBilling({ groupId }: Props) {
     if (!groupId) return;
     setLoading(true);
     const [itemsRes, membersRes, eventsRes, ratesRes] = await Promise.all([
-      supabase.from("billing_items" as any).select("id, user_id, event_id, item_type, description, quantity, unit_amount, amount, billing_date, paid_at, note").eq("group_id", groupId).order("billing_date", { ascending: false }),
+      supabase.from("billing_items").select("id, user_id, event_id, item_type, description, quantity, unit_amount, amount, billing_date, paid_at, note").eq("group_id", groupId).order("billing_date", { ascending: false }),
       supabase.from("group_members").select("user_id").eq("group_id", groupId),
       supabase.from("flight_events").select("id, title, event_date").eq("group_id", groupId).order("event_date", { ascending: false }).limit(50),
       supabase.from("school_rates").select("rate_key, amount").eq("group_id", groupId),
@@ -124,7 +124,7 @@ export default function SchoolBilling({ groupId }: Props) {
   const save = async () => {
     if (!user || !form.user_id) return;
     setSaving(true);
-    const { error } = await supabase.from("billing_items" as any).insert({
+    const { error } = await supabase.from("billing_items").insert({
       group_id: groupId,
       user_id: form.user_id,
       event_id: form.event_id === "none" ? null : form.event_id,
@@ -148,7 +148,7 @@ export default function SchoolBilling({ groupId }: Props) {
   };
 
   const markPaid = async (id: string) => {
-    const { error } = await supabase.from("billing_items" as any).update({ paid_at: new Date().toISOString().slice(0, 10) }).eq("id", id);
+    const { error } = await supabase.from("billing_items").update({ paid_at: new Date().toISOString().slice(0, 10) }).eq("id", id);
     if (error) {
       toast({ title: t("school.billing.saveFailed"), description: error.message, variant: "destructive" });
       return;
@@ -158,7 +158,7 @@ export default function SchoolBilling({ groupId }: Props) {
 
   const remove = async (id: string) => {
     if (!confirm(t("school.billing.deleteConfirm"))) return;
-    const { error } = await supabase.from("billing_items" as any).delete().eq("id", id);
+    const { error } = await supabase.from("billing_items").delete().eq("id", id);
     if (error) {
       toast({ title: t("school.billing.saveFailed"), description: error.message, variant: "destructive" });
       return;

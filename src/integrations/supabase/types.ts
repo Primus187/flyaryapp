@@ -89,6 +89,7 @@ export type Database = {
           group_id: string
           id: string
           item_type: string
+          listing_id: string | null
           note: string | null
           paid_at: string | null
           quantity: number
@@ -106,6 +107,7 @@ export type Database = {
           group_id: string
           id?: string
           item_type?: string
+          listing_id?: string | null
           note?: string | null
           paid_at?: string | null
           quantity?: number
@@ -123,6 +125,7 @@ export type Database = {
           group_id?: string
           id?: string
           item_type?: string
+          listing_id?: string | null
           note?: string | null
           paid_at?: string | null
           quantity?: number
@@ -143,6 +146,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -339,6 +349,284 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_channel_members: {
+        Row: {
+          added_by: string | null
+          channel_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          channel_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          channel_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_channels: {
+        Row: {
+          archived_at: string | null
+          audience: string
+          audience_levels: string[] | null
+          buyer_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          direct_key: string | null
+          event_id: string | null
+          group_id: string | null
+          id: string
+          is_default: boolean
+          kind: string
+          last_message_at: string | null
+          listing_id: string | null
+          name: string | null
+          staff_only_posting: boolean
+        }
+        Insert: {
+          archived_at?: string | null
+          audience?: string
+          audience_levels?: string[] | null
+          buyer_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          direct_key?: string | null
+          event_id?: string | null
+          group_id?: string | null
+          id?: string
+          is_default?: boolean
+          kind: string
+          last_message_at?: string | null
+          listing_id?: string | null
+          name?: string | null
+          staff_only_posting?: boolean
+        }
+        Update: {
+          archived_at?: string | null
+          audience?: string
+          audience_levels?: string[] | null
+          buyer_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          direct_key?: string | null
+          event_id?: string | null
+          group_id?: string | null
+          id?: string
+          is_default?: boolean
+          kind?: string
+          last_message_at?: string | null
+          listing_id?: string | null
+          name?: string | null
+          staff_only_posting?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_channels_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_channels_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_channels_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_message_receipts: {
+        Row: {
+          confirmed_at: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_receipts_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          attachment_path: string | null
+          channel_id: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          is_announcement: boolean
+          mentions: string[]
+          message: string
+          reply_to: string | null
+          requires_confirmation: boolean
+          user_id: string
+        }
+        Insert: {
+          attachment_path?: string | null
+          channel_id: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_announcement?: boolean
+          mentions?: string[]
+          message?: string
+          reply_to?: string | null
+          requires_confirmation?: boolean
+          user_id: string
+        }
+        Update: {
+          attachment_path?: string | null
+          channel_id?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_announcement?: boolean
+          mentions?: string[]
+          message?: string
+          reply_to?: string | null
+          requires_confirmation?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_push_state: {
+        Row: {
+          channel_id: string
+          last_pushed_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          last_pushed_at: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          last_pushed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_push_state_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_read_state: {
+        Row: {
+          channel_id: string
+          last_read_at: string
+          notify_level: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          last_read_at?: string
+          notify_level?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          last_read_at?: string
+          notify_level?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_read_state_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
             referencedColumns: ["id"]
           },
         ]
@@ -1645,6 +1933,32 @@ export type Database = {
         }
         Relationships: []
       }
+      hidden_events: {
+        Row: {
+          event_id: string
+          hidden_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          hidden_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          hidden_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hidden_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       igc_tracks: {
         Row: {
           created_at: string
@@ -1943,6 +2257,446 @@ export type Database = {
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_bans: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          reason: string | null
+          until: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          reason?: string | null
+          until?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          reason?: string | null
+          until?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_favorites: {
+        Row: {
+          created_at: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_listing_photos: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          path: string
+          position: number
+          thumb_path: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          path: string
+          position: number
+          thumb_path: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          path?: string
+          position?: number
+          thumb_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_listings: {
+        Row: {
+          attributes: Json
+          bumped_at: string | null
+          canton: string | null
+          category: string
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          delivery: string
+          description: string
+          expires_at: string | null
+          expiry_reminded_at: string | null
+          featured_until: string | null
+          id: string
+          lat: number | null
+          listing_type: string
+          lng: number | null
+          locality: string | null
+          manufacturer: string | null
+          model: string | null
+          postal_code: string | null
+          price_cents: number | null
+          price_type: string
+          published_at: string | null
+          quantity: number
+          removed_at: string | null
+          removed_from_status: string | null
+          removed_reason: string | null
+          school_equipment_id: string | null
+          search_vector: unknown
+          seller_group_id: string | null
+          seller_user_id: string | null
+          share_token: string
+          size: string | null
+          sold_to: string | null
+          status: string
+          title: string
+          updated_at: string
+          visibility: string
+          year: number | null
+        }
+        Insert: {
+          attributes?: Json
+          bumped_at?: string | null
+          canton?: string | null
+          category: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery?: string
+          description?: string
+          expires_at?: string | null
+          expiry_reminded_at?: string | null
+          featured_until?: string | null
+          id?: string
+          lat?: number | null
+          listing_type?: string
+          lng?: number | null
+          locality?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          postal_code?: string | null
+          price_cents?: number | null
+          price_type?: string
+          published_at?: string | null
+          quantity?: number
+          removed_at?: string | null
+          removed_from_status?: string | null
+          removed_reason?: string | null
+          school_equipment_id?: string | null
+          search_vector?: unknown
+          seller_group_id?: string | null
+          seller_user_id?: string | null
+          share_token?: string
+          size?: string | null
+          sold_to?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Update: {
+          attributes?: Json
+          bumped_at?: string | null
+          canton?: string | null
+          category?: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery?: string
+          description?: string
+          expires_at?: string | null
+          expiry_reminded_at?: string | null
+          featured_until?: string | null
+          id?: string
+          lat?: number | null
+          listing_type?: string
+          lng?: number | null
+          locality?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          postal_code?: string | null
+          price_cents?: number | null
+          price_type?: string
+          published_at?: string | null
+          quantity?: number
+          removed_at?: string | null
+          removed_from_status?: string | null
+          removed_reason?: string | null
+          school_equipment_id?: string | null
+          search_vector?: unknown
+          seller_group_id?: string | null
+          seller_user_id?: string | null
+          share_token?: string
+          size?: string | null
+          sold_to?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_school_equipment_id_fkey"
+            columns: ["school_equipment_id"]
+            isOneToOne: false
+            referencedRelation: "school_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_seller_group_id_fkey"
+            columns: ["seller_group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_moderation_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          listing_id: string | null
+          listing_title: string | null
+          reason: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          listing_title?: string | null
+          reason?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          listing_title?: string | null
+          reason?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_moderation_log_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_moderator_push: {
+        Row: {
+          last_pushed_at: string
+          user_id: string
+        }
+        Insert: {
+          last_pushed_at: string
+          user_id: string
+        }
+        Update: {
+          last_pushed_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_reports: {
+        Row: {
+          created_at: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          listing_id: string
+          note: string | null
+          reason: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          listing_id: string
+          note?: string | null
+          reason: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          listing_id?: string
+          note?: string | null
+          reason?: string
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          direction: string
+          hidden: boolean
+          id: string
+          listing_id: string | null
+          listing_title: string
+          rating: number
+          reported_at: string | null
+          reviewee_group_id: string | null
+          reviewee_user_id: string | null
+          reviewer_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          direction: string
+          hidden?: boolean
+          id?: string
+          listing_id?: string | null
+          listing_title: string
+          rating: number
+          reported_at?: string | null
+          reviewee_group_id?: string | null
+          reviewee_user_id?: string | null
+          reviewer_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          direction?: string
+          hidden?: boolean
+          id?: string
+          listing_id?: string | null
+          listing_title?: string
+          rating?: number
+          reported_at?: string | null
+          reviewee_group_id?: string | null
+          reviewee_user_id?: string | null
+          reviewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_reviewee_group_id_fkey"
+            columns: ["reviewee_group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_saved_searches: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          last_notified_at: string | null
+          last_viewed_at: string
+          name: string
+          notify: boolean
+          query: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters: Json
+          id?: string
+          last_notified_at?: string | null
+          last_viewed_at?: string
+          name: string
+          notify?: boolean
+          query?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          last_notified_at?: string | null
+          last_viewed_at?: string
+          name?: string
+          notify?: boolean
+          query?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_terms_acceptances: {
+        Row: {
+          accepted_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          accepted_at?: string
+          user_id: string
+          version: number
+        }
+        Update: {
+          accepted_at?: string
+          user_id?: string
+          version?: number
         }
         Relationships: []
       }
@@ -2332,6 +3086,62 @@ export type Database = {
             foreignKeyName: "school_rates_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_shop_profiles: {
+        Row: {
+          active: boolean
+          email: string
+          group_id: string
+          legal_name: string
+          locality: string
+          phone: string | null
+          postal_code: string
+          street: string
+          uid_number: string | null
+          updated_at: string
+          updated_by: string | null
+          vat_registered: boolean
+          warranty_text: string
+        }
+        Insert: {
+          active?: boolean
+          email?: string
+          group_id: string
+          legal_name?: string
+          locality?: string
+          phone?: string | null
+          postal_code?: string
+          street?: string
+          uid_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          vat_registered?: boolean
+          warranty_text?: string
+        }
+        Update: {
+          active?: boolean
+          email?: string
+          group_id?: string
+          legal_name?: string
+          locality?: string
+          phone?: string | null
+          postal_code?: string
+          street?: string
+          uid_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          vat_registered?: boolean
+          warranty_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_shop_profiles_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: true
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
@@ -2738,6 +3548,56 @@ export type Database = {
     }
     Functions: {
       build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
+      chat_can_manage: {
+        Args: { _channel: string; _uid: string }
+        Returns: boolean
+      }
+      chat_can_post: {
+        Args: { _channel: string; _uid: string }
+        Returns: boolean
+      }
+      chat_can_read: {
+        Args: { _channel: string; _uid: string }
+        Returns: boolean
+      }
+      chat_channel_json: { Args: { _channel: string }; Returns: Json }
+      chat_channel_readers: {
+        Args: { _channel: string }
+        Returns: {
+          pilot_name: string
+          user_id: string
+        }[]
+      }
+      chat_direct_candidates: {
+        Args: never
+        Returns: {
+          groups: string[]
+          pilot_name: string
+          user_id: string
+        }[]
+      }
+      chat_edit_message: {
+        Args: { _mentions?: string[]; _message: string; _text: string }
+        Returns: undefined
+      }
+      chat_event_channel: { Args: { _event: string }; Returns: Json }
+      chat_inbox: { Args: never; Returns: Json }
+      chat_is_student: {
+        Args: { _group: string; _uid: string }
+        Returns: boolean
+      }
+      chat_mark_read: { Args: { _channel: string }; Returns: undefined }
+      chat_message_in_channel: {
+        Args: { _channel: string; _message: string }
+        Returns: boolean
+      }
+      chat_open_direct: { Args: { _other: string }; Returns: string }
+      chat_search: { Args: { _limit?: number; _q: string }; Returns: Json }
+      chat_set_notify_level: {
+        Args: { _channel: string; _level: string }
+        Returns: undefined
+      }
+      chat_shares_group: { Args: { _a: string; _b: string }; Returns: boolean }
       check_and_award_badges_for_user: {
         Args: { _user_id: string }
         Returns: undefined
@@ -2840,6 +3700,9 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_market_banned: { Args: { _uid: string }; Returns: boolean }
+      is_market_moderator: { Args: { _uid: string }; Returns: boolean }
+      is_market_staff: { Args: { _uid: string }; Returns: boolean }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
       join_group_by_invite_code: {
         Args: { _invite_code: string }
@@ -2861,6 +3724,280 @@ export type Database = {
         }
         Returns: Json
       }
+      market_can_admin_shop: {
+        Args: { _group: string; _uid: string }
+        Returns: boolean
+      }
+      market_can_manage: {
+        Args: { _seller_group: string; _seller_user: string; _uid: string }
+        Returns: boolean
+      }
+      market_can_manage_listing: {
+        Args: { _listing: string; _uid: string }
+        Returns: boolean
+      }
+      market_can_moderate: {
+        Args: {
+          _uid: string
+          l: Database["public"]["Tables"]["marketplace_listings"]["Row"]
+        }
+        Returns: boolean
+      }
+      market_distance_km: {
+        Args: { _lat1: number; _lat2: number; _lng1: number; _lng2: number }
+        Returns: number
+      }
+      market_listing_accepts_photos: {
+        Args: { _listing: string }
+        Returns: boolean
+      }
+      market_listing_matches: {
+        Args: {
+          _filters: Json
+          l: Database["public"]["Tables"]["marketplace_listings"]["Row"]
+        }
+        Returns: boolean
+      }
+      market_listing_visible: {
+        Args: {
+          _uid: string
+          l: Database["public"]["Tables"]["marketplace_listings"]["Row"]
+        }
+        Returns: boolean
+      }
+      market_photo_file_count: { Args: { _listing: string }; Returns: number }
+      market_photo_listing: { Args: { _name: string }; Returns: string }
+      market_shop_ready: { Args: { _group: string }; Returns: boolean }
+      market_terms_accepted: { Args: { _uid: string }; Returns: boolean }
+      marketplace_bump: { Args: { _listing: string }; Returns: Json }
+      marketplace_chat_buyers: {
+        Args: { _listing: string }
+        Returns: {
+          pilot_name: string
+          user_id: string
+        }[]
+      }
+      marketplace_chat_info: { Args: { _channel: string }; Returns: Json }
+      marketplace_check_active_limit: {
+        Args: { l: Database["public"]["Tables"]["marketplace_listings"]["Row"] }
+        Returns: undefined
+      }
+      marketplace_daily_cleanup: { Args: never; Returns: Json }
+      marketplace_expiry: {
+        Args: { l: Database["public"]["Tables"]["marketplace_listings"]["Row"] }
+        Returns: string
+      }
+      marketplace_hide: {
+        Args: {
+          _reason: string
+          l: Database["public"]["Tables"]["marketplace_listings"]["Row"]
+        }
+        Returns: {
+          attributes: Json
+          bumped_at: string | null
+          canton: string | null
+          category: string
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          delivery: string
+          description: string
+          expires_at: string | null
+          expiry_reminded_at: string | null
+          featured_until: string | null
+          id: string
+          lat: number | null
+          listing_type: string
+          lng: number | null
+          locality: string | null
+          manufacturer: string | null
+          model: string | null
+          postal_code: string | null
+          price_cents: number | null
+          price_type: string
+          published_at: string | null
+          quantity: number
+          removed_at: string | null
+          removed_from_status: string | null
+          removed_reason: string | null
+          school_equipment_id: string | null
+          search_vector: unknown
+          seller_group_id: string | null
+          seller_user_id: string | null
+          share_token: string
+          size: string | null
+          sold_to: string | null
+          status: string
+          title: string
+          updated_at: string
+          visibility: string
+          year: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "marketplace_listings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      marketplace_locked_listing: {
+        Args: { _listing: string }
+        Returns: {
+          attributes: Json
+          bumped_at: string | null
+          canton: string | null
+          category: string
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          delivery: string
+          description: string
+          expires_at: string | null
+          expiry_reminded_at: string | null
+          featured_until: string | null
+          id: string
+          lat: number | null
+          listing_type: string
+          lng: number | null
+          locality: string | null
+          manufacturer: string | null
+          model: string | null
+          postal_code: string | null
+          price_cents: number | null
+          price_type: string
+          published_at: string | null
+          quantity: number
+          removed_at: string | null
+          removed_from_status: string | null
+          removed_reason: string | null
+          school_equipment_id: string | null
+          search_vector: unknown
+          seller_group_id: string | null
+          seller_user_id: string | null
+          share_token: string
+          size: string | null
+          sold_to: string | null
+          status: string
+          title: string
+          updated_at: string
+          visibility: string
+          year: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "marketplace_listings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      marketplace_log: {
+        Args: {
+          _action: string
+          _listing: Database["public"]["Tables"]["marketplace_listings"]["Row"]
+          _reason: string
+          _target: string
+        }
+        Returns: undefined
+      }
+      marketplace_mark_sold: { Args: { _listing: string }; Returns: Json }
+      marketplace_mark_sold_to: {
+        Args: { _buyer: string; _listing: string }
+        Returns: Json
+      }
+      marketplace_moderate: {
+        Args: { _action: string; _listing: string; _reason?: string }
+        Returns: Json
+      }
+      marketplace_moderate_review: {
+        Args: { _hide: boolean; _review: string }
+        Returns: undefined
+      }
+      marketplace_moderation_queue: { Args: never; Returns: Json }
+      marketplace_my_favorites: { Args: never; Returns: Json }
+      marketplace_my_shops: {
+        Args: never
+        Returns: {
+          can_admin: boolean
+          group_id: string
+          name: string
+          ready: boolean
+        }[]
+      }
+      marketplace_notify_hidden: {
+        Args: { l: Database["public"]["Tables"]["marketplace_listings"]["Row"] }
+        Returns: undefined
+      }
+      marketplace_open_chat: { Args: { _listing: string }; Returns: string }
+      marketplace_public_listing: { Args: { _token: string }; Returns: Json }
+      marketplace_publish: { Args: { _listing: string }; Returns: Json }
+      marketplace_renew: { Args: { _listing: string }; Returns: Json }
+      marketplace_reorder_photos: {
+        Args: { _listing: string; _photo_ids: string[] }
+        Returns: undefined
+      }
+      marketplace_report: {
+        Args: { _listing: string; _note?: string; _reason: string }
+        Returns: undefined
+      }
+      marketplace_report_review: {
+        Args: { _review: string }
+        Returns: undefined
+      }
+      marketplace_reported_reviews: { Args: never; Returns: Json }
+      marketplace_reserve: {
+        Args: { _listing: string; _reserved: boolean }
+        Returns: Json
+      }
+      marketplace_review: {
+        Args: { _comment?: string; _listing: string; _rating: number }
+        Returns: string
+      }
+      marketplace_review_state: { Args: { _listing: string }; Returns: string }
+      marketplace_reviews_of: {
+        Args: { _group: string; _user: string }
+        Returns: Json
+      }
+      marketplace_sale_candidates: {
+        Args: { _listing: string }
+        Returns: {
+          pilot_name: string
+          user_id: string
+        }[]
+      }
+      marketplace_saved_searches_overview: { Args: never; Returns: Json }
+      marketplace_search: {
+        Args: { _cursor?: Json; _filters?: Json; _limit?: number }
+        Returns: Json
+      }
+      marketplace_sell_to_member: {
+        Args: { _buyer: string; _listing: string; _price_cents?: number }
+        Returns: string
+      }
+      marketplace_seller_cards: {
+        Args: { _listing_ids: string[] }
+        Returns: {
+          avatar_url: string
+          flight_count: number
+          listing_id: string
+          member_since: string
+          name: string
+          rating_avg: number
+          rating_count: number
+          seller_id: string
+          seller_kind: string
+        }[]
+      }
+      marketplace_set_ban: {
+        Args: {
+          _banned: boolean
+          _reason?: string
+          _until?: string
+          _user: string
+        }
+        Returns: undefined
+      }
+      marketplace_storage_usage: { Args: never; Returns: Json }
+      marketplace_trigger_cleanup: { Args: never; Returns: undefined }
       school_dashboard_data: {
         Args: { _group_id: string; _section?: string; _viewer_id?: string }
         Returns: Json
@@ -2882,6 +4019,13 @@ export type Database = {
         Args: { _body: string; _title: string; _url?: string; _user_id: string }
         Returns: undefined
       }
+      set_event_status: {
+        Args: {
+          _event_id: string
+          _status: Database["public"]["Enums"]["event_status"]
+        }
+        Returns: Database["public"]["Enums"]["event_status"]
+      }
       set_member_training_level: {
         Args: { _group_id: string; _training_level: string; _user_id: string }
         Returns: undefined
@@ -2896,6 +4040,8 @@ export type Database = {
         | "launch_helper"
         | "instructor"
         | "school_lead"
+        | "shop"
+        | "market_moderator"
       group_role: "admin" | "member"
       group_type: "school" | "pilot_group"
       location_type: "takeoff" | "landing" | "both"
@@ -3034,6 +4180,8 @@ export const Constants = {
         "launch_helper",
         "instructor",
         "school_lead",
+        "shop",
+        "market_moderator",
       ],
       group_role: ["admin", "member"],
       group_type: ["school", "pilot_group"],

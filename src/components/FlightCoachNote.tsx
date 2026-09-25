@@ -56,7 +56,7 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
     setIsCoach(coachOk);
 
     const { data } = await supabase
-      .from("flight_coach_notes" as any)
+      .from("flight_coach_notes")
       .select("id, coach_id, note, visible_to_student, updated_at")
       .eq("flight_id", flightId)
       .order("updated_at", { ascending: false });
@@ -93,7 +93,7 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
     if (!user) return;
     setSaving(true);
     const { error } = await supabase
-      .from("flight_coach_notes" as any)
+      .from("flight_coach_notes")
       .upsert({
         flight_id: flightId,
         coach_id: user.id,

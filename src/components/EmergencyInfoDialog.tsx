@@ -32,8 +32,7 @@ export default function EmergencyInfoDialog({ eventId, userId, pilotName }: Prop
     setInfo(null);
     setErrorReason(null);
     const rpcParams = { _event_id: eventId, _target_user_id: userId };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet
-    const { data, error } = await supabase.rpc("get_emergency_contact_info" as any, rpcParams as any);
+    const { data, error } = await supabase.rpc("get_emergency_contact_info", rpcParams);
     setLoading(false);
     if (error) {
       setErrorReason(parseEmergencyAccessError(error.message));

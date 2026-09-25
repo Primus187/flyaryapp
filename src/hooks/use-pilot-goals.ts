@@ -24,7 +24,7 @@ export function usePilotGoals() {
 
     const currentYear = new Date().getFullYear();
     const { data: rawGoals } = await supabase
-      .from("pilot_goals" as any)
+      .from("pilot_goals")
       .select("*")
       .eq("user_id", user.id)
       .eq("season_year", currentYear);
@@ -88,7 +88,7 @@ export function usePilotGoals() {
   const addGoal = async (goal: { title: string; goal_type: string; target_value: number; unit: string }) => {
     if (!user) return;
     const currentYear = new Date().getFullYear();
-    await supabase.from("pilot_goals" as any).insert({
+    await supabase.from("pilot_goals").insert({
       user_id: user.id,
       title: goal.title,
       goal_type: goal.goal_type,
@@ -100,7 +100,7 @@ export function usePilotGoals() {
   };
 
   const deleteGoal = async (goalId: string) => {
-    await supabase.from("pilot_goals" as any).delete().eq("id", goalId);
+    await supabase.from("pilot_goals").delete().eq("id", goalId);
     setGoals((prev) => prev.filter((g) => g.id !== goalId));
   };
 

@@ -24,7 +24,7 @@ export default function StudentDayFeedback({ eventId }: Props) {
     if (!user || !eventId) return;
     const fetch = async () => {
       const { data } = await supabase
-        .from("student_day_notes" as any)
+        .from("student_day_notes")
         .select("flight_number, note")
         .eq("event_id", eventId)
         .eq("student_user_id", user.id)

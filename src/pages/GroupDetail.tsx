@@ -53,14 +53,14 @@ export default function GroupDetail() {
 
   const loadChallenges = async () => {
     if (!id || !user) return;
-    const { data: challengeList } = await supabase.from("challenges" as any).select("*").eq("group_id", id).order("created_at", { ascending: false });
+    const { data: challengeList } = await supabase.from("challenges").select("*").eq("group_id", id).order("created_at", { ascending: false });
     if (!challengeList) { setChallenges([]); return; }
 
     // For each challenge, get goal count, my progress, participant count
     const enriched = await Promise.all((challengeList as any[]).map(async (c) => {
-      const { data: goals } = await supabase.from("challenge_goals" as any).select("id").eq("challenge_id", c.id);
-      const { data: myProg } = await supabase.from("challenge_progress" as any).select("goal_id").eq("challenge_id", c.id).eq("user_id", user!.id);
-      const { data: allProg } = await supabase.from("challenge_progress" as any).select("user_id").eq("challenge_id", c.id);
+      const { data: goals } = await supabase.from("challenge_goals").select("id").eq("challenge_id", c.id);
+      const { data: myProg } = await supabase.from("challenge_progress").select("goal_id").eq("challenge_id", c.id).eq("user_id", user!.id);
+      const { data: allProg } = await supabase.from("challenge_progress").select("user_id").eq("challenge_id", c.id);
       const uniqueParticipants = new Set((allProg as any[] || []).map((p: any) => p.user_id));
       return {
         ...c,
@@ -80,7 +80,7 @@ export default function GroupDetail() {
 
   const handleCreateChallenge = async () => {
     if (!newChallenge.title.trim() || !user || !id) return;
-    const { error } = await supabase.from("challenges" as any).insert({
+    const { error } = await supabase.from("challenges").insert({
       group_id: id,
       title: newChallenge.title.trim(),
       description: newChallenge.description.trim() || null,

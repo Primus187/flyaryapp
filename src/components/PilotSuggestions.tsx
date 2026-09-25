@@ -45,7 +45,7 @@ export default function PilotSuggestions() {
 
       // Already-followed
       const { data: follows } = await supabase
-        .from("follows" as any)
+        .from("follows")
         .select("following_id")
         .eq("follower_id", user.id);
       const followedIds = new Set((follows || []).map((f: any) => f.following_id));
@@ -93,7 +93,7 @@ export default function PilotSuggestions() {
   const handleFollow = async (targetId: string) => {
     if (!user) return;
     setFollowing(prev => new Set(prev).add(targetId));
-    await supabase.from("follows" as any).insert({ follower_id: user.id, following_id: targetId });
+    await supabase.from("follows").insert({ follower_id: user.id, following_id: targetId });
   };
 
   if (loading || suggestions.length === 0) return null;

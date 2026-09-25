@@ -78,7 +78,7 @@ export default function Leaderboard() {
 
       if (!userIds.includes(user!.id)) userIds.push(user!.id);
 
-      const { data: xpData } = await supabase.from("pilot_xp" as any).select("user_id, total_xp, level").in("user_id", userIds).order("total_xp", { ascending: false });
+      const { data: xpData } = await supabase.from("pilot_xp").select("user_id, total_xp, level").in("user_id", userIds).order("total_xp", { ascending: false });
       const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", userIds);
 
       const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
