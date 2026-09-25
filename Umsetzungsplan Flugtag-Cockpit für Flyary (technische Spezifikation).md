@@ -302,11 +302,12 @@ Speziell für das Flugtag-Cockpit:
 
 ## 10. Offene Punkte
 
-- Betriebshandbuch Kapitel 14, 15 und 27 an das Flugtag-Cockpit anpassen, Screenshots neu erstellen (4.5)
-- Sollen Starthelfer Schüler mit pausierter oder abgebrochener Ausbildung ausgeblendet sehen? Dazu müsste `inactive_school_students` für Starthelfer lesbar werden (nur IDs, keine Gründe)
 - Zurückgestellt: Herkunft der «SHV Soloflug-Bestätigung» im Pilotenauszug (7.6)
 
 **Geklärt am 2026-09-25:**
+
+- Betriebshandbücher an das Flugtag-Cockpit angepasst (durch Tobias)
+- Starthelfer sehen Schüler mit pausierter oder abgebrochener Ausbildung ausgeblendet, wie Fluglehrer (Migration 0062)
 
 - Alle Grundsatzentscheide E1–E8 gemäss Abschnitt 2 bestätigt
 - SHV-Nachweis: alle Flüge, Anzahl Fluggebiete, Unterschrift und Stempel der Schule physisch, Format wie der bestehende Pilotenauszug (6.2)

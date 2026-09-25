@@ -428,6 +428,20 @@
       "when": 1793836800000,
       "tag": "0060_school_flight_link_consistency",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1793923200000,
+      "tag": "0061_flight_photo_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1794009600000,
+      "tag": "0062_inactive_students_for_helpers",
+      "breakpoints": true
     }
   ]
 }

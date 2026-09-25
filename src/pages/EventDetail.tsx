@@ -53,7 +53,8 @@ export default function EventDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
-  const inactive = useActiveStudents(event?.group_id, isStaff && event?.groups?.group_type === "school");
+  // The day team (launch helpers included, migration 0062) hides students whose training is paused or cancelled.
+  const inactive = useActiveStudents(event?.group_id, (isStaff || dayRole !== null) && event?.groups?.group_type === "school");
   const [isStudent, setIsStudent] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -127,16 +128,23 @@ export default function EventDetail() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !user || !id) return;
     setUploading(true);
+    let added = 0;
+    let failed = 0;
     try {
       for (const file of Array.from(e.target.files)) {
         const compressed = await compressImage(file);
-        const path = `events/${user.id}/${id}/${Date.now()}_${compressed.name}`;
+        // Own folder first: storage only accepts uploads under <user id>/ (migration 0061).
+        const path = `${user.id}/events/${id}/${Date.now()}_${compressed.name}`;
         const { error: uploadError } = await supabase.storage.from("flight-photos").upload(path, compressed);
-        if (uploadError) { toast({ title: t("flights.photoUploadFailed"), variant: "destructive" }); continue; }
-        await supabase.from("event_photos").insert({ event_id: id, storage_path: path });
+        if (uploadError) { failed++; continue; }
+        const { error: rowError } = await supabase.from("event_photos").insert({ event_id: id, storage_path: path });
+        // Without its row the file would stay invisible and orphaned.
+        if (rowError) { failed++; await supabase.storage.from("flight-photos").remove([path]); continue; }
+        added++;
       }
       await loadPhotos(id);
-      toast({ title: t("flights.photoAdded") });
+      if (failed > 0) toast({ title: t("flights.photoUploadFailed"), variant: "destructive" });
+      if (added > 0) toast({ title: t("flights.photoAdded") });
     } finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ""; }
   };
 
@@ -204,7 +212,7 @@ export default function EventDetail() {
   const confirmedSignups = signups.filter(s => s.signed_up && s.status !== "waitlist");
   const waitlistSignups = signups.filter(s => s.signed_up && s.status === "waitlist");
   const activeDay = event && new Date(event.event_date) >= new Date(new Date().setHours(0, 0, 0, 0)) && event.status !== "cancelled";
-  const hideInactive = activeDay && isStaff && event?.groups?.group_type === "school" && !showInactive;
+  const hideInactive = activeDay && (isStaff || dayRole !== null) && event?.groups?.group_type === "school" && !showInactive;
   const activeListReady = !hideInactive || (!inactive.isPending && !inactive.isError);
   const visibleConfirmed = activeListReady ? confirmedSignups.filter(s => !hideInactive || !inactive.data?.includes(s.user_id)) : [];
   const visibleWaitlist = activeListReady ? waitlistSignups.filter(s => !hideInactive || !inactive.data?.includes(s.user_id)) : [];
@@ -455,7 +463,7 @@ export default function EventDetail() {
           {isStaff && isSchool && event.event_category === "basic_course" && event.status !== "cancelled" && (
             <EquipmentQuotaHint groupId={event.group_id} eventDate={event.event_date} signups={signups} />
           )}
-          {isStaff && activeDay && isSchool && <div className="space-y-1">
+          {(isStaff || dayRole !== null) && activeDay && isSchool && <div className="space-y-1">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />{t("journeys.includeInactive")}</label>
             <p className="text-xs text-muted-foreground">{t("journeys.inactiveHint")}</p>
             {inactive.isError && <div role="alert"><p>{t("performance.loadFailed")}</p><Button onClick={() => void inactive.refetch()}>{t("performance.retry")}</Button></div>}

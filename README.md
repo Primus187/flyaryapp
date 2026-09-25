@@ -1,5 +1,28 @@
 # Flyary
 
+## Fotos: Termin-Upload und Lesezugriff (Korrektur 2026-09-25)
+
+Migration `0061_flight_photo_access.sql`, Upload in `src/pages/EventDetail.tsx`, Tests in
+`src/test/photo-access-database.test.ts`.
+
+- **Fehler:** «Fotos hinzufügen» im Termin brach immer ab. Der Upload speicherte unter `events/<Benutzer>/…`, der
+  Speicher akzeptiert aber nur Pfade unter dem eigenen Ordner `<Benutzer>/…`. Neu: `<Benutzer>/events/<Termin>/…`.
+  Scheitert der Eintrag in `event_photos`, wird die Datei wieder gelöscht; die Meldung sagt ehrlich, ob etwas
+  fehlgeschlagen ist (vorher erschien danach trotzdem «Foto hinzugefügt»).
+- **Dabei gefunden:** Seit der Bucket `flight-photos` privat ist, durfte nur die Besitzerin bzw. der Besitzer lesen.
+  Fotos anderer im Feed, veröffentlichte Termin-Fotos und Profilbilder anderer Piloten (Feed, Rangliste, Vorschläge,
+  Mitteilungen) blieben darum leer. Neu gilt: Eine Datei ist lesbar, wenn die Zeile lesbar ist, die auf sie zeigt
+  (`flight_photos`, `event_photos` mit ihren bestehenden Regeln für Gruppe und Follower); Profilbilder sind für alle
+  Angemeldeten lesbar. Dateien ohne solche Zeile bleiben privat. Hochladen und Löschen bleiben auf den eigenen
+  Ordner beschränkt.
+
+## Flugtag-Cockpit: inaktive Schüler auch für Starthelfer ausgeblendet
+
+Migration `0062_inactive_students_for_helpers.sql`: `inactive_school_students` (nur IDs, keine Gründe) ist neu für
+das ganze Schulteam und für im Termin eingeteilte Personen lesbar. Check-in und Startplatz-Ansicht blenden Schüler
+mit pausierter oder abgebrochener Ausbildung auch für Starthelfer aus (Entscheid 2026-09-25), inklusive Schalter
+«Pausierte und abgemeldete Schüler anzeigen».
+
 ## Flugtag-Cockpit: Nachtrag Abnahmeprüfung C3
 
 Alle Akzeptanzkriterien von 6.1–6.3 gegen den Code geprüft. Zwei Funde, behoben:
