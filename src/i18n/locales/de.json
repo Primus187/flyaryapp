@@ -14,6 +14,8 @@
     "more": "Mehr"
   },
   "common": {
+    "pageFailed": "Diese Seite konnte nicht geladen werden",
+    "pageFailedHint": "Meist hilft es, die App zu aktualisieren. Deine Daten bleiben erhalten.",
     "undo": "Rückgängig",
     "updateAvailable": "Neue Version verfügbar",
     "reloadNow": "Neu laden",

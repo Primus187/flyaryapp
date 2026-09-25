@@ -10,6 +10,7 @@ import { RoleModeProvider } from "@/contexts/RoleModeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
+import PageErrorBoundary from "@/components/PageErrorBoundary";
 import { takeAfterLogin } from "@/lib/after-login";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prefetchDashboard } from "@/hooks/use-dashboard-data";
@@ -152,6 +153,7 @@ const App = () => {
             <AuthProvider>
               <RoleModeProvider>
               <SplashGate>
+                <PageErrorBoundary>
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
                     <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
@@ -206,6 +208,7 @@ const App = () => {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+                </PageErrorBoundary>
               </SplashGate>
               </RoleModeProvider>
             </AuthProvider>

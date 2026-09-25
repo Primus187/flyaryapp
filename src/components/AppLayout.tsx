@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import BottomNav from "./BottomNav";
+import PageErrorBoundary from "./PageErrorBoundary";
+import LoadingState from "@/components/layout/LoadingState";
 import { WifiOff, RefreshCw, CloudUpload } from "lucide-react";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { useChatInboxLive } from "@/hooks/use-chat";
@@ -54,7 +56,11 @@ export default function AppLayout() {
           {syncing ? t("offline.syncing") : `${pendingCount} ${t("offline.pendingFlights")} — ${t("offline.tapToSync")}`}
         </button>
       )}
-      <Outlet />
+      <PageErrorBoundary>
+        <Suspense fallback={<LoadingState />}>
+          <Outlet />
+        </Suspense>
+      </PageErrorBoundary>
       <BottomNav />
     </div>
   );

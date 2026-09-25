@@ -14,6 +14,8 @@
     "more": "More"
   },
   "common": {
+    "pageFailed": "This page could not be loaded",
+    "pageFailedHint": "Updating the app usually helps. Your data is kept.",
     "undo": "Undo",
     "updateAvailable": "New version available",
     "reloadNow": "Reload",

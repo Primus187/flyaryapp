@@ -14,6 +14,8 @@
     "more": "Plus"
   },
   "common": {
+    "pageFailed": "Impossible de charger cette page",
+    "pageFailedHint": "Mettre à jour l'app aide généralement. Tes données sont conservées.",
     "undo": "Annuler",
     "updateAvailable": "Nouvelle version disponible",
     "reloadNow": "Recharger",
