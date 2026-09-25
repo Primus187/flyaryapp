@@ -2009,7 +2009,8 @@
         "deleteConfirmText": "The listing and its photos are deleted permanently.",
         "deleted": "Listing deleted",
         "actionDone": "Done",
-        "expiringNotification": "Your listing ends in 3 days – renew it now?"
+        "expiringNotification": "Your listing ends in 3 days – renew it now?",
+        "withdraw": "Withdraw listing (delete)"
       },
       "browse": {
         "searchPlaceholder": "Search, e.g. Alpha 7 or reserve",

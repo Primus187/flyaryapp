@@ -2009,7 +2009,8 @@
         "deleteConfirmText": "L'annonce et ses photos seront supprimées définitivement.",
         "deleted": "Annonce supprimée",
         "actionDone": "C'est fait",
-        "expiringNotification": "Ton annonce se termine dans 3 jours – la prolonger maintenant ?"
+        "expiringNotification": "Ton annonce se termine dans 3 jours – la prolonger maintenant ?",
+        "withdraw": "Retirer l'annonce (supprimer)"
       },
       "browse": {
         "searchPlaceholder": "Rechercher, p. ex. Alpha 7 ou secours",

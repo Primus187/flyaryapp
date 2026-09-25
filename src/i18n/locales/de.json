@@ -2009,7 +2009,8 @@
         "deleteConfirmText": "Die Anzeige und ihre Fotos werden endgültig gelöscht.",
         "deleted": "Anzeige gelöscht",
         "actionDone": "Erledigt",
-        "expiringNotification": "Deine Anzeige läuft in 3 Tagen ab – jetzt verlängern?"
+        "expiringNotification": "Deine Anzeige läuft in 3 Tagen ab – jetzt verlängern?",
+        "withdraw": "Anzeige zurückziehen (löschen)"
       },
       "browse": {
         "searchPlaceholder": "Suchen, z. B. Alpha 7 oder Retter",

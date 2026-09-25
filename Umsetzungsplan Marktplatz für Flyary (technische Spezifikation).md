@@ -11,7 +11,7 @@ Dieses Dokument beschreibt einen Marktplatz für gebrauchtes und neues Gleitschi
 | M1 – Grundfunktion (MVP) | ✅ Abgeschlossen | 4.1–4.10 umgesetzt und abnahmegeprüft; inkl. Schul-Shop mit Neuware und Moderation |
 | M2 – Wiederkommen | ✅ Abgeschlossen | 6.1–6.4 umgesetzt und abnahmegeprüft |
 | M3 – Schulen im Alltag | ✅ Abgeschlossen | 7.1–7.2 umgesetzt und abnahmegeprüft |
-| M4 – Später / optional | ⏸ Zurückgestellt | Bewertungen, Diebstahl-Abgleich, kostenpflichtige Zusatzfunktionen, öffentlicher Teilen-Link, Zahlung in der App |
+| M4 – Später / optional | 🔶 Teilweise beauftragt | 8.1 Bewertungen und 8.4 öffentlicher Teilen-Link gewünscht; 8.2, 8.3 und 8.5 gestrichen (Entscheid 2026-09-25) |
 
 ## 1. Grundsatzentscheide
 
@@ -309,6 +309,8 @@ Bei Schul-Anzeigen kann das Shop-Team einen Verkauf an eine Person der Schule «
 **Ist-Stand:** Migration `0046_marketplace_sale_to_billing.sql` (`marketplace_sell_to_member`, `marketplace_sale_candidates`, `billing_items.listing_id`), Dialog «An Mitglied verkaufen (Abrechnung)» in der Shop-Liste. Abrechnungsart «Kauf» (gab es schon), Betrag in CHF. **Abweichung:** Kein eigener Schritt «reservieren für Person X» – Reservieren gibt es seit 4.4 allgemein, der Verkauf auf die Abrechnung ist ein Schritt. Die Abnahmeprüfung M3 ergab keinen Befund.
 
 ## 8. M4 – Später / optional
+
+**Entscheid nach dem Test mit Vertical (2026-09-25):** 8.1 (Bewertungen) und 8.4 (öffentlicher Teilen-Link, hebt E3 auf) werden umgesetzt. 8.2 (Seriennummer-Abgleich), 8.3 (kostenpflichtige Zusatzfunktionen) und 8.5 (Zahlung in der App) werden nicht gebraucht. Weitere Rückmeldung: Shop gut bedienbar, Kategorien und Merkmale passen; Zurückziehen und «verkauft» waren schwer zu finden und stehen jetzt direkt auf der eigenen Anzeige.
 
 | # | Feature | Voraussetzung |
 | --- | --- | --- |

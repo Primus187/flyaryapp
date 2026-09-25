@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, Pencil, School, Share2, Truck } from "lucide-react";
+import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, School, Share2, Truck } from "lucide-react";
 import ReportListingDialog from "@/components/market/ReportListingDialog";
+import OwnerListingActions from "@/components/market/OwnerListingActions";
 import FavoriteButton from "@/components/market/FavoriteButton";
 import { fetchFavoriteIds } from "@/lib/marketplace-favorites";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +45,8 @@ export default function MarketListingDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
+  /** Bumped after the seller changed the status on this page: reloads the data. */
+  const [reloadKey, setReloadKey] = useState(0);
   const [photos, setPhotos] = useState<ListingPhoto[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [seller, setSeller] = useState<SellerCard | null>(null);
@@ -83,7 +86,7 @@ export default function MarketListingDetail() {
       setUrls(await listingPhotoUrls(sorted, "full"));
       if (card?.avatar_url) setAvatar(await getSignedUrl("flight-photos", card.avatar_url));
     })();
-  }, [id, user]);
+  }, [id, user, reloadKey]);
 
   if (loading) return <LoadingState />;
   if (!listing) {
@@ -208,9 +211,7 @@ export default function MarketListingDetail() {
       </div>
 
       {canManage ? (
-        <Button variant="outline" className="w-full gap-2" onClick={() => navigate(`/market/${listing.id}/edit`)}>
-          <Pencil className="h-4 w-4" /> {t("market.mine.edit")}
-        </Button>
+        <OwnerListingActions listing={listing} onChanged={() => setReloadKey((k) => k + 1)} />
       ) : (status === "active" || status === "reserved") && (
         <Button className="w-full gap-2" disabled={contacting} onClick={() => void contact()}>
           <MessageCircle className="h-4 w-4" /> {t("market.chat.contact")}

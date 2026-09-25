@@ -145,7 +145,7 @@ export default function ManagedListings({ seller, newPath }: Props) {
                     className={action === "delete" ? "text-destructive" : undefined}
                     onSelect={() => void act(row, action)}
                   >
-                    {action === "bump" && bumpAt ? t("market.mine.bumpFrom", { date: dateFormat.format(bumpAt) }) : t(`market.mine.${action}`)}
+                    {action === "bump" && bumpAt ? t("market.mine.bumpFrom", { date: dateFormat.format(bumpAt) }) : t(action === "delete" ? "market.mine.withdraw" : `market.mine.${action}`)}
                   </DropdownMenuItem>
                 </div>
               ))}
