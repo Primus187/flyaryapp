@@ -31,6 +31,8 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
   const [pauseFor, setPauseFor] = useState<DayParticipant | null>(null);
   const [reason, setReason] = useState<PauseReason>("other");
   const [note, setNote] = useState("");
+  // Tiles fold away once nobody is left to check in; the summary line opens them again.
+  const [tilesOpen, setTilesOpen] = useState<boolean | null>(null);
   const onChangedRef = useRef(onChanged);
   onChangedRef.current = onChanged;
   const refresh = useCallback(() => onChangedRef.current(), []);
@@ -55,6 +57,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
 
   const participants = useMemo(() => dayParticipants(signups, profiles, pauses), [signups, profiles, pauses]);
   const summary = presenceSummary(participants);
+  const showTiles = tilesOpen ?? summary.expected > 0;
 
   const fail = (error: { message?: string }) => {
     const closed = error.message?.includes("Flight day is closed");
@@ -116,12 +119,17 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
               ].filter(Boolean).join(" · ") || t("flightDay.allCheckedIn")}
             </p>
           </div>
-          {summary.expected > 0 && (
+          {summary.expected > 0 ? (
             <Button size="sm" variant="outline" className="shrink-0" onClick={allPresent} disabled={busy !== null}>{t("flightDay.allPresent")}</Button>
+          ) : (
+            <Button size="sm" variant="ghost" className="shrink-0 text-xs" aria-expanded={showTiles} onClick={() => setTilesOpen(!showTiles)}>
+              {showTiles ? t("flightDay.hideCheckIn") : t("flightDay.showCheckIn")}
+            </Button>
           )}
         </CardContent>
       </Card>
 
+      {showTiles && <>
       <div className="grid grid-cols-2 gap-2">
         {participants.map((p) => (
           <div
@@ -164,6 +172,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
         ))}
       </div>
       <p className="text-[11px] text-muted-foreground">{t("flightDay.tapHint")}</p>
+      </>}
 
       <Dialog open={!!pauseFor} onOpenChange={(open) => { if (!open) setPauseFor(null); }}>
         <DialogContent className="max-w-sm">

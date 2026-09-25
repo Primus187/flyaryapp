@@ -10,7 +10,7 @@ Der Plan ist wie die Umsetzungspläne für die Flugschul-Erweiterungen und den M
 
 | Stufe | Status | Bemerkung |
 | --- | --- | --- |
-| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅, 4.2 ✅; 4.3–4.5 offen |
+| C1 – Cockpit und Flugerfassung (MVP) | 🚧 In Arbeit | 4.1 ✅, 4.2 ✅, 4.3 ✅; 4.4–4.5 offen |
 | C2 – Tagesabschluss | ⏳ Offen | 5.1–5.2 |
 | C3 – Flugbuch-Abgleich und Ausbildungsnachweis | ⏳ Offen | 6.1–6.3 |
 | C4 – Später / optional | ⏸ Zurückgestellt | 7.1–7.6 |
@@ -113,7 +113,7 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Ist-Stand:** Migration `0051_flight_day_presence.sql` (`presence`, `checked_in_at`, `attended` als generierte Spalte, `event_day_pauses`, RPCs `set_signup_presence`, `set_signups_present`, `set_day_pause`, `set_signup_confirmed`, Trigger `protect_signup_school_fields` und «erster Flug checkt ein»), Oberfläche `src/components/flightday/DayCheckIn.tsx` im neuen Reiter «Flugtag». **Fund:** Die Anwesenheitshäkchen und «Bestätigen» des Schulteams wurden bei anderen Personen bisher still ignoriert (RLS nur «eigene Anmeldung»), ein Schüler konnte dafür bei sich selbst `attended` und `confirmed_by_school` setzen. Beides behoben. **Abweichungen:** Pausengrund in eigener Tabelle `event_day_pauses` (nur Team) statt `event_signups.paused_reason`, weil alle Gruppenmitglieder die Anmeldungen lesen; nicht angehakte frühere Anmeldungen bleiben `expected` statt `absent`; auch Starthelfer dürfen pausieren; Ausbildungsblatt, Schülerflüge und Tagesbuchung stehen bis 4.3–5.1 unten im Reiter, nur für Admin, Fluglehrer und Schulleitung.
 
-### 4.3 Flug erfassen am Landeplatz (Fluglehrer)
+### 4.3 Flug erfassen am Landeplatz (Fluglehrer) ✅
 
 **Ziel:** Der Fluglehrer erfasst einen Flug samt Bewertung mit wenigen Tipps, mit einer Hand und Handschuhen.
 
@@ -145,9 +145,11 @@ Logisches Zielbild. Vor der Umsetzung gegen das echte Schema abgleichen (Feldnam
 
 **Datenmodell:** `event_school_flight_items`.
 
+**Ist-Stand:** Migration `0052_school_flight_items.sql` (`event_school_flight_items`, nur Fluglehrer lesen; `school_flight_land`/`_add` mit Bewertungen in einer Transaktion; `school_flight_set_items`; `my_school_flights` mit Bewertungen; Lese-Policy für die Orte eines Flugtags), Oberfläche `FlightBoard.tsx`, `RecordFlightSheet.tsx`, `DaySitesCard.tsx`. **Fund:** Orte gehören einer Person; ohne die neue Policy hätten zweiter Fluglehrer und Starthelfer die Namen der Plätze des Tages nicht lesen können. **Abweichungen:** Landeplatz einmal als Platz des Tages statt pro Flug im Sheet (Korrektur pro Flug über `school_flight_update`); Ausbildungsblatt F1–F6 bleibt bis 4.5 unter der Flugliste; Bewertungen noch nicht im Ausbildungsstand (6.3). Für die Übernahme ins Flugbuch (6.1) beachten: Die Orte der Schulflüge gehören dem Fluglehrer, nicht dem Schüler.
+
 ### 4.4 Startplatz-Ansicht für Starthelfer und «In der Luft»
 
-**Ziel:** Der Starthelfer meldet Starts, der Fluglehrer am Landeplatz sieht live, wer unterwegs ist. Der Funk bleibt das Hauptmittel, die App spiegelt den Stand.
+**Ziel:** Der Starthelfer oder der Fluglehrer (wenn es der Starthelfer nicht macht, er es aber über das Radio gemeldet kriegt) meldet Starts, der Fluglehrer am Landeplatz sieht live, wer unterwegs ist. Der Funk bleibt das Hauptmittel, die App spiegelt den Stand.
 
 **Akzeptanzkriterien:**
 

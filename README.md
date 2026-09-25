@@ -1,5 +1,36 @@
 # Flyary
 
+## Flugtag-Cockpit: Flüge am Landeplatz erfassen (4.3)
+
+Migration `0052_school_flight_items.sql`, Oberfläche `src/components/flightday/FlightBoard.tsx`,
+`RecordFlightSheet.tsx` und `DaySitesCard.tsx`, Logik in `src/lib/school-flights.ts`, Tests in
+`src/test/school-flights-database.test.ts`, `src/lib/school-flights.test.ts` und
+`src/components/flightday/FlightBoard.test.tsx`.
+
+- **Flugliste im Reiter «Flugtag»** (Fluglehrer): eine Zeile pro anwesendem oder noch offenem Schüler mit Anzahl
+  Flüge, einem Punkt pro Flug (gefüllt = Rückmeldung vorhanden), «in der Luft · n min» und Pausengrund. Eine grosse
+  Hauptaktion pro Zeile: **Gelandet**, wenn der Schüler in der Luft ist, sonst **+ Flug**; beim Grundkurs **+1**
+  (Flug sofort erfasst, 5 s «Rückgängig»). Ohne Text ist ein Flug so in drei Tipps erfasst.
+- **Bottom-Sheet:** die geplanten Manöver des Termins mit «Nochmals / Geht / Sitzt» (nochmals tippen hebt auf),
+  Textbausteine, «Rückmeldung an Schüler» und eingeklappt «Intern (nur Team)». Landung, Rückmeldung und
+  Bewertungen werden in einem Aufruf gespeichert; ungespeicherte Änderungen fragen vor dem Schliessen nach.
+- **Aufgeklappte Zeile:** die Flüge des Tages mit Nummer, Zeiten, Dauer und Rückmeldung (antippen = bearbeiten
+  oder löschen), Startabbrüche mit Startnotiz, darunter der letzte nächste Lernschritt früherer Tage zum Lesen.
+- **Plätze des Tages:** Karte zum Setzen von Standard-Start- und Landeplatz aus den eigenen Orten
+  (`LocationCombobox`, auch neue Orte).
+- Die Check-in-Kacheln klappen ein, sobald niemand mehr offen ist («Check-in anzeigen» öffnet sie wieder).
+- **Datenbank:** `event_school_flight_items` (Bewertung 1–3 pro Flug und Manöver, nur für Fluglehrer lesbar);
+  `school_flight_land` und `school_flight_add` nehmen die Bewertungen mit, `school_flight_set_items` ersetzt sie,
+  `my_school_flights` liefert sie dem Schüler nach der Freigabe mit.
+- **Orte des Flugtags lesbar:** Orte gehören einer Person. Neue Policy «Sites of flying days are readable»: Wer am
+  Flugtag eine Rolle hat, liest die Namen der Standardplätze und der Plätze der Schulflüge dieses Tages (sonst sähen
+  zweiter Fluglehrer und Starthelfer nur «?»).
+
+**Abweichungen vom Plan:** (1) Der Landeplatz wird nicht im Sheet pro Flug gewählt, sondern einmal als Platz des
+Tages; das spart am Landeplatz einen Schritt. Korrekturen pro Flug sind über `school_flight_update` möglich (UI
+folgt bei Bedarf). (2) Das bisherige Ausbildungsblatt F1–F6 und die Schülerflüge bleiben bis 4.5 unter der
+Flugliste. (3) Die Bewertungen fliessen noch nicht in den Ausbildungsstand des Schülers (6.3).
+
 ## Flugtag-Cockpit: Check-in und Tagesstatus (4.2)
 
 Migration `0051_flight_day_presence.sql`, Logik in `src/lib/flight-day.ts`, Oberfläche

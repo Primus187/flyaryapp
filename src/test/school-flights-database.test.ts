@@ -22,6 +22,9 @@ const clubEvent = "20000000-0000-0000-0000-000000000003";
 const takeoff = "30000000-0000-0000-0000-000000000001";
 const landing = "30000000-0000-0000-0000-000000000002";
 const takeoff2 = "30000000-0000-0000-0000-000000000003";
+const unused = "30000000-0000-0000-0000-000000000004";
+const launch ="40000000-0000-0000-0000-000000000001";
+const approach = "40000000-0000-0000-0000-000000000002";
 
 beforeAll(async () => {
   db = new PGlite();
@@ -30,8 +33,10 @@ beforeAll(async () => {
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.user_id',true),'')::uuid $$;
     GRANT USAGE ON SCHEMA auth TO authenticated,anon;
     CREATE TABLE groups(id uuid PRIMARY KEY, group_type text);
-    CREATE TABLE locations(id uuid PRIMARY KEY, name text);
+    CREATE TABLE locations(id uuid PRIMARY KEY, name text, user_id uuid);
     CREATE TABLE flights(id uuid PRIMARY KEY);
+    CREATE TABLE training_items(id uuid PRIMARY KEY, name text, sort_order integer);
+    INSERT INTO training_items VALUES ('${approach}','Landeeinteilung',2),('${launch}','Aufziehen',1);
     CREATE TABLE flight_events(id uuid PRIMARY KEY, group_id uuid, title text, event_date timestamptz, status text);
     CREATE TABLE event_signups(event_id uuid, user_id uuid, signed_up boolean, status text);
     CREATE TABLE event_staff(event_id uuid, user_id uuid, role text);
@@ -41,7 +46,10 @@ beforeAll(async () => {
       SELECT is_group_staff(u, g) OR (u='${helper}' AND g='${school}') $$;
     GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;
     INSERT INTO groups VALUES ('${school}','school'),('${otherSchool}','school'),('${club}','club');
-    INSERT INTO locations VALUES ('${takeoff}','Niederbauen'),('${landing}','Emmetten'),('${takeoff2}','Klewenalp');
+    INSERT INTO locations VALUES ('${takeoff}','Niederbauen','${instructor}'),('${landing}','Emmetten','${instructor}'),
+      ('${takeoff2}','Klewenalp','${instructor}'),('${unused}','Privat','${instructor}');
+    ALTER TABLE locations ENABLE ROW LEVEL SECURITY;
+    CREATE POLICY own ON locations FOR SELECT USING (user_id = auth.uid());
     INSERT INTO flight_events VALUES ('${event}','${school}','Höhenflüge',now(),'confirmed'),
       ('${closedEvent}','${school}','Gestern',now()-interval '1 day','confirmed'),
       ('${clubEvent}','${club}','Clubtag',now(),'confirmed');
@@ -50,6 +58,7 @@ beforeAll(async () => {
     INSERT INTO event_staff VALUES ('${event}','${eventHelper}','launch_helper'),('${event}','${eventInstructor}','instructor');
   `);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0050_event_school_flights.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0052_school_flight_items.sql", import.meta.url), "utf8"));
   await db.exec(`UPDATE flight_events SET default_takeoff_location_id='${takeoff}', default_landing_location_id='${landing}' WHERE id='${event}';
     UPDATE flight_events SET day_closed_at=now() WHERE id='${closedEvent}';`);
 }, 60_000);
@@ -71,11 +80,15 @@ describe("recording flights", () => {
 
     await asUser(instructor);
     const landed = await call<{ status: string; landing_location_id: string; landed_by: string }>(
-      "SELECT * FROM school_flight_land($1,NULL,$2)", [first.id, JSON.stringify({ feedback: "Anflug sauber", internal_note: "Knie beobachten" })]);
+      "SELECT * FROM school_flight_land($1,NULL,$2,$3)", [first.id, JSON.stringify({ feedback: "Anflug sauber", internal_note: "Knie beobachten" }),
+        JSON.stringify([{ item_id: launch, rating: 2 }, { item_id: approach, rating: 1 }, { item_id: approach, rating: 3 }])]);
     expect(landed).toMatchObject({ status: "landed", landing_location_id: landing, landed_by: instructor });
     await expect(db.query("SELECT school_flight_land($1)", [first.id])).rejects.toThrow("Flight is not in the air");
     const notes = await call<{ feedback: string; internal_note: string }>("SELECT * FROM event_school_flight_notes WHERE flight_id=$1", [first.id]);
     expect(notes).toMatchObject({ feedback: "Anflug sauber", internal_note: "Knie beobachten" });
+    // A maneuver listed twice keeps its last rating.
+    expect((await db.query("SELECT training_item_id, rating FROM event_school_flight_items WHERE flight_id=$1 ORDER BY rating", [first.id])).rows)
+      .toEqual([{ training_item_id: launch, rating: 2 }, { training_item_id: approach, rating: 3 }]);
 
     await asUser(helper);
     const second = await call<{ id: string; seq: number; takeoff_location_id: string }>(
@@ -139,6 +152,28 @@ describe("recording flights", () => {
   });
 });
 
+describe("maneuver ratings", () => {
+  it("lets instructors replace and clear ratings, rejecting invalid ones", async () => {
+    await asUser(instructor);
+    const flight = await call<{ id: string }>("SELECT * FROM school_flight_add($1,$2,NULL,NULL,NULL,$3)", [event, student2, JSON.stringify([{ item_id: launch, rating: 1 }])]);
+    await db.query("SELECT school_flight_set_items($1,$2)", [flight.id, JSON.stringify([{ item_id: approach, rating: 2 }])]);
+    expect((await db.query("SELECT training_item_id, rating FROM event_school_flight_items WHERE flight_id=$1", [flight.id])).rows)
+      .toEqual([{ training_item_id: approach, rating: 2 }]);
+    await expect(db.query("SELECT school_flight_set_items($1,$2)", [flight.id, JSON.stringify([{ item_id: launch, rating: 4 }])])).rejects.toThrow();
+    await expect(db.query("SELECT school_flight_set_items($1,$2)", [flight.id, JSON.stringify({ item_id: launch })])).rejects.toThrow("Invalid ratings");
+    await db.query("SELECT school_flight_set_items($1,$2)", [flight.id, "[]"]);
+    expect((await db.query("SELECT * FROM event_school_flight_items WHERE flight_id=$1", [flight.id])).rows).toHaveLength(0);
+    await db.query("SELECT school_flight_delete($1)", [flight.id]);
+  });
+
+  it("keeps ratings from helpers and rejects their writes", async () => {
+    await asUser(helper);
+    expect((await db.query("SELECT * FROM event_school_flight_items")).rows).toHaveLength(0);
+    const any = (await db.query<{ id: string }>("SELECT id FROM event_school_flights LIMIT 1")).rows[0];
+    await expect(db.query("SELECT school_flight_set_items($1,'[]')", [any.id])).rejects.toThrow("Flight day access required");
+  });
+});
+
 describe("guards", () => {
   it("rejects students without a confirmed place", async () => {
     await asUser(instructor);
@@ -190,6 +225,17 @@ describe("reading", () => {
     }
   });
 
+  it("lets the day's team read the names of the day's sites, nobody else", async () => {
+    for (const user of [helper, eventHelper, eventInstructor]) {
+      await asUser(user);
+      expect((await db.query<{ name: string }>("SELECT name FROM locations ORDER BY name")).rows.map(r => r.name)).toEqual(["Emmetten", "Klewenalp", "Niederbauen"]);
+    }
+    for (const user of [student, foreignTeam, outsider]) {
+      await asUser(user);
+      expect((await db.query("SELECT name FROM locations")).rows).toHaveLength(0);
+    }
+  });
+
   it("gives students their landed flights with feedback only after release", async () => {
     await asUser(student);
     expect((await call<{ data: unknown[] }>("SELECT my_school_flights($1) AS data", [event])).data).toEqual([]);
@@ -198,9 +244,9 @@ describe("reading", () => {
     await asUser(student);
     const mine = (await call<{ data: { number: number; feedback: string | null; takeoff: string }[] }>("SELECT my_school_flights($1) AS data", [event])).data;
     expect(mine.map(f => f.number)).toEqual([1, 2]);
-    expect(mine[0]).toMatchObject({ feedback: "Anflug sauber", takeoff: "Niederbauen" });
+    expect(mine[0]).toMatchObject({ feedback: "Anflug sauber", takeoff: "Niederbauen", items: [{ name: "Aufziehen", rating: 2 }, { name: "Landeeinteilung", rating: 3 }] });
     expect(mine[1].feedback).toBe("Gut");
-    expect(JSON.stringify(mine)).not.toMatch(/Knie|Intern|2\. Start|Aufziehen/);
+    expect(JSON.stringify(mine)).not.toMatch(/Knie|Intern|2\. Start|asymmetrisch/);
 
     // student2 has an aborted launch and one landed flight: only the landed one counts.
     await asUser(student2);

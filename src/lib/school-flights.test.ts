@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  airborneMinutes, flightCountByStudent, flightDurationMinutes, flightNumbers, flightsInAir, landingHintDue,
+  airborneMinutes, appendSnippet, boardAction, flightCountByStudent, flightDurationMinutes, flightNumbers, flightsInAir, landingHintDue,
+  ratingsPayload, schoolFlightErrorKey, toggleRating,
   type SchoolFlight,
 } from "./school-flights";
 
@@ -60,5 +61,39 @@ describe("times", () => {
     expect(landingHintDue(inAir, now, 30)).toBe(true);
     expect(landingHintDue(inAir, now, 45)).toBe(false);
     expect(landingHintDue(flight({}), now, 15)).toBe(false);
+  });
+});
+
+describe("recording helpers", () => {
+  it("appends snippets as sentences", () => {
+    expect(appendSnippet("", "Anflug sauber")).toBe("Anflug sauber");
+    expect(appendSnippet("Guter Start", "Anflug sauber")).toBe("Guter Start. Anflug sauber");
+    expect(appendSnippet("Guter Start! ", "Anflug sauber")).toBe("Guter Start! Anflug sauber");
+  });
+
+  it("toggles ratings and builds the payload", () => {
+    let ratings = toggleRating({}, "launch", 2);
+    ratings = toggleRating(ratings, "approach", 3);
+    expect(ratingsPayload(ratings)).toEqual([{ item_id: "launch", rating: 2 }, { item_id: "approach", rating: 3 }]);
+    expect(toggleRating(ratings, "launch", 2)).toEqual({ approach: 3 });
+    expect(toggleRating(ratings, "launch", 1)).toEqual({ launch: 1, approach: 3 });
+  });
+
+  it("picks the main action of a student row", () => {
+    const inAir = flight({ status: "in_air", started_at: "2026-09-25T10:00:00Z", landed_at: null });
+    expect(boardAction([flight({}), inAir], "basic_course")).toBe("land");
+    expect(boardAction([flight({})], "basic_course")).toBe("count");
+    expect(boardAction([], "height_flight")).toBe("add");
+    expect(boardAction([], null)).toBe("add");
+  });
+
+  it("maps database errors to messages", () => {
+    expect(schoolFlightErrorKey("Flight day is closed")).toBe("closed");
+    expect(schoolFlightErrorKey("Student is already in the air")).toBe("alreadyInAir");
+    expect(schoolFlightErrorKey("Flight is not in the air")).toBe("notInAir");
+    expect(schoolFlightErrorKey("Student is not signed up for this flight day")).toBe("notSignedUp");
+    expect(schoolFlightErrorKey("Flight day access required")).toBe("noAccess");
+    expect(schoolFlightErrorKey("Failed to fetch")).toBe("generic");
+    expect(schoolFlightErrorKey(undefined)).toBe("generic");
   });
 });

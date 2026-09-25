@@ -66,3 +66,49 @@ export function landingHintDue(flight: SchoolFlight, now: Date, hintMinutes: Lan
   const minutes = airborneMinutes(flight, now);
   return hintMinutes !== null && minutes !== null && minutes >= hintMinutes;
 }
+
+/** Rating of a maneuver on one flight: 1 = again, 2 = okay, 3 = solid. */
+export type ManeuverRating = 1 | 2 | 3;
+export const MANEUVER_RATINGS: ManeuverRating[] = [1, 2, 3];
+
+/** Default feedback snippets (i18n keys under flightDay.snippets). */
+export const FEEDBACK_SNIPPETS = [
+  "launchClean", "launchEarlyAbort", "lookIntoTurn", "approachClean", "approachLate", "flareLate", "flareGood", "legsDown",
+] as const;
+
+/** Appends a snippet as a new sentence; an empty text gets the snippet alone. */
+export function appendSnippet(text: string, snippet: string): string {
+  const trimmed = text.trimEnd();
+  if (!trimmed) return snippet;
+  return `${trimmed}${/[.!?]$/.test(trimmed) ? " " : ". "}${snippet}`;
+}
+
+/** Tapping the selected rating again clears it. */
+export function toggleRating(ratings: Record<string, ManeuverRating>, itemId: string, rating: ManeuverRating): Record<string, ManeuverRating> {
+  const next = { ...ratings };
+  if (next[itemId] === rating) delete next[itemId]; else next[itemId] = rating;
+  return next;
+}
+
+export const ratingsPayload = (ratings: Record<string, ManeuverRating>) =>
+  Object.entries(ratings).map(([item_id, rating]) => ({ item_id, rating }));
+
+export type BoardAction = "land" | "count" | "add";
+
+/** Main button of a student row: land the flight in the air, else +1 on the practice slope
+ *  (basic course), else record a flight. */
+export function boardAction(studentFlights: SchoolFlight[], eventCategory: string | null | undefined): BoardAction {
+  if (studentFlights.some((f) => f.status === "in_air")) return "land";
+  return eventCategory === "basic_course" ? "count" : "add";
+}
+
+/** Maps database errors of the flight RPCs to i18n keys under flightDay.errors. */
+export function schoolFlightErrorKey(message: string | undefined): string {
+  if (!message) return "generic";
+  if (message.includes("Flight day is closed")) return "closed";
+  if (message.includes("already in the air")) return "alreadyInAir";
+  if (message.includes("not in the air")) return "notInAir";
+  if (message.includes("not signed up")) return "notSignedUp";
+  if (message.includes("Flight day access required")) return "noAccess";
+  return "generic";
+}
