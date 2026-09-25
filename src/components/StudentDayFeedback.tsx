@@ -47,8 +47,7 @@ export default function StudentDayFeedback({ eventId }: Props) {
         supabase.from("student_day_notes").select("flight_number, note")
           .eq("event_id", eventId).eq("student_user_id", user.id).eq("visible_to_student", true),
         supabase.rpc("my_school_flights", { _event_id: eventId }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0054 not in generated types.ts yet
-        (supabase as any).rpc("flight_day_feedback_released", { _event_id: eventId }),
+        supabase.rpc("flight_day_feedback_released", { _event_id: eventId }),
       ]);
       const results = ((notesRes.data || []) as FeedbackNote[]).filter((n) => n.note.trim());
       results.sort((a, b) => (a.flight_number ?? 99) - (b.flight_number ?? 99));

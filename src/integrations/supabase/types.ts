@@ -3912,6 +3912,10 @@ export type Database = {
       feed_mention_members: { Args: never; Returns: Json }
       feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
       feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
+      flight_day_feedback_released: {
+        Args: { _event_id: string }
+        Returns: boolean
+      }
       flight_day_require_signup: {
         Args: { _event_id: string; _student_id: string }
         Returns: undefined
