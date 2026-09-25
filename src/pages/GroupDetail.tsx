@@ -15,8 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Copy, Save, Trash2, UserMinus, Users, Trophy, Plus } from "lucide-react";
 import ChallengeCard from "@/components/ChallengeCard";
 import GroupChannels from "@/components/chat/GroupChannels";
+import { fetchGroupMembers, type GroupMemberRow } from "@/lib/group-members";
 
-interface MemberRow { id: string; user_id: string; role: string; profiles: { pilot_name: string | null } | null; }
+type MemberRow = GroupMemberRow;
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +39,7 @@ export default function GroupDetail() {
       const [{ data: g }, { data: membership }, { data: mems }] = await Promise.all([
         supabase.from("groups").select("*").eq("id", id).single(),
         supabase.from("group_members").select("role").eq("group_id", id).eq("user_id", user.id).single(),
-        supabase.from("group_members").select("id, user_id, role, profiles(pilot_name)").eq("group_id", id) as any,
+        fetchGroupMembers(id).then((data) => ({ data })),
       ]);
       if (!g) { navigate("/groups"); return; }
       setGroup(g); setName(g.name); setDescription(g.description || ""); setGroupType(g.group_type);

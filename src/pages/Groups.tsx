@@ -14,9 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Users, Copy, Link, LogOut, Trash2, ChevronDown, ChevronUp, GraduationCap, Mountain } from "lucide-react";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
+import { fetchGroupMembers, type GroupMemberRow } from "@/lib/group-members";
 
 interface GroupRow { id: string; name: string; description: string | null; invite_code: string; created_by: string; group_type: string; role: string; }
-interface MemberRow { id: string; user_id: string; role: string; profiles: { pilot_name: string | null } | null; }
+type MemberRow = GroupMemberRow;
 
 export default function Groups() {
   const { user } = useAuth();
@@ -46,7 +47,7 @@ export default function Groups() {
     }
   }, []);
 
-  const fetchMembers = async (groupId: string) => { if (members[groupId]) return; const { data } = await supabase.from("group_members").select("id, user_id, role, profiles(pilot_name)").eq("group_id", groupId) as any; if (data) setMembers(prev => ({ ...prev, [groupId]: data })); };
+  const fetchMembers = async (groupId: string) => { if (members[groupId]) return; const data = await fetchGroupMembers(groupId); if (data) setMembers(prev => ({ ...prev, [groupId]: data })); };
   const toggleExpand = (groupId: string) => { if (expandedGroup === groupId) setExpandedGroup(null); else { setExpandedGroup(groupId); fetchMembers(groupId); } };
 
   const handleCreate = async () => {
