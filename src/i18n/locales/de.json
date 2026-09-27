@@ -91,6 +91,8 @@
     "igcPointsLoaded": "Trackpunkte geladen",
     "igcError": "IGC-Fehler",
     "igcReadError": "Datei konnte nicht gelesen werden",
+    "igcNoPoints": "Die Datei enthält keine Trackpunkte – ist es eine IGC-Datei?",
+    "sharedIgcMissing": "Die geteilte Datei ist nicht angekommen. Bitte nochmals teilen oder im Formular hochladen.",
     "igcUploadFailed": "IGC-Upload fehlgeschlagen",
     "igcUploadFailedDesc": "Der Flug wurde gespeichert, aber die IGC-Datei konnte nicht hochgeladen werden.",
     "photoUploadFailed": "Foto-Upload fehlgeschlagen",

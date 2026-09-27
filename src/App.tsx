@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
 import PageErrorBoundary from "@/components/PageErrorBoundary";
-import { takeAfterLogin } from "@/lib/after-login";
+import { rememberAfterLogin, takeAfterLogin } from "@/lib/after-login";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prefetchDashboard } from "@/hooks/use-dashboard-data";
 
@@ -86,8 +86,13 @@ function PageFallback() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">...</div>;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) {
+    // An .igc shared from the phone waits in Cache Storage; bring the pilot back to it after signing in.
+    if (location.pathname === "/flights/new" && location.search.startsWith("?shared=")) rememberAfterLogin(location.pathname + location.search);
+    return <Navigate to="/auth" replace />;
+  }
   // coming from a public listing (plan 8.4): go on to the listing instead of the dashboard
   const afterLogin = takeAfterLogin();
   if (afterLogin) return <Navigate to={afterLogin} replace />;

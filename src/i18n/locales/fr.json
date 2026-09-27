@@ -116,6 +116,8 @@
     "igcPointsLoaded": "points de trace chargés",
     "igcError": "Erreur IGC",
     "igcReadError": "Impossible de lire le fichier",
+    "igcNoPoints": "Le fichier ne contient aucun point de trace – est-ce un fichier IGC ?",
+    "sharedIgcMissing": "Le fichier partagé n'est pas arrivé. Partage-le à nouveau ou importe-le dans le formulaire.",
     "igcUploadFailed": "Échec du téléchargement IGC",
     "igcUploadFailedDesc": "Le vol a été enregistré mais le fichier IGC n'a pas pu être téléchargé.",
     "photoUploadFailed": "Échec du téléchargement de la photo",

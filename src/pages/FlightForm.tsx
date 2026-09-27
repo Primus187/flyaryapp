@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
+import { takeSharedIgcFile } from "@/lib/shared-igc";
 import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText, Video, Film } from "lucide-react";
 import { validateVideo, extractPoster, getVideoDuration, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
 import { compressVideo, isVideoCompressionSupported } from "@/lib/video-compress";
@@ -39,8 +40,12 @@ interface FlightTemplate { id: string; name: string; takeoff_location_id: string
 
 export default function FlightForm() {
   const { id } = useParams();
-  const locationState = useLocation().state as any;
+  const routerLocation = useLocation();
+  const locationState = routerLocation.state as any;
   const isEdit = !!id;
+  // Opened from Android's share sheet with an .igc file (public/share-target-sw.js).
+  const sharedImport = !isEdit ? new URLSearchParams(routerLocation.search).get("shared") : null;
+  const sharedTakenRef = useRef(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -97,7 +102,8 @@ export default function FlightForm() {
         setGliders(data);
         if (!isEdit && !form.glider) {
           const def = data.find((g) => g.is_default);
-          if (def) setForm((prev) => ({ ...prev, glider: `${def.manufacturer} ${def.model}${def.size ? ` (${def.size})` : ""}` }));
+          // An imported IGC may already have named the glider; keep that.
+          if (def) setForm((prev) => (prev.glider ? prev : { ...prev, glider: `${def.manufacturer} ${def.model}${def.size ? ` (${def.size})` : ""}` }));
         }
       }
     });
@@ -142,7 +148,7 @@ export default function FlightForm() {
       const draft = raw ? JSON.parse(raw) : null;
       const fresh = typeof draft?.savedAt === "number" && Date.now() - draft.savedAt < DRAFT_MAX_AGE_MS;
       // A recorded IGC flight brings its own data; never overlay an older draft on it.
-      const importingRecording = !!(locationState?.igcFile && locationState?.igcContent);
+      const importingRecording = !!(locationState?.igcFile && locationState?.igcContent) || !!sharedImport;
       if (raw && (!fresh || importingRecording)) localStorage.removeItem(DRAFT_KEY);
       if (draft && fresh && !importingRecording) {
         userEditedRef.current = true;
@@ -167,12 +173,14 @@ export default function FlightForm() {
     return () => clearTimeout(timer);
   }, [form, tags, selectedTrainingIds, step, isEdit, draftRestored]);
 
-  const handleIGCUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return; setIgcFile(file);
+  const applyIgcFile = (file: File) => {
+    setIgcFile(file);
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const content = ev.target?.result as string; const parsed = parseIGC(content); setIgcData(parsed);
+        const content = ev.target?.result as string; const parsed = parseIGC(content);
+        if (parsed.points.length === 0) throw new Error(t("flights.igcNoPoints"));
+        setIgcData(parsed);
         setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km, glider: parsed.glider || prev.glider }));
         const shapeLabel = parsed.xcOptimization
           ? ({ fai_triangle: "FAI ▲", flat_triangle: "Flach ▲", free_3tp: "3-TP", free: "Frei" } as Record<string, string>)[parsed.xcOptimization.shape]
@@ -182,6 +190,21 @@ export default function FlightForm() {
     };
     reader.readAsText(file);
   };
+
+  const handleIGCUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (file) applyIgcFile(file);
+  };
+
+  useEffect(() => {
+    if (!sharedImport || sharedTakenRef.current) return;
+    sharedTakenRef.current = true;
+    takeSharedIgcFile().then((file) => {
+      if (file) applyIgcFile(file);
+      else toast({ title: t("flights.igcError"), description: t("flights.sharedIgcMissing"), variant: "destructive" });
+      // Drop ?shared so a reload does not report a missing file.
+      navigate("/flights/new", { replace: true });
+    });
+  }, [sharedImport]);
 
   const addPendingVideoFromFile = async (file: File): Promise<boolean> => {
     let workingFile = file;

@@ -116,6 +116,8 @@
     "igcPointsLoaded": "track points loaded",
     "igcError": "IGC error",
     "igcReadError": "Could not read file",
+    "igcNoPoints": "The file contains no track points – is it an IGC file?",
+    "sharedIgcMissing": "The shared file did not arrive. Please share it again or upload it in the form.",
     "igcUploadFailed": "IGC upload failed",
     "igcUploadFailedDesc": "The flight was saved, but the IGC file could not be uploaded.",
     "photoUploadFailed": "Photo upload failed",

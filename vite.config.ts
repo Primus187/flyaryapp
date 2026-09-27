@@ -43,13 +43,23 @@ export default defineConfig(({ mode }) => ({
           { src: "/icons/flyary-maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
           { src: "/icons/flyary-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
+        // Android share sheet: "Teilen → Flyary" on an .igc file opens the new-flight form with it
+        // (handled in public/share-target-sw.js). IGC files often arrive without their own MIME type.
+        share_target: {
+          action: "/share-target",
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: {
+            files: [{ name: "igc", accept: [".igc", ".IGC", "application/vnd.fai.igc", "application/octet-stream", "text/plain"] }],
+          },
+        },
       },
       workbox: {
-        importScripts: ["/push-sw.js"],
+        importScripts: ["/push-sw.js", "/share-target-sw.js"],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         // Heavy, rarely used chunks (3D map ~1 MB, XLSX import ~340 KB) are not precached on
         // install; they are cached at runtime on first use instead (see runtimeCaching).
-        globIgnores: ["**/stats.html", "**/push-sw.js", "**/assets/Flight3DMap-*.js", "**/assets/ImportFlights-*.js"],
+        globIgnores: ["**/stats.html", "**/push-sw.js", "**/share-target-sw.js", "**/assets/Flight3DMap-*.js", "**/assets/ImportFlights-*.js"],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/(Flight3DMap|ImportFlights)-.*\.js$/,

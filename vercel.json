@@ -9,7 +9,7 @@
   ],
   "headers": [
     {
-      "source": "/(sw.js|push-sw.js|index.html|manifest.webmanifest)",
+      "source": "/(sw.js|push-sw.js|share-target-sw.js|index.html|manifest.webmanifest)",
       "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     },
     {
