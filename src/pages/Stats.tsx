@@ -12,6 +12,7 @@ import RankedList from "@/components/stats/RankedList";
 import ActivityHeatmap from "@/components/stats/ActivityHeatmap";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
+import { useSiteName } from "@/lib/official-sites-store";
 
 // Lazy-load Recharts-based charts (recharts is ~150 KB gzipped)
 const StatsBarChart = lazy(() => import("@/components/stats/StatsBarChart"));
@@ -38,6 +39,7 @@ export default function Stats() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const [flights, setFlights] = useState<Flight[]>([]);
   const [mode, setMode] = useState<FilterMode>("year");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -75,13 +77,13 @@ export default function Stats() {
     const totalDist = filtered.reduce((s, f) => s + (Number(f.distance_km) || 0), 0);
     const totalAlt = filtered.reduce((s, f) => s + (f.altitude_gain || 0), 0);
     const takeoffCounts: Record<string, number> = {};
-    filtered.forEach((f) => { if (f.takeoff_name) takeoffCounts[f.takeoff_name] = (takeoffCounts[f.takeoff_name] || 0) + 1; });
+    filtered.forEach((f) => { if (f.takeoff_name) { const n = siteName(f.takeoff_name); takeoffCounts[n] = (takeoffCounts[n] || 0) + 1; } });
     const topTakeoff = Object.entries(takeoffCounts).sort((a, b) => b[1] - a[1])[0];
     const gliderCounts: Record<string, number> = {};
     filtered.forEach((f) => { if (f.glider) gliderCounts[f.glider] = (gliderCounts[f.glider] || 0) + 1; });
     const topGlider = Object.entries(gliderCounts).sort((a, b) => b[1] - a[1])[0];
     return { total, totalMin, avgMin, longest, totalDist, totalAlt, topTakeoff, topGlider };
-  }, [filtered]);
+  }, [filtered, siteName]);
 
   const chartData = useMemo(() => {
     const map: Record<string, { flights: number; minutes: number }> = {};
@@ -117,9 +119,9 @@ export default function Stats() {
 
   const topTakeoffs = useMemo(() => {
     const counts: Record<string, number> = {};
-    filtered.forEach(f => { if (f.takeoff_name) counts[f.takeoff_name] = (counts[f.takeoff_name] || 0) + 1; });
+    filtered.forEach(f => { if (f.takeoff_name) { const n = siteName(f.takeoff_name); counts[n] = (counts[n] || 0) + 1; } });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
-  }, [filtered]);
+  }, [filtered, siteName]);
 
   const heatmapData = useMemo(() => {
     const year = mode === "year" ? selectedYear : new Date().getFullYear();

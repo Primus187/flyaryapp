@@ -26,6 +26,7 @@ import { usePilotGoals } from "@/hooks/use-pilot-goals";
 import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { useSiteName } from "@/lib/official-sites-store";
 
 /** Home-screen event row: swipe left to hide it from the home screen. */
 function SwipeableEventCard({ children, onHide, hideLabel }: { children: React.ReactNode; onHide: () => void; hideLabel: string }) {
@@ -65,6 +66,7 @@ export default function Dashboard() {
   useXcontestAutoSync();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const siteName = useSiteName();
   const { goals, addGoal, deleteGoal } = usePilotGoals();
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const {
@@ -392,8 +394,8 @@ export default function Dashboard() {
                   <CardContent className="p-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-semibold text-sm">{f.takeoff_location?.name || "–"}</p>
-                        {f.landing_location?.name && <p className="text-xs text-muted-foreground">→ {f.landing_location.name}</p>}
+                        <p className="font-semibold text-sm">{siteName(f.takeoff_location?.name) || "–"}</p>
+                        {f.landing_location?.name && <p className="text-xs text-muted-foreground">→ {siteName(f.landing_location.name)}</p>}
                       </div>
                       <span className="text-xs text-muted-foreground">{new Date(f.date).toLocaleDateString(locale)}</span>
                     </div>

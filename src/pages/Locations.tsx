@@ -11,11 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine, Plane } from "lucide-react";
+import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine, Plane, BadgeCheck } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import { COMPASS_POINTS } from "@/lib/wind-match";
+import OfficialSiteSearch from "@/components/OfficialSiteSearch";
+import OfficialSiteHint from "@/components/OfficialSiteHint";
+import SiteLinkSuggestions from "@/components/SiteLinkSuggestions";
+import type { OfficialSite } from "@/lib/official-sites";
+import { ensureOwnLocationForSite, useSiteName } from "@/lib/official-sites-store";
 
 export default function Locations() {
   const { user } = useAuth();
@@ -31,6 +36,8 @@ export default function Locations() {
   const [backfillProgress, setBackfillProgress] = useState<{ current: number; total: number } | null>(null);
   const cancelledRef = useRef(false);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
+  const siteName = useSiteName();
+  const [addingOfficial, setAddingOfficial] = useState(false);
 
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
 
@@ -123,8 +130,28 @@ export default function Locations() {
         : [...prev.optimal_wind_directions, dir],
     }));
   };
+  // A place linked to an official site keeps the site's name, type and position (database trigger);
+  // only the pilot's notes and wind choice can be changed.
+  const editedLocation = editId ? locations.find((l) => l.id === editId) : null;
+  const locked = !!editedLocation?.official_site_id;
+  const addOfficial = async (site: OfficialSite) => {
+    if (!user) return;
+    setAddingOfficial(true);
+    try {
+      await ensureOwnLocationForSite(user.id, site);
+      toast({ title: t("locations.official.added", { name: siteName(site.name_de) }) });
+      resetForm(); setOpen(false); fetchLocations();
+    } catch (err: unknown) {
+      toast({ title: t("common.error"), description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally { setAddingOfficial(false); }
+  };
   const handleSave = async () => {
     if (!user) return;
+    if (editId && locked) {
+      await supabase.from("locations").update({ description: form.description || null, optimal_wind_directions: form.optimal_wind_directions }).eq("id", editId);
+      toast({ title: t("locations.locationUpdated") }); resetForm(); setOpen(false); fetchLocations();
+      return;
+    }
     const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null, optimal_wind_directions: form.optimal_wind_directions };
     if (editId) { await supabase.from("locations").update(data).eq("id", editId); toast({ title: t("locations.locationUpdated") }); }
     else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
@@ -156,7 +183,8 @@ export default function Locations() {
             <p className="font-medium text-sm flex items-center gap-1.5">
               {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
               {loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
-              {loc.name}
+              {siteName(loc.name)}
+              {loc.official_site_id && <BadgeCheck className="h-3.5 w-3.5 text-primary shrink-0" aria-label={t("locations.official.badge")} />}
             </p>
             <p className="text-xs text-muted-foreground">
               {loc.altitude && <span>{loc.altitude}m</span>}
@@ -188,15 +216,27 @@ export default function Locations() {
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editId ? t("locations.editLocation") : t("locations.createLocation")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div className="space-y-1.5"><Label className="text-xs">{t("locations.name")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("locations.namePlaceholder")} /></div>
-                <div className="space-y-1.5"><Label className="text-xs">{t("locations.type")}</Label><Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="takeoff">{t("locations.takeoff")}</SelectItem><SelectItem value="landing">{t("locations.landingPlace")}</SelectItem><SelectItem value="both">{t("locations.both")}</SelectItem></SelectContent></Select></div>
-                <div className="space-y-1.5"><Label className="text-xs">{t("locations.selectOnMap")}</Label><LocationMapPicker latitude={parseFloat(form.latitude) || 0} longitude={parseFloat(form.longitude) || 0} onSelect={handleMapSelect} /><p className="text-xs text-muted-foreground">{t("locations.tapMap")}</p></div>
+                {!editId && (
+                  <>
+                    <OfficialSiteSearch onPick={(site) => { void addOfficial(site); }} disabled={addingOfficial} />
+                    <p className="text-xs font-medium text-muted-foreground pt-1">{t("locations.official.orOwn")}</p>
+                  </>
+                )}
+                {locked && (
+                  <p className="flex items-start gap-1.5 rounded-lg bg-primary/5 border border-primary/40 p-2.5 text-xs">
+                    <BadgeCheck className="h-4 w-4 text-primary shrink-0" />{t("locations.official.lockedHint")}
+                  </p>
+                )}
+                <div className="space-y-1.5"><Label className="text-xs">{t("locations.name")}</Label><Input value={locked ? siteName(form.name) : form.name} disabled={locked} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("locations.namePlaceholder")} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">{t("locations.type")}</Label><Select disabled={locked} value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="takeoff">{t("locations.takeoff")}</SelectItem><SelectItem value="landing">{t("locations.landingPlace")}</SelectItem><SelectItem value="both">{t("locations.both")}</SelectItem></SelectContent></Select></div>
+                {!locked && <div className="space-y-1.5"><Label className="text-xs">{t("locations.selectOnMap")}</Label><LocationMapPicker latitude={parseFloat(form.latitude) || 0} longitude={parseFloat(form.longitude) || 0} onSelect={handleMapSelect} /><p className="text-xs text-muted-foreground">{t("locations.tapMap")}</p></div>}
+                {!editId && <OfficialSiteHint latitude={parseFloat(form.latitude) || 0} longitude={parseFloat(form.longitude) || 0} type={form.type} onUse={(site) => { void addOfficial(site); }} />}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5"><Label className="text-xs">{t("locations.latitude")}</Label><Input type="number" step="any" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} placeholder="46.7" /></div>
-                  <div className="space-y-1.5"><Label className="text-xs">{t("locations.longitude")}</Label><Input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} placeholder="7.6" /></div>
+                  <div className="space-y-1.5"><Label className="text-xs">{t("locations.latitude")}</Label><Input type="number" step="any" disabled={locked} value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} placeholder="46.7" /></div>
+                  <div className="space-y-1.5"><Label className="text-xs">{t("locations.longitude")}</Label><Input type="number" step="any" disabled={locked} value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} placeholder="7.6" /></div>
                 </div>
-                <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("locations.altitude")}</Label><Input type="number" value={form.altitude} onChange={(e) => setForm({ ...form, altitude: e.target.value })} /></div></div>
-                <div className="space-y-1.5"><Label className="text-xs">{t("locations.country")}</Label><Select value={form.country_code} onValueChange={(v) => setForm({ ...form, country_code: v })}><SelectTrigger><SelectValue placeholder={t("locations.countryPlaceholder")} /></SelectTrigger><SelectContent>{countries.map((c) => (<SelectItem key={c.code} value={c.code}>{getFlagEmoji(c.code)} {c.name}</SelectItem>))}</SelectContent></Select></div>
+                <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("locations.altitude")}</Label><Input type="number" disabled={locked} value={form.altitude} onChange={(e) => setForm({ ...form, altitude: e.target.value })} /></div></div>
+                <div className="space-y-1.5"><Label className="text-xs">{t("locations.country")}</Label><Select disabled={locked} value={form.country_code} onValueChange={(v) => setForm({ ...form, country_code: v })}><SelectTrigger><SelectValue placeholder={t("locations.countryPlaceholder")} /></SelectTrigger><SelectContent>{countries.map((c) => (<SelectItem key={c.code} value={c.code}>{getFlagEmoji(c.code)} {c.name}</SelectItem>))}</SelectContent></Select></div>
                 <div className="space-y-1.5"><Label className="text-xs">{t("locations.descriptionLabel")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t("common.optional")} /></div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">{t("locations.optimalWind")}</Label>
@@ -229,6 +269,7 @@ export default function Locations() {
           {t("locations.updatingCountries", { current: backfillProgress.current, total: backfillProgress.total })}
         </div>
       )}
+      <SiteLinkSuggestions locations={locations} onLinked={fetchLocations} />
       {locations.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground"><MapPin className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("locations.noLocations")}</p></div>
       ) : (

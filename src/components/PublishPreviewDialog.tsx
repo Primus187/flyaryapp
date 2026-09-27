@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Heart, MessageCircle, MapPin, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSiteName } from "@/lib/official-sites-store";
 
 const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
 
@@ -77,6 +78,7 @@ export default function PublishPreviewDialog({
   photos, videoUrls, trackPoints, loading,
 }: PublishPreviewDialogProps) {
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const [feedComment, setFeedComment] = useState(flight.comments || "");
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>(photos.map(p => p.id));
 
@@ -117,7 +119,7 @@ export default function PublishPreviewDialog({
                 <p className="text-sm font-semibold truncate">{pilotName}</p>
                 <p className="text-[11px] text-muted-foreground">
                   {groupName && <span>{groupName} · </span>}
-                  {flight.takeoff?.name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff.name} · </>}
+                  {flight.takeoff?.name && <><MapPin className="h-3 w-3 inline mr-0.5" />{siteName(flight.takeoff.name)} · </>}
                   {t("feed.justNow")}
                 </p>
               </div>

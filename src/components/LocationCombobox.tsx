@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, ChevronsUpDown, Plus, MapPin } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, MapPin, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import LocationMapPicker from "@/components/LocationMapPicker";
+import OfficialSiteHint from "@/components/OfficialSiteHint";
+import { searchSites, type OfficialSite } from "@/lib/official-sites";
+import { ensureOwnLocationForSite, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 
 interface LocationOption {
   id: string;
@@ -40,11 +43,43 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
   const [creating, setCreating] = useState(false);
   const [newLoc, setNewLoc] = useState({ name: "", type: filterType === "takeoff" ? "takeoff" : "landing", latitude: 0, longitude: 0, altitude: "" });
 
+  const siteName = useSiteName();
+  const { active: officialSites, byName } = useOfficialSites();
+  // Name of an official site just picked, until the parent has reloaded its list.
+  const [pickedName, setPickedName] = useState<{ id: string; name: string } | null>(null);
+
   const filtered = useMemo(() => {
     return locations.filter((l) => l.type === filterType || l.type === "both");
   }, [locations, filterType]);
 
-  const selectedName = filtered.find((l) => l.id === value)?.name || locations.find((l) => l.id === value)?.name;
+  const query = search.trim().toLowerCase();
+  const ownMatches = filtered.filter((l) => !query || l.name.toLowerCase().includes(query) || siteName(l.name).toLowerCase().includes(query));
+  const officialMatches = useMemo(() => {
+    const own = new Set(locations.map((l) => l.name));
+    return searchSites(officialSites, search, filterType, 40).filter((s) => !own.has(s.name_de)).slice(0, 20);
+  }, [officialSites, search, filterType, locations]);
+
+  const selectedRaw = filtered.find((l) => l.id === value)?.name || locations.find((l) => l.id === value)?.name
+    || (pickedName?.id === value ? pickedName.name : undefined);
+  const selectedName = selectedRaw ? siteName(selectedRaw) : undefined;
+
+  const pickOfficial = async (site: OfficialSite) => {
+    if (!user) return;
+    setCreating(true);
+    try {
+      const id = await ensureOwnLocationForSite(user.id, site);
+      setPickedName({ id, name: site.name_de });
+      onChange(id);
+      onLocationCreated();
+      setOpen(false);
+      setSearch("");
+      setDialogOpen(false);
+    } catch (err: unknown) {
+      toast({ title: t("common.error"), description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!user || !newLoc.name.trim()) return;
@@ -100,9 +135,9 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
             <CommandInput placeholder={t("locations.searchLocation")} value={search} onValueChange={setSearch} />
             <CommandList>
               <CommandEmpty>{t("locations.noResults")}</CommandEmpty>
-              <CommandGroup>
-                {filtered
-                  .filter((l) => l.name.toLowerCase().includes(search.toLowerCase()))
+              {(ownMatches.length > 0 || officialMatches.length === 0) && (
+              <CommandGroup heading={officialMatches.length > 0 ? t("locations.official.mine") : undefined}>
+                {ownMatches
                   .map((loc) => (
                     <CommandItem
                       key={loc.id}
@@ -114,10 +149,28 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
                       }}
                     >
                       <Check className={cn("mr-2 h-4 w-4", value === loc.id ? "opacity-100" : "opacity-0")} />
-                      {loc.name}
+                      {siteName(loc.name)}
+                      {byName.has(loc.name) && <BadgeCheck className="ml-1.5 h-3.5 w-3.5 text-primary shrink-0" aria-label={t("locations.official.badge")} />}
                     </CommandItem>
                   ))}
               </CommandGroup>
+              )}
+              {officialMatches.length > 0 && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup heading={t("locations.official.catalogue")}>
+                    {officialMatches.map((site) => (
+                      <CommandItem key={site.id} value={`official-${site.id}`} disabled={creating} onSelect={() => { void pickOfficial(site); }}>
+                        <BadgeCheck className="mr-2 h-4 w-4 text-primary shrink-0" />
+                        <span className="flex-1 min-w-0">
+                          <span className="block truncate">{siteName(site.name_de)}</span>
+                          {site.region && <span className="block text-[11px] opacity-70 truncate">{site.region}{site.altitude ? ` · ${site.altitude} m` : ""}</span>}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
               <CommandGroup>
                 <CommandItem
                   onSelect={() => {
@@ -169,6 +222,7 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
                   <MapPin className="h-3 w-3" /> {newLoc.latitude.toFixed(4)}, {newLoc.longitude.toFixed(4)}
                 </p>
               )}
+              <OfficialSiteHint latitude={newLoc.latitude} longitude={newLoc.longitude} type={newLoc.type} onUse={(site) => { void pickOfficial(site); }} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">{t("locations.altitude")}</Label>

@@ -12,6 +12,7 @@ import DoubleTapHeart from "@/components/DoubleTapHeart";
 import ReactionPicker, { ReactionBadges, type ReactionType } from "@/components/ReactionPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useSiteName } from "@/lib/official-sites-store";
 
 const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
 
@@ -313,6 +314,7 @@ function UnifiedMediaCarousel({
 export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle, onCommentLike, groupMembers }: FeedCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -384,7 +386,7 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
             <p className="text-sm font-semibold truncate cursor-pointer" onClick={() => navigate(`/pilot/${flight.user_id}`)}>{flight.pilot_name}</p>
             <p className="text-[11px] text-muted-foreground">
               {flight.group_name && <span>{flight.group_name} · </span>}
-              {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{flight.takeoff_name} · </>}
+              {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{siteName(flight.takeoff_name)} · </>}
               {relativeTime(flight.published_at || flight.created_at, t)}
             </p>
           </div>
@@ -442,7 +444,7 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
             <p className="text-sm text-muted-foreground">
               🪂 {flight.glider}
               {flight.altitude_gain ? ` · ↑${flight.altitude_gain}m` : ""}
-              {flight.landing_name ? ` · → ${flight.landing_name}` : ""}
+              {flight.landing_name ? ` · → ${siteName(flight.landing_name)}` : ""}
             </p>
           )}
 

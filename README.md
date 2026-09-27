@@ -1,5 +1,42 @@
 # Flyary
 
+## Offizielle Start- und Landeplätze (DHV-Katalog, Schweiz)
+
+Migration `0063_official_sites.sql`, Import `scripts/import-official-sites.mjs`, Logik in `src/lib/dhv-sites.ts`,
+`src/lib/site-names.ts`, `src/lib/official-sites.ts` und `src/lib/official-sites-store.ts`, Tests in
+`src/lib/official-sites.test.ts` und `src/test/official-sites-database.test.ts`.
+
+- **Ziel (Entscheid 2026-09-27):** Alle Piloten nennen einen offiziellen Platz gleich. Quelle ist die
+  DHV-Geländedatenbank (Einwilligung des DHV liegt vor), zuerst nur die Schweiz: 798 Plätze (493 Start-,
+  304 Lande-, 1 kombinierter Platz). Die Daten von burnair.ch werden nicht übernommen (kommerziell, ohne Export).
+- **Daten:** Neue Tabelle `official_sites`, für Angemeldete nur lesbar; schreiben kann nur der Import.
+  `locations.official_site_id` verknüpft den eigenen Ort eines Piloten mit einem offiziellen Platz. Ein Trigger
+  setzt bei verknüpften Orten Name, Typ, Position, Höhe und Land immer aus dem Katalog; Notiz und Windrichtungen
+  bleiben beim Piloten. Ein erneuter Import, der einen Platz umbenennt oder verschiebt, wirkt auf alle verknüpften
+  Orte. Plätze, die aus der DHV-Datei verschwinden, werden nur inaktiv gesetzt, nie gelöscht.
+- **Abweichung vom Plan:** Flüge, Vorlagen, Termine und Challenges zeigen weiter auf `locations`. Statt alle
+  Verweise auf den Katalog umzubauen, bekommt der eigene Ort die Verknüpfung. So bleiben alle bestehenden
+  Abfragen, Rechte und Datenbankfunktionen unverändert.
+- **Namen in der App-Sprache:** Die DHV-Namen folgen dem Muster «Gebiet + Startplatz/Landeplatz + Nummer». Der
+  Gebietsname ist ein Eigenname und bleibt; übersetzt werden das Platzwort und Zusätze wie «Winter»
+  («Kronberg Décollage 2», «La Berneuse Landing»). In der Datenbank steht der deutsche Name; `useSiteName()` zeigt
+  ihn in der gewählten Sprache an. Der Katalog wird einmal am Tag geladen und im Browser zwischengespeichert.
+  Serverseitige Texte (PDF-Flugbuch, Mitteilungen) und die öffentliche Flugseite zeigen vorerst den deutschen Namen.
+- **Oberfläche:** Die Ortsauswahl im Flugformular, am Flugtag und bei Challenges findet beim Suchen auch offizielle
+  Plätze und legt beim Wählen den eigenen, verknüpften Ort an. «Orte → Ort» bietet oben die Suche im Katalog an;
+  wer einen eigenen Ort auf einen offiziellen Platz setzt (300 m), bekommt den Hinweis, diesen zu verwenden.
+  Verknüpfte Orte tragen ein Häkchen; Name, Typ und Position sind gesperrt. Eine Karte auf «Orte» schlägt vor,
+  eigene Orte auf offiziellen Plätzen zu verknüpfen (einzeln oder alle, ablehnbar pro Gerät).
+- **IGC-Import:** Leere Start- und Landefelder werden aus dem ersten und letzten Trackpunkt gefüllt: zuerst ein
+  eigener Ort im Umkreis von 300 m, sonst der nächste offizielle Platz im Umkreis von 500 m.
+- **Auslieferung:** Zuerst `node scripts/db-migrate.mjs --apply` (0063), dann die DHV-Datei «DHV XML» für die
+  Schweiz nach `data/dhv/` legen (ist in `.gitignore`) und `node scripts/import-official-sites.mjs` (Probelauf) bzw.
+  `--apply`, danach `npm run gen-types`. Die App funktioniert auch vor dem Import unverändert; die neuen
+  Funktionen erscheinen, sobald der Katalog gefüllt ist. Aktualisieren: neue DHV-Datei ablegen und den Import
+  erneut ausführen.
+- **Offen:** Doppelte eigene Orte am gleichen offiziellen Platz werden beide verknüpft, aber nicht zusammengeführt
+  (die Flüge bleiben auf zwei Orte verteilt). Die Karte zeigt nur eigene Orte, noch nicht den ganzen Katalog.
+
 ## Fotos: Termin-Upload und Lesezugriff (Korrektur 2026-09-25)
 
 Migration `0061_flight_photo_access.sql`, Upload in `src/pages/EventDetail.tsx`, Tests in

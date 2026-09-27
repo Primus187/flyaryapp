@@ -17,6 +17,7 @@ import FlightDetailMap from "@/components/FlightDetailMap";
 import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
 import FlightCoachNote from "@/components/FlightCoachNote";
+import { useSiteName } from "@/lib/official-sites-store";
 
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
 const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
@@ -27,6 +28,7 @@ export default function FlightDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
+  const siteName = useSiteName();
   const [flight, setFlight] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
@@ -204,7 +206,7 @@ export default function FlightDetail() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/flights")}><ArrowLeft className="h-5 w-5" /></Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold">{flight.takeoff?.name || t("flights.flight")}</h1>
+              <h1 className="text-lg font-bold">{siteName(flight.takeoff?.name) || t("flights.flight")}</h1>
               {(flight as any).is_solo_shv && <Badge variant="default" className="text-[10px] px-1.5 py-0">SHV Solo</Badge>}
             </div>
             <p className="text-xs text-muted-foreground">{new Date(flight.date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
@@ -231,7 +233,7 @@ export default function FlightDetail() {
               const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
               const url = `${supabaseUrl}/functions/v1/get-shared-flight?token=${shareToken}`;
               if (navigator.share) {
-                await navigator.share({ title: flight.takeoff?.name || "Flug", text: "Schau dir diesen Flug an!", url });
+                await navigator.share({ title: siteName(flight.takeoff?.name) || "Flug", text: "Schau dir diesen Flug an!", url });
               } else {
                 await navigator.clipboard.writeText(url);
                 toast({ title: "Link kopiert!" });
@@ -254,7 +256,7 @@ export default function FlightDetail() {
         </div>
       </div>
       {(flight.takeoff || flight.landing) && (
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{flight.takeoff?.name || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{flight.landing?.name || "–"}</span></div></CardContent></Card>
+        <Card className="border-0 shadow-sm"><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
       )}
       {/* Map with 3D toggle */}
       {track?.track_data && (track.track_data as any).points?.length > 1 && (
@@ -279,7 +281,7 @@ export default function FlightDetail() {
           />
         </Suspense>
       ) : (
-        <FlightDetailMap takeoff={flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
+        <FlightDetailMap takeoff={flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
       )}
       <div className="grid grid-cols-2 gap-3">
         {(() => {
@@ -505,8 +507,8 @@ export default function FlightDetail() {
           altitude_gain: flight.altitude_gain,
           distance_km: flight.distance_km,
           comments: flight.comments,
-          takeoff: flight.takeoff ? { name: flight.takeoff.name, latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null,
-          landing: flight.landing ? { name: flight.landing.name, latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null,
+          takeoff: flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null,
+          landing: flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null,
         }}
         pilotName={pilotProfile.pilot_name}
         avatarUrl={pilotProfile.avatar_url}

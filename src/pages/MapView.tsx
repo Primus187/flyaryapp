@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useSiteName } from "@/lib/official-sites-store";
 
 // Fix leaflet default icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -40,6 +41,7 @@ function FitBounds({ points }: { points: [number, number][] }) {
 
 export default function MapView() {
   const { user } = useAuth();
+  const siteName = useSiteName();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [locations, setLocations] = useState<any[]>([]);
@@ -86,7 +88,7 @@ export default function MapView() {
           >
             <Popup>
               <div className="text-sm">
-                <strong>{loc.name}</strong>
+                <strong>{siteName(loc.name)}</strong>
                 <br />
                 <span className="text-xs capitalize">{loc.type}</span>
                 {loc.altitude && <span className="text-xs"> · {loc.altitude}m</span>}

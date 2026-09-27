@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LocationMapPicker from "@/components/LocationMapPicker";
 import LocationCombobox from "@/components/LocationCombobox";
+import { useSiteName } from "@/lib/official-sites-store";
 
 interface LocationOption {
   id: string;
@@ -37,6 +38,7 @@ const GOAL_TYPES = ["start", "turnpoint", "waypoint", "goal"];
 
 export default function ChallengeGoalForm({ locations, onSave, onCancel, initialValues }: Props) {
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const [label, setLabel] = useState(initialValues?.label || "");
   const [points, setPoints] = useState(String(initialValues?.points ?? 10));
   const [goalType, setGoalType] = useState(initialValues?.goal_type || "waypoint");
@@ -52,7 +54,7 @@ export default function ChallengeGoalForm({ locations, onSave, onCancel, initial
     if (loc && loc.latitude && loc.longitude) {
       setLatitude(loc.latitude);
       setLongitude(loc.longitude);
-      if (!label) setLabel(loc.name);
+      if (!label) setLabel(siteName(loc.name));
     }
   };
 

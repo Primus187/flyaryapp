@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { parseIGC, type IGCData } from "@/lib/igc-parser";
 import { uploadIgcTrack } from "@/lib/igc-upload";
 import { takeSharedIgcFile } from "@/lib/shared-igc";
+import { nearestSite, SAME_SITE_METERS, TRACK_SITE_METERS } from "@/lib/official-sites";
+import { ensureOwnLocationForSite, useOfficialSites } from "@/lib/official-sites-store";
 import { ArrowLeft, Upload, Plus, X, Youtube, Check, Save, FileText, Video, Film } from "lucide-react";
 import { validateVideo, extractPoster, getVideoDuration, MAX_VIDEO_SECONDS, MAX_VIDEO_BYTES } from "@/lib/video-utils";
 import { compressVideo, isVideoCompressionSupported } from "@/lib/video-compress";
@@ -32,7 +34,7 @@ const DRAFT_KEY = "flyary.flightDraft";
 // Older drafts are dropped: restoring them silently backdated new flights to the draft day.
 const DRAFT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
-interface LocationOption { id: string; name: string; type: string; altitude?: number | null; }
+interface LocationOption { id: string; name: string; type: string; altitude?: number | null; latitude: number; longitude: number; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
@@ -53,6 +55,10 @@ export default function FlightForm() {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [locationsLoaded, setLocationsLoaded] = useState(false);
+  const { active: officialSites } = useOfficialSites();
+  // Per imported track: whether takeoff/landing were already looked up (each at most once).
+  const siteDetectRef = useRef<{ data: IGCData | null; takeoff: boolean; landing: boolean }>({ data: null, takeoff: false, landing: false });
   const [gliders, setGliders] = useState<GliderOption[]>([]);
   const [igcData, setIgcData] = useState<IGCData | null>(null);
   const [igcFile, setIgcFile] = useState<File | null>(null);
@@ -84,9 +90,39 @@ export default function FlightForm() {
     wind_direction: "", glider: "", comments: "", group_id: "", is_solo_shv: false,
   });
 
+  const reloadLocations = useCallback(() => {
+    if (!user) return;
+    supabase.from("locations").select("id, name, type, altitude, latitude, longitude").eq("user_id", user.id).order("name").then(({ data }) => {
+      if (data) setLocations(data);
+      setLocationsLoaded(true);
+    });
+  }, [user]);
+
+  // After an IGC import: fill empty takeoff/landing from the first/last track point – an own place
+  // on the spot first, otherwise the official site there (added to the pilot's places).
+  useEffect(() => {
+    if (isEdit || !user || !igcData || igcData.points.length === 0 || !locationsLoaded) return;
+    let state = siteDetectRef.current;
+    if (state.data !== igcData) siteDetectRef.current = state = { data: igcData, takeoff: false, landing: false };
+    for (const kind of ["takeoff", "landing"] as const) {
+      if (state[kind]) continue;
+      const field = kind === "takeoff" ? "takeoff_location_id" : "landing_location_id";
+      const point = kind === "takeoff" ? igcData.points[0] : igcData.points[igcData.points.length - 1];
+      const own = nearestSite(locations, point.lat, point.lng, kind, SAME_SITE_METERS);
+      if (!own && officialSites.length === 0) continue; // look again once the catalogue is there
+      state[kind] = true;
+      if (own) { setForm((prev) => (prev[field] ? prev : { ...prev, [field]: own.site.id })); continue; }
+      const official = nearestSite(officialSites, point.lat, point.lng, kind, TRACK_SITE_METERS);
+      if (!official) continue;
+      ensureOwnLocationForSite(user.id, official.site)
+        .then((locationId) => { setForm((prev) => (prev[field] ? prev : { ...prev, [field]: locationId })); reloadLocations(); })
+        .catch((err) => console.error("Could not add official site:", err));
+    }
+  }, [igcData, locations, locationsLoaded, officialSites, isEdit, user, reloadLocations]);
+
   useEffect(() => {
     if (!user) return;
-    supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+    reloadLocations();
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
       if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
@@ -638,7 +674,7 @@ export default function FlightForm() {
                 }}
                 filterType="takeoff"
                 onLocationCreated={() => {
-                  if (user) supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                  reloadLocations();
                 }}
               />
             </div>
@@ -659,7 +695,7 @@ export default function FlightForm() {
                 }}
                 filterType="landing"
                 onLocationCreated={() => {
-                  if (user) supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name").then(({ data }) => { if (data) setLocations(data); });
+                  reloadLocations();
                 }}
               />
             </div>

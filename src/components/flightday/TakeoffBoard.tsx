@@ -15,6 +15,7 @@ import {
   type LandingHintMinutes, type SchoolFlight,
 } from "@/lib/school-flights";
 import InAirBar from "./InAirBar";
+import { useSiteName } from "@/lib/official-sites-store";
 
 interface TakeoffFlight extends SchoolFlight { start_note: string | null }
 
@@ -32,6 +33,7 @@ interface Props {
  *  aborted launches with a reason and a start note; no feedback, no dossier. Flugtag-Cockpit 4.4. */
 export default function TakeoffBoard({ eventId, signups, profiles, settingsVersion = 0, readOnly = false }: Props) {
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const { toast } = useToast();
   const [flights, setFlights] = useState<TakeoffFlight[]>([]);
   const [pauses, setPauses] = useState<DayPause[]>([]);
@@ -94,7 +96,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("flightDay.takeoff.title")}</h2>
         <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
-          <MapPin className="h-3 w-3 shrink-0" />{site || t("flightDay.sites.notSet")}
+          <MapPin className="h-3 w-3 shrink-0" />{siteName(site) || t("flightDay.sites.notSet")}
         </span>
       </div>
       <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} />

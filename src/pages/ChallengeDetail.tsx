@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Trophy, Target, Check, Trash2, Plus, Pencil, Save, SquarePen } from "lucide-react";
 import ChallengeGoalForm from "@/components/ChallengeGoalForm";
+import { useSiteName } from "@/lib/official-sites-store";
 
 const ChallengeMap = lazy(() => import("@/components/ChallengeMap"));
 
@@ -45,6 +46,7 @@ export default function ChallengeDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const { toast } = useToast();
   const [challenge, setChallenge] = useState<any>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -352,7 +354,7 @@ export default function ChallengeDetail() {
               </div>
               <div className="flex-1 text-left min-w-0">
                 <p className={`text-sm ${done ? "line-through text-muted-foreground" : "font-medium"}`}>
-                  {goal.label || goal.location_name || t("challenges.unknownGoal")}
+                  {goal.label || siteName(goal.location_name) || t("challenges.unknownGoal")}
                 </p>
                 {goal.goal_type !== "waypoint" && (
                   <p className="text-[10px] text-muted-foreground">{goalTypeLabels[goal.goal_type] || goal.goal_type}</p>

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# DHV site database exports (import source for scripts/import-official-sites.mjs; not redistributed)
+/data/

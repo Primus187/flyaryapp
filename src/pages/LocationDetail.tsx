@@ -5,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind, BadgeCheck } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useToast } from "@/hooks/use-toast";
 import { degreesToCompassPoint, parseOpenMeteoWind, windMatchStatus, type WindMatchStatus } from "@/lib/wind-match";
+import { useSiteName } from "@/lib/official-sites-store";
 
 const markerIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
@@ -26,6 +27,7 @@ export default function LocationDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
+  const siteName = useSiteName();
   const [location, setLocation] = useState<any>(null);
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,8 @@ export default function LocationDetail() {
   const handleDuplicate = async () => {
     if (!user || !location) return;
     const { id: _, created_at, updated_at, ...rest } = location;
-    const { data } = await supabase.from("locations").insert({ ...rest, name: `${location.name} (Kopie)`, user_id: user.id }).select().single();
+    // A copy is the pilot's own place: without the link the database would give it the official name again.
+    const { data } = await supabase.from("locations").insert({ ...rest, ...("official_site_id" in rest ? { official_site_id: null } : {}), name: `${siteName(location.name)} (Kopie)`, user_id: user.id }).select().single();
     if (data) {
       toast({ title: t("locations.duplicated") });
       navigate(`/locations/${data.id}`);
@@ -90,12 +93,12 @@ export default function LocationDetail() {
   const hasCoords = location.latitude !== 0 || location.longitude !== 0;
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
   const formatDuration = (min: number | null) => { if (!min) return "—"; const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}min` : `${m}min`; };
-  const getCounterLocation = (flight: any) => { if (flight.takeoff_location_id === id) return flight.landing?.name ? `→ ${flight.landing.name}` : ""; return flight.takeoff?.name ? `${flight.takeoff.name} →` : ""; };
+  const getCounterLocation = (flight: any) => { if (flight.takeoff_location_id === id) return flight.landing?.name ? `→ ${siteName(flight.landing.name)}` : ""; return flight.takeoff?.name ? `${siteName(flight.takeoff.name)} →` : ""; };
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-xl font-bold tracking-tight">{location.name}</h1></div>
+        <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-xl font-bold tracking-tight">{siteName(location.name)}</h1>{location.official_site_id && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label={t("locations.official.badge")} />}</div>
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/locations?edit=${id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDuplicate}><Copy className="h-3.5 w-3.5" /></Button>

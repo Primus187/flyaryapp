@@ -19,6 +19,7 @@ import { useSwipeAction } from "@/hooks/use-swipe-action";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
+import { useSiteName } from "@/lib/official-sites-store";
 
 type QuickFilter = "all" | "season" | "track";
 
@@ -56,6 +57,7 @@ export default function Flights() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const siteName = useSiteName();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -238,10 +240,10 @@ export default function Flights() {
                             <div className="flex justify-between items-start gap-2">
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
-                                  <p className="font-medium text-sm truncate">{f.takeoff_location?.name || t("common.unknown")}</p>
+                                  <p className="font-medium text-sm truncate">{siteName(f.takeoff_location?.name) || t("common.unknown")}</p>
                                   {f.has_track && !thumbPoints && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">IGC</span>}
                                 </div>
-                                {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {f.landing_location.name}</p>}
+                                {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {siteName(f.landing_location.name)}</p>}
                               </div>
                               <span className="text-xs text-muted-foreground shrink-0">
                                 {new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short" })}

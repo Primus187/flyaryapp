@@ -2534,6 +2534,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          official_site_id: string | null
           optimal_wind_directions: string[]
           type: Database["public"]["Enums"]["location_type"]
           updated_at: string
@@ -2548,6 +2549,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          official_site_id?: string | null
           optimal_wind_directions?: string[]
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string
@@ -2562,12 +2564,21 @@ export type Database = {
           latitude?: number
           longitude?: number
           name?: string
+          official_site_id?: string | null
           optimal_wind_directions?: string[]
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "locations_official_site_id_fkey"
+            columns: ["official_site_id"]
+            isOneToOne: false
+            referencedRelation: "official_sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marketplace_bans: {
         Row: {
@@ -3039,6 +3050,78 @@ export type Database = {
           reference_type?: string | null
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      official_sites: {
+        Row: {
+          active: boolean
+          altitude: number | null
+          area_name: string | null
+          country_code: string
+          created_at: string
+          hanggliding: boolean
+          id: string
+          latitude: number
+          longitude: number
+          municipality: string | null
+          name_de: string
+          name_en: string
+          name_fr: string
+          paragliding: boolean
+          region: string | null
+          source: string
+          source_id: string
+          source_url: string | null
+          type: Database["public"]["Enums"]["location_type"]
+          updated_at: string
+          wind_directions: string[]
+        }
+        Insert: {
+          active?: boolean
+          altitude?: number | null
+          area_name?: string | null
+          country_code: string
+          created_at?: string
+          hanggliding?: boolean
+          id?: string
+          latitude: number
+          longitude: number
+          municipality?: string | null
+          name_de: string
+          name_en: string
+          name_fr: string
+          paragliding?: boolean
+          region?: string | null
+          source?: string
+          source_id: string
+          source_url?: string | null
+          type: Database["public"]["Enums"]["location_type"]
+          updated_at?: string
+          wind_directions?: string[]
+        }
+        Update: {
+          active?: boolean
+          altitude?: number | null
+          area_name?: string | null
+          country_code?: string
+          created_at?: string
+          hanggliding?: boolean
+          id?: string
+          latitude?: number
+          longitude?: number
+          municipality?: string | null
+          name_de?: string
+          name_en?: string
+          name_fr?: string
+          paragliding?: boolean
+          region?: string | null
+          source?: string
+          source_id?: string
+          source_url?: string | null
+          type?: Database["public"]["Enums"]["location_type"]
+          updated_at?: string
+          wind_directions?: string[]
         }
         Relationships: []
       }

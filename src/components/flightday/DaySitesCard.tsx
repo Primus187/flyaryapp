@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bell, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LANDING_HINT_OPTIONS, schoolFlightErrorKey, type LandingHintMinutes } from "@/lib/school-flights";
+import { useSiteName } from "@/lib/official-sites-store";
 
 interface Site { id: string; name: string; type: string }
 
@@ -16,6 +17,7 @@ interface Site { id: string; name: string; type: string }
  *  optional landing hint (4.4). */
 export default function DaySitesCard({ eventId, onChanged, readOnly = false }: { eventId: string; onChanged?: () => void; readOnly?: boolean }) {
   const { t } = useTranslation();
+  const siteName = useSiteName();
   const { user } = useAuth();
   const { toast } = useToast();
   const [own, setOwn] = useState<Site[]>([]);
@@ -66,7 +68,7 @@ export default function DaySitesCard({ eventId, onChanged, readOnly = false }: {
 
   // Sites chosen earlier stay selectable even if they belong to someone else.
   const options = [...own, ...[takeoff, landing].filter((id) => id && !own.some((o) => o.id === id)).map((id) => ({ id, name: names[id] || "?", type: "both" }))];
-  const label = (id: string) => (id ? names[id] || own.find((o) => o.id === id)?.name || "?" : t("flightDay.sites.notSet"));
+  const label = (id: string) => (id ? siteName(names[id] || own.find((o) => o.id === id)?.name) || "?" : t("flightDay.sites.notSet"));
 
   return (
     <Card className="border-0 shadow-sm">

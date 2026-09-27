@@ -24,6 +24,8 @@ const licenses: License[] = [
   { name: "Embla Carousel", license: "MIT", url: "https://github.com/davidjerleke/embla-carousel" },
   { name: "react-i18next", license: "MIT", url: "https://github.com/i18next/react-i18next" },
   { name: "OpenTopoMap Tiles", license: "CC-BY-SA 3.0", url: "https://opentopomap.org/about" },
+  // Official takeoff/landing sites (public.official_sites), used with the DHV's permission.
+  { name: "DHV-Geländedatenbank (Start- und Landeplätze)", license: "© DHV – Deutscher Hängegleiterverband", url: "https://www.dhv.de/piloteninfos/gelaende-luftraum-natur/fluggelaende/nutzungsbedingungen-gelaendedatenbank/" },
   { name: "Supabase JS", license: "MIT", url: "https://github.com/supabase/supabase-js" },
   { name: "Capacitor", license: "MIT", url: "https://github.com/ionic-team/capacitor" },
 ];

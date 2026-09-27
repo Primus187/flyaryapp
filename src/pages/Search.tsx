@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, Search as SearchIcon, Plane, MapPin, Calendar, User } from "lucide-react";
+import { useSiteName } from "@/lib/official-sites-store";
 
 type Tab = "all" | "flights" | "locations" | "events" | "pilots";
 
@@ -20,6 +21,7 @@ export default function SearchPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const siteName = useSiteName();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<Tab>("all");
   const [flights, setFlights] = useState<FlightResult[]>([]);
@@ -65,15 +67,15 @@ export default function SearchPage() {
     if (!q) return [];
     return flights.filter(f =>
       f.date?.includes(q) || f.glider?.toLowerCase().includes(q) ||
-      f.takeoff_name?.toLowerCase().includes(q) || f.landing_name?.toLowerCase().includes(q) ||
+      siteName(f.takeoff_name).toLowerCase().includes(q) || siteName(f.landing_name).toLowerCase().includes(q) ||
       f.comments?.toLowerCase().includes(q)
     ).slice(0, 20);
-  }, [flights, q]);
+  }, [flights, q, siteName]);
 
   const filteredLocations = useMemo(() => {
     if (!q) return [];
-    return locations.filter(l => l.name.toLowerCase().includes(q)).slice(0, 20);
-  }, [locations, q]);
+    return locations.filter(l => siteName(l.name).toLowerCase().includes(q)).slice(0, 20);
+  }, [locations, q, siteName]);
 
   const filteredEvents = useMemo(() => {
     if (!q) return [];
@@ -139,7 +141,7 @@ export default function SearchPage() {
                 <CardContent className="p-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-medium">{f.takeoff_name || "–"}{f.landing_name ? ` → ${f.landing_name}` : ""}</p>
+                      <p className="text-sm font-medium">{siteName(f.takeoff_name) || "–"}{f.landing_name ? ` → ${siteName(f.landing_name)}` : ""}</p>
                       <p className="text-xs text-muted-foreground">{new Date(f.date).toLocaleDateString(locale)}{f.glider ? ` · ${f.glider}` : ""}</p>
                     </div>
                   </div>
@@ -160,7 +162,7 @@ export default function SearchPage() {
               <Card key={l.id} className="border-0 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/locations/${l.id}`)}>
                 <CardContent className="p-3 flex justify-between items-center">
                   <div>
-                    <p className="text-sm font-medium">{l.name}</p>
+                    <p className="text-sm font-medium">{siteName(l.name)}</p>
                     <p className="text-xs text-muted-foreground">{typeLabel(l.type)}{l.altitude ? ` · ${l.altitude}m` : ""}</p>
                   </div>
                 </CardContent>

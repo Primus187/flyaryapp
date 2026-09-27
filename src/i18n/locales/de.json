@@ -463,6 +463,28 @@
     "allCategories": "Alle Arten"
   },
   "locations": {
+    "official": {
+      "badge": "Offizieller Platz",
+      "mine": "Meine Orte",
+      "catalogue": "Offizielle Plätze",
+      "searchPlaceholder": "Offiziellen Start- oder Landeplatz suchen …",
+      "source": "Offizielle Plätze: DHV-Geländedatenbank. Name und Position sind fest.",
+      "orOwn": "Oder einen eigenen Ort erfassen:",
+      "nearby": "Hier liegt der offizielle Platz «{{name}}» ({{meters}} m entfernt).",
+      "useSite": "Offiziellen Platz verwenden",
+      "lockedHint": "Offizieller Platz: Name, Typ und Position sind fest, damit alle Piloten ihn gleich nennen. Notiz und Windrichtungen kannst du anpassen.",
+      "added": "«{{name}}» zu deinen Orten hinzugefügt",
+      "suggestTitle_one": "{{count}} deiner Orte liegt auf einem offiziellen Platz",
+      "suggestTitle_other": "{{count}} deiner Orte liegen auf offiziellen Plätzen",
+      "suggestHint": "Verknüpfen übernimmt den offiziellen Namen. Deine Flüge bleiben dem Ort zugeordnet.",
+      "distance": "{{meters}} m entfernt",
+      "link": "Verknüpfen",
+      "linkAll": "Alle {{count}} verknüpfen",
+      "dismiss": "Nicht verknüpfen",
+      "linked_one": "{{count}} Ort verknüpft",
+      "linked_other": "{{count}} Orte verknüpft",
+      "linkFailed": "{{count}} Orte konnten nicht verknüpft werden."
+    },
     "title": "Orte",
     "map": "Karte",
     "newLocation": "Ort",
