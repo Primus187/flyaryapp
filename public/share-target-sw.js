@@ -13,7 +13,7 @@ self.addEventListener("fetch", (event) => {
     let status = "none";
     try {
       const form = await event.request.formData();
-      const file = form.getAll("igc").find((f) => typeof f === "object" && f && f.size > 0 && f.size <= MAX_SHARED_BYTES);
+      const file = [...form.values()].find((f) => typeof f === "object" && f && f.size > 0 && f.size <= MAX_SHARED_BYTES);
       const cache = await caches.open(SHARE_CACHE);
       await cache.delete(SHARED_IGC_KEY);
       if (file) {

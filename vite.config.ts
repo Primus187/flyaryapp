@@ -44,13 +44,15 @@ export default defineConfig(({ mode }) => ({
           { src: "/icons/flyary-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
         // Android share sheet: "Teilen → Flyary" on an .igc file opens the new-flight form with it
-        // (handled in public/share-target-sw.js). IGC files often arrive without their own MIME type.
+        // (handled in public/share-target-sw.js). Android Chrome matches only the MIME type the
+        // sending app reports (never the extension) and silently drops files that match nothing;
+        // .igc has no standard type, so any file is let through and the form checks the content.
         share_target: {
           action: "/share-target",
           method: "POST",
           enctype: "multipart/form-data",
           params: {
-            files: [{ name: "igc", accept: [".igc", ".IGC", "application/vnd.fai.igc", "application/octet-stream", "text/plain"] }],
+            files: [{ name: "igc", accept: [".igc", ".IGC", "application/vnd.fai.igc", "application/octet-stream", "text/plain", "*/*"] }],
           },
         },
       },
