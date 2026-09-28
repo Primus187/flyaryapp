@@ -3961,6 +3961,14 @@ export type Database = {
       }
     }
     Functions: {
+      group_invite_code: {
+        Args: { _group_id: string }
+        Returns: string
+      }
+      regenerate_group_invite_code: {
+        Args: { _group_id: string }
+        Returns: string
+      }
       merge_locations: {
         Args: { _keep: string; _remove: string }
         Returns: number

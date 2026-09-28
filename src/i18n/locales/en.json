@@ -590,7 +590,7 @@
     "joined": "Joined",
     "invalidCode": "Invalid invite code",
     "alreadyMember": "You are already a member",
-    "codeCopied": "Invite code copied",
+    "codeCopied": "Invite code copied", "renew": "Renew link", "renewConfirm": "Create a new invite link? The current link and code stop working.", "renewed": "New invite link created", "renewHint": "Was the link passed on where it shouldn't be? Renewing makes the old one invalid.",
     "leaveGroup": "Really leave this group?",
     "groupLeft": "Left group",
     "deleteGroup": "Really delete this group? All events will be deleted.",

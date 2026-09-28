@@ -565,7 +565,7 @@
     "joined": "Beigetreten",
     "invalidCode": "Ungültiger Einladungscode",
     "alreadyMember": "Du bist bereits Mitglied",
-    "codeCopied": "Einladungscode kopiert",
+    "codeCopied": "Einladungscode kopiert", "renew": "Link erneuern", "renewConfirm": "Neuen Einladungslink erzeugen? Der bisherige Link und Code funktionieren danach nicht mehr.", "renewed": "Neuer Einladungslink erzeugt", "renewHint": "Wurde der Link weitergegeben, wo er nicht hingehört? Erneuern macht den alten ungültig.",
     "leaveGroup": "Gruppe wirklich verlassen?",
     "groupLeft": "Gruppe verlassen",
     "deleteGroup": "Gruppe wirklich löschen? Alle Termine werden gelöscht.",

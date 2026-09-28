@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, QrCode, Share2 } from "lucide-react";
+import { Copy, QrCode, RefreshCw, Share2 } from "lucide-react";
+import { loadInviteCode, renewInviteCode } from "@/lib/invite-code";
 
 interface Props {
   groupId: string;
@@ -20,12 +21,8 @@ export default function SchoolInvite({ groupId }: Props) {
 
   useEffect(() => {
     if (!groupId) return;
-    supabase
-      .from("groups")
-      .select("invite_code")
-      .eq("id", groupId)
-      .maybeSingle()
-      .then(({ data }) => setCode((data as any)?.invite_code || null));
+    // Only the school team reads the code (migration 0070).
+    void loadInviteCode(groupId).then(setCode);
   }, [groupId]);
 
   const link = code ? `${window.location.origin}/groups?invite=${code}` : "";
@@ -54,6 +51,16 @@ export default function SchoolInvite({ groupId }: Props) {
     copy();
   };
 
+  const renew = async () => {
+    if (!confirm(t("groups.renewConfirm"))) return;
+    try {
+      setCode(await renewInviteCode(groupId));
+      toast({ title: t("groups.renewed") });
+    } catch (err: unknown) {
+      toast({ title: t("common.error"), description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    }
+  };
+
   if (!code) return null;
 
   return (
@@ -73,6 +80,9 @@ export default function SchoolInvite({ groupId }: Props) {
           </Button>
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setShowQr((v) => !v)}>
             <QrCode className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { void renew(); }} aria-label={t("groups.renew")} title={t("groups.renew")}>
+            <RefreshCw className="h-3.5 w-3.5" />
           </Button>
         </div>
         {showQr && qr && (

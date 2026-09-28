@@ -590,7 +590,7 @@
     "joined": "Rejoint",
     "invalidCode": "Code d'invitation invalide",
     "alreadyMember": "Vous êtes déjà membre",
-    "codeCopied": "Code d'invitation copié",
+    "codeCopied": "Code d'invitation copié", "renew": "Renouveler le lien", "renewConfirm": "Créer un nouveau lien d'invitation ? Le lien et le code actuels ne fonctionneront plus.", "renewed": "Nouveau lien d'invitation créé", "renewHint": "Le lien a été transmis là où il ne devait pas ? Le renouveler rend l'ancien invalide.",
     "leaveGroup": "Quitter ce groupe ?",
     "groupLeft": "Groupe quitté",
     "deleteGroup": "Supprimer ce groupe ? Tous les événements seront supprimés.",

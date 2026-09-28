@@ -15,8 +15,10 @@ import { Plus, Users, Copy, Link, LogOut, Trash2, ChevronDown, ChevronUp, Gradua
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import { fetchGroupMembers, type GroupMemberRow } from "@/lib/group-members";
+import InviteCodeControls from "@/components/InviteCodeControls";
+import { loadInviteCode } from "@/lib/invite-code";
 
-interface GroupRow { id: string; name: string; description: string | null; invite_code: string; created_by: string; group_type: string; role: string; }
+interface GroupRow { id: string; name: string; description: string | null; created_by: string; group_type: string; role: string; }
 type MemberRow = GroupMemberRow;
 
 export default function Groups() {
@@ -34,7 +36,7 @@ export default function Groups() {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [members, setMembers] = useState<Record<string, MemberRow[]>>({});
 
-  const fetchGroups = async () => { if (!user) return; const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, description, invite_code, created_by, group_type)").eq("user_id", user.id); if (data) setGroups(data.map((m: any) => ({ ...m.groups, role: m.role }))); setLoading(false); };
+  const fetchGroups = async () => { if (!user) return; const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, description, created_by, group_type)").eq("user_id", user.id); if (data) setGroups(data.map((m: any) => ({ ...m.groups, role: m.role }))); setLoading(false); };
   useEffect(() => { fetchGroups(); }, [user]);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function Groups() {
 
   const handleCreate = async () => {
     if (!user || !newName.trim()) return;
-    const { data, error } = await supabase.from("groups").insert({ name: newName.trim(), description: newDesc.trim() || null, created_by: user.id, group_type: newType as any }).select().single();
+    const { data, error } = await supabase.from("groups").insert({ name: newName.trim(), description: newDesc.trim() || null, created_by: user.id, group_type: newType as any }).select("id").single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     await supabase.from("group_members").insert({ group_id: data.id, user_id: user.id, role: "admin" });
     toast({ title: t("groups.groupCreated") }); setNewName(""); setNewDesc(""); setNewType("pilot_group"); setCreateOpen(false); fetchGroups();
@@ -73,7 +75,12 @@ export default function Groups() {
     setInviteCode(""); setJoinOpen(false); fetchGroups();
   };
 
-  const handleCopyCode = (code: string) => { navigator.clipboard.writeText(code); toast({ title: t("groups.codeCopied") }); };
+  const handleCopyCode = async (groupId: string) => {
+    const code = await loadInviteCode(groupId);
+    if (!code) return;
+    await navigator.clipboard.writeText(code);
+    toast({ title: t("groups.codeCopied") });
+  };
   const handleLeave = async (groupId: string) => { if (!user || !confirm(t("groups.leaveGroup"))) return; await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", user.id); toast({ title: t("groups.groupLeft") }); fetchGroups(); };
   const handleDelete = async (groupId: string) => { if (!confirm(t("groups.deleteGroup"))) return; await supabase.from("groups").delete().eq("id", groupId); toast({ title: t("groups.groupDeleted") }); fetchGroups(); };
   const handleRemoveMember = async (groupId: string, memberId: string) => { if (!confirm(t("groups.removeMember"))) return; await supabase.from("group_members").delete().eq("id", memberId); setMembers(prev => ({ ...prev, [groupId]: prev[groupId]?.filter(m => m.id !== memberId) })); toast({ title: t("groups.memberRemoved") }); };
@@ -106,13 +113,13 @@ export default function Groups() {
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleExpand(g.id)}>{expandedGroup === g.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}</Button>
-                    {g.role === "admin" && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyCode(g.invite_code)}><Copy className="h-3.5 w-3.5" /></Button>}
+                    {g.role === "admin" && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { void handleCopyCode(g.id); }}><Copy className="h-3.5 w-3.5" /></Button>}
                     {g.role === "admin" ? <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(g.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button> : <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleLeave(g.id)}><LogOut className="h-3.5 w-3.5 text-destructive" /></Button>}
                   </div>
                 </div>
                 {expandedGroup === g.id && (
                   <div className="border-t pt-2 space-y-2">
-                    {g.role === "admin" && (<div className="flex items-center gap-2 bg-muted/50 rounded-md p-2"><span className="text-xs text-muted-foreground flex-1 truncate">Code: {g.invite_code}</span><Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => handleCopyCode(g.invite_code)}><Copy className="h-3 w-3" /> {t("groups.copy")}</Button></div>)}
+                    {g.role === "admin" && <InviteCodeControls groupId={g.id} compact />}
                     <div><p className="text-xs font-medium mb-1.5">{t("groups.members")}</p>
                       {!members[g.id] ? <p className="text-xs text-muted-foreground">{t("common.loading")}</p> : members[g.id].length === 0 ? <p className="text-xs text-muted-foreground">{t("groups.noGroups")}</p> : (
                         <div className="space-y-1">{members[g.id].map(m => (<div key={m.id} className="flex items-center justify-between text-xs"><span>{m.profiles?.pilot_name || t("common.unknown")} <span className="text-muted-foreground">({m.role === "admin" ? t("groups.admin") : t("groups.member")})</span></span>{g.role === "admin" && m.user_id !== user?.id && <Button variant="ghost" size="sm" className="h-6 text-xs text-destructive px-2" onClick={() => handleRemoveMember(g.id, m.id)}>{t("common.remove")}</Button>}</div>))}</div>

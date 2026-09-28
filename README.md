@@ -1,5 +1,28 @@
 # Flyary
 
+## Sicherheit: Warteliste, Einladungscodes, Bibliotheken (2026-09-28)
+
+Befunde «Mittel» der Sicherheitsanalyse. Migrationen `0069_signup_status_protection.sql` und
+`0070_invite_code_protection.sql`, Tests in `src/test/signup-status-database.test.ts` und
+`src/test/invite-code-database.test.ts`.
+
+- **Warteliste:** Ein Schüler konnte in der eigenen Anmeldung `status = 'confirmed'` und den Wartelistenplatz
+  selbst setzen und so an der Warteliste vorbei einen Kursplatz belegen. Der Schutz-Trigger hält diese Felder für
+  Personen ohne Rolle am Flugtag nun bei ihrem bisherigen Wert; beim An- und Abmelden setzt sie weiter
+  `handle_signup_waitlist`, und das Nachrücken des Nächsten funktioniert (es ändert die Zeile einer anderen Person).
+  Korrektur zur Analyse: `attended` ist seit 0051 aus der Anwesenheit berechnet und war schon geschützt.
+- **Einladungscodes:** Jedes Mitglied, auch jeder Schüler, konnte den Code lesen und weitergeben; er änderte sich
+  nie. Jetzt lesen ihn nur Gruppen-Admins und das Schulteam (`group_invite_code`), und sie können ihn erneuern
+  (`regenerate_group_invite_code`, Knopf in Gruppenliste, Gruppendetail und Schul-Einladung), was den alten Link
+  ungültig macht. Die Tabellenberechtigung auf `groups` gilt dafür nur noch für die übrigen Spalten; `GroupDetail`
+  liest die Spalten explizit, das Anlegen einer Gruppe liest nur die ID zurück.
+- **Bibliotheken:** `npm audit fix` (ohne Hauptversionssprünge) behebt u. a. die hohen Lücken in react-router.
+  Offen und bewusst nicht aktualisiert: maplibre-gl 6 (Lücke im HTML-Filter, Flyary setzt dort kein Nutzer-HTML),
+  react-router 7 (grösserer Umbau), vite/esbuild (nur lokaler Entwicklungsserver) und xlsx (kein npm-Update; nur
+  Import eigener Excel-Dateien).
+- **Auslieferung:** `node scripts/db-migrate.mjs --apply` (0069, 0070), dann pushen. Vor 0070 findet das Frontend
+  den Code nicht (die neuen Funktionen fehlen), alles andere läuft.
+
 ## Sicherheit: YouTube-Links und Druckfenster (2026-09-28)
 
 Befunde «Hoch» der Sicherheitsanalyse vor dem Test mit Vertical. Migration `0068_youtube_url_check.sql`, Code in
