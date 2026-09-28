@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Heart, MessageCircle, MapPin, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSiteName } from "@/lib/official-sites-store";
+import { youtubeEmbedUrl, youtubeLink } from "@/lib/youtube";
 
 const FlightDetailMap = lazy(() => import("@/components/FlightDetailMap"));
 
@@ -33,44 +34,6 @@ interface PublishPreviewDialogProps {
   videoUrls?: string[];
   trackPoints: [number, number][];
   loading?: boolean;
-}
-
-function getYoutubeEmbedUrl(url: string): string | null {
-  const raw = url.trim();
-
-  try {
-    const parsed = new URL(raw);
-    const host = parsed.hostname.replace(/^www\./, "");
-    let videoId: string | null = null;
-
-    if (host === "youtu.be") {
-      videoId = parsed.pathname.split("/").filter(Boolean)[0] ?? null;
-    } else if (
-      host === "youtube.com" ||
-      host === "m.youtube.com" ||
-      host === "youtube-nocookie.com"
-    ) {
-      if (parsed.pathname === "/watch") {
-        videoId = parsed.searchParams.get("v");
-      } else if (parsed.pathname.startsWith("/shorts/")) {
-        videoId = parsed.pathname.split("/")[2] ?? null;
-      } else if (parsed.pathname.startsWith("/embed/")) {
-        videoId = parsed.pathname.split("/")[2] ?? null;
-      } else if (parsed.pathname.startsWith("/live/")) {
-        videoId = parsed.pathname.split("/")[2] ?? null;
-      }
-    }
-
-    if (!videoId) {
-      const fallbackMatch = raw.match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{6,})/);
-      videoId = fallbackMatch?.[1] ?? null;
-    }
-
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-  } catch {
-    const fallbackMatch = raw.match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{6,})/);
-    return fallbackMatch?.[1] ? `https://www.youtube.com/embed/${fallbackMatch[1]}` : null;
-  }
 }
 
 export default function PublishPreviewDialog({
@@ -127,22 +90,22 @@ export default function PublishPreviewDialog({
 
             {/* Videos preview */}
             {videoUrls && videoUrls.length > 0 && videoUrls.map((url, i) => {
-              const embedUrl = getYoutubeEmbedUrl(url);
+              const embedUrl = youtubeEmbedUrl(url);
               return embedUrl ? (
                 <div key={`vid-${i}`} className="relative w-full aspect-video bg-muted">
                   <iframe src={embedUrl} title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 w-full h-full" />
                 </div>
-              ) : (
+              ) : youtubeLink(url) ? (
                 <a
                   key={`vid-${i}`}
-                  href={url}
+                  href={youtubeLink(url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block px-3 py-2 text-sm text-primary underline underline-offset-2"
                 >
                   {t("flights.watchVideo")}
                 </a>
-              );
+              ) : null;
             })}
 
             {/* Selected photos preview */}

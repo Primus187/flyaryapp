@@ -18,6 +18,7 @@ import PublishPreviewDialog from "@/components/PublishPreviewDialog";
 import CoachFeedback from "@/components/CoachFeedback";
 import FlightCoachNote from "@/components/FlightCoachNote";
 import { useSiteName } from "@/lib/official-sites-store";
+import { youtubeEmbedUrl, youtubeLink } from "@/lib/youtube";
 
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
 const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
@@ -197,7 +198,6 @@ export default function FlightDetail() {
 
   if (!flight) return <div className="p-4 text-center text-muted-foreground">{t("common.loading")}</div>;
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m} min`; };
-  const getYoutubeEmbedUrl = (url: string) => { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/); return match ? `https://www.youtube.com/embed/${match[1]}` : null; };
 
   return (
     <div className="px-4 pt-4 pb-4 max-w-lg mx-auto space-y-4">
@@ -422,7 +422,7 @@ export default function FlightDetail() {
                 );
               }
               // YouTube link
-              const embedUrl = getYoutubeEmbedUrl(v.youtube_url);
+              const embedUrl = youtubeEmbedUrl(v.youtube_url);
               return embedUrl ? (
                 <div key={v.id} className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
                   <iframe
@@ -445,9 +445,12 @@ export default function FlightDetail() {
                 </div>
               ) : (
                 <div key={v.id} className="flex items-center justify-between gap-2">
-                  <a href={v.youtube_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
-                    <Youtube className="h-4 w-4" /> {t("flights.watchVideo")}
-                  </a>
+                  {/* Only a real YouTube address becomes a link (a stored "javascript:" address must never be clickable). */}
+                  {youtubeLink(v.youtube_url) && (
+                    <a href={youtubeLink(v.youtube_url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                      <Youtube className="h-4 w-4" /> {t("flights.watchVideo")}
+                    </a>
+                  )}
                   {isOwner && (
                     <button type="button" onClick={handleDeleteVideo} className="text-muted-foreground hover:text-destructive p-1">
                       <Trash2 className="h-3.5 w-3.5" />

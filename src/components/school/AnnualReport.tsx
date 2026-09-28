@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FileText, Printer, Download, Check, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { levelCountsAtYearEnd, licensedCompletionsInYear } from "@/lib/annual-report";
+import { escapeHtml } from "@/lib/html-escape";
 
 interface Props {
   groupId: string;
@@ -164,7 +165,7 @@ export default function AnnualReport({ groupId }: Props) {
       th{text-align:left;width:50%;padding:6px 8px 6px 0;font-size:12px;color:#555}
       td{padding:6px 0;font-size:13px;border-bottom:1px solid #eee}</style></head><body>
       <h1>${t("school.annual.title")} ${year}</h1>
-      <table>${rowsForExport().map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>
+      <table>${rowsForExport().map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`).join("")}</table>
       </body></html>`);
     win.document.close();
     win.focus();

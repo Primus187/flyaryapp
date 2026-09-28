@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Check, Download, Receipt } from "lucide-react";
+import { escapeHtml } from "@/lib/html-escape";
 
 interface Props {
   groupId: string;
@@ -195,14 +196,14 @@ export default function SchoolBilling({ groupId }: Props) {
     if (!statementUser) return;
     const rows = statementItems
       .map(
-        (i) => `<tr><td>${new Date(i.billing_date).toLocaleDateString("de-CH")}</td><td>${t(`school.billing.types.${i.item_type}`)}</td><td>${(i.description || "").replace(/</g, "&lt;")}</td><td style="text-align:right">${Number(i.quantity)}</td><td style="text-align:right">${Number(i.unit_amount).toFixed(2)}</td><td style="text-align:right">${Number(i.amount).toFixed(2)}</td><td>${i.paid_at ? new Date(i.paid_at).toLocaleDateString("de-CH") : ""}</td></tr>`
+        (i) => `<tr><td>${new Date(i.billing_date).toLocaleDateString("de-CH")}</td><td>${escapeHtml(t(`school.billing.types.${i.item_type}`))}</td><td>${escapeHtml(i.description || "")}</td><td style="text-align:right">${Number(i.quantity)}</td><td style="text-align:right">${Number(i.unit_amount).toFixed(2)}</td><td style="text-align:right">${Number(i.amount).toFixed(2)}</td><td>${i.paid_at ? new Date(i.paid_at).toLocaleDateString("de-CH") : ""}</td></tr>`
       )
       .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${t("school.billing.statement")} – ${nameOf(statementUser)}</title>
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${t("school.billing.statement")} – ${escapeHtml(nameOf(statementUser))}</title>
 <style>body{font-family:system-ui,sans-serif;padding:24px;color:#111}h1{font-size:18px;margin:0 0 4px}p{font-size:12px;color:#555;margin:0 0 16px}
 table{width:100%;border-collapse:collapse;font-size:12px}th,td{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left}
 tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></head><body>
-<h1>${t("school.billing.statement")} – ${nameOf(statementUser)}</h1>
+<h1>${t("school.billing.statement")} – ${escapeHtml(nameOf(statementUser))}</h1>
 <p>${new Date().toLocaleDateString("de-CH")}</p>
 <table><thead><tr><th>${t("school.billing.date")}</th><th>${t("school.billing.itemType")}</th><th>${t("school.billing.description")}</th><th>${t("school.billing.quantity")}</th><th>${t("school.billing.unitAmount")}</th><th>${t("school.billing.amount")}</th><th>${t("school.billing.tabPaid")}</th></tr></thead>
 <tbody>${rows}</tbody>

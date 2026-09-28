@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import FlightDetailMap from "@/components/FlightDetailMap";
+import { youtubeEmbedUrl } from "@/lib/youtube";
 
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
 const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
@@ -35,11 +36,6 @@ type HeroSlide =
   | { type: "video"; embedUrl: string }
   | { type: "photo"; url: string }
   | { type: "map" };
-
-function getYoutubeEmbedUrl(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|\/shorts\/|\/embed\/)([^&\s]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
-}
 
 function HeroCarousel({ slides, takeoff, landing, trackPoints, durationMin, distanceKm }: {
   slides: HeroSlide[];
@@ -198,7 +194,7 @@ export default function SharedFlightDetail() {
   // Build hero slides: videos → photos → map
   const heroSlides: HeroSlide[] = [];
   for (const v of data.videos) {
-    const embedUrl = getYoutubeEmbedUrl(v.youtube_url);
+    const embedUrl = youtubeEmbedUrl(v.youtube_url);
     if (embedUrl) heroSlides.push({ type: "video", embedUrl });
   }
   for (const p of data.photos) {

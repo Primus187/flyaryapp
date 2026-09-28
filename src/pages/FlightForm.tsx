@@ -29,6 +29,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { cn } from "@/lib/utils";
+import { isYoutubeUrl } from "@/lib/youtube";
 
 const DRAFT_KEY = "flyary.flightDraft";
 // Older drafts are dropped: restoring them silently backdated new flights to the draft day.
@@ -353,9 +354,10 @@ export default function FlightForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!user) return; setLoading(true);
     try {
+      // Only YouTube addresses (the database refuses others too, migration 0068); an unfinished entry that is not one is dropped.
       const pendingYoutubeUrls = [...youtubeUrls, newYoutubeUrl]
         .map((u) => u.trim())
-        .filter(Boolean)
+        .filter((url) => isYoutubeUrl(url))
         .filter((url, index, arr) => arr.indexOf(url) === index);
 
       // Auto-link event_id when group + date match
@@ -540,7 +542,12 @@ export default function FlightForm() {
     finally { setLoading(false); }
   };
 
-  const addYoutubeUrl = () => { if (newYoutubeUrl.trim()) { setYoutubeUrls([...youtubeUrls, newYoutubeUrl.trim()]); setNewYoutubeUrl(""); } };
+  const addYoutubeUrl = () => {
+    const url = newYoutubeUrl.trim();
+    if (!url) return;
+    if (!isYoutubeUrl(url)) { toast({ title: t("flights.youtubeInvalid"), variant: "destructive" }); return; }
+    setYoutubeUrls([...youtubeUrls, url]); setNewYoutubeUrl("");
+  };
 
   const loadTemplate = (tpl: FlightTemplate) => {
     setForm(prev => ({

@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/layout/EmptyState";
 import { AlertTriangle, Plus, Printer, Check } from "lucide-react";
 import IncidentReportDialog from "@/components/school/IncidentReportDialog";
+import { escapeHtml } from "@/lib/html-escape";
 
 interface Props {
   groupId: string;
@@ -95,7 +96,7 @@ export default function IncidentReports({ groupId, presetEventId }: Props) {
       table{width:100%;border-collapse:collapse}th{text-align:left;width:32%;vertical-align:top;padding:8px 8px 8px 0;font-size:12px;color:#555}
       td{padding:8px 0;font-size:13px;border-bottom:1px solid #eee;white-space:pre-wrap}</style></head><body>
       <h1>${t("school.safety.pdfTitle")}</h1><h2>${t("school.safety.pdfSubtitle")}</h2>
-      <table>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${String(v).replace(/</g, "&lt;")}</td></tr>`).join("")}</table>
+      <table>${rows.map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`).join("")}</table>
       </body></html>`);
     win.document.close();
     win.focus();

@@ -1,5 +1,25 @@
 # Flyary
 
+## Sicherheit: YouTube-Links und Druckfenster (2026-09-28)
+
+Befunde «Hoch» der Sicherheitsanalyse vor dem Test mit Vertical. Migration `0068_youtube_url_check.sql`, Code in
+`src/lib/youtube.ts` und `src/lib/html-escape.ts`, Tests in `src/lib/youtube.test.ts` und
+`src/test/youtube-url-database.test.ts`.
+
+- **YouTube-Links:** Die Adresse eines Flugvideos wurde ungeprüft gespeichert und im Flugdetail als Link gesetzt;
+  React 18 blockiert `javascript:`-Links nicht. Über die Schnittstelle hätte ein Pilot Code hinterlegen können,
+  der beim Klick in der Sitzung eines Gruppenmitglieds oder Followers läuft. Neu: `src/lib/youtube.ts` akzeptiert
+  nur http(s)-Adressen auf YouTube-Hosts und ersetzt die vier eigenen Varianten in Flugdetail, Feed,
+  Veröffentlichungs-Vorschau und öffentlicher Flugseite. Ein Link erscheint nur für eine YouTube-Adresse; das
+  Formular nimmt nur solche an. Die Datenbank prüft dieselben Hosts (`flight_videos_youtube_url_check`); die eine
+  gespeicherte Adresse erfüllte die Regel bereits.
+- **Druckfenster:** Abrechnung (Schülername, Beschreibung), Jahresbericht (Namen der Teammitglieder) und
+  Vorfallbericht schrieben Werte ungeschützt ins HTML eines mit `window.open` geöffneten Fensters, das zur App
+  gehört. Ein Profilname mit Markup wäre beim Druck in der Sitzung des Fluglehrers gelaufen. Alle eingefügten Werte
+  laufen jetzt durch `escapeHtml`.
+- **Auslieferung:** `node scripts/db-migrate.mjs --apply` (0068), dann pushen. Der Frontend-Schutz wirkt auch ohne
+  die Migration; die Migration verhindert das Speichern über die Schnittstelle.
+
 ## Anmeldung nur noch mit Google (2026-09-28)
 
 Befund der Sicherheitsanalyse vor dem Test mit Vertical: Das Projekt hat keinen eigenen Mail-Server, der
