@@ -1,0 +1,762 @@
+{
+  "capturedAt": "2026-09-25T06:00:50.402Z",
+  "source": "Local Flyary app, fictional fixtures, no live API access",
+  "screenshots": [
+    {
+      "name": "01-home",
+      "path": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "02-more",
+      "path": "/more",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "03-flight-basic",
+      "path": "/flights/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "04-flight-details",
+      "path": "/flights/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "05-flight-media",
+      "path": "/flights/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "06-flightbook",
+      "path": "/flights",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "07-events",
+      "path": "/events",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "08-event-detail",
+      "path": "/events/33333333-3333-4333-8333-333333333333",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "09-locations",
+      "path": "/locations",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "10-training",
+      "path": "/training",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "11-training-detail",
+      "path": "/training/item3",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "12-stats",
+      "path": "/stats",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "13-profile",
+      "path": "/profile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "14-settings",
+      "path": "/settings",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "15-export",
+      "path": "/settings",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "16-notifications",
+      "path": "/notifications",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "17-groups",
+      "path": "/groups",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "18-import",
+      "path": "/import",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "19-flight-view",
+      "path": "/flights/44444444-4444-4444-8444-444444444444",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "20-flight-notes",
+      "path": "/flights/44444444-4444-4444-8444-444444444444",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "21-publish-preview",
+      "path": "/flights/44444444-4444-4444-8444-444444444444",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "22-feed",
+      "path": "/feed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "23-feed-comment",
+      "path": "/feed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "24-feed-notifications",
+      "path": "/feed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "25-search",
+      "path": "/search",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "26-leaderboard",
+      "path": "/leaderboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "27-location-import",
+      "path": "/import-locations",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "28-training-note",
+      "path": "/training/item3",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "29-template",
+      "path": "/flights/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "30-profile-fields",
+      "path": "/profile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "31-glider-form",
+      "path": "/profile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "32-import-preview",
+      "path": "/import",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "33-flight-group",
+      "path": "/flights/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "34-messages",
+      "path": "/messages",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "35-channel",
+      "path": "/messages/66666666-6666-4666-8666-666666666666",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "36-message-actions",
+      "path": "/messages/66666666-6666-4666-8666-666666666666",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "37-notify",
+      "path": "/messages/66666666-6666-4666-8666-666666666666",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "38-direct",
+      "path": "/messages",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "39-message-search",
+      "path": "/messages",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "40-event-participants",
+      "path": "/events/33333333-3333-4333-8333-333333333333?tab=participants",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "41-event-chat",
+      "path": "/events/33333333-3333-4333-8333-333333333333?tab=chat",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "42-app-update",
+      "path": "/more",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "43-reply",
+      "path": "/messages/66666666-6666-4666-8666-666666666666",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "44-flight-no-group",
+      "path": "/flights/44444444-4444-4444-8444-444444444444",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "45-market",
+      "path": "/market",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "46-market-filters",
+      "path": "/market",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "47-market-detail",
+      "path": "/market/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "48-market-seller",
+      "path": "/market/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "49-market-form",
+      "path": "/market/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "50-market-price",
+      "path": "/market/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "51-market-mine",
+      "path": "/market/mine",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "52-market-sold",
+      "path": "/market/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "53-market-saved",
+      "path": "/market",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "54-market-favorites",
+      "path": "/market/mine",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "55-market-report",
+      "path": "/market/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "56-market-review",
+      "path": "/market/dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "57-market-photos",
+      "path": "/market/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "58-market-terms",
+      "path": "/market/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    }
+  ],
+  "errors": [],
+  "unpopulatedTables": []
+}

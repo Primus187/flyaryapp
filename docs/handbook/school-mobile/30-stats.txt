@@ -1,0 +1,74 @@
+Statistiken
+
+Flugschule Voralpen
+
+Alle Jahre
+1
+Termine
+1
+Höhenflug-Tage
+1
+Anmeldungen
+1
+Fluggebiete
+FLUGLEHRER-EINSÄTZE
+1.
+Robin Beispiel
+1
+STARTHELFER-EINSÄTZE
+1.
+Sam Muster
+1
+FLUGGEBIETE (TERMINE)
+1.
+Niederbauen
+1
+TERMINE PRO ART
+1.
+Höhenflug
+1
+AUSLASTUNG PRO KURSART
+1.
+Höhenflug
+13
+BETREUTE SCHÜLER PRO FLUGLEHRER
+1.
+Robin Beispiel
+1
+AUSBILDUNGSERFOLG (GESAMT)
+0%
+Erfolgsquote Grundkurs → Brevet
+—
+⌀ Ausbildungsdauer (Monate)
+
+Nicht durch die Jahresauswahl gefiltert – die Ausbildung dauert meist mehrere Jahre, ein Einzeljahr wäre nicht aussagekräftig. Abgebrochene Ausbildungen zählen weder als Erfolg noch als Misserfolg.
+
+SHV-Jahresbericht
+2025
+
+Betriebstage
+
+1
+
+Brevetiert 2025
+
+0
+
+Ausbildungsstand unbekannt
+2
+
+Für vergangene Jahre wird der Ausbildungsstand aus dem Änderungsverlauf rekonstruiert. Änderungen vor Einführung dieser Erfassung sind nicht bekannt.
+
+Robin Beispiel
+2028-03-01
+Sam Muster
+Keine Zertifikate erfasst
+Drucken
+CSV
+Als eingereicht markieren
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr

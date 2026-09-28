@@ -1,0 +1,44 @@
+Termin bearbeiten
+
+Terminart wählen und nur die wichtigen Angaben erfassen
+
+Welche Art von Termin planst du?
+Höhenflug
+Grundkurs
+Experienced Anlass
+Camp’Air
+Vortrag
+Grundangaben
+Gruppe *
+Flugschule Voralpen
+Titel *
+Datum *
+Uhrzeit
+Status
+Bestätigt
+Treffpunkt & Flugtag
+Treffpunkt
+Treffpunkt hinzufügen
+Fluggebiet
+Tagesthema
+Rückreise / Hinweise
+Leitung & Anmeldung
+Fluglehrer
+Robin Beispiel · Fluglehrer:in
+Starthelfer
+Sam Muster · Starthelfer:in
+Anmeldefrist
+Max. Teilnehmer
+Briefing
+Geplante Manöver
+Manöver hinzufügen
+Mitteilung
+Flugvorbereitung
+Grussformel
+Aktualisieren
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr

@@ -1,0 +1,14 @@
+Rangliste
+Alle Gruppen
+AB
+Alex Beispiel
+Lv.3
+240
+XP
+
+XP werden automatisch berechnet: Flugzeit × 2 + Höhenmeter × 0.5 + Distanz × 10. Erfasse mehr Flüge um aufzusteigen!
+
+Home
+Feed
+Flüge
+Mehr

@@ -1,0 +1,69 @@
+Team
+
+Flugschule Voralpen
+
+1
+Schulleitung
+1
+Fluglehrer:in
+1
+Starthelfer:in
+0
+Shop
+0
+Marktplatz-Moderation
+Funktionen verteilen
+RO
+
+Robin Beispiel
+
+Schulleitung
+Fluglehrer:in
+Brevetiert
+SA
+
+Sam Muster
+
+Starthelfer:in
+Brevetiert
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr
+Funktionen verteilen
+
+Tippe auf eine Funktion, um sie zu setzen oder zu entfernen.
+
+Robin Beispiel
+
+Schüler:in
+Brevetiert
+Starthelfer:in
+Fluglehrer:in
+Schulleitung
+Shop
+Marktplatz-Moderation
+
+Alex Beispiel
+
+Schüler:in
+Brevetiert
+Starthelfer:in
+Fluglehrer:in
+Schulleitung
+Shop
+Marktplatz-Moderation
+
+Sam Muster
+
+Schüler:in
+Brevetiert
+Starthelfer:in
+Fluglehrer:in
+Schulleitung
+Shop
+Marktplatz-Moderation
+Schliessen
+Close

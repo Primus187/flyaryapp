@@ -1,0 +1,32 @@
+Sicherheit
+
+Flugschule Voralpen
+
+Vorfälle
+Zertifikate
+Wartung
+Ausrüstung
+
+Markiere, was beim Schüler vorhanden ist. Fehlendes kann mit Leihmaterial abgedeckt werden.
+
+Alex Beispiel
+
+1 offen
+Helm
+Schuhwerk
+Gurtzeug mit Protektor
+Rettungsgerät
+
+Sam Muster
+
+4 offen
+Helm
+Schuhwerk
+Gurtzeug mit Protektor
+Rettungsgerät
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr

@@ -1,0 +1,38 @@
+Neuer Flug
+Flug
+Details
+Medien
+Erweiterte Daten
+Flugzeit (min)
+Höhenmeter
+Strecke (km)
+Thermik-Bedingungen
+Wählen...
+Keine
+Schwach
+Mässig
+Stark
+Turbulent
+Wind (km/h)
+Windrichtung
+Richtung
+N
+NE
+E
+SE
+S
+SW
+W
+NW
+Kommentar
+Tags
+#Training
+Trainierte Manöver
+Manöver auswählen...
+Zurück
+Weiter
+Direkt speichern
+Home
+Feed
+Flüge
+Mehr

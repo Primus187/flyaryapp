@@ -1,0 +1,31 @@
+Shop
+
+Flugschule Voralpen
+
+Der Shop ist aktiv. Schul-Anzeigen sind im Marktplatz sichtbar.
+
+Anzeigen
+Shop-Profil
+Firma / Name
+Strasse und Nr.
+PLZ
+Ort
+E-Mail
+Telefon (optional)
+MWST-pflichtig (Preise inkl. MWST)
+UID-Nummer
+
+Format CHE-123.456.789 – Pflicht, wenn MWST-pflichtig.
+
+Gewährleistung / Garantie
+Shop aktiv
+
+Nur mit vollständigen Angaben möglich.
+
+Speichern
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr

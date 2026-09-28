@@ -1,0 +1,52 @@
+Material
+
+Flugschule Voralpen
+
+Lager
+Ausgaben
+Ansätze
+Wartung
+
+1
+
+Im Lager
+
+1
+
+Ausgegeben
+
+0
+
+Ausgesondert
+
+Aktiv
+SHV: alle
+Material aufnehmen
+
+Schulschirm Alpha 26
+
+Schirm · 26 · #S-026
+
+Im Lager
+SHV-geprüft
+Ausgeben
+Bearbeiten
+Aussondern
+
+Gurtzeug Schulung M
+
+Gurtzeug · M · #G-014
+
+Ausgegeben an Alex Beispiel · bis 2026-09-30
+
+Ausgegeben
+SHV-geprüft
+Zurücknehmen
+Bearbeiten
+Aussondern
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr

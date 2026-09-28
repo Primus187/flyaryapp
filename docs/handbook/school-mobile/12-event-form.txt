@@ -1,0 +1,50 @@
+Neuer Termin
+
+Terminart wählen und nur die wichtigen Angaben erfassen
+
+Welche Art von Termin planst du?
+Höhenflug
+Grundkurs
+Experienced Anlass
+Camp’Air
+Vortrag
+Grundangaben
+
+Gruppe
+
+Flugschule Voralpen
+
+Titel *
+Datum *
+Uhrzeit
+Status
+Angekündigt
+Treffpunkt & Flugtag
+Treffpunkt
+Treffpunkt hinzufügen
+Fluggebiet
+Tagesthema
+Rückreise / Hinweise
+Leitung & Anmeldung
+Fluglehrer
+Zuweisen
+Starthelfer
+Zuweisen
+Anmeldefrist
+Max. Teilnehmer
+Briefing
+Zuweisen
+Zuweisen
+Zuweisen
+Geplante Manöver
+Manöver hinzufügen
+Mitteilung
+Flugvorbereitung
+Grussformel
+Erstellen
+Home
+Flugtage
+Schüler
+4
+Nachrichten
+Mehr

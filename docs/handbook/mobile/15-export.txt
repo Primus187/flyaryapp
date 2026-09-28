@@ -1,0 +1,38 @@
+Einstellungen
+Design
+Hell
+Dunkel
+System
+Sprache
+🇩🇪
+Deutsch
+🇫🇷
+Français
+🇬🇧
+English
+Passwort ändern
+Neues Passwort
+Passwort ändern
+Ausbildungsstand
+Push-Benachrichtigungen
+Benachrichtigungen bei Likes und Kommentaren
+Export & Import
+Flugbuch als PDF exportieren
+Als CSV exportieren
+
+Deine Daten gehören dir — exportiere jederzeit alle Flüge.
+
+Daten importieren
+Flüge importieren
+Orte importieren
+Konto
+Alle Flüge löschen
+Alle Orte löschen
+Konto löschen
+
+Entfernt unwiderruflich alle deine Flüge, Fotos und Profildaten.
+
+Home
+Feed
+Flüge
+Mehr
