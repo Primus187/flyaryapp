@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BadgeCheck, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { searchSites, type OfficialSite } from "@/lib/official-sites";
-import { useOfficialSites, useSiteName } from "@/lib/official-sites-store";
+import { officialName, siteDetails, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 
 /** Search field over the catalogue of official sites; renders nothing while the catalogue is empty. */
 export default function OfficialSiteSearch({ onPick, disabled }: { onPick: (site: OfficialSite) => void; disabled?: boolean }) {
@@ -26,10 +26,10 @@ export default function OfficialSiteSearch({ onPick, disabled }: { onPick: (site
               className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/50 disabled:opacity-50">
               <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
               <span className="flex-1 min-w-0">
-                <span className="block truncate">{siteName(site.name_de)}</span>
+                <span className="block truncate">{siteName(officialName(site))}</span>
                 <span className="block text-[11px] text-muted-foreground truncate">
                   {t(site.type === "takeoff" ? "locations.takeoff" : site.type === "landing" ? "locations.landingPlace" : "locations.both")}
-                  {site.region ? ` · ${site.region}` : ""}{site.altitude ? ` · ${site.altitude} m` : ""}
+                  {siteDetails(site) ? ` · ${siteDetails(site)}` : ""}
                 </span>
               </span>
             </button>

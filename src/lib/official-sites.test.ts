@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseDhvDirections, parseDhvXml } from "./dhv-sites";
-import { localizeSiteName, normalizeSiteName } from "./site-names";
+import { normalizeSiteName, officialSiteNames, type NamingInput } from "./site-names";
 import { distanceMeters, nearestSite, searchSites, suggestSiteLinks, type OfficialSite } from "./official-sites";
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?><DhvXml><FlyingSites>
@@ -19,7 +19,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?><DhvXml><FlyingSites>
 describe("DHV import", () => {
   it("reads every place once with its area, type and data", () => {
     const rows = parseDhvXml(xml, normalizeSiteName);
-    expect(rows.map((r) => [r.source_id, r.name_de, r.type])).toEqual([
+    expect(rows.map((r) => [r.source_id, r.source_name, r.type])).toEqual([
       ["10", "Kronberg Startplatz 1", "takeoff"],
       ["11", "Kronberg Landeplatz", "landing"],
       ["12", "Oberrieden Start-/Landeplatz", "both"],
@@ -40,17 +40,48 @@ describe("DHV import", () => {
   });
 });
 
-describe("site names in the app language", () => {
-  it("translates only the site word and what follows it", () => {
-    expect(localizeSiteName("Kronberg Startplatz 2", "fr")).toBe("Kronberg Décollage 2");
-    expect(localizeSiteName("La Berneuse Landeplatz", "en")).toBe("La Berneuse Landing");
-    expect(localizeSiteName("Belalp Startplatz 1 (Sommer)", "fr")).toBe("Belalp Décollage 1 (été)");
-    expect(localizeSiteName("Startplatz Mostelegg", "en")).toBe("Takeoff Mostelegg");
-    expect(localizeSiteName("Oberrieden Start-/Landeplatz", "fr")).toBe("Oberrieden Décollage/atterrissage");
-    expect(localizeSiteName("Sommer Startplatz", "en")).toBe("Sommer Takeoff");
-    expect(localizeSiteName("Abendberg", "fr")).toBe("Abendberg");
-    expect(localizeSiteName("Kronberg Startplatz 2", "de")).toBe("Kronberg Startplatz 2");
-    expect(localizeSiteName("Startberg Startplatz", "en")).toBe("Startberg Takeoff");
+const place = (source_id: string, source_name: string, type: NamingInput["type"], municipality: string | null, latitude: number, area_name: string | null = null): NamingInput =>
+  ({ source_id, source_name, type, municipality, area_name, latitude, longitude: 8 });
+
+describe("official site names", () => {
+  const names = (rows: NamingInput[]) => Object.fromEntries([...officialSiteNames(rows)].map(([id, n]) => [id, n]));
+
+  it("drops the site word; takeoffs keep their area, landings take their municipality", () => {
+    const n = names([
+      place("1", "Kronberg Startplatz 2", "takeoff", "Jakobsbad", 47.1),
+      place("2", "Kronberg Landeplatz", "landing", "Jakobsbad", 47.2),
+      place("3", "Startplatz Mostelegg", "takeoff", "Sattel", 47.3),
+      place("4", "Oberrieden Start-/Landeplatz", "both", "Oberrieden", 47.4),
+      place("5", "Brändlen Landeplatz", "landing", "Wolfenschießen", 47.5),
+      place("6", "Abendberg", "takeoff", null, 47.6),
+    ]);
+    expect([n[1].de, n[2].de, n[3].de, n[4].de, n[5].de, n[6].de]).toEqual(["Kronberg 2", "Jakobsbad", "Mostelegg", "Oberrieden", "Wolfenschiessen", "Abendberg"]);
+  });
+
+  it("translates only extras like Winter", () => {
+    const n = names([place("1", "Belalp Startplatz 2 (Winter)", "takeoff", "Blatten", 46.4), place("2", "Sommer Startplatz", "takeoff", null, 46.5)]);
+    expect(n[1]).toEqual({ de: "Belalp 2 (Winter)", fr: "Belalp 2 (hiver)", en: "Belalp 2 (winter)" });
+    expect(n[2].en).toBe("Sommer");
+  });
+
+  it("tells landings of one municipality apart only when they are at different spots", () => {
+    const n = names([
+      place("1", "Metsch Landeplatz", "landing", "Lenk", 46.44),
+      place("2", "Schatthorn Landeplatz", "landing", "Lenk", 46.45, "Schatthorn"),
+      place("3", "Flöschhorn Landeplatz", "landing", "Lenk", 46.46, "Schatthorn"),
+      place("4", "Linderenalp Landeplatz 2", "landing", "Sarnen", 46.8984),
+      place("5", "Ruedlen Landeplatz 2", "landing", "Sarnen", 46.89841),
+      place("6", "Hoch-Ybrig Landeplatz", "landing", "Hoch-Ybrig", 47.02),
+      place("7", "Klein Sternen Landeplatz", "landing", "Hoch-Ybrig", 47.02001),
+    ]);
+    expect([n[1].de, n[2].de, n[3].de]).toEqual(["Lenk (Metsch)", "Lenk (Schatthorn)", "Lenk (Flöschhorn)"]);
+    expect(n[4].de).toBe("Sarnen 2");
+    expect(n[5].de).toBe("Sarnen 2");
+    expect([n[6].de, n[7].de]).toEqual(["Hoch-Ybrig", "Hoch-Ybrig"]);
+  });
+
+  it("writes Swiss German and fixes source typos", () => {
+    expect(normalizeSiteName("Grosse  Scheidegg Landelatz ß")).toBe("Grosse Scheidegg Landeplatz ss");
   });
 });
 

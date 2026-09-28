@@ -6,14 +6,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { suggestSiteLinks, type OwnLocation } from "@/lib/official-sites";
-import { useOfficialSites, useSiteName } from "@/lib/official-sites-store";
+import { officialName, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 
 const DISMISSED_KEY = "flyary.siteLinks.dismissed";
 const readDismissed = (): string[] => { try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; } };
 
 /**
- * Own places that lie on an official site: offer to link them, which gives them the official name
- * (and keeps every flight on them). Declined suggestions are remembered on this device.
+ * Own places that lie on an official site: offer to link them. Linking keeps the pilot's name
+ * (database trigger) and every flight on the place. Declined suggestions are remembered on this device.
  */
 export default function SiteLinkSuggestions({ locations, onLinked }: { locations: OwnLocation[]; onLinked: () => void }) {
   const { t } = useTranslation();
@@ -62,7 +62,7 @@ export default function SiteLinkSuggestions({ locations, onLinked }: { locations
             return (
               <div key={key} className="flex items-center gap-2 rounded-lg bg-background/70 px-2.5 py-2 text-xs">
                 <div className="flex-1 min-w-0">
-                  <p className="truncate"><span className="text-muted-foreground">{s.location.name}</span> → <span className="font-medium">{siteName(s.site.name_de)}</span></p>
+                  <p className="truncate"><span className="text-muted-foreground">{s.location.name}</span> → <span className="font-medium">{siteName(officialName(s.site))}</span></p>
                   <p className="text-[11px] text-muted-foreground">{t("locations.official.distance", { meters: s.meters })}</p>
                 </div>
                 <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy} onClick={() => link([s])}>{t("locations.official.link")}</Button>

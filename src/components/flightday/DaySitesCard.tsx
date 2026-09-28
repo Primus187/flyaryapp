@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LANDING_HINT_OPTIONS, schoolFlightErrorKey, type LandingHintMinutes } from "@/lib/school-flights";
 import { useSiteName } from "@/lib/official-sites-store";
 
-interface Site { id: string; name: string; type: string }
+interface Site { id: string; name: string; type: string; official_site_id?: string | null }
 
 /** Default take-off and landing site of the flying day (new flights take them over, 4.3) and the
  *  optional landing hint (4.4). */
@@ -30,7 +30,7 @@ export default function DaySitesCard({ eventId, onChanged, readOnly = false }: {
 
   const loadOwn = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("locations").select("id, name, type").eq("user_id", user.id).order("name");
+    const { data } = await supabase.from("locations").select("id, name, type, official_site_id").eq("user_id", user.id).order("name");
     setOwn((data || []) as Site[]);
   }, [user]);
 

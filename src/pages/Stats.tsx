@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, lazy, Suspense } from "react";
+import { useCallback, useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,8 @@ interface Flight {
   takeoff_location_id: string | null;
   landing_location_id: string | null;
   takeoff_name: string | null;
+  /** Official site or, for own places, the place itself: what "the same takeoff" means in the stats. */
+  takeoff_key: string | null;
 }
 
 type FilterMode = "month" | "year" | "all";
@@ -40,6 +42,17 @@ export default function Stats() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const siteName = useSiteName();
+  // Flights per takeoff, counted per official site (two own places there count as one), most first.
+  const countTakeoffs = useCallback((list: Flight[]): [string, number][] => {
+    const counts = new Map<string, { name: string; count: number }>();
+    for (const f of list) {
+      if (!f.takeoff_key || !f.takeoff_name) continue;
+      const entry = counts.get(f.takeoff_key) || { name: siteName(f.takeoff_name), count: 0 };
+      entry.count++;
+      counts.set(f.takeoff_key, entry);
+    }
+    return [...counts.values()].sort((a, b) => b.count - a.count).map((e) => [e.name, e.count]);
+  }, [siteName]);
   const [flights, setFlights] = useState<Flight[]>([]);
   const [mode, setMode] = useState<FilterMode>("year");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -52,11 +65,11 @@ export default function Stats() {
     if (!user) return;
     supabase
       .from("flights")
-      .select("id, date, duration_minutes, altitude_gain, distance_km, glider, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name)")
+      .select("id, date, duration_minutes, altitude_gain, distance_km, glider, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, official_site_id)")
       .eq("user_id", user.id)
       .order("date", { ascending: true })
       .then(({ data }) => {
-        if (data) setFlights(data.map((f: any) => ({ ...f, takeoff_name: f.locations?.name || null })));
+        if (data) setFlights(data.map((f: any) => ({ ...f, takeoff_name: f.locations?.name || null, takeoff_key: f.locations?.official_site_id || f.takeoff_location_id || null })));
       });
   }, [user]);
 
@@ -76,14 +89,12 @@ export default function Stats() {
     const longest = filtered.reduce((m, f) => Math.max(m, f.duration_minutes || 0), 0);
     const totalDist = filtered.reduce((s, f) => s + (Number(f.distance_km) || 0), 0);
     const totalAlt = filtered.reduce((s, f) => s + (f.altitude_gain || 0), 0);
-    const takeoffCounts: Record<string, number> = {};
-    filtered.forEach((f) => { if (f.takeoff_name) { const n = siteName(f.takeoff_name); takeoffCounts[n] = (takeoffCounts[n] || 0) + 1; } });
-    const topTakeoff = Object.entries(takeoffCounts).sort((a, b) => b[1] - a[1])[0];
+    const topTakeoff = countTakeoffs(filtered)[0];
     const gliderCounts: Record<string, number> = {};
     filtered.forEach((f) => { if (f.glider) gliderCounts[f.glider] = (gliderCounts[f.glider] || 0) + 1; });
     const topGlider = Object.entries(gliderCounts).sort((a, b) => b[1] - a[1])[0];
     return { total, totalMin, avgMin, longest, totalDist, totalAlt, topTakeoff, topGlider };
-  }, [filtered, siteName]);
+  }, [filtered, countTakeoffs]);
 
   const chartData = useMemo(() => {
     const map: Record<string, { flights: number; minutes: number }> = {};
@@ -118,10 +129,8 @@ export default function Stats() {
   }, [flights, mode, selectedYear, monthsShort]);
 
   const topTakeoffs = useMemo(() => {
-    const counts: Record<string, number> = {};
-    filtered.forEach(f => { if (f.takeoff_name) { const n = siteName(f.takeoff_name); counts[n] = (counts[n] || 0) + 1; } });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
-  }, [filtered, siteName]);
+    return countTakeoffs(filtered).slice(0, 5).map(([name, count]) => ({ name, count }));
+  }, [filtered, countTakeoffs]);
 
   const heatmapData = useMemo(() => {
     const year = mode === "year" ? selectedYear : new Date().getFullYear();

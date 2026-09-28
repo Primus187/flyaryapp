@@ -5,12 +5,15 @@
 //   node scripts/import-official-sites.mjs --file=data/dhv/other.xml
 // Input: the "DHV XML" country export (login at dhv.de → Gelände-Datenbank → Download), kept in the
 // git-ignored folder data/dhv/. Re-running is safe: sites are matched by their DHV location id,
-// renamed/moved sites update every linked pilot place (trigger official_sites_propagate), and sites
-// missing from the file are only marked inactive, never deleted, so flights keep their place.
+// renamed/moved sites update every linked pilot place without an own name (trigger
+// official_sites_propagate), and sites missing from the file are only marked inactive, never
+// deleted, so flights keep their place. Official names come from src/lib/site-names.ts (no
+// "Startplatz/Landeplatz", landings named after their municipality); name_override, set by the
+// app admin, is never touched here.
 // Credentials as for scripts/db-migrate.mjs (docs/.env.deploy.local).
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { parseDhvXml } from "../src/lib/dhv-sites.ts";
-import { localizeSiteName, normalizeSiteName } from "../src/lib/site-names.ts";
+import { normalizeSiteName, officialSiteNames } from "../src/lib/site-names.ts";
 
 const fileEnv = existsSync("docs/.env.deploy.local")
   ? Object.fromEntries(readFileSync("docs/.env.deploy.local", "utf8").split(/\r?\n/)
@@ -39,8 +42,9 @@ async function sql(query) {
 const lit = (v) => v === null || v === undefined ? "NULL" : typeof v === "number" || typeof v === "boolean" ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
 const arr = (a) => `ARRAY[${a.map(lit).join(",")}]::text[]`;
 
-const rows = parseDhvXml(readFileSync(file, "utf8"), normalizeSiteName)
-  .map((r) => ({ ...r, name_fr: localizeSiteName(r.name_de, "fr"), name_en: localizeSiteName(r.name_de, "en") }));
+const parsed = parseDhvXml(readFileSync(file, "utf8"), normalizeSiteName);
+const names = officialSiteNames(parsed);
+const rows = parsed.map((r) => { const n = names.get(r.source_id); return { ...r, name_de: n.de, name_fr: n.fr, name_en: n.en }; });
 if (rows.length === 0) throw new Error(`${file}: no sites found – is it the "DHV XML" export?`);
 const countries = [...new Set(rows.map((r) => r.country_code))];
 console.log(`${file}: ${rows.length} places (${countries.join(", ")}) – ${rows.filter((r) => r.type === "takeoff").length} takeoffs, ${rows.filter((r) => r.type === "landing").length} landings, ${rows.filter((r) => r.type === "both").length} both`);
@@ -60,7 +64,7 @@ for (const r of retired.slice(0, 20)) console.log(`  retired ${r.name_de}`);
 
 if (!apply) { console.log("Dry run. Re-run with --apply to write."); process.exit(0); }
 
-const COLS = ["source_id", "area_name", "name_de", "name_fr", "name_en", "type", "latitude", "longitude", "altitude", "country_code", "region", "municipality", "wind_directions", "paragliding", "hanggliding", "source_url"];
+const COLS = ["source_id", "source_name", "area_name", "name_de", "name_fr", "name_en", "type", "latitude", "longitude", "altitude", "country_code", "region", "municipality", "wind_directions", "paragliding", "hanggliding", "source_url"];
 for (let i = 0; i < rows.length; i += 200) {
   const values = rows.slice(i, i + 200).map((r) => `('dhv',${COLS.map((c) => c === "wind_directions" ? arr(r[c]) : c === "type" ? `${lit(r[c])}::public.location_type` : lit(r[c])).join(",")},true)`);
   await sql(`INSERT INTO public.official_sites (source,${COLS.join(",")},active) VALUES ${values.join(",\n")}

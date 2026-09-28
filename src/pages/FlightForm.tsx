@@ -34,7 +34,7 @@ const DRAFT_KEY = "flyary.flightDraft";
 // Older drafts are dropped: restoring them silently backdated new flights to the draft day.
 const DRAFT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
-interface LocationOption { id: string; name: string; type: string; altitude?: number | null; latitude: number; longitude: number; }
+interface LocationOption { id: string; name: string; type: string; altitude?: number | null; latitude: number; longitude: number; official_site_id: string | null; }
 interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
@@ -92,7 +92,7 @@ export default function FlightForm() {
 
   const reloadLocations = useCallback(() => {
     if (!user) return;
-    supabase.from("locations").select("id, name, type, altitude, latitude, longitude").eq("user_id", user.id).order("name").then(({ data }) => {
+    supabase.from("locations").select("id, name, type, altitude, latitude, longitude, official_site_id").eq("user_id", user.id).order("name").then(({ data }) => {
       if (data) setLocations(data);
       setLocationsLoaded(true);
     });

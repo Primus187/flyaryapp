@@ -1,12 +1,12 @@
 /**
  * Reads the DHV site database export (format "DHV XML", one file per country) into the rows of
- * public.official_sites. Pure and import-free so scripts/import-official-sites.mjs can use it.
+ * public.official_sites (the official names are derived from source_name, see site-names.ts). Pure and import-free so scripts/import-official-sites.mjs can use it.
  * A landing shared by several flying areas appears once per area in the file; it is kept once.
  */
 export interface DhvSiteRow {
   source_id: string;
   area_name: string | null;
-  name_de: string;
+  source_name: string;
   type: "takeoff" | "landing" | "both";
   latitude: number;
   longitude: number;
@@ -64,15 +64,15 @@ export function parseDhvXml(xml: string, normalizeName: (name: string) => string
       const altitude = Number.parseInt(text(loc, "Altitude") || "", 10);
       rows.set(id, {
         source_id: id,
-        area_name: areaName,
-        name_de: name,
+        area_name: areaName && normalizeName(areaName),
+        source_name: name,
         type: /Start-\/Landeplatz/.test(name) ? "both" : kind === "1" ? "takeoff" : kind === "2" ? "landing" : "both",
         latitude: lat,
         longitude: lng,
         altitude: Number.isFinite(altitude) ? altitude : null,
         country_code: (text(loc, "LocationCountry") || "").toUpperCase(),
         region: text(loc, "Region"),
-        municipality: text(loc, "Municipality"),
+        municipality: ((m) => m && normalizeName(m))(text(loc, "Municipality")),
         wind_directions: parseDhvDirections(text(loc, "DirectionsText")),
         paragliding: text(loc, "Paragliding") === "true",
         hanggliding: text(loc, "Hanggliding") === "true",

@@ -4,7 +4,10 @@ export interface OfficialSite {
   name_de: string;
   name_fr: string;
   name_en: string;
+  /** Official name set by the app admin; wins over the imported names in every language. */
+  name_override?: string | null;
   area_name: string | null;
+  municipality?: string | null;
   type: "takeoff" | "landing" | "both";
   latitude: number;
   longitude: number;
@@ -57,16 +60,18 @@ export function suggestSiteLinks(own: OwnLocation[], sites: OfficialSite[], maxM
 
 const searchWords = (s: string) => s.toLocaleLowerCase("de-CH").normalize("NFD").replace(/\p{M}/gu, "").split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 
-/** Search in the catalogue: every typed word must start a word of the name (any language) or region. */
+/** Search in the catalogue: every typed word must start a word of the name (any language), area, municipality or region. */
 export function searchSites(sites: OfficialSite[], query: string, wanted: "takeoff" | "landing" | "both", limit = 30) {
   const words = searchWords(query);
   if (words.length === 0) return [];
   return sites
     .filter((s) => fitsType(s.type, wanted))
     .filter((s) => {
-      const hay = searchWords(`${s.name_de} ${s.name_fr} ${s.name_en} ${s.region || ""}`);
+      const hay = searchWords(`${s.name_override || ""} ${s.name_de} ${s.name_fr} ${s.name_en} ${s.area_name || ""} ${s.municipality || ""} ${s.region || ""}`);
       return words.every((w) => hay.some((h) => h.startsWith(w)));
     })
     .sort((a, b) => a.name_de.localeCompare(b.name_de, "de", { numeric: true }))
+    // The DHV lists some landings once per area at the same spot; they carry the same name.
+    .filter((s, i, all) => all.findIndex((o) => o.name_de === s.name_de && o.type === s.type) === i)
     .slice(0, limit);
 }

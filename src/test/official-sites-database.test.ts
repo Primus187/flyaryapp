@@ -14,6 +14,9 @@ const asUser = async <T>(user: string, fn: () => Promise<T>) => {
   try { return await fn(); } finally { await db.exec("RESET ROLE;"); }
 };
 const location = async (id: string) => (await db.query<Record<string, unknown>>("SELECT * FROM locations WHERE id=$1", [id])).rows[0];
+const insertOwn = (user: string, name: string, extra = "") => asUser(user, async () => (await db.query<{ id: string }>(
+  `INSERT INTO locations (user_id, name, latitude, longitude${extra ? ", official_site_id" : ""}) VALUES ($1, $2, 47.2, 9.3${extra ? ", $3" : ""}) RETURNING id`,
+  extra ? [user, name, extra] : [user, name])).rows[0].id);
 
 beforeAll(async () => {
   db = new PGlite();
@@ -32,9 +35,10 @@ beforeAll(async () => {
     GRANT SELECT, INSERT, UPDATE, DELETE ON locations TO authenticated;
   `);
   await db.exec(migration("0063_official_sites.sql"));
-  await db.exec(migration("0063_official_sites.sql")); // re-runnable
-  siteId = (await db.query<{ id: string }>(`INSERT INTO official_sites (source_id, name_de, name_fr, name_en, type, latitude, longitude, altitude, country_code, wind_directions)
-    VALUES ('2226','Säntis Startplatz','Säntis Décollage','Säntis Takeoff','takeoff',47.245918,9.347563,2375,'CH','{SW,W}') RETURNING id`)).rows[0].id;
+  await db.exec(migration("0064_own_site_names.sql"));
+  await db.exec(migration("0064_own_site_names.sql")); // re-runnable
+  siteId = (await db.query<{ id: string }>(`INSERT INTO official_sites (source_id, source_name, name_de, name_fr, name_en, type, latitude, longitude, altitude, country_code, wind_directions)
+    VALUES ('2226','Säntis Startplatz','Säntis','Säntis','Säntis','takeoff',47.245918,9.347563,2375,'CH','{SW,W}') RETURNING id`)).rows[0].id;
 }, 60_000);
 afterAll(async () => { await db?.close(); });
 
@@ -42,7 +46,7 @@ describe("official sites", () => {
   it("are readable for signed-in pilots but not writable", async () => {
     await asUser(pilot, async () => {
       expect((await db.query("SELECT name_de FROM official_sites")).rows).toHaveLength(1);
-      await expect(db.query("UPDATE official_sites SET name_de='x'")).rejects.toThrow(/permission denied/);
+      await expect(db.query("UPDATE official_sites SET name_override='x'")).rejects.toThrow(/permission denied/);
       await expect(db.query("INSERT INTO official_sites (source_id,name_de,name_fr,name_en,type,latitude,longitude,country_code) VALUES ('1','a','a','a','takeoff',0,0,'CH')")).rejects.toThrow(/permission denied/);
     });
     await db.exec("SET ROLE anon;");
@@ -50,38 +54,44 @@ describe("official sites", () => {
     await db.exec("RESET ROLE;");
   });
 
-  it("gives a linked place the fixed name, type and position, and keeps the pilot's notes", async () => {
-    const id = await asUser(pilot, async () => {
-      const { rows } = await db.query<{ id: string }>(`INSERT INTO locations (user_id, name, latitude, longitude, description) VALUES ($1, 'Mein Säntis', 47.2, 9.3, 'Notiz') RETURNING id`, [pilot]);
-      await db.query("UPDATE locations SET official_site_id=$1 WHERE id=$2", [siteId, rows[0].id]);
-      await db.query("UPDATE locations SET name='Umbenannt', latitude=1, type='both', description='Neue Notiz' WHERE id=$1", [rows[0].id]);
-      return rows[0].id;
-    });
-    expect(await location(id)).toMatchObject({ name: "Säntis Startplatz", type: "takeoff", latitude: 47.245918, altitude: 2375, country_code: "CH", description: "Neue Notiz", optimal_wind_directions: ["SW", "W"] });
+  it("keeps the pilot's name when an existing place is linked, but fixes type and position", async () => {
+    const id = await insertOwn(pilot, "Mein Säntis");
+    await asUser(pilot, () => db.query("UPDATE locations SET official_site_id=$1, latitude=1, type='both' WHERE id=$2", [siteId, id]));
+    expect(await location(id)).toMatchObject({ name: "Mein Säntis", custom_name: "Mein Säntis", type: "takeoff", latitude: 47.245918, altitude: 2375, optimal_wind_directions: ["SW", "W"] });
   });
 
-  it("lets a pilot add an official site directly and keeps own wind choices", async () => {
-    const row = await asUser(pilot, async () => (await db.query<Record<string, unknown>>(
-      `INSERT INTO locations (user_id, name, latitude, longitude, official_site_id, optimal_wind_directions) VALUES ($1, 'egal', 0, 0, $2, '{S}') RETURNING *`, [pilot, siteId])).rows[0]);
-    expect(row).toMatchObject({ name: "Säntis Startplatz", latitude: 47.245918, optimal_wind_directions: ["S"] });
+  it("gives a place picked from the catalogue the official name", async () => {
+    const id = await insertOwn(pilot, "egal", siteId);
+    expect(await location(id)).toMatchObject({ name: "Säntis", custom_name: null });
   });
 
-  it("carries a renamed site to every linked place, also other pilots'", async () => {
-    const otherId = await asUser(other, async () => (await db.query<{ id: string }>(
-      `INSERT INTO locations (user_id, name, latitude, longitude, official_site_id) VALUES ($1, 'x', 0, 0, $2) RETURNING id`, [other, siteId])).rows[0].id);
-    await db.query("UPDATE official_sites SET name_de='Säntis Startplatz 1', altitude=2380 WHERE id=$1", [siteId]);
-    expect(await location(otherId)).toMatchObject({ name: "Säntis Startplatz 1", altitude: 2380 });
-    const names = (await db.query<{ name: string }>("SELECT DISTINCT name FROM locations WHERE official_site_id=$1", [siteId])).rows;
-    expect(names).toEqual([{ name: "Säntis Startplatz 1" }]);
+  it("lets the pilot rename a linked place and go back to the official name", async () => {
+    const id = await insertOwn(pilot, "x", siteId);
+    await asUser(pilot, () => db.query("UPDATE locations SET name='Säntis Lisengrat', description='Notiz' WHERE id=$1", [id]));
+    expect(await location(id)).toMatchObject({ name: "Säntis Lisengrat", custom_name: "Säntis Lisengrat", description: "Notiz" });
+    await asUser(pilot, () => db.query("UPDATE locations SET description='Neu' WHERE id=$1", [id]));
+    expect(await location(id)).toMatchObject({ name: "Säntis Lisengrat" });
+    await asUser(pilot, () => db.query("UPDATE locations SET custom_name=NULL WHERE id=$1", [id]));
+    expect(await location(id)).toMatchObject({ name: "Säntis", custom_name: null });
+    await asUser(pilot, () => db.query("UPDATE locations SET name='  ' WHERE id=$1", [id]));
+    expect(await location(id)).toMatchObject({ name: "Säntis", custom_name: null });
+  });
+
+  it("carries official renames to places without an own name only", async () => {
+    const plain = await insertOwn(other, "x", siteId);
+    const named = await insertOwn(other, "Hausberg");
+    await asUser(other, () => db.query("UPDATE locations SET official_site_id=$1 WHERE id=$2", [siteId, named]));
+    await db.query("UPDATE official_sites SET name_override='Säntis Lisengrat', altitude=2380 WHERE id=$1", [siteId]);
+    expect(await location(plain)).toMatchObject({ name: "Säntis Lisengrat", altitude: 2380 });
+    expect(await location(named)).toMatchObject({ name: "Hausberg", altitude: 2380 });
+    await db.query("UPDATE official_sites SET name_override=NULL, name_de='Säntis West' WHERE id=$1", [siteId]);
+    expect(await location(plain)).toMatchObject({ name: "Säntis West", custom_name: null });
   });
 
   it("leaves unlinked places freely editable and unlinks when a site is removed", async () => {
-    const id = await asUser(pilot, async () => {
-      const { rows } = await db.query<{ id: string }>(`INSERT INTO locations (user_id, name, latitude, longitude) VALUES ($1, 'Wiese hinter dem Haus', 46, 8) RETURNING id`, [pilot]);
-      await db.query("UPDATE locations SET name='Wiese' WHERE id=$1", [rows[0].id]);
-      return rows[0].id;
-    });
-    expect(await location(id)).toMatchObject({ name: "Wiese", official_site_id: null });
+    const id = await insertOwn(pilot, "Wiese hinter dem Haus");
+    await asUser(pilot, () => db.query("UPDATE locations SET name='Wiese', custom_name='ignoriert' WHERE id=$1", [id]));
+    expect(await location(id)).toMatchObject({ name: "Wiese", official_site_id: null, custom_name: null });
     await db.query("DELETE FROM official_sites");
     expect((await db.query<{ n: number }>("SELECT count(*)::int AS n FROM locations WHERE official_site_id IS NOT NULL")).rows[0].n).toBe(0);
   });

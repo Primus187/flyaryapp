@@ -15,12 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 import LocationMapPicker from "@/components/LocationMapPicker";
 import OfficialSiteHint from "@/components/OfficialSiteHint";
 import { searchSites, type OfficialSite } from "@/lib/official-sites";
-import { ensureOwnLocationForSite, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
+import { ensureOwnLocationForSite, siteDetails, officialName, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 
 interface LocationOption {
   id: string;
   name: string;
   type: string;
+  official_site_id?: string | null;
 }
 
 interface Props {
@@ -44,7 +45,7 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
   const [newLoc, setNewLoc] = useState({ name: "", type: filterType === "takeoff" ? "takeoff" : "landing", latitude: 0, longitude: 0, altitude: "" });
 
   const siteName = useSiteName();
-  const { active: officialSites, byName } = useOfficialSites();
+  const { active: officialSites, byName, byId } = useOfficialSites();
   // Name of an official site just picked, until the parent has reloaded its list.
   const [pickedName, setPickedName] = useState<{ id: string; name: string } | null>(null);
 
@@ -53,10 +54,17 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
   }, [locations, filterType]);
 
   const query = search.trim().toLowerCase();
-  const ownMatches = filtered.filter((l) => !query || l.name.toLowerCase().includes(query) || siteName(l.name).toLowerCase().includes(query));
+  // A linked place is also found by its site's official name, area and village ("kron" finds an own "Jakobsbad").
+  const ownMatches = filtered.filter((l) => {
+    if (!query || l.name.toLowerCase().includes(query) || siteName(l.name).toLowerCase().includes(query)) return true;
+    const site = l.official_site_id ? byId.get(l.official_site_id) : undefined;
+    return !!site && searchSites([site], search, "both").length > 0;
+  });
   const officialMatches = useMemo(() => {
-    const own = new Set(locations.map((l) => l.name));
-    return searchSites(officialSites, search, filterType, 40).filter((s) => !own.has(s.name_de)).slice(0, 20);
+    // Sites the pilot already has (possibly under an own name) are listed under "my places".
+    const ownSites = new Set(locations.map((l) => l.official_site_id).filter(Boolean));
+    const ownNames = new Set(locations.map((l) => l.name));
+    return searchSites(officialSites, search, filterType, 40).filter((s) => !ownSites.has(s.id) && !ownNames.has(officialName(s))).slice(0, 20);
   }, [officialSites, search, filterType, locations]);
 
   const selectedRaw = filtered.find((l) => l.id === value)?.name || locations.find((l) => l.id === value)?.name
@@ -68,7 +76,7 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
     setCreating(true);
     try {
       const id = await ensureOwnLocationForSite(user.id, site);
-      setPickedName({ id, name: site.name_de });
+      setPickedName({ id, name: officialName(site) });
       onChange(id);
       onLocationCreated();
       setOpen(false);
@@ -150,7 +158,7 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
                     >
                       <Check className={cn("mr-2 h-4 w-4", value === loc.id ? "opacity-100" : "opacity-0")} />
                       {siteName(loc.name)}
-                      {byName.has(loc.name) && <BadgeCheck className="ml-1.5 h-3.5 w-3.5 text-primary shrink-0" aria-label={t("locations.official.badge")} />}
+                      {(loc.official_site_id || byName.has(loc.name)) && <BadgeCheck className="ml-1.5 h-3.5 w-3.5 text-primary shrink-0" aria-label={t("locations.official.badge")} />}
                     </CommandItem>
                   ))}
               </CommandGroup>
@@ -163,8 +171,8 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
                       <CommandItem key={site.id} value={`official-${site.id}`} disabled={creating} onSelect={() => { void pickOfficial(site); }}>
                         <BadgeCheck className="mr-2 h-4 w-4 text-primary shrink-0" />
                         <span className="flex-1 min-w-0">
-                          <span className="block truncate">{siteName(site.name_de)}</span>
-                          {site.region && <span className="block text-[11px] opacity-70 truncate">{site.region}{site.altitude ? ` · ${site.altitude} m` : ""}</span>}
+                          <span className="block truncate">{siteName(officialName(site))}</span>
+                          <span className="block text-[11px] opacity-70 truncate">{siteDetails(site)}</span>
                         </span>
                       </CommandItem>
                     ))}

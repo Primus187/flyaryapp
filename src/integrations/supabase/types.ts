@@ -2542,6 +2542,7 @@ export type Database = {
           altitude: number | null
           country_code: string | null
           created_at: string
+          custom_name: string | null
           description: string | null
           id: string
           latitude: number
@@ -2557,6 +2558,7 @@ export type Database = {
           altitude?: number | null
           country_code?: string | null
           created_at?: string
+          custom_name?: string | null
           description?: string | null
           id?: string
           latitude: number
@@ -2572,6 +2574,7 @@ export type Database = {
           altitude?: number | null
           country_code?: string | null
           created_at?: string
+          custom_name?: string | null
           description?: string | null
           id?: string
           latitude?: number
@@ -3081,10 +3084,12 @@ export type Database = {
           name_de: string
           name_en: string
           name_fr: string
+          name_override: string | null
           paragliding: boolean
           region: string | null
           source: string
           source_id: string
+          source_name: string | null
           source_url: string | null
           type: Database["public"]["Enums"]["location_type"]
           updated_at: string
@@ -3104,10 +3109,12 @@ export type Database = {
           name_de: string
           name_en: string
           name_fr: string
+          name_override?: string | null
           paragliding?: boolean
           region?: string | null
           source?: string
           source_id: string
+          source_name?: string | null
           source_url?: string | null
           type: Database["public"]["Enums"]["location_type"]
           updated_at?: string
@@ -3127,10 +3134,12 @@ export type Database = {
           name_de?: string
           name_en?: string
           name_fr?: string
+          name_override?: string | null
           paragliding?: boolean
           region?: string | null
           source?: string
           source_id?: string
+          source_name?: string | null
           source_url?: string | null
           type?: Database["public"]["Enums"]["location_type"]
           updated_at?: string

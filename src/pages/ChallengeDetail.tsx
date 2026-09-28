@@ -39,7 +39,7 @@ interface Participant {
   total_points: number;
 }
 
-interface LocationOption { id: string; name: string; type: string; latitude?: number; longitude?: number; }
+interface LocationOption { id: string; name: string; type: string; latitude?: number; longitude?: number; official_site_id?: string | null; }
 
 export default function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -66,7 +66,7 @@ export default function ChallengeDetail() {
   useEffect(() => {
     if (!user || !id) return;
     loadData();
-    supabase.from("locations").select("id, name, type, latitude, longitude").eq("user_id", user.id).order("name").then(({ data }) => {
+    supabase.from("locations").select("id, name, type, latitude, longitude, official_site_id").eq("user_id", user.id).order("name").then(({ data }) => {
       if (data) setLocations(data);
     });
   }, [user, id]);

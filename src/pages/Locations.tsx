@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine, Plane, BadgeCheck } from "lucide-react";
+import { Plus, MapPin, AlertTriangle, ChevronDown, ArrowUpCircle, ArrowDownCircle, Combine, Plane, BadgeCheck, RotateCcw } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
@@ -20,7 +20,7 @@ import OfficialSiteSearch from "@/components/OfficialSiteSearch";
 import OfficialSiteHint from "@/components/OfficialSiteHint";
 import SiteLinkSuggestions from "@/components/SiteLinkSuggestions";
 import type { OfficialSite } from "@/lib/official-sites";
-import { ensureOwnLocationForSite, useSiteName } from "@/lib/official-sites-store";
+import { ensureOwnLocationForSite, officialName, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 
 export default function Locations() {
   const { user } = useAuth();
@@ -37,6 +37,9 @@ export default function Locations() {
   const cancelledRef = useRef(false);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   const siteName = useSiteName();
+  const { byId: officialById } = useOfficialSites();
+  // Only a name the pilot actually changed is sent; the database keeps it as the own name.
+  const [nameDirty, setNameDirty] = useState(false);
   const [addingOfficial, setAddingOfficial] = useState(false);
 
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
@@ -77,13 +80,13 @@ export default function Locations() {
     if (editParam && locations.length > 0) {
       const loc = locations.find((l) => l.id === editParam);
       if (loc) {
-        setForm({ name: loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "", optimal_wind_directions: loc.optimal_wind_directions || [] });
+        setForm({ name: loc.official_site_id && !loc.custom_name ? siteName(loc.name) : loc.name, latitude: loc.latitude.toString(), longitude: loc.longitude.toString(), type: loc.type, altitude: loc.altitude?.toString() || "", description: loc.description || "", country_code: loc.country_code || "", optimal_wind_directions: loc.optimal_wind_directions || [] });
         setEditId(loc.id);
         setOpen(true);
         setSearchParams({}, { replace: true });
       }
     }
-  }, [searchParams, locations, setSearchParams]);
+  }, [searchParams, locations, setSearchParams, siteName]);
 
   // Backfill country_code for locations missing it
   useEffect(() => {
@@ -121,7 +124,7 @@ export default function Locations() {
     both: locations.filter((l) => l.type === "both"),
   }), [locations]);
 
-  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "", optimal_wind_directions: [] }); setEditId(null); };
+  const resetForm = () => { setForm({ name: "", latitude: "", longitude: "", type: "both", altitude: "", description: "", country_code: "", optimal_wind_directions: [] }); setEditId(null); setNameDirty(false); };
   const toggleWindDirection = (dir: string) => {
     setForm((prev) => ({
       ...prev,
@@ -134,12 +137,18 @@ export default function Locations() {
   // only the pilot's notes and wind choice can be changed.
   const editedLocation = editId ? locations.find((l) => l.id === editId) : null;
   const locked = !!editedLocation?.official_site_id;
+  const editedSite = editedLocation?.official_site_id ? officialById.get(editedLocation.official_site_id) : undefined;
+  const resetToOfficialName = async () => {
+    if (!editId) return;
+    await supabase.from("locations").update({ custom_name: null }).eq("id", editId);
+    toast({ title: t("locations.locationUpdated") }); resetForm(); setOpen(false); fetchLocations();
+  };
   const addOfficial = async (site: OfficialSite) => {
     if (!user) return;
     setAddingOfficial(true);
     try {
       await ensureOwnLocationForSite(user.id, site);
-      toast({ title: t("locations.official.added", { name: siteName(site.name_de) }) });
+      toast({ title: t("locations.official.added", { name: siteName(officialName(site)) }) });
       resetForm(); setOpen(false); fetchLocations();
     } catch (err: unknown) {
       toast({ title: t("common.error"), description: err instanceof Error ? err.message : String(err), variant: "destructive" });
@@ -148,7 +157,8 @@ export default function Locations() {
   const handleSave = async () => {
     if (!user) return;
     if (editId && locked) {
-      await supabase.from("locations").update({ description: form.description || null, optimal_wind_directions: form.optimal_wind_directions }).eq("id", editId);
+      // An empty name goes back to the official one (database trigger).
+      await supabase.from("locations").update({ description: form.description || null, optimal_wind_directions: form.optimal_wind_directions, ...(nameDirty ? { name: form.name.trim() } : {}) }).eq("id", editId);
       toast({ title: t("locations.locationUpdated") }); resetForm(); setOpen(false); fetchLocations();
       return;
     }
@@ -227,7 +237,14 @@ export default function Locations() {
                     <BadgeCheck className="h-4 w-4 text-primary shrink-0" />{t("locations.official.lockedHint")}
                   </p>
                 )}
-                <div className="space-y-1.5"><Label className="text-xs">{t("locations.name")}</Label><Input value={locked ? siteName(form.name) : form.name} disabled={locked} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("locations.namePlaceholder")} /></div>
+                <div className="space-y-1.5"><Label className="text-xs">{t("locations.name")}</Label><Input value={form.name} onChange={(e) => { setNameDirty(true); setForm({ ...form, name: e.target.value }); }} placeholder={editedSite ? siteName(officialName(editedSite)) : t("locations.namePlaceholder")} />
+                  {editedSite && (
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="truncate">{t("locations.official.officialName", { name: siteName(officialName(editedSite)) })}</span>
+                      {editedLocation?.custom_name && <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={() => { void resetToOfficialName(); }}><RotateCcw className="h-3 w-3" />{t("locations.official.resetName")}</Button>}
+                    </div>
+                  )}
+                </div>
                 <div className="space-y-1.5"><Label className="text-xs">{t("locations.type")}</Label><Select disabled={locked} value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="takeoff">{t("locations.takeoff")}</SelectItem><SelectItem value="landing">{t("locations.landingPlace")}</SelectItem><SelectItem value="both">{t("locations.both")}</SelectItem></SelectContent></Select></div>
                 {!locked && <div className="space-y-1.5"><Label className="text-xs">{t("locations.selectOnMap")}</Label><LocationMapPicker latitude={parseFloat(form.latitude) || 0} longitude={parseFloat(form.longitude) || 0} onSelect={handleMapSelect} /><p className="text-xs text-muted-foreground">{t("locations.tapMap")}</p></div>}
                 {!editId && <OfficialSiteHint latitude={parseFloat(form.latitude) || 0} longitude={parseFloat(form.longitude) || 0} type={form.type} onUse={(site) => { void addOfficial(site); }} />}

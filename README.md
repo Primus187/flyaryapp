@@ -1,5 +1,36 @@
 # Flyary
 
+## Offizielle Plätze: eigene Namen, Namen ohne «Startplatz» (Etappe A, 2026-09-28)
+
+Migration `0064_own_site_names.sql`, Namensregeln in `src/lib/site-names.ts`, Tests in
+`src/lib/official-sites.test.ts` und `src/test/official-sites-database.test.ts`. Ersetzt die Namensregeln des
+Abschnitts darunter: Namen sind dort nicht mehr fest.
+
+- **Grundsatz:** Ein Platz wird über `official_site_id` zentral abgeglichen; der Name ist nur Beschriftung.
+  Jeder Pilot darf einen verknüpften Ort für sich benennen (`locations.custom_name`). Ohne eigenen Namen trägt
+  der Ort den offiziellen Namen. Typ und Position bleiben fest und für alle gleich.
+- **Offizielle Namen (Import):** ohne «Startplatz/Landeplatz» (der Typ ist ein eigenes Feld). Startplätze heissen
+  nach dem Gebiet («Kronberg 2»), Landeplätze nach der Gemeinde aus den DHV-Daten («Säntis Landeplatz» →
+  «Unterwasser»). Liegen mehrere Landeplätze einer Gemeinde an verschiedenen Stellen, bekommen sie den Namensteil
+  vor «Landeplatz» angehängt («Lenk (Metsch)», «Lenk (Flöschhorn)»); Plätze, die der DHV doppelt an derselben
+  Stelle führt, heissen gleich. Schweizer Schreibweise («Wolfenschiessen»). Die Namen sind sprachneutral; übersetzt
+  werden nur Zusätze wie «Winter». Der DHV-Name bleibt in `official_sites.source_name`.
+- **`official_sites.name_override`:** besserer offizieller Name, den nur der App-Admin setzt und kein Import
+  überschreibt (Pflegeseite folgt in Etappe C).
+- **Trigger `locations_official_site_sync`:** Verknüpfen eines bestehenden Orts behält dessen Namen (Entscheid
+  2026-09-28); ein aus dem Katalog gewählter Ort bekommt den offiziellen Namen. Umbenennen über `name` wird zum
+  eigenen Namen, ein leerer Name oder `custom_name = NULL` führt zum offiziellen zurück. Offizielle Umbenennungen
+  (Import, Admin) erreichen nur Orte ohne eigenen Namen.
+- **Oberfläche:** Im Bearbeiten-Dialog ist der Name frei, darunter steht «Offiziell: …» mit «Offiziellen Namen
+  verwenden»; die Detailseite zeigt den offiziellen Namen unter einem eigenen. Die Ortsauswahl erkennt eigene Orte
+  am selben Platz über die Katalog-ID und findet sie auch über Gebiet und Gemeinde («kron» findet ein eigenes
+  «Jakobsbad»). Suchtreffer zeigen das Gebiet, wenn der Name es nicht nennt. «Top-Startplätze» zählt pro Platz.
+- **Auslieferung:** `node scripts/db-migrate.mjs --apply` (0064), `node scripts/import-official-sites.mjs --apply`
+  (benennt 797 von 798 Plätzen um), `npm run gen-types`, dann pushen. Vor der Migration bleibt der Katalog in der
+  App leer (die Abfrage verlangt die neuen Spalten), alles andere funktioniert wie bisher.
+- **Noch offen (Etappen B/C):** Fremde Flüge zeigen noch den Namen des Besitzers statt des eigenen Namens des
+  Betrachters; Pflegeseite für offizielle Namen; Zusammenführen doppelter Orte.
+
 ## Offizielle Start- und Landeplätze (DHV-Katalog, Schweiz)
 
 Migration `0063_official_sites.sql`, Import `scripts/import-official-sites.mjs`, Logik in `src/lib/dhv-sites.ts`,

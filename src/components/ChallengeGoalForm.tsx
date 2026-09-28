@@ -15,6 +15,7 @@ interface LocationOption {
   type: string;
   latitude?: number;
   longitude?: number;
+  official_site_id?: string | null;
 }
 
 interface GoalData {
