@@ -1,5 +1,19 @@
 # Flyary
 
+## Anmeldung nur noch mit Google (2026-09-28)
+
+Befund der Sicherheitsanalyse vor dem Test mit Vertical: Das Projekt hat keinen eigenen Mail-Server, der
+eingebaute Supabase-Versand schickt nur wenige Mails pro Stunde an Team-Adressen, und die Site-URL zeigte auf eine
+von Vercel geschützte Adresse. Bestätigungs- und Passwort-Mails wären bei Schülern nicht angekommen.
+
+- **Entscheid:** Anmeldung und Registrierung nur mit Google. `src/pages/Auth.tsx` zeigt nur noch «Mit Google
+  anmelden»; «Passwort ändern» in den Einstellungen und die Seite `/reset-password` sind entfernt (alte Links führen
+  zur Anmeldung). Neue Konten übernehmen den Namen aus Google (`handle_new_user`, `full_name`).
+- **Supabase Auth (per Management API gesetzt):** E-Mail-Anbieter aus (`external_email_enabled = false`), Site-URL
+  `https://flyaryapp.vercel.app`, Rücksprung-Liste zusätzlich mit der Adresse ohne abschliessenden Schrägstrich.
+  Betroffen waren nur 22 Demo-Konten (`@example.com`, nie angemeldet); alle aktiven Konten nutzen Google.
+- **Hinweis:** Google-Konten gibt es ab 13 Jahren (jüngere nur mit Family Link der Eltern).
+
 ## Offizielle Plätze: Namen pflegen, doppelte Orte zusammenführen (Etappe C, 2026-09-28)
 
 Migration `0067_site_names_admin_and_merge.sql`, Seite `src/pages/AdminSites.tsx` (`/admin/sites`), Vorschläge in

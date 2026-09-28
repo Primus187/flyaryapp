@@ -5,12 +5,11 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, Key, FileDown, GraduationCap, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, FileDown, GraduationCap, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -63,8 +62,6 @@ export default function Settings() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [newPassword, setNewPassword] = useState("");
-  const [changingPassword, setChangingPassword] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
@@ -270,23 +267,6 @@ export default function Settings() {
               <span className={`text-sm font-medium ${i18n.language === value ? "text-primary" : "text-foreground"}`}>{label}</span>
             </button>
           ))}
-        </CardContent>
-      </Card>
-
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Key className="h-4 w-4" /> {t("profile.changePassword")}</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs">{t("auth.newPasswordLabel")}</Label>
-            <PasswordInput value={newPassword} onChange={e => setNewPassword(e.target.value)} minLength={6} placeholder={t("profile.newPasswordPlaceholder")} />
-          </div>
-          <Button size="sm" disabled={changingPassword || newPassword.length < 6} onClick={async () => {
-            setChangingPassword(true);
-            const { error } = await supabase.auth.updateUser({ password: newPassword });
-            if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
-            else { toast({ title: t("auth.passwordChanged"), description: t("auth.passwordChangedDesc") }); setNewPassword(""); }
-            setChangingPassword(false);
-          }}>{changingPassword ? "..." : t("auth.changePassword")}</Button>
         </CardContent>
       </Card>
 

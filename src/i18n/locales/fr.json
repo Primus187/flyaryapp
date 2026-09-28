@@ -708,7 +708,7 @@
     "forgotPassword": "Mot de passe oublié ?",
     "createAccount": "Créer un nouveau compte",
     "alreadyRegistered": "Déjà inscrit ? Se connecter",
-    "withGoogle": "Se connecter avec Google",
+    "withGoogle": "Se connecter avec Google", "googleOnlyHint": "Flyary te connecte avec ton compte Google. Il n'y a pas de mot de passe séparé ; Google nous transmet seulement ton nom et ton adresse e-mail.",
     "emailSent": "E-mail envoyé",
     "emailSentDesc": "Vérifiez votre boîte de réception.",
     "signUpSuccess": "Inscription réussie",

@@ -683,7 +683,7 @@
     "forgotPassword": "Passwort vergessen?",
     "createAccount": "Neues Konto erstellen",
     "alreadyRegistered": "Bereits registriert? Anmelden",
-    "withGoogle": "Mit Google anmelden",
+    "withGoogle": "Mit Google anmelden", "googleOnlyHint": "Flyary meldet dich mit deinem Google-Konto an. Ein eigenes Passwort gibt es nicht; wir erhalten von Google nur deinen Namen und deine E-Mail-Adresse.",
     "emailSent": "E-Mail gesendet",
     "emailSentDesc": "Prüfe dein Postfach für den Reset-Link.",
     "signUpSuccess": "Registrierung erfolgreich",

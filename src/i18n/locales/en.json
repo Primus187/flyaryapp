@@ -708,7 +708,7 @@
     "forgotPassword": "Forgot password?",
     "createAccount": "Create new account",
     "alreadyRegistered": "Already registered? Sign in",
-    "withGoogle": "Sign in with Google",
+    "withGoogle": "Sign in with Google", "googleOnlyHint": "Flyary signs you in with your Google account. There is no separate password; Google only shares your name and email address with us.",
     "emailSent": "Email sent",
     "emailSentDesc": "Check your inbox for the reset link.",
     "signUpSuccess": "Registration successful",

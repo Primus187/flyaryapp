@@ -20,7 +20,6 @@ import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 
 // Lazy loaded
-const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const feedImport = () => import("@/pages/Feed");
 const Feed = lazy(feedImport);
 const Stats = lazy(() => import("@/pages/Stats"));
@@ -164,7 +163,8 @@ const App = () => {
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
                     <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
+                    {/* Google-only sign-in (2026-09-28): old password-reset links lead to the sign-in page. */}
+                    <Route path="/reset-password" element={<Navigate to="/auth" replace />} />
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/feed" element={<Feed />} />
