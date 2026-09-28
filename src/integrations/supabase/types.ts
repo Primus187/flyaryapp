@@ -3304,6 +3304,7 @@ export type Database = {
           exam_practical_date: string | null
           exam_theory_date: string | null
           flight_school: string | null
+          follow_permission: string
           glider_info: string | null
           health_data_consent_at: string | null
           id: string
@@ -3328,6 +3329,7 @@ export type Database = {
           exam_practical_date?: string | null
           exam_theory_date?: string | null
           flight_school?: string | null
+          follow_permission?: string
           glider_info?: string | null
           health_data_consent_at?: string | null
           id?: string
@@ -3352,6 +3354,7 @@ export type Database = {
           exam_practical_date?: string | null
           exam_theory_date?: string | null
           flight_school?: string | null
+          follow_permission?: string
           glider_info?: string | null
           health_data_consent_at?: string | null
           id?: string
@@ -3961,6 +3964,14 @@ export type Database = {
       }
     }
     Functions: {
+      can_follow: {
+        Args: { _follower: string; _target: string }
+        Returns: boolean
+      }
+      follow_info: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
       group_invite_code: {
         Args: { _group_id: string }
         Returns: string

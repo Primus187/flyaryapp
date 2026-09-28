@@ -498,6 +498,13 @@
       "when": 1794700800000,
       "tag": "0070_invite_code_protection",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1794787200000,
+      "tag": "0071_follow_permission",
+      "breakpoints": true
     }
   ]
 }

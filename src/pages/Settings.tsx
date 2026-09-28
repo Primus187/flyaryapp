@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, FileDown, GraduationCap, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, FileDown, GraduationCap, UserCheck, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -49,6 +49,41 @@ function TrainingLevelCard() {
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>{levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}</SelectContent>
         </Select>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Who may follow me (migration 0071): only members of my groups (default) or everyone. */
+function FollowPermissionCard() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [value, setValue] = useState<"groups" | "everyone">("groups");
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("follow_permission").eq("user_id", user.id).single().then(({ data }) => {
+      if (data?.follow_permission === "everyone") setValue("everyone");
+    });
+  }, [user]);
+  const handleChange = async (v: string) => {
+    if (!user || (v !== "groups" && v !== "everyone")) return;
+    setValue(v);
+    const { error } = await supabase.from("profiles").update({ follow_permission: v }).eq("user_id", user.id);
+    toast(error ? { title: t("common.error"), description: error.message, variant: "destructive" } : { title: t("common.saved") });
+  };
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4" /> {t("settings.followPermission.title")}</CardTitle></CardHeader>
+      <CardContent className="space-y-2">
+        <Select value={value} onValueChange={(v) => { void handleChange(v); }}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="groups">{t("settings.followPermission.groups")}</SelectItem>
+            <SelectItem value="everyone">{t("settings.followPermission.everyone")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">{t("settings.followPermission.hint")}</p>
       </CardContent>
     </Card>
   );
@@ -271,6 +306,8 @@ export default function Settings() {
       </Card>
 
       <TrainingLevelCard />
+
+      <FollowPermissionCard />
 
       {pushSupported && (
         <Card className="border-0 shadow-sm">

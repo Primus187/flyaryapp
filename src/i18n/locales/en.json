@@ -821,7 +821,7 @@
     "altitudeCol": "Altitude",
     "andMore": "and {{count}} more"
   },
-  "settings": {
+  "settings": {"followPermission": {"title": "Who may follow me?", "groups": "Only members of my groups and schools", "everyone": "All Flyary pilots", "hint": "Followers see your profile and your published flights and photos. Switching to “only members” removes other followers."},
     "title": "Settings",
     "appearance": "Appearance",
     "theme": "Theme",

@@ -1,5 +1,22 @@
 # Flyary
 
+## Datenschutz: Wer darf mir folgen? (2026-09-28)
+
+Befund der Sicherheitsanalyse, Entscheid Variante 1. Migration `0071_follow_permission.sql`, Test in
+`src/test/follow-permission-database.test.ts`.
+
+- Bisher konnte jeder jedem folgen (und sah danach Profil, veröffentlichte Flüge und Fotos), und jeder
+  Angemeldete sah, wer wem folgt.
+- Neu: `profiles.follow_permission` = `groups` (Standard, für alle: nur Mitglieder einer gemeinsamen Gruppe oder
+  Schule dürfen folgen) oder `everyone`. Die Datenbank setzt das beim Folgen durch (`can_follow`). Wer auf
+  «nur Mitglieder» wechselt, verliert Follower ohne gemeinsame Gruppe. Einstellung «Wer darf mir folgen?» in den
+  Einstellungen.
+- Follow-Beziehungen sieht nur, wer beteiligt ist. Die Pilotenseite holt Zahlen und «darf folgen» über
+  `follow_info`; der Folgen-Knopf erscheint nur, wenn Folgen erlaubt ist. Alle Regeln, die Follows lesen, fragen
+  «folge ich …» und funktionieren unverändert. Beim Einführen gab es keine Follows.
+- **Auslieferung:** `node scripts/db-migrate.mjs --apply` (0071), dann pushen. Vor der Migration zeigt die
+  Pilotenseite keine Zahlen und keinen Folgen-Knopf.
+
 ## Sicherheit: Warteliste, Einladungscodes, Bibliotheken (2026-09-28)
 
 Befunde «Mittel» der Sicherheitsanalyse. Migrationen `0069_signup_status_protection.sql` und

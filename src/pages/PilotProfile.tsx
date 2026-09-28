@@ -36,7 +36,7 @@ interface GliderData {
 export default function PilotProfile() {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
-  const { isFollowing, followerCount, followingCount, loading: followLoading, toggleFollow } = useFollows(userId);
+  const { isFollowing, canFollow, followerCount, followingCount, loading: followLoading, toggleFollow } = useFollows(userId);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -210,16 +210,18 @@ export default function PilotProfile() {
         </div>
         {user && userId && user.id !== userId && (
           <div className="flex justify-center gap-2">
-            <Button
-              variant={isFollowing ? "outline" : "default"}
-              size="sm"
-              className="mt-2 gap-1.5"
-              disabled={followLoading}
-              onClick={toggleFollow}
-            >
-              {isFollowing ? <UserMinus className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
-              {isFollowing ? t("follows.unfollow") : t("follows.follow")}
-            </Button>
+            {(isFollowing || canFollow) && (
+              <Button
+                variant={isFollowing ? "outline" : "default"}
+                size="sm"
+                className="mt-2 gap-1.5"
+                disabled={followLoading}
+                onClick={toggleFollow}
+              >
+                {isFollowing ? <UserMinus className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+                {isFollowing ? t("follows.unfollow") : t("follows.follow")}
+              </Button>
+            )}
             {canMessage && (
               <Button variant="outline" size="sm" className="mt-2 gap-1.5" disabled={openingChat} onClick={() => void startChat()}>
                 <MessageCircle className="h-3.5 w-3.5" />
