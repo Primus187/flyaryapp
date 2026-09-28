@@ -1,0 +1,13 @@
+{
+  "name": "flyary-website",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "node preview.mjs"
+  },
+  "dependencies": {
+    "marked": "18.0.14"
+  }
+}

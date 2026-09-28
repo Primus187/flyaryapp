@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "landing:build": "node website/build.mjs",
+    "landing:preview": "node website/preview.mjs",
+    "landing:check": "node website/check.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:analyze": "vite build --mode analyze",

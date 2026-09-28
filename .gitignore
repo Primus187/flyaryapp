@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+.handbook-tools/
+.handbook-preview/
+website/.preview/
 
 # Editor directories and files
 .vscode/*
