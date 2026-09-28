@@ -1376,6 +1376,7 @@ export type Database = {
           confirmed_by_school: boolean
           event_id: string
           id: string
+          logbook_import_dismissed_at: string | null
           presence: string
           signed_up: boolean
           status: string
@@ -1389,6 +1390,7 @@ export type Database = {
           confirmed_by_school?: boolean
           event_id: string
           id?: string
+          logbook_import_dismissed_at?: string | null
           presence?: string
           signed_up?: boolean
           status?: string
@@ -1402,6 +1404,7 @@ export type Database = {
           confirmed_by_school?: boolean
           event_id?: string
           id?: string
+          logbook_import_dismissed_at?: string | null
           presence?: string
           signed_up?: boolean
           status?: string
@@ -1993,6 +1996,7 @@ export type Database = {
           landing_location_id: string | null
           published_at: string | null
           published_to_feed: boolean
+          school_flight_id: string | null
           share_token: string | null
           tags: string[] | null
           takeoff_location_id: string | null
@@ -2018,6 +2022,7 @@ export type Database = {
           landing_location_id?: string | null
           published_at?: string | null
           published_to_feed?: boolean
+          school_flight_id?: string | null
           share_token?: string | null
           tags?: string[] | null
           takeoff_location_id?: string | null
@@ -2043,6 +2048,7 @@ export type Database = {
           landing_location_id?: string | null
           published_at?: string | null
           published_to_feed?: boolean
+          school_flight_id?: string | null
           share_token?: string | null
           tags?: string[] | null
           takeoff_location_id?: string | null
@@ -2072,6 +2078,13 @@ export type Database = {
             columns: ["landing_location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flights_school_flight_id_fkey"
+            columns: ["school_flight_id"]
+            isOneToOne: true
+            referencedRelation: "event_school_flights"
             referencedColumns: ["id"]
           },
           {
@@ -4003,6 +4016,10 @@ export type Database = {
         }
         Returns: Json
       }
+      dismiss_school_flight_import: {
+        Args: { _event_id: string }
+        Returns: undefined
+      }
       event_detail_data: { Args: { _event_id: string }; Returns: Json }
       feed_achievement_item: { Args: { _id: string }; Returns: Json }
       feed_event_item: { Args: { _id: string }; Returns: Json }
@@ -4115,7 +4132,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      import_school_flights: {
+        Args: { _event_id: string; _links: Json }
+        Returns: Json
+      }
       inactive_school_students: { Args: { _group_id: string }; Returns: Json }
+      is_avatar_path: { Args: { _name: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
@@ -4430,6 +4452,8 @@ export type Database = {
       }
       marketplace_storage_usage: { Args: never; Returns: Json }
       marketplace_trigger_cleanup: { Args: never; Returns: undefined }
+      my_instructor_ratings: { Args: never; Returns: Json }
+      my_school_flight_imports: { Args: never; Returns: Json }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
       reopen_flight_day: { Args: { _event_id: string }; Returns: undefined }
       report_client_error: {
@@ -4679,6 +4703,19 @@ export type Database = {
           _section?: string
           _student_id: string
         }
+        Returns: Json
+      }
+      school_student_proof: {
+        Args: {
+          _from?: string
+          _group_id: string
+          _student_id: string
+          _to?: string
+        }
+        Returns: Json
+      }
+      school_student_ratings: {
+        Args: { _group_id: string; _student_id: string }
         Returns: Json
       }
       school_student_training_profile: {
