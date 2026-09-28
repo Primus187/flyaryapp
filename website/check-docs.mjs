@@ -77,7 +77,7 @@ export async function checkDocumentation(browser, base, here) {
         assert.equal(Buffer.from(await response.arrayBuffer()).subarray(0, 2).toString(), 'PK');
       }
     }
-    const readers = ['/de/docs/pilots/', '/de/docs/schools/', '/de/docs/technical/security/', '/de/docs/technical/reference/'];
+    const readers = ['/de/docs/pilots/', '/de/docs/schools/'];
     for (const route of readers) {
       for (const width of [1440, 390, 320]) {
         await page.setViewportSize({ width, height: 900 });

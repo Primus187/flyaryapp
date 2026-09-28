@@ -37,7 +37,7 @@ if (header) {
 const tabs = [...document.querySelectorAll('.preview-tab')];
 const panels = [...document.querySelectorAll('.preview-panel')];
 const image = document.querySelector('#preview-image');
-const images = ['overview.png', 'logbook.png', 'training.png', 'school.png'];
+const images = ['overview.png', 'flight-detail.png', 'training.png', 'school.png'];
 if (tabs.length && panels.length === tabs.length && image) {
   document.querySelector('.preview-tabs').setAttribute('role', 'tablist');
   tabs.forEach((tab, i) => {

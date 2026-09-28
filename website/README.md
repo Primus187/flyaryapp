@@ -29,17 +29,16 @@ Der Ordner `website/` hat einen eigenen Build: Alternativ darin `npm ci --ignore
 
 Die Gestaltung orientiert sich an [Framers Landingpage-Empfehlungen](https://www.framer.com/blog/landing-page-best-practices/): ein verständlicher Einstieg, sichtbares Produkt, ein klarer Hauptaufruf und konkrete Antworten vor der Anmeldung. Flyarys Blau, eine klare typografische Hierarchie und ein ruhiges Raster verbinden die Website mit der App. Der dunkle Flugschulbereich hat einen eigenen Kontaktaufruf.
 
-Die Bildschirmansichten stammen aus den deutschen Handbüchern vom 24./25. September 2026 und zeigen fiktive Beispieldaten. Das steht in jeder Sprachversion bei den Abbildungen. Sie sind echte App-Aufnahmen, aber keine Live-Demo. Der Einstieg zeigt Übersicht und Flugdetails; vier Tabs wechseln die Hauptansicht. Weitere Aufnahmen erläutern Schulorganisation und gemeinsame Flugtage. Für aktuellere oder übersetzte Ansichten die sechs Bildschirmdateien in `assets/` austauschen. Die zusätzlichen Quellen sind `docs/handbook/mobile/19-flight-view.png` und `docs/handbook/mobile/07-events.png`; das Logo stammt aus `public/icons/flyary-192.png`.
+Die Bildschirmansichten sind echte App-Aufnahmen aus den deutschen Handbüchern (`docs/handbook/`) mit fiktiven Beispieldaten; der Hinweis steht einmal im Einstieg und in der Fusszeile. Jede Aufnahme erscheint nur einmal und passt zur Aussage ihres Abschnitts: Einstieg `logbook.png` (mobile/06-flightbook) und `stats.png` (mobile/12-stats); Produkt-Tour `overview.png` (mobile/01-home), `flight-detail.png` (mobile/19-flight-view), `training.png` (mobile/10-training), `school.png` (school-mobile/01-overview); Flugschulen `cockpit.png` (school-mobile/34-coaching); Community `feed.png` (mobile/22-feed). Für aktuellere Ansichten die Dateien in `assets/` aus neuen Handbuch-Aufnahmen ersetzen.
 
 Es gibt keine erfundenen Kundenstimmen, Nutzerzahlen oder Preisversprechen. Die Texte beschreiben implementierte Funktionen. Anmeldung erfolgt entsprechend dem aktuellen App-Stand mit Google. Die Website setzt keine Cookies, nutzt kein LocalStorage und bindet weder Analytics noch externe Schriftanbieter ein. Ein Hostinganbieter kann unabhängig davon Zugriffsprotokolle führen.
 
 ## Wissen & Hilfe
 
-Navigation und Footer verlinken `/de/docs/`, `/fr/docs/` beziehungsweise `/en/docs/`. Diese Einstiegsseiten haben übersetzte Bedienelemente und weisen auf die deutsche Sprache der Dokumente hin. Die Dokumenttexte werden nicht automatisch übersetzt.
+Veröffentlicht werden nur die zwei Benutzerhandbücher; die technische Dokumentation bleibt bewusst intern (Entscheid 28.09.2026). Navigation und Footer verlinken `/de/docs/`, `/fr/docs/` beziehungsweise `/en/docs/`. Diese Einstiegsseiten haben übersetzte Bedienelemente und weisen auf die deutsche Sprache der Dokumente hin. Die Dokumenttexte werden nicht automatisch übersetzt.
 
 - `/de/docs/pilots/`: Pilotenhandbuch, 27 einzeln aufrufbare Kapitel, Word-Download v1.5.
 - `/de/docs/schools/`: Schulhandbuch, 31 einzeln aufrufbare Kapitel, Word-Download v1.4.
-- `/de/docs/technical/`: technische Übersicht; alle Markdown-Dateien aus `docs/technical/` und die verlinkte Performance-Dokumentation haben eigene Seiten.
 
 `build-docs.mjs` liest die freigegebenen öffentlichen Fassungen aus `website/documents/` (Liste in `publication.mjs`, mit Prüfung gegen interne Inhalte) bei jedem Build; die Handbuchbilder kommen aus `docs/handbook/`. Kapitel entstehen aus Überschriften der zweiten Ebene; deren Titel bestimmen den URL-Pfad. Interne Dokumentlinks und Abschnittsanker werden auf die Webziele umgeschrieben. Verweise auf Quellcode ausserhalb der Dokumentation bleiben als gekennzeichneter Text mit Repository-Pfad erhalten; die Website veröffentlicht diese Quelldateien nicht. Rohes HTML aus Markdown wird als Text ausgegeben. Nur referenzierte Handbuchbilder und die beiden ausgewählten Word-Versionen werden kopiert.
 

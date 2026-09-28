@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { content, languages } from './content.mjs';
@@ -33,7 +33,9 @@ const icons = {
 };
 const icon = (name, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
 const logo = `<a class="brand" href="#top" aria-label="Flyary"><img src="/assets/flyary-192.png" width="38" height="38" alt=""><span>Flyary</span></a>`;
-const screenshots = ['overview.png', 'logbook.png', 'training.png', 'school.png'];
+// Every screenshot appears once: hero = logbook + stats, tour = home, flight, training, school,
+// schools section = flight-day cockpit, community = feed.
+const screenshots = ['overview.png', 'flight-detail.png', 'training.png', 'school.png'];
 const ids = ['app', 'schools', 'faq'];
 const languagePath = (lang) => `/${lang}/`;
 const featureIcons = ['upload', 'image', 'chart'];
@@ -111,8 +113,8 @@ function render(lang) {
         </div>
         <figure class="hero-stage reveal" data-tilt>
           <div class="stage-glow" aria-hidden="true"></div>
-          ${phone(`<img src="/assets/flight-detail.png" alt="${esc(c.secondScreen)}" width="780" height="1688" fetchpriority="high">`, 'phone-back')}
-          ${phone(`<img src="/assets/overview.png" alt="${esc(c.previewAlt[0])}" width="780" height="1688" fetchpriority="high">`, 'phone-front')}
+          ${phone(`<img src="/assets/stats.png" alt="${esc(c.heroBackAlt)}" width="780" height="1688" fetchpriority="high">`, 'phone-back')}
+          ${phone(`<img src="/assets/logbook.png" alt="${esc(c.heroFrontAlt)}" width="780" height="1688" fetchpriority="high">`, 'phone-front')}
           <ul class="hero-chips" aria-hidden="true">${c.heroChips.map((chip, i) => `<li class="chip chip-${i}">${icon(['upload', 'radio', 'award'][i])}${esc(chip)}</li>`).join('')}</ul>
           <figcaption>${esc(c.previewCaption)} · ${esc(c.screenLanguage)}</figcaption>
         </figure>
@@ -132,7 +134,6 @@ function render(lang) {
         <figure class="explorer-stage reveal">
           <div class="stage-glow" aria-hidden="true"></div>
           ${phone(`<img id="preview-image" src="/assets/overview.png" alt="${esc(c.previewAlt[0])}" width="780" height="1688">`, 'phone-explorer')}
-          <figcaption>${esc(c.previewCaption)} · ${esc(c.screenLanguage)}</figcaption>
         </figure>
       </div>
     </section>
@@ -146,7 +147,7 @@ function render(lang) {
     <section id="schools" class="school-section" aria-labelledby="school-title">
       <div class="school-backdrop" aria-hidden="true"><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div></div>
       <div class="wrap school-grid">
-        <figure class="school-visual reveal" data-tilt><div class="stage-glow" aria-hidden="true"></div>${phone(`<img src="/assets/school.png" width="780" height="1688" alt="${esc(c.schoolImageAlt)}" loading="lazy">`)}<figcaption>${esc(c.previewCaption)} · ${esc(c.screenLanguage)}</figcaption></figure>
+        <figure class="school-visual reveal" data-tilt><div class="stage-glow" aria-hidden="true"></div>${phone(`<img src="/assets/cockpit.png" width="780" height="1688" alt="${esc(c.schoolImageAlt)}" loading="lazy">`)}</figure>
         <div class="school-copy">
           <p class="eyebrow reveal">${esc(c.schoolLabel)}</p>
           <h2 id="school-title" class="reveal">${lines(c.schoolTitle)}</h2>
@@ -161,20 +162,22 @@ function render(lang) {
 
     <section class="section wrap together" aria-labelledby="together-title">
       <div class="together-copy reveal"><p class="eyebrow">${icon('people')} Community</p><h2 id="together-title">${lines(c.togetherTitle)}</h2><p>${esc(c.togetherText)}</p><ul class="tag-list">${c.togetherTags.map((tag, i) => `<li>${icon(['calendar', 'chat', 'bag'][i])}${esc(tag)}</li>`).join('')}</ul><a class="text-link" href="${app}">${esc(c.open)} ${arrow}</a></div>
-      <figure class="community-visual reveal" data-tilt><div class="stage-glow" aria-hidden="true"></div>${phone(`<img src="/assets/community.png" width="780" height="1688" loading="lazy" alt="${esc(c.togetherTags[0])}">`)}<figcaption>${esc(c.previewCaption)} · ${esc(c.screenLanguage)}</figcaption></figure>
+      <figure class="community-visual reveal" data-tilt><div class="stage-glow" aria-hidden="true"></div>${phone(`<img src="/assets/feed.png" width="780" height="1688" loading="lazy" alt="${esc(c.communityAlt)}">`)}</figure>
     </section>
 
     <section id="faq" class="section wrap faq-section" aria-labelledby="faq-title"><div class="faq-intro reveal"><p class="eyebrow">FAQ</p><h2 id="faq-title">${esc(c.faqTitle)}</h2><a class="text-link" href="mailto:${email}">${esc(c.contact)} ${icon('diagonal')}</a></div><div class="faq-list">${c.faqs.map(([q, a]) => `<details class="reveal"><summary>${esc(q)}<span class="faq-plus" aria-hidden="true"></span></summary><div class="faq-answer"><p>${esc(a)}</p></div></details>`).join('')}</div></section>
 
     <section class="final-cta" aria-labelledby="final-title"><div class="wrap"><div class="final-card reveal"><div class="final-sheen" aria-hidden="true"></div><div><h2 id="final-title">${lines(c.finalTitle)}</h2><p>${esc(c.finalNote)}</p></div><a class="button button-white" href="${app}">${esc(c.finalCta)} ${arrow}</a></div></div></section>
   </main>
-  <footer class="footer wrap"><div class="footer-top"><div>${logo}<p>${esc(c.footerText)}</p></div><nav class="languages" aria-label="${esc(c.language)}">${langs}</nav></div><div class="footer-bottom"><span>© ${new Date().getUTCFullYear()} Flyary · ${esc(c.copyright)}</span><nav aria-label="${esc(c.contact)}">${docsLink}<a href="mailto:${email}">${esc(c.contact)}</a><a href="${app}/legal">${esc(c.privacy)}</a><a href="${app}/legal/terms">${esc(c.terms)}</a></nav><a class="back-top" href="#top">${esc(c.top)} ${icon('diagonal')}</a></div></footer>
+  <footer class="footer wrap"><div class="footer-top"><div>${logo}<p>${esc(c.footerText)}</p><p class="sample-note">${esc(c.sampleNote)} ${esc(c.screenLanguage)}.</p></div><nav class="languages" aria-label="${esc(c.language)}">${langs}</nav></div><div class="footer-bottom"><span>© ${new Date().getUTCFullYear()} Flyary · ${esc(c.copyright)}</span><nav aria-label="${esc(c.contact)}">${docsLink}<a href="mailto:${email}">${esc(c.contact)}</a><a href="${app}/legal">${esc(c.privacy)}</a><a href="${app}/legal/terms">${esc(c.terms)}</a></nav><a class="back-top" href="#top">${esc(c.top)} ${icon('diagonal')}</a></div></footer>
 </body></html>`;
 }
 
+// Start from an empty output so removed pages (e.g. the former technical docs) do not linger.
+await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 for (const file of ['site.css', 'site.js', 'boot.js']) await cp(join(here, file), join(out, file));
-const assets = ['flyary-192.png', 'overview.png', 'logbook.png', 'training.png', 'school.png', 'flight-detail.png', 'community.png'];
+const assets = ['flyary-192.png', 'overview.png', 'logbook.png', 'stats.png', 'training.png', 'school.png', 'flight-detail.png', 'cockpit.png', 'feed.png'];
 for (const asset of assets) await cp(join(here, 'assets', asset), join(out, 'assets', asset));
 for (const lang of Object.keys(languages)) {
   await mkdir(join(out, lang), { recursive: true });

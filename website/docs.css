@@ -14,18 +14,12 @@
 #search-results a { display: block; color: var(--blue); font-size: 17px; font-weight: 600; }
 #search-results small { display: block; margin-bottom: 7px; color: var(--muted); }
 #search-results p { margin-top: 8px; font-size: 13px; line-height: 1.7; color: var(--muted); }
-.docs-categories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 42px; margin-top: 60px; }
+.docs-categories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 42px; margin-top: 60px; }
 .docs-categories section { border-top: 2px solid var(--blue); padding-top: 24px; }
 .docs-categories h2 { font-size: 29px; letter-spacing: -1px; margin-block: 20px 16px; }
 .docs-categories section > p:not(.eyebrow) { font-size: 15px; color: var(--muted); line-height: 1.8; }
 .docs-categories .text-link { margin-top: 20px; color: var(--blue); }
 .doc-download { display: block; font-size: 13px; text-decoration: underline; text-underline-offset: 4px; padding-block: 12px; }
-.technical-index { margin-top: 75px; }
-.technical-index h2 { font-size: 30px; }
-.technical-index ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; padding: 0; margin-top: 30px; list-style: none; }
-.technical-index li { border-top: 1px solid var(--line); }
-.technical-index a { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-block: 18px; font-size: 14px; line-height: 1.7; }
-.technical-index a:hover { color: var(--blue); }
 .docs-layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 64px; align-items: start; padding-block: 40px 80px; }
 .docs-sidebar { position: sticky; top: 108px; max-height: calc(100vh - 140px); overflow: auto; padding-right: 16px; scrollbar-width: thin; }
 .docs-sidebar summary { font-size: 13px; font-weight: 700; cursor: pointer; padding-block: 12px; }
@@ -92,8 +86,6 @@
   .docs-intro > p:last-child { font-size: 16px; }
   .docs-categories { grid-template-columns: 1fr; gap: 35px; margin-top: 40px; }
   .docs-categories h2 { font-size: 28px; }
-  .technical-index { margin-top: 50px; }
-  .technical-index ul { grid-template-columns: 1fr; }
   .docs-layout { display: block; padding-top: 20px; }
   .docs-sidebar { position: static; max-height: none; padding: 0; border-bottom: 1px solid var(--line); }
   .docs-sidebar details[open] nav { max-height: 310px; overflow: auto; }

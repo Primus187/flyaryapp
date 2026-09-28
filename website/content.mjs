@@ -84,11 +84,10 @@ export const content = {
     "screenLanguage": "Ansichten auf Deutsch",
     "previewAlt": [
       "Flyary-Startseite mit Saisonübersicht und persönlichen Flugzielen",
-      "Flyary-Flugbuch mit gespeicherten Gleitschirmflügen",
+      "Ein gespeicherter Flug mit Flugdaten, Kommentar und Notiz der Flugschule",
       "Trainingsübersicht mit persönlichen Bewertungen",
       "Schulübersicht mit Flugtagen und Schülern"
     ],
-    "secondScreen": "Ein gespeicherter Flug mit Flugzeit, Strecke und Notizen",
     "pilotLabel": "DEIN PERSÖNLICHES FLUGBUCH",
     "pilotTitle": "Gelanden. Festhalten.\nWiederfinden.",
     "pilotIntro": "Die Aufzeichnung liegt im Vario, das Foto auf dem Handy, die Rückmeldung irgendwo im Chat. In Flyary gehört das zu deinem Flug.",
@@ -130,7 +129,7 @@ export const content = {
     "schoolNote": "Direkter Kontakt mit Tobias, dem Betreiber von Flyary.",
     "schoolRoles": "Schulleitung · Fluglehrer · Starthelfer",
     "schoolBadge": "Für euren Schulalltag",
-    "schoolImageAlt": "Flyary-Schulübersicht mit Flugtagen, Schülern und offenen Aufgaben",
+    "schoolImageAlt": "Flugtag-Cockpit mit Ausbildungsblatt und Rückmeldung zum Schulflug",
     "togetherTitle": "Allein fliegen.\nGemeinsam weiterkommen.",
     "togetherText": "Verabrede dich zum Flugtag, tausche dich in deiner Gruppe aus und teile ausgewählte Flüge im Feed. Im Marktplatz findet auch Ausrüstung ihren nächsten Besitzer.",
     "togetherTags": [
@@ -171,12 +170,31 @@ export const content = {
     "top": "Nach oben",
     "emailSubject": "Flyary für unsere Flugschule",
     "copyright": "Tobias Bolliger",
-    "heroChips": ["IGC-Import", "Flugtag-Cockpit", "Lernstand"],
-    "highlights": ["IGC-Import", "IGC direkt vom Handy teilen", "Tracks & Fotos", "Saisonziele", "PDF- & CSV-Export", "Offizielle Start- und Landeplätze", "Lernstand", "Flugtag-Cockpit", "Gruppen & Termine", "Marktplatz"],
+    "heroChips": [
+      "IGC-Import",
+      "Flugtag-Cockpit",
+      "Lernstand"
+    ],
+    "highlights": [
+      "IGC-Import",
+      "IGC direkt vom Handy teilen",
+      "Tracks & Fotos",
+      "Saisonziele",
+      "PDF- & CSV-Export",
+      "Offizielle Start- und Landeplätze",
+      "Lernstand",
+      "Flugtag-Cockpit",
+      "Gruppen & Termine",
+      "Marktplatz"
+    ],
     "highlightsLabel": "Funktionen von Flyary",
     "scrollHint": "Mehr entdecken",
     "stepLabel": "Schritt",
-    "explorerTitle": "Alles, was dein Fliegerleben braucht."
+    "explorerTitle": "Alles, was dein Fliegerleben braucht.",
+    "heroFrontAlt": "Das Flyary-Flugbuch mit gespeicherten Gleitschirmflügen",
+    "heroBackAlt": "Statistik der Saison mit Flügen, Flugzeit, Strecke und Höhenmetern",
+    "communityAlt": "Feed mit einem geteilten Flug, einer Reaktion und einem Kommentar",
+    "sampleNote": "Alle App-Ansichten zeigen Beispieldaten."
   },
   "fr": {
     "title": "Flyary – Le carnet de vol numérique pour pilotes et écoles de parapente",
@@ -256,11 +274,10 @@ export const content = {
     "screenLanguage": "Captures en allemand",
     "previewAlt": [
       "Accueil Flyary avec saison et objectifs personnels",
-      "Carnet Flyary avec vols de parapente enregistrés",
+      "Un vol enregistré avec ses données, un commentaire et une note de l’école",
       "Vue de formation avec évaluations personnelles",
       "Aperçu de l’école avec sorties et élèves"
     ],
-    "secondScreen": "Un vol enregistré avec durée, distance et notes",
     "pilotLabel": "VOTRE CARNET PERSONNEL",
     "pilotTitle": "Atterrir. Noter.\nRetrouver.",
     "pilotIntro": "La trace dans le vario, la photo sur le téléphone, le retour dans une conversation. Dans Flyary, tout cela fait partie de votre vol.",
@@ -302,7 +319,7 @@ export const content = {
     "schoolNote": "Contact direct avec Tobias, responsable de Flyary.",
     "schoolRoles": "Direction · Moniteurs · Aides au décollage",
     "schoolBadge": "Pour votre école au quotidien",
-    "schoolImageAlt": "Aperçu de l’école dans Flyary avec sorties, élèves et tâches à suivre",
+    "schoolImageAlt": "Cockpit du jour de vol avec fiche de formation et retour sur le vol école",
     "togetherTitle": "Voler en solo.\nAvancer ensemble.",
     "togetherText": "Retrouvez-vous pour une sortie, échangez dans votre groupe et partagez certains vols dans le fil. Sur le marché, votre matériel peut aussi trouver son prochain propriétaire.",
     "togetherTags": [
@@ -343,12 +360,31 @@ export const content = {
     "top": "Retour en haut",
     "emailSubject": "Flyary pour notre école de vol",
     "copyright": "Tobias Bolliger",
-    "heroChips": ["Import IGC", "Cockpit du jour de vol", "Progression"],
-    "highlights": ["Import IGC", "Partage IGC depuis le téléphone", "Traces et photos", "Objectifs de saison", "Export PDF & CSV", "Sites officiels de décollage et d’atterrissage", "Progression", "Cockpit du jour de vol", "Groupes & rendez-vous", "Marché"],
+    "heroChips": [
+      "Import IGC",
+      "Cockpit du jour de vol",
+      "Progression"
+    ],
+    "highlights": [
+      "Import IGC",
+      "Partage IGC depuis le téléphone",
+      "Traces et photos",
+      "Objectifs de saison",
+      "Export PDF & CSV",
+      "Sites officiels de décollage et d’atterrissage",
+      "Progression",
+      "Cockpit du jour de vol",
+      "Groupes & rendez-vous",
+      "Marché"
+    ],
     "highlightsLabel": "Fonctions de Flyary",
     "scrollHint": "Découvrir",
     "stepLabel": "Étape",
-    "explorerTitle": "Tout ce dont votre vie de pilote a besoin."
+    "explorerTitle": "Tout ce dont votre vie de pilote a besoin.",
+    "heroFrontAlt": "Le carnet de vol Flyary avec des vols de parapente enregistrés",
+    "heroBackAlt": "Statistiques de la saison avec vols, temps de vol, distance et dénivelé",
+    "communityAlt": "Fil d’actualité avec un vol partagé, une réaction et un commentaire",
+    "sampleNote": "Toutes les vues de l’app montrent des données d’exemple."
   },
   "en": {
     "title": "Flyary – The digital logbook for paragliding pilots and flight schools",
@@ -428,11 +464,10 @@ export const content = {
     "screenLanguage": "Screens shown in German",
     "previewAlt": [
       "Flyary home screen with season overview and personal goals",
-      "Flyary logbook showing recorded paragliding flights",
+      "A saved flight with its data, a comment and a note from the school",
       "Training overview with personal assessments",
       "School overview with flying days and students"
     ],
-    "secondScreen": "A recorded flight with duration, distance and notes",
     "pilotLabel": "YOUR PERSONAL LOGBOOK",
     "pilotTitle": "Land. Record.\nFind it again.",
     "pilotIntro": "The track is on your vario. The photo is on your phone. The feedback is somewhere in a chat. In Flyary, it all belongs to your flight.",
@@ -474,7 +509,7 @@ export const content = {
     "schoolNote": "A direct conversation with Tobias, the person behind Flyary.",
     "schoolRoles": "School leaders · Instructors · Launch helpers",
     "schoolBadge": "For your school’s day-to-day",
-    "schoolImageAlt": "Flyary school overview with flying days, students and open tasks",
+    "schoolImageAlt": "Flight-day cockpit with training sheet and feedback on the school flight",
     "togetherTitle": "Fly your own flight.\nGo further together.",
     "togetherText": "Meet for a flying day, keep in touch with your group and share selected flights in the feed. And find the next owner for your equipment on the marketplace.",
     "togetherTags": [
@@ -515,11 +550,30 @@ export const content = {
     "top": "Back to top",
     "emailSubject": "Flyary for our flight school",
     "copyright": "Tobias Bolliger",
-    "heroChips": ["IGC import", "Flight-day cockpit", "Training progress"],
-    "highlights": ["IGC import", "Share IGC from your phone", "Tracks & photos", "Season goals", "PDF & CSV export", "Official take-off and landing sites", "Training progress", "Flight-day cockpit", "Groups & events", "Marketplace"],
+    "heroChips": [
+      "IGC import",
+      "Flight-day cockpit",
+      "Training progress"
+    ],
+    "highlights": [
+      "IGC import",
+      "Share IGC from your phone",
+      "Tracks & photos",
+      "Season goals",
+      "PDF & CSV export",
+      "Official take-off and landing sites",
+      "Training progress",
+      "Flight-day cockpit",
+      "Groups & events",
+      "Marketplace"
+    ],
     "highlightsLabel": "Flyary features",
     "scrollHint": "Discover more",
     "stepLabel": "Step",
-    "explorerTitle": "Everything your flying life needs."
+    "explorerTitle": "Everything your flying life needs.",
+    "heroFrontAlt": "The Flyary logbook with saved paragliding flights",
+    "heroBackAlt": "Season statistics with flights, flight time, distance and height gain",
+    "communityAlt": "Feed with a shared flight, a reaction and a comment",
+    "sampleNote": "All app views show sample data."
   }
 };
