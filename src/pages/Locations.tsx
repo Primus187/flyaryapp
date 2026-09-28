@@ -19,6 +19,7 @@ import { COMPASS_POINTS } from "@/lib/wind-match";
 import OfficialSiteSearch from "@/components/OfficialSiteSearch";
 import OfficialSiteHint from "@/components/OfficialSiteHint";
 import SiteLinkSuggestions from "@/components/SiteLinkSuggestions";
+import DuplicatePlaces from "@/components/DuplicatePlaces";
 import type { OfficialSite } from "@/lib/official-sites";
 import { ensureOwnLocationForSite, officialName, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 
@@ -287,6 +288,7 @@ export default function Locations() {
         </div>
       )}
       <SiteLinkSuggestions locations={locations} onLinked={fetchLocations} />
+      <DuplicatePlaces locations={locations} flightCounts={Object.fromEntries(Object.entries(flightStats).map(([id, s]) => [id, s.count]))} onMerged={() => { void fetchLocations(); void fetchFlightStats(); }} />
       {locations.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground"><MapPin className="h-10 w-10 mx-auto mb-3 opacity-40" /><p className="text-sm">{t("locations.noLocations")}</p></div>
       ) : (

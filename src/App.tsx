@@ -50,6 +50,7 @@ const Training = lazy(() => import("@/pages/Training"));
 const TrainingItemDetail = lazy(() => import("@/pages/TrainingItemDetail"));
 const Legal = lazy(() => import("@/pages/Legal"));
 const AdminErrors = lazy(() => import("@/pages/AdminErrors"));
+const AdminSites = lazy(() => import("@/pages/AdminSites"));
 const LegalTerms = lazy(() => import("@/pages/LegalTerms"));
 const LegalLicenses = lazy(() => import("@/pages/LegalLicenses"));
 const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
@@ -190,6 +191,7 @@ const App = () => {
                       <Route path="/import-locations" element={<ImportLocations />} />
                       <Route path="/legal" element={<Legal />} />
                       <Route path="/admin/errors" element={<AdminErrors />} />
+                      <Route path="/admin/sites" element={<AdminSites />} />
                       <Route path="/legal/terms" element={<LegalTerms />} />
                       <Route path="/legal/licenses" element={<LegalLicenses />} />
                       <Route path="/leaderboard" element={<Leaderboard />} />

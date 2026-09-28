@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useAppAdmin } from "@/hooks/use-app-admin";
 import {
   User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, Bug,
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, Bug, BadgeCheck,
 } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
@@ -161,6 +161,9 @@ export default function More() {
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
           {isAppAdmin && (
             <ListRow icon={Bug} label={t("adminErrors.title")} description={t("adminErrors.subtitle")} onClick={() => navigate("/admin/errors")} />
+          )}
+          {isAppAdmin && (
+            <ListRow icon={BadgeCheck} label={t("adminSites.title")} description={t("adminSites.subtitle")} onClick={() => navigate("/admin/sites")} />
           )}
           <ListRow
             icon={RefreshCw}

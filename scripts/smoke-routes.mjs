@@ -10,7 +10,7 @@ import { loadEnv, preview } from "vite";
 const routes = [
   "/", "/feed", "/flights", "/flights/new", "/locations", "/events", "/events/new", "/groups", "/training",
   "/profile", "/more", "/settings", "/stats", "/search", "/legal", "/leaderboard", "/weather", "/notifications",
-  "/messages", "/market", "/market/mine", "/market/new", "/admin/errors",
+  "/messages", "/market", "/market/mine", "/market/new", "/admin/errors", "/admin/sites",
   // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
   "/events/22222222-2222-4222-8222-222222222222",
 ];

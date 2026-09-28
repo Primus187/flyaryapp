@@ -3961,6 +3961,14 @@ export type Database = {
       }
     }
     Functions: {
+      merge_locations: {
+        Args: { _keep: string; _remove: string }
+        Returns: number
+      }
+      set_official_site_name: {
+        Args: { _name: string; _site_id: string }
+        Returns: undefined
+      }
       build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
       chat_can_manage: {
         Args: { _channel: string; _uid: string }

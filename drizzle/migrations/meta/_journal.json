@@ -470,6 +470,13 @@
       "when": 1794355200000,
       "tag": "0066_viewer_site_names",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1794441600000,
+      "tag": "0067_site_names_admin_and_merge",
+      "breakpoints": true
     }
   ]
 }

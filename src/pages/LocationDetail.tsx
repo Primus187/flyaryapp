@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind, BadgeCheck, ExternalLink } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind, BadgeCheck, ExternalLink, Combine } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { degreesToCompassPoint, parseOpenMeteoWind, windMatchStatus, type WindMatchStatus } from "@/lib/wind-match";
 import { officialName, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
 import { burnairMapUrl } from "@/lib/burnair";
+import MergeLocationDialog from "@/components/MergeLocationDialog";
 
 const markerIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
@@ -33,6 +34,7 @@ export default function LocationDetail() {
   const [location, setLocation] = useState<any>(null);
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mergeOpen, setMergeOpen] = useState(false);
   const [wind, setWind] = useState<{ status: WindMatchStatus; compass: string; speedKmh: number } | null | undefined>(undefined);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
@@ -104,6 +106,7 @@ export default function LocationDetail() {
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/locations?edit=${id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDuplicate}><Copy className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMergeOpen(true)} aria-label={t("locations.merge.title")}><Combine className="h-3.5 w-3.5" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
         </div>
       </div>
@@ -214,6 +217,7 @@ export default function LocationDetail() {
           <div className="space-y-2">{flights.map((f) => (<Card key={f.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/flights/${f.id}`)}><CardContent className="p-3 flex items-center justify-between"><div><p className="text-sm font-medium">{new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" })}</p><p className="text-xs text-muted-foreground">{getCounterLocation(f)}{f.duration_minutes && <span> · {formatDuration(f.duration_minutes)}</span>}{f.glider && <span> · {f.glider}</span>}</p></div><ArrowLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" /></CardContent></Card>))}</div>
         )}
       </div>
+      <MergeLocationDialog location={location} open={mergeOpen} onOpenChange={setMergeOpen} onMerged={(keptId) => navigate(`/locations/${keptId}`)} />
     </div>
   );
 }

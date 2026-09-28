@@ -1,5 +1,28 @@
 # Flyary
 
+## Offizielle Plätze: Namen pflegen, doppelte Orte zusammenführen (Etappe C, 2026-09-28)
+
+Migration `0067_site_names_admin_and_merge.sql`, Seite `src/pages/AdminSites.tsx` (`/admin/sites`), Vorschläge in
+`src/lib/site-name-suggestions.ts`, Zusammenführen in `src/components/MergeLocationDialog.tsx` und
+`src/components/DuplicatePlaces.tsx`, Tests in `src/test/site-admin-merge-database.test.ts` und
+`src/lib/site-name-suggestions.test.ts`.
+
+- **Platznamen (nur App-Admin, Entscheid 2026-09-28):** «Mehr → Platznamen» listet zuerst die 213 Plätze, deren
+  offizieller Name auf eine blosse Nummer endet («Kronberg 1 … 4»), gruppiert nach Gebiet, mit Typ, Höhe,
+  Windrichtungen, Gemeinde, DHV-Namen und Knopf «burnair» (Sprung zur Karte an dieser Stelle). Ein Vorschlag aus
+  der Haupt-Windrichtung («Kronberg Süd», bei gleicher Richtung mit Nummer) lässt sich übernehmen und anpassen.
+  Speichern ruft `set_official_site_name` auf (prüft die Admin-Rolle) und setzt `name_override`; alle Orte ohne
+  eigenen Namen tragen ihn sofort. Leeren setzt auf den Importnamen zurück. Der Import überschreibt ihn nie.
+- **burnair:** Namen werden nicht automatisch von burnair übernommen (kein Export, keine Erlaubnis); die Seite
+  macht das Nachschlagen pro Platz schnell.
+- **Zusammenführen:** Auf der Ortsseite «Mit anderem Ort zusammenführen»; auf «Orte» ein Hinweis, wenn derselbe
+  offizielle Platz mehrfach vorkommt (behalten wird der Ort mit den meisten Flügen). `merge_locations` prüft,
+  dass beide Orte der eigenen Person gehören, hängt alle Verweise um (Flüge, Vorlagen, Flugtage, Schulflüge,
+  Challenges; die Liste der Spalten liest die Funktion zur Laufzeit aus den Fremdschlüsseln), übernimmt Notiz und
+  Windrichtungen, falls der bleibende Ort keine hat, und löscht den anderen.
+- **Auslieferung:** `node scripts/db-migrate.mjs --apply` (0067), dann pushen. Ohne Migration erscheinen nur beim
+  Speichern bzw. Zusammenführen Fehlermeldungen; alles andere läuft.
+
 ## Offizielle Plätze: Namen aus Sicht des Betrachters, burnair-Link (Etappe B, 2026-09-28)
 
 Migrationen `0065_location_display_names.sql` und `0066_viewer_site_names.sql`, Tests in
