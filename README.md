@@ -606,8 +606,7 @@ Nach mehreren Deploys kurz hintereinander hielt ein Handy eine alte Startseite i
 auf dem Server nicht mehr gab (kein Styling, weisse Seite bei «Mehr»). `src/main.tsx` erkennt fehlende `/assets/`-Dateien
 jetzt (Ladefehler von CSS/JS, Stylesheets ohne Inhalt nach dem Laden, fehlgeschlagene Lazy-Imports) und löscht Service
 Worker und Caches (`forceAppUpdate`), höchstens einmal pro Minute. Hängt ein Gerät noch auf einem alten Stand ohne diese
-Reparatur: Chrome → Website-Einstellungen → `flyaryapp.vercel.app` → «Löschen und zurücksetzen». Die Adresse hat kein
-«www.» (`www.flyaryapp.vercel.app` hat kein gültiges Zertifikat und scheitert an HSTS).
+Reparatur: Chrome → Website-Einstellungen → `app.flyary.ch` → «Löschen und zurücksetzen».
 
 ## Marktplatz M2: Nachtrag Abnahmeprüfung
 
@@ -975,10 +974,30 @@ Ein Kanal-Modell für alle Unterhaltungen (Migration `0025_chat_channels.sql`, T
 
 **Auslieferung:** zuerst `node scripts/db-migrate.mjs --apply` (0025), danach das Frontend.
 
+## Eigene Domain flyary.ch (2026-09-28)
+
+Die Domain `flyary.ch` ist bei Hostpoint registriert (DNS bei Hostpoint; MX/TXT für E-Mail nie ändern).
+
+- **Webseite:** `https://www.flyary.ch` ist das Vercel-Projekt `flyary-website` (Root Directory `website`,
+  Einstellungen in `website/vercel.json`, Umgebungsvariable `SITE_URL=https://www.flyary.ch` für Production).
+  `flyary.ch` leitet auf `www` um.
+- **App:** `https://app.flyary.ch` ist das Vercel-Projekt `flyaryapp`. `flyaryapp.vercel.app` leitet mit 308 auf
+  `app.flyary.ch` um (Pfad und Parameter bleiben erhalten), alte Links funktionieren also weiter.
+- **DNS bei Hostpoint:** A `@` → `216.198.79.1`, CNAME `www` → `flyary-website.vercel.app`, CNAME `app` →
+  `2eb79b43d5cc66c3.vercel-dns-017.com` (Werte von Vercel).
+- **Supabase Auth:** Site-URL `https://app.flyary.ch`; die Rücksprung-Liste enthält `https://app.flyary.ch` und
+  `https://app.flyary.ch/**` neben den alten Vercel-Adressen. Die Anmeldung springt nach `window.location.origin` zurück.
+- **Edge Functions:** Secret `APP_URL=https://app.flyary.ch` (Freigabelinks von Flügen und Inseraten).
+- **Google Auth Platform (Branding):** Startseite `https://www.flyary.ch`, Datenschutz `https://app.flyary.ch/legal`,
+  Nutzungsbedingungen `https://app.flyary.ch/legal/terms`, autorisierte Domain `flyary.ch`. Die Rechtsseiten sind
+  dafür ohne Anmeldung lesbar (`OptionalAppLayout` in `src/App.tsx`).
+- **Installierte App:** Eine PWA gehört zu ihrer Adresse. Wer Flyary noch von `flyaryapp.vercel.app` installiert hat,
+  installiert sie unter `app.flyary.ch` neu, meldet sich an und erlaubt Push-Nachrichten wieder.
+
 ## Betrieb ohne Lovable (Supabase Zürich + Vercel)
 
 Seit dem 24.09.2026 läuft Flyary auf einem eigenen Supabase-Projekt `pvhxrgvhzzqcyadyksvk` (Region
-eu-central-2, Zürich) und wird über Vercel (`flyaryapp.vercel.app`) aus `main` deployt. Lovable ist
+eu-central-2, Zürich) und wird über Vercel (`app.flyary.ch`, früher `flyaryapp.vercel.app`) aus `main` deployt. Lovable ist
 komplett entfernt (Google-Login direkt über Supabase, keine Lovable-Pakete, keine `lovable.app`-Adressen).
 
 - **Zugangsdaten** für Skripte stehen in `docs/.env.deploy.local` (git-ignoriert): `SUPABASE_ACCESS_TOKEN`,
