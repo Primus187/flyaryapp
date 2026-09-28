@@ -54,7 +54,8 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
     setHint((day?.landing_hint_minutes ?? null) as LandingHintMinutes);
     const siteId = day?.default_takeoff_location_id;
     if (siteId) {
-      const { data } = await supabase.from("locations").select("name").eq("id", siteId).maybeSingle();
+      // Computed field of migration 0065 (the name as this viewer calls the site), typed as the plain name.
+      const { data } = await supabase.from("locations").select("name:display_name" as "name").eq("id", siteId).maybeSingle();
       setSite(data?.name || null);
     } else setSite(null);
   }, [eventId, settingsVersion]); // eslint-disable-line react-hooks/exhaustive-deps -- settingsVersion forces a reload

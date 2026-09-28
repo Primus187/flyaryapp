@@ -85,7 +85,8 @@ export default function ChallengeDetail() {
 
     const locationIds = goalsList.filter(g => g.location_id).map(g => g.location_id!);
     if (locationIds.length) {
-      const { data: locs } = await supabase.from("locations").select("id, name").in("id", locationIds);
+      // Computed field of migration 0065 (the name as this viewer calls the site), typed as the plain name.
+      const { data: locs } = await supabase.from("locations").select("id, name:display_name" as "id, name").in("id", locationIds);
       const locMap = new Map((locs || []).map(l => [l.id, l.name]));
       goalsList.forEach(g => { if (g.location_id) g.location_name = locMap.get(g.location_id); });
     }

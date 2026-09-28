@@ -73,7 +73,7 @@ export default function FlightDetail() {
 
   useEffect(() => {
     if (!id) return;
-    supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
+    supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name:display_name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name:display_name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
       setFlight(data);
       if (data) {
         setPublishedToFeed((data as any).published_to_feed || false);

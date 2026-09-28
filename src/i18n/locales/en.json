@@ -488,6 +488,7 @@
     "allCategories": "All types"
   },
   "locations": {
+    "openBurnair": "Open in the burnair map",
     "official": {
       "badge": "Official site",
       "officialName": "Official: {{name}}",

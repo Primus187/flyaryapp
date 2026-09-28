@@ -488,6 +488,7 @@
     "allCategories": "Tous les types"
   },
   "locations": {
+    "openBurnair": "Ouvrir dans la carte burnair",
     "official": {
       "badge": "Site officiel",
       "officialName": "Officiel : {{name}}",

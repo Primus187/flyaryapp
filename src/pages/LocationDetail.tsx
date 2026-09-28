@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Copy, MapPin, Mountain, Navigation, FileText, Plane, Trophy, Clock, Route, Wind, BadgeCheck, ExternalLink } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useToast } from "@/hooks/use-toast";
 import { degreesToCompassPoint, parseOpenMeteoWind, windMatchStatus, type WindMatchStatus } from "@/lib/wind-match";
 import { officialName, useOfficialSites, useSiteName } from "@/lib/official-sites-store";
+import { burnairMapUrl } from "@/lib/burnair";
 
 const markerIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
@@ -110,6 +111,11 @@ export default function LocationDetail() {
         <p className="-mt-2 pl-10 text-xs text-muted-foreground">{t("locations.official.officialName", { name: siteName(officialName(officialById.get(location.official_site_id)!)) })}</p>
       )}
       {hasCoords && (<div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 220 }}><MapContainer center={[location.latitude, location.longitude]} zoom={13} className="h-full w-full" zoomControl={false}><TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} /><Marker position={[location.latitude, location.longitude]} icon={markerIcon} /></MapContainer></div>)}
+      {hasCoords && (
+        <Button asChild variant="outline" size="sm" className="w-full gap-1.5">
+          <a href={burnairMapUrl(location.latitude, location.longitude)} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t("locations.openBurnair")}</a>
+        </Button>
+      )}
       <div className="grid grid-cols-2 gap-2">
         <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><MapPin className="h-3 w-3" /> {t("locations.typeLabel")}</div><p className={`text-sm font-medium ${typeColor(location.type)}`}>{typeLabel(location.type)}</p></CardContent></Card>
         <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Mountain className="h-3 w-3" /> {t("locations.altitudeLabel")}</div><p className="text-sm font-medium">{location.altitude ? `${location.altitude} m` : "—"}</p></CardContent></Card>

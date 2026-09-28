@@ -463,6 +463,7 @@
     "allCategories": "Alle Arten"
   },
   "locations": {
+    "openBurnair": "In der burnair-Karte öffnen",
     "official": {
       "badge": "Offizieller Platz",
       "officialName": "Offiziell: {{name}}",

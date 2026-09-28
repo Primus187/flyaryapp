@@ -44,7 +44,9 @@ export default function DaySitesCard({ eventId, onChanged, readOnly = false }: {
     setLanding(ev?.default_landing_location_id || "");
     // The day's sites may belong to another instructor; migration 0052 makes them readable for the team.
     if (ids.length > 0) {
-      const { data } = await supabase.from("locations").select("id, name").in("id", ids);
+      // name:display_name is the computed field of migration 0065 (the name as this viewer calls the site);
+      // the typed client does not know computed fields, so it is typed as the plain name.
+      const { data } = await supabase.from("locations").select("id, name:display_name" as "id, name").in("id", ids);
       setNames(Object.fromEntries((data || []).map((l) => [l.id, l.name])));
     }
   }, [eventId]);

@@ -1,5 +1,30 @@
 # Flyary
 
+## Offizielle Plätze: Namen aus Sicht des Betrachters, burnair-Link (Etappe B, 2026-09-28)
+
+Migrationen `0065_location_display_names.sql` und `0066_viewer_site_names.sql`, Tests in
+`src/test/viewer-site-names-database.test.ts` und `src/lib/burnair.test.ts`.
+
+- **Regel (Entscheid 2026-09-28):** Ein Ort einer anderen Person, der mit einem offiziellen Platz verknüpft ist,
+  erscheint unter dem eigenen Namen des Betrachters für diesen Platz, sonst unter dem offiziellen Namen. Private
+  Namen anderer für offizielle Plätze verlassen die Datenbank nicht. Eigene Orte und nicht verknüpfte Orte
+  behalten ihren Namen.
+- **Umsetzung:** `public.display_name(locations)` liefert diesen Namen, `public.official_name(locations)` den
+  offiziellen. Beide sind in SQL und als PostgREST-Feld nutzbar (`locations(name:display_name)`). Umgestellt sind
+  Feed (`feed_flight_item`), Flugliste (`list_flights_page`), Schulflüge des Schülers (`my_school_flights`,
+  `my_school_flight_imports`), Schülerdossier (`school_student_dossier`) sowie im Frontend Flugdetail, Dashboard,
+  Statistik, Suche, Flugtag-Plätze und Challenges. Die Funktionskörper von 0066 stammen unverändert aus der
+  Live-Datenbank; ersetzt sind nur die Namensspalten.
+- **SHV-Ausbildungsnachweis:** Als offizielles Dokument zeigt er immer die offiziellen Namen und zählt
+  «Fluggebiete» pro offiziellem Platz. Zwei Orte der Schule am selben Platz zählen einmal.
+- **Nicht umgestellt:** Die öffentliche Flugseite (`get-shared-flight`) und das PDF-Flugbuch
+  (`export-flightbook-pdf`) sind Edge Functions und zeigen weiter den Namen des Besitzers. Das ist bei eigenen
+  Flügen richtig; ein aus dem Schultag übernommener Flug zeigt dort den Namen der Schule.
+- **burnair-Link:** Die Ortsseite hat für jeden Ort mit Koordinaten «In der burnair-Karte öffnen»
+  (`src/lib/burnair.ts`, `map.burnair.cloud/…#15/<lat>/<lng>`).
+- **Auslieferung:** Zuerst `node scripts/db-migrate.mjs --apply` (0065, 0066), dann pushen. Umgekehrt schlagen
+  Flugdetail, Dashboard, Statistik und Suche fehl, bis die Migration da ist, weil sie `display_name` abfragen.
+
 ## Offizielle Plätze: eigene Namen, Namen ohne «Startplatz» (Etappe A, 2026-09-28)
 
 Migration `0064_own_site_names.sql`, Namensregeln in `src/lib/site-names.ts`, Tests in

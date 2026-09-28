@@ -37,7 +37,7 @@ export default function SearchPage() {
     const loadData = async () => {
       setLoading(true);
       const [flightsRes, locsRes, eventsRes] = await Promise.all([
-        supabase.from("flights").select("id, date, glider, comments, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name)").eq("user_id", user.id).order("date", { ascending: false }),
+        supabase.from("flights").select("id, date, glider, comments, locations!flights_takeoff_location_id_fkey(name:display_name), land:locations!flights_landing_location_id_fkey(name:display_name)").eq("user_id", user.id).order("date", { ascending: false }),
         supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name"),
         supabase.from("flight_events").select("id, title, event_date, event_type, group_id"),
       ]);

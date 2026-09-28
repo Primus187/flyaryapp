@@ -104,7 +104,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
     supabase.rpc("get_pilot_stats", { _user_id: userId, _year: prevYear }),
     supabase.from("profiles").select("pilot_name, avatar_url").eq("user_id", userId).single(),
     supabase.from("flights")
-      .select("id, date, glider, duration_minutes, altitude_gain, distance_km, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name), land:locations!flights_landing_location_id_fkey(name)")
+      .select("id, date, glider, duration_minutes, altitude_gain, distance_km, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name:display_name), land:locations!flights_landing_location_id_fkey(name:display_name)")
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(5),

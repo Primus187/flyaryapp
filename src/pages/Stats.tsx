@@ -65,7 +65,7 @@ export default function Stats() {
     if (!user) return;
     supabase
       .from("flights")
-      .select("id, date, duration_minutes, altitude_gain, distance_km, glider, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name, official_site_id)")
+      .select("id, date, duration_minutes, altitude_gain, distance_km, glider, takeoff_location_id, landing_location_id, locations!flights_takeoff_location_id_fkey(name:display_name, official_site_id)")
       .eq("user_id", user.id)
       .order("date", { ascending: true })
       .then(({ data }) => {
