@@ -14,6 +14,7 @@ const routes = [
   // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
   "/events/22222222-2222-4222-8222-222222222222",
 ];
+const publicRoutes = ["/legal", "/legal/terms", "/legal/licenses"];
 const uid = "11111111-1111-4111-8111-111111111111";
 const user = { id: uid, aud: "authenticated", role: "authenticated", email: "smoke@example.invalid", app_metadata: { provider: "email" }, user_metadata: {}, created_at: "2026-01-01T00:00:00Z" };
 const profile = { id: uid, user_id: uid, pilot_name: "Smoke Test", training_level: "pilot" };
@@ -93,12 +94,30 @@ try {
     console.log(`${problems.length ? "FAIL" : "ok  "} ${path}${problems.length ? " – " + problems.join("; ") : ""}`);
     if (problems.length) failures.push(path);
   }
+
+  // Legal pages are public: the sign-in page and Google's consent screen link to them.
+  const guest = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "de-CH", serviceWorkers: "block" });
+  await guest.addInitScript(() => { localStorage.setItem("flyary-language", "de"); sessionStorage.setItem("flyary-splash-seen", "1"); });
+  await guest.route("**/*", (route) => new URL(route.request().url()).origin === base ? route.continue() : route.fulfill({ json: {} }));
+  for (const path of publicRoutes) {
+    const page = await guest.newPage();
+    await page.goto(base + path, { waitUntil: "load" });
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForTimeout(400);
+    const stayed = new URL(page.url()).pathname === path;
+    const heading = await page.locator("h1").count();
+    await page.close();
+    const problems = [...(stayed ? [] : ["redirected to " + page.url()]), ...(heading ? [] : ["no heading"])];
+    console.log(`${problems.length ? "FAIL" : "ok  "} ${path} (signed out)${problems.length ? " – " + problems.join("; ") : ""}`);
+    if (problems.length) failures.push(path + " (signed out)");
+  }
+  await guest.close();
 } finally {
   await browser.close();
   await new Promise((resolve) => server.httpServer.close(resolve));
 }
 if (failures.length) {
-  console.error(`\n${failures.length} of ${routes.length} pages failed: ${failures.join(", ")}`);
+  console.error(`\n${failures.length} of ${routes.length + publicRoutes.length} pages failed: ${failures.join(", ")}`);
   process.exit(1);
 }
-console.log(`\nAll ${routes.length} pages render.`);
+console.log(`\nAll ${routes.length + publicRoutes.length} pages render.`);

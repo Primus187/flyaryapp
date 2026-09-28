@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, Outlet, useLocation } from "react-router-dom";
 import SplashScreen from "@/components/SplashScreen";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -99,6 +99,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Legal pages are public (sign-in page and Google consent screen link to them): signed-in pilots
+// keep the app navigation, visitors see the page on its own.
+function OptionalAppLayout() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <AppLayout /> : <Outlet />;
+}
+
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -189,11 +197,8 @@ const App = () => {
                       <Route path="/search" element={<SearchPage />} />
                       <Route path="/import" element={<ImportFlights />} />
                       <Route path="/import-locations" element={<ImportLocations />} />
-                      <Route path="/legal" element={<Legal />} />
                       <Route path="/admin/errors" element={<AdminErrors />} />
                       <Route path="/admin/sites" element={<AdminSites />} />
-                      <Route path="/legal/terms" element={<LegalTerms />} />
-                      <Route path="/legal/licenses" element={<LegalLicenses />} />
                       <Route path="/leaderboard" element={<Leaderboard />} />
                       <Route path="/challenges/:id" element={<ChallengeDetail />} />
                       <Route path="/pilot/:userId" element={<PilotProfile />} />
@@ -210,6 +215,11 @@ const App = () => {
                       <Route path="/market/moderation" element={<MarketModeration />} />
                       <Route path="/market/:id" element={<MarketListingDetail />} />
                       <Route path="/market/:id/edit" element={<MarketListingForm />} />
+                    </Route>
+                    <Route element={<OptionalAppLayout />}>
+                      <Route path="/legal" element={<Legal />} />
+                      <Route path="/legal/terms" element={<LegalTerms />} />
+                      <Route path="/legal/licenses" element={<LegalLicenses />} />
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                     <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
