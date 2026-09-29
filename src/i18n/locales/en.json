@@ -936,8 +936,9 @@
     "privateOnly": "Internal only"
   },
   "onboarding": {
+    "studentWelcome": "Welcome to {{school}}!", "studentIntro": "Your flight diary starts here. Your flight school confirms your school flights, and you always see your training status.", "studentStart": "To get started", "studentProfileTitle": "Profile and emergency contact", "studentProfileDesc": "Name, emergency contact and SHV number so your school can reach you.", "studentTrainingTitle": "See your training status", "studentTrainingDesc": "What’s still missing for your licence.", "studentEventsTitle": "Your school’s flying days", "studentEventsDesc": "Sign up for the next flying days.", "studentImportDesc": "Bring the flights from your current logbook.", "staffWelcome": "Welcome to the {{school}} team!", "staffIntro": "In the school area you plan flying days, support students and confirm their flights.", "staffStart": "To get started", "staffAlso": "Also", "staffInviteTitle": "Invite students", "staffInviteDesc": "The school’s invite link is on the overview.", "staffCertificateTitle": "Add your certificate", "staffCertificateDesc": "Needed so you can confirm flights.",
     "welcome": "Welcome to Flyary! 🪂",
-    "intro": "Your digital logbook for paragliding pilots.",
+    "intro": "Your flight diary for paragliding and hang gliding.",
     "fastTrack": "Already have flight data?",
     "orStartFresh": "Or start fresh",
     "shortcutXcontestTitle": "Connect XContest",
@@ -946,8 +947,8 @@
     "shortcutXlsxDesc": "Bring your logbook spreadsheet in one click.",
     "step1Title": "Complete your profile",
     "step1Desc": "Add your name and your gliders.",
-    "step2Title": "Create your first site",
-    "step2Desc": "Add your takeoff spot with coordinates.",
+    "step2Title": "Choose take-off and landing sites",
+    "step2Desc": "From the official directory, for your flights and your map.",
     "step3Title": "Log your first flight",
     "step3Desc": "Record your first flight in the logbook.",
     "goToProfile": "Go to profile",

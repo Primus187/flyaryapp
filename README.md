@@ -1,5 +1,21 @@
 # Flyary
 
+## Onboarding je nach Weg (2026-09-30)
+
+Migration `0081_onboarding.sql`. Der Willkommensdialog (`src/components/OnboardingDialog.tsx`) richtet
+sich danach, wie jemand Flyary nutzt (`my_onboarding`):
+
+- **Schüler einer Schule:** «Willkommen bei {Schule}!» mit Profil und Notfallkontakt,
+  Ausbildungsstand und Flugtagen der Schule; bisherige Flüge importieren.
+- **Team einer Schule:** Schüler einladen (Einladungslink in der Übersicht), Zertifikat hinterlegen,
+  Profil.
+- **Pilot:** XContest verbinden, Excel importieren, Profil, Start- und Landeplätze, erster Flug.
+
+Gespeichert wird pro Konto (`profiles.onboarding_seen`, `complete_onboarding`), nicht mehr nur im
+Browser. Jede Variante erscheint einmal; wer später Schüler oder Teammitglied wird, sieht diese
+Einführung einmal zusätzlich. Bestehende Konten sehen den Dialog nicht wieder. Schlägt die Abfrage
+fehl, gilt wie bisher das Browser-Merkmal. Test: `src/test/onboarding-database.test.ts`.
+
 ## Sicherheitsprüfung: tiefe Befunde behoben (2026-09-30)
 
 Migration `0080_security_low.sql` zu den tiefen Befunden der Prüfung vom 2026-09-28:

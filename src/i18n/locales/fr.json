@@ -936,8 +936,9 @@
     "privateOnly": "Interne uniquement"
   },
   "onboarding": {
+    "studentWelcome": "Bienvenue chez {{school}} !", "studentIntro": "Ton journal de vol commence ici. Ton école confirme tes vols d’école, et tu vois à tout moment ton niveau de formation.", "studentStart": "Pour commencer", "studentProfileTitle": "Profil et contact d’urgence", "studentProfileDesc": "Nom, contact d’urgence et numéro FSVL pour que ton école puisse te joindre.", "studentTrainingTitle": "Voir ton niveau de formation", "studentTrainingDesc": "Ce qui manque encore jusqu’au brevet.", "studentEventsTitle": "Les journées de vol de ton école", "studentEventsDesc": "Inscris-toi aux prochaines journées de vol.", "studentImportDesc": "Reprendre les vols de ton carnet actuel.", "staffWelcome": "Bienvenue dans l’équipe de {{school}} !", "staffIntro": "Dans l’espace école, tu planifies les journées de vol, accompagnes les élèves et confirmes leurs vols.", "staffStart": "Pour commencer", "staffAlso": "Aussi", "staffInviteTitle": "Inviter des élèves", "staffInviteDesc": "Le lien d’invitation de l’école se trouve dans l’aperçu.", "staffCertificateTitle": "Ajouter ton certificat", "staffCertificateDesc": "Nécessaire pour confirmer des vols.",
     "welcome": "Bienvenue sur Flyary ! 🪂",
-    "intro": "Votre carnet de vol numérique pour pilotes de parapente.",
+    "intro": "Ton journal de vol pour le parapente et le delta.",
     "fastTrack": "Vous avez déjà des données de vol ?",
     "orStartFresh": "Ou commencer de zéro",
     "shortcutXcontestTitle": "Connecter XContest",
@@ -946,8 +947,8 @@
     "shortcutXlsxDesc": "Apportez votre tableur de carnet en un clic.",
     "step1Title": "Compléter votre profil",
     "step1Desc": "Ajoutez votre nom et vos voiles.",
-    "step2Title": "Créer votre premier site",
-    "step2Desc": "Ajoutez votre décollage avec les coordonnées.",
+    "step2Title": "Choisir décollages et atterrissages",
+    "step2Desc": "Depuis le répertoire officiel, pour tes vols et ta carte.",
     "step3Title": "Enregistrer votre premier vol",
     "step3Desc": "Documentez votre premier vol dans le carnet.",
     "goToProfile": "Vers le profil",

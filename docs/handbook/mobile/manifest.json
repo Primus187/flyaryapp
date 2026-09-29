@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-29T21:57:51.593Z",
+  "capturedAt": "2026-09-29T22:33:57.182Z",
   "source": "Local Flyary app, fictional fixtures, no live API access",
   "screenshots": [
     {
@@ -775,6 +775,7 @@
     "official_sites",
     "rpc/my_school_flight_imports",
     "rpc/has_role",
-    "rpc/my_instructor_ratings"
+    "rpc/my_instructor_ratings",
+    "rpc/my_level_set_by_school"
   ]
 }
