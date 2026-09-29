@@ -1,13 +1,25 @@
 # Flyary-Handbücher erstellen
 
-## Aktuelle Ausgaben vom 28. September 2026
+## Automatische aktuelle Screenshots
+
+Die Bildserien werden seit dem 29. September 2026 neu aus dem aktuellen lokalen App-Code erzeugt. Die Datumsangaben weiter unten dokumentieren die früheren Ausgaben; die fiktiven Beispieldaten behalten bewusst ihre festen September-Termine.
+
+`npm run handbook:screenshots` prüft den App-Quellstand und nimmt bei Änderungen beide Bildserien vollständig neu auf. `npm run handbook:check` prüft nur und endet bei veralteten oder veränderten Bildern mit einem Fehler. `npm run handbook:screenshots -- --force` erzwingt eine vollständige Neuaufnahme.
+
+Webseiten-Build und Word-Generator führen diese Prüfung mit automatischer Neuaufnahme aus. Auch die Startseitenbilder kommen direkt aus den aktuellen Handbuchaufnahmen. Voraussetzungen: Root-Abhängigkeiten (`npm ci`), Microsoft Edge und die lokale Vite-Konfiguration der App. Die Aufnahme startet einen eigenen lokalen Vite-Server auf einem freien Port und beendet ihn anschliessend. Externe Anfragen werden weiterhin durch fiktive Beispieldaten ersetzt oder blockiert.
+
+`current-screenshots.json` enthält den SHA-256-Fingerabdruck von App, Aufnahme-Skripten und Handbuchquellen sowie Prüfsummen der verwendeten Bilder. Nur eine vollständige, fehlerfreie Aufnahme beider Handbücher erhält diesen Nachweis. Fehlende Bilder, Laufzeitfehler oder Änderungen während der Aufnahme verhindern den Build. Einzelaufnahmen löschen den Nachweis. Nachweis und Bilder gemeinsam versionieren. Neue Funktionen benötigen weiterhin passende Aufnahmeabläufe und Beispieldaten.
+
+Beide aktuellen Word-Ausgaben mit `python scripts/build-handbook.py` und `python scripts/build-handbook.py --school` neu bauen, danach wie unten beschrieben in Word paginieren. Historische Word-Versionen bleiben erhalten. Eine veröffentlichte Website erhält neue Bilder erst mit einem erneuten Build und Deployment.
+
+## Ausgaben vom 28. September 2026
 
 - [Pilotenhandbuch als Markdown](../Benutzerhandbuch-Piloten.md) und [Word v1.5](../Benutzerhandbuch-Piloten-v1.5.docx): Android-IGC-Teilen, automatische Platzwahl, DHV-Katalog, persönliche Namen, Verknüpfen, Zusammenführen und burnair-Link; präzisierte Terminbilder.
 - [Schulhandbuch als Markdown](../Betriebshandbuch-Flugschulen.md) und [Word v1.4](../Betriebshandbuch-Flugschulen-v1.4.docx): Fotoupload, inaktive Schüler für Starthelfer, offizielle Tagesplätze und Namens-/Gebietszählung im Ausbildungsnachweis.
 
 Basis ist Commit `779a010` samt vorhandenem Arbeitsstand. Die bisherigen Word-Ausgaben bleiben erhalten. Die Generatoren und Vorschauwerkzeuge verwenden jetzt Piloten v1.5 und Schule v1.4. Die folgenden Angaben zu früheren Seitenzahlen sind historische Prüfergebnisse und gelten nicht automatisch für die neuen Ausgaben.
 
-Die vorhandenen Screenshots vom 24./25. September werden weiterverwendet. Neue Abläufe sind ausdrücklich als Textanleitungen ergänzt; es wurden für diese Aktualisierung keine neuen App-Screenshots aufgenommen. Wortlaut, Rechte und Abläufe wurden mit Frontend und Migrationen bis 0067 abgeglichen. Die Bilddateien sind keine Abnahme des neuen App-Stands.
+Historischer Hinweis zur damaligen Ausgabe: Die vorhandenen Screenshots vom 24./25. September wurden weiterverwendet. Neue Abläufe sind ausdrücklich als Textanleitungen ergänzt; es wurden für diese Aktualisierung keine neuen App-Screenshots aufgenommen. Wortlaut, Rechte und Abläufe wurden mit Frontend und Migrationen bis 0067 abgeglichen. Die Bilddateien sind keine Abnahme des neuen App-Stands.
 
 Die neuen Ausgaben wurden in Word paginiert und ihre Inhaltsverzeichnisse aktualisiert: Piloten v1.5 umfasst 84 Seiten, 27 Kapitel und 58 Abbildungen; Schule v1.4 umfasst 69 Seiten, 31 Kapitel und 56 Abbildungen. Seitenindizes und Vorschauen liegen unter `.handbook-preview/v1.5-pages.json` beziehungsweise `.handbook-preview/school/v1.4-pages.json`. DOCX-Struktur und lokale Bildverweise wurden geprüft; neue Textseiten wurden in der Word-Vorschau kontrolliert.
 

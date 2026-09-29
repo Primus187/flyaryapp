@@ -18,7 +18,9 @@
     "smoke": "vite build && node scripts/smoke-routes.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "handbook:screenshots": "node scripts/handbook-screenshots.mjs",
+    "handbook:check": "node scripts/handbook-screenshots.mjs --check"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

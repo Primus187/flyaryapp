@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { content, languages } from './content.mjs';
 import { docsLabels } from './docs-content.mjs';
 import { buildDocs } from './build-docs.mjs';
+import { ensureCurrentScreenshots } from '../scripts/handbook-screenshots.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, 'dist');
@@ -174,11 +175,18 @@ function render(lang) {
 }
 
 // Start from an empty output so removed pages (e.g. the former technical docs) do not linger.
+await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 for (const file of ['site.css', 'site.js', 'boot.js']) await cp(join(here, file), join(out, file));
 const assets = ['flyary-192.png', 'overview.png', 'logbook.png', 'stats.png', 'training.png', 'school.png', 'flight-detail.png', 'cockpit.png', 'feed.png'];
-for (const asset of assets) await cp(join(here, 'assets', asset), join(out, 'assets', asset));
+const appScreens = {
+  'overview.png': 'mobile/01-home.png', 'logbook.png': 'mobile/06-flightbook.png',
+  'stats.png': 'mobile/12-stats.png', 'training.png': 'mobile/10-training.png',
+  'school.png': 'school-mobile/01-overview.png', 'flight-detail.png': 'mobile/19-flight-view.png',
+  'cockpit.png': 'school-mobile/34-coaching.png', 'feed.png': 'mobile/22-feed.png',
+};
+for (const asset of assets) await cp(appScreens[asset] ? join(here, '../docs/handbook', appScreens[asset]) : join(here, 'assets', asset), join(out, 'assets', asset));
 for (const lang of Object.keys(languages)) {
   await mkdir(join(out, lang), { recursive: true });
   await writeFile(join(out, lang, 'index.html'), render(lang));

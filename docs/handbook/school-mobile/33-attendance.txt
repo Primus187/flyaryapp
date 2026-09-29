@@ -14,7 +14,7 @@ Anmelden
 Teilnehmende
 1
 Planung
-Coaching
+Flugtag
 Chat
 Pausierte und abgemeldete Schüler anzeigen
 
@@ -22,18 +22,6 @@ Die Anzeige filtert die Teilnehmerliste. Bestehende Anmeldungen und belegte Plä
 
 Alex Beispiel
 Bestätigung zurückziehen
-
-Anwesenheit
-
-1 von 1
-Alex Beispiel
-
-Häkchen setzen, wer am Flugtag da war. Daraus entstehen Startleiter-Guthaben und Abrechnungsposten.
-
-Guthaben & Posten verbuchen
-
-Bereits verbucht: 1 Guthaben, 1 Posten
-
 Home
 Flugtage
 Schüler

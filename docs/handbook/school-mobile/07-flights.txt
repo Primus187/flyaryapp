@@ -11,6 +11,7 @@ Flüge
 Tagesnotizen
 Material
 Abrechnung
+Nachweis
 
 Alle mit dieser Schule geteilten Flüge, mit Flugkommentaren und Coaching-Notizen.
 

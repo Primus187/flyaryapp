@@ -33,7 +33,7 @@ Personen einladen
 
 Link oder QR-Code teilen — App installieren, Konto anlegen, Gruppe beitreten.
 
-http://127.0.0.1:4175/groups?invite=DEMO2026
+http://127.0.0.1:5173/groups?invite=
 Teilen
 Kopieren
 BETRIEB
@@ -46,6 +46,7 @@ Sicherheit
 Verfügbarkeit
 VERWALTUNG
 Material
+Shop
 Guthaben
 Abrechnung
 Statistiken

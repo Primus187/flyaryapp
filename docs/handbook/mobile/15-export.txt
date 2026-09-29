@@ -10,10 +10,12 @@ Deutsch
 Français
 🇬🇧
 English
-Passwort ändern
-Neues Passwort
-Passwort ändern
 Ausbildungsstand
+Wer darf mir folgen?
+Nur Mitglieder meiner Gruppen und Schulen
+
+Wer dir folgt, sieht dein Profil sowie deine veröffentlichten Flüge und Fotos. Wechselst du auf «Nur Mitglieder», werden andere Follower entfernt.
+
 Push-Benachrichtigungen
 Benachrichtigungen bei Likes und Kommentaren
 Export & Import

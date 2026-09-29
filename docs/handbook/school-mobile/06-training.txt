@@ -11,6 +11,7 @@ Flüge
 Tagesnotizen
 Material
 Abrechnung
+Nachweis
 
 Kontrollblatt des Schülers mit erfasstem Lernstand. Die Sterne sind keine formelle Prüfungsfreigabe.
 
@@ -22,7 +23,7 @@ Landung
 
 LandeeinteilungSHV
 
-2/3
+Selbst: 2/3
 
 Gegenanflug früher planen
 

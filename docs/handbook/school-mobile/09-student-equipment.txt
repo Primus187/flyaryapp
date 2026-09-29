@@ -11,6 +11,7 @@ Flüge
 Tagesnotizen
 Material
 Abrechnung
+Nachweis
 Ausrüstung
 
 Markiere, was beim Schüler vorhanden ist. Fehlendes kann mit Leihmaterial abgedeckt werden.

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-25T05:55:01.220Z",
+  "capturedAt": "2026-09-29T04:05:52.877Z",
   "screenshots": [
     {
       "name": "01-overview",
@@ -432,7 +432,7 @@
     },
     {
       "name": "34-coaching",
-      "path": "/events/33333333-3333-4333-8333-333333333333?tab=coaching",
+      "path": "/events/33333333-3333-4333-8333-333333333333?tab=day",
       "viewport": {
         "width": 390,
         "height": 844
@@ -757,5 +757,9 @@
     }
   ],
   "errors": [],
-  "unknown": []
+  "unknown": [
+    "rpc/group_invite_code",
+    "rpc/school_student_ratings",
+    "official_sites"
+  ]
 }

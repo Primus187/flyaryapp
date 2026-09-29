@@ -1,3 +1,4 @@
+import { ensureCurrentScreenshots } from '../scripts/handbook-screenshots.mjs';
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -14,6 +15,7 @@ const plain = (s) => s.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\[([^\]
 const slug = (s) => plain(s).toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, '').replace(/\s/g, '-');
 
 export async function buildDocs({ out, site }) {
+  await ensureCurrentScreenshots();
   const sources = publicDocuments.map((source) => ({ ...source }));
   const pages = [], sourceMap = new Map(), images = new Map();
   const markdown = new Marked({ gfm: true });

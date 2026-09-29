@@ -10,6 +10,7 @@ Training
 Statistiken
 COMMUNITY
 Nachrichten
+Marktplatz
 Suche
 Rangliste
 Gruppen
@@ -24,7 +25,7 @@ App aktualisieren
 Lädt die neueste Version, falls noch eine alte angezeigt wird
 Abmelden
 
-Flyary · Version local · 24.09. 17:48
+Flyary · Version local · 29.09. 06:01
 
 Home
 Feed

@@ -14,26 +14,35 @@ Anmelden
 Teilnehmende
 1
 Planung
-Coaching
+Flugtag
 Chat
-AUSBILDUNGSBLATT (1)
+
+0 von 1 da
+
+1 offen
+
+Alle anwesend
+Alex Beispiel
+Noch offen
+
+Antippen = da. Nochmals antippen macht es rückgängig.
+
+Startplatz: nicht gesetzt
+
+Landeplatz: nicht gesetzt
+
+Landehinweis:
+aus
+
+Ändern
+Landeplatz
+Startplatz
+FLÜGE
 Alex Beispiel
 1
-Für heute pausieren
-F1
-F2
-F3
-F4
-F5
-F6
-Für Schüler sichtbar
-ZUSAMMENFASSUNG
-Für Schüler sichtbar
-Nächster Schritt
-SCHÜLERFLÜGE (1)
-Alex Beispiel
-32 min
-🪂 Advance Alpha 26
+Start
++ Flug
+AUSBILDUNGSBLATT (BISHER)
 Home
 Flugtage
 Schüler
