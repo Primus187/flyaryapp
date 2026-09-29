@@ -1729,6 +1729,123 @@ export type Database = {
           },
         ]
       }
+      flight_confirmation_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          flight_id: string
+          group_id: string | null
+          id: number
+          reason: string | null
+          student_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          flight_id: string
+          group_id?: string | null
+          id?: never
+          reason?: string | null
+          student_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          flight_id?: string
+          group_id?: string | null
+          id?: never
+          reason?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_confirmation_events_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_confirmation_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flight_confirmations: {
+        Row: {
+          confirmed_data: Json | null
+          decided_at: string | null
+          flight_id: string
+          group_id: string | null
+          id: string
+          instructor_cert: string | null
+          instructor_id: string | null
+          instructor_name: string | null
+          reason: string | null
+          school_name: string
+          status: string
+          student_id: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          confirmed_data?: Json | null
+          decided_at?: string | null
+          flight_id: string
+          group_id?: string | null
+          id?: string
+          instructor_cert?: string | null
+          instructor_id?: string | null
+          instructor_name?: string | null
+          reason?: string | null
+          school_name: string
+          status: string
+          student_id: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          confirmed_data?: Json | null
+          decided_at?: string | null
+          flight_id?: string
+          group_id?: string | null
+          id?: string
+          instructor_cert?: string | null
+          instructor_id?: string | null
+          instructor_name?: string | null
+          reason?: string | null
+          school_name?: string
+          status?: string
+          student_id?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_confirmations_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: true
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_confirmations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_events: {
         Row: {
           chat_link: string | null
@@ -2026,6 +2143,8 @@ export type Database = {
       flights: {
         Row: {
           altitude_gain: number | null
+          cancel_reason: string | null
+          cancelled_at: string | null
           comments: string | null
           created_at: string
           date: string
@@ -2061,6 +2180,8 @@ export type Database = {
         }
         Insert: {
           altitude_gain?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
           comments?: string | null
           created_at?: string
           date?: string
@@ -2096,6 +2217,8 @@ export type Database = {
         }
         Update: {
           altitude_gain?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
           comments?: string | null
           created_at?: string
           date?: string
@@ -3250,6 +3373,7 @@ export type Database = {
         Row: {
           created_at: string
           discipline: string
+          glider_class: string | null
           id: string
           is_default: boolean
           is_tandem: boolean
@@ -3260,10 +3384,12 @@ export type Database = {
           reserve_repack_date: string | null
           size: string | null
           user_id: string
+          wing_area_m2: number | null
         }
         Insert: {
           created_at?: string
           discipline?: string
+          glider_class?: string | null
           id?: string
           is_default?: boolean
           is_tandem?: boolean
@@ -3274,10 +3400,12 @@ export type Database = {
           reserve_repack_date?: string | null
           size?: string | null
           user_id: string
+          wing_area_m2?: number | null
         }
         Update: {
           created_at?: string
           discipline?: string
+          glider_class?: string | null
           id?: string
           is_default?: boolean
           is_tandem?: boolean
@@ -3288,6 +3416,7 @@ export type Database = {
           reserve_repack_date?: string | null
           size?: string | null
           user_id?: string
+          wing_area_m2?: number | null
         }
         Relationships: []
       }
@@ -4049,6 +4178,10 @@ export type Database = {
     }
     Functions: {
       build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
+      can_confirm_training: {
+        Args: { _discipline: string; _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_follow: {
         Args: { _follower: string; _target: string }
         Returns: boolean
@@ -4116,6 +4249,10 @@ export type Database = {
         }
         Returns: Json
       }
+      confirm_flights: {
+        Args: { _flight_ids: string[]; _group_id: string }
+        Returns: Json
+      }
       dismiss_school_flight_import: {
         Args: { _event_id: string }
         Returns: undefined
@@ -4164,6 +4301,7 @@ export type Database = {
         Args: { _event_id: string; _user_id: string }
         Returns: string
       }
+      flight_proof_snapshot: { Args: { _flight_id: string }; Returns: Json }
       follow_info: { Args: { _user_id: string }; Returns: Json }
       get_emergency_contact_info: {
         Args: { _event_id: string; _target_user_id: string }
@@ -4245,6 +4383,7 @@ export type Database = {
         Returns: Json
       }
       inactive_school_students: { Args: { _group_id: string }; Returns: Json }
+      instructor_cert_for: { Args: { _discipline: string }; Returns: string }
       is_avatar_path: { Args: { _name: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
@@ -4285,6 +4424,16 @@ export type Database = {
           _year?: number
         }
         Returns: Json
+      }
+      log_confirmation_event: {
+        Args: {
+          _action: string
+          _flight_id: string
+          _group: string
+          _reason: string
+          _student: string
+        }
+        Returns: undefined
       }
       market_can_admin_shop: {
         Args: { _group: string; _uid: string }
@@ -4587,6 +4736,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      return_flight_for_correction: {
+        Args: { _flight_id: string; _reason: string }
+        Returns: undefined
+      }
+      revoke_flight_confirmation: {
+        Args: { _flight_id: string; _reason: string }
+        Returns: undefined
+      }
       school_dashboard_data: {
         Args: { _group_id: string; _section?: string; _viewer_id?: string }
         Returns: Json
@@ -4651,6 +4808,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      school_flight_confirmations: {
+        Args: { _group_id: string; _status?: string }
+        Returns: Json
       }
       school_flight_default_location: {
         Args: { _event_id: string; _kind: string }
@@ -4895,6 +5056,14 @@ export type Database = {
         Returns: number
       }
       shares_group: { Args: { _a: string; _b: string }; Returns: boolean }
+      submit_flights_for_confirmation: {
+        Args: { _flight_ids: string[]; _group_id: string }
+        Returns: Json
+      }
+      withdraw_flight_submission: {
+        Args: { _flight_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
