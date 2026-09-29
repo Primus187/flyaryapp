@@ -3769,6 +3769,7 @@ export type Database = {
           health_data_consent_at: string | null
           id: string
           medical_notes: string | null
+          onboarding_seen: string[]
           pilot_name: string | null
           shv_number: string | null
           training_level: string | null
@@ -3794,6 +3795,7 @@ export type Database = {
           health_data_consent_at?: string | null
           id?: string
           medical_notes?: string | null
+          onboarding_seen?: string[]
           pilot_name?: string | null
           shv_number?: string | null
           training_level?: string | null
@@ -3819,6 +3821,7 @@ export type Database = {
           health_data_consent_at?: string | null
           id?: string
           medical_notes?: string | null
+          onboarding_seen?: string[]
           pilot_name?: string | null
           shv_number?: string | null
           training_level?: string | null
@@ -4537,6 +4540,7 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_onboarding: { Args: { _kind: string }; Returns: undefined }
       confirm_as_passenger: { Args: { _token: string }; Returns: boolean }
       confirm_flights: {
         Args: { _flight_ids: string[]; _group_id: string; _set_kind?: string }
@@ -4713,6 +4717,7 @@ export type Database = {
       is_market_moderator: { Args: { _uid: string }; Returns: boolean }
       is_market_staff: { Args: { _uid: string }; Returns: boolean }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
+      is_school_student: { Args: { _user_id: string }; Returns: boolean }
       join_group_by_invite_code: {
         Args: { _invite_code: string }
         Returns: {
@@ -5046,6 +5051,8 @@ export type Database = {
       }
       my_access: { Args: never; Returns: Json }
       my_instructor_ratings: { Args: never; Returns: Json }
+      my_level_set_by_school: { Args: never; Returns: boolean }
+      my_onboarding: { Args: never; Returns: Json }
       my_open_passenger_confirmations: { Args: never; Returns: Json }
       my_school_flight_imports: { Args: never; Returns: Json }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
