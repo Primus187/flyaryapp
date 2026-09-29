@@ -1,5 +1,23 @@
 # Flyary
 
+## Sicherheitsprüfung: tiefe Befunde behoben (2026-09-30)
+
+Migration `0080_security_low.sql` zu den tiefen Befunden der Prüfung vom 2026-09-28:
+
+- **Flüge nur in eigenen Gruppen** (Trigger `flights_guard_group`): Eine Gruppe lässt sich einem
+  Flug nur zuordnen, wenn man Mitglied ist. Geprüft wird nur beim Setzen oder Ändern der Gruppe, ältere
+  Flüge bleiben nach dem Austritt bearbeitbar; das Übernehmen von Schulflügen (0057) bleibt möglich.
+- **Ausbildungsstand von Schülern setzt die Schule** (Trigger `profiles_guard_training_level`): Er
+  bestimmt, welche Schülerkanäle man lesen kann. Schüler einer Schule (Mitglied ohne Team-Funktion)
+  können ihn nicht mehr selbst ändern; in den Einstellungen ist er dann gesperrt mit Hinweis
+  (`my_level_set_by_school`). Piloten ohne Schule setzen ihn weiterhin selbst. Da `profiles` ein
+  tabellenweites UPDATE-Recht hat, braucht es den Trigger statt einer Spaltenberechtigung.
+- **Statistik nur für sich selbst:** `get_pilot_stats` liefert nur noch die eigenen Werte.
+- **Grenzen für Speicher:** `flight-photos` höchstens 15 MB, nur Bildformate; `igc-files` höchstens
+  10 MB, nur Text. Fotos aus dem Flugformular werden jetzt wie überall verkleinert (vorher Originale
+  bis 10 MB). Die Edge Function `upload-igc-track` speichert als `text/plain`.
+- Test: `src/test/security-low-database.test.ts`.
+
 ## Pilotphase: Warteraum, persönliche Einladungen, Flugschulen nur durch Flyary (2026-09-30)
 
 Entscheid 2026-09-30: Anmelden mit Google bleibt für alle offen, ein neues Konto braucht aber eine

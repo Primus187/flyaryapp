@@ -89,9 +89,9 @@ Deno.serve(async (req) => {
 
     const { error: uploadError } = await adminClient.storage.from("igc-files").upload(
       storagePath,
-      new Blob([content], { type: "text/plain; charset=utf-8" }),
+      new Blob([content], { type: "text/plain" }),
       {
-        contentType: "text/plain; charset=utf-8",
+        contentType: "text/plain",
         upsert: false,
       }
     );

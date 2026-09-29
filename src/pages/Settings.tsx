@@ -24,18 +24,21 @@ function TrainingLevelCard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [level, setLevel] = useState("grundkurs");
+  // In a school the school sets the level (migration 0080); pilots outside a school set their own.
+  const [bySchool, setBySchool] = useState(false);
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("training_level").eq("user_id", user.id).single().then(({ data }) => {
       if (data && (data as any).training_level) setLevel((data as any).training_level);
     });
+    void supabase.rpc("my_level_set_by_school" as never).then(({ data }) => setBySchool(data === true));
   }, [user]);
   const handleChange = async (v: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ training_level: v } as any).eq("user_id", user.id);
+    if (error) { toast({ title: t("common.error"), description: t("settings.trainingLevelBySchool"), variant: "destructive" }); return; }
     setLevel(v);
-    if (user) {
-      await supabase.from("profiles").update({ training_level: v } as any).eq("user_id", user.id);
-      toast({ title: t("common.saved") });
-    }
+    toast({ title: t("common.saved") });
   };
   const levels = [
     { value: "grundkurs", label: t("training.grundkurs") },
@@ -47,10 +50,11 @@ function TrainingLevelCard() {
     <Card className="border-0 shadow-sm">
       <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {t("settings.trainingLevel")}</CardTitle></CardHeader>
       <CardContent>
-        <Select value={level} onValueChange={handleChange}>
+        <Select value={level} onValueChange={handleChange} disabled={bySchool}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>{levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}</SelectContent>
         </Select>
+        {bySchool && <p className="text-[11px] text-muted-foreground mt-2">{t("settings.trainingLevelBySchool")}</p>}
       </CardContent>
     </Card>
   );

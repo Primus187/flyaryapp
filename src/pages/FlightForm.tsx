@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage } from "@/lib/image-compress";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -441,7 +442,7 @@ export default function FlightForm() {
         } catch (igcErr: any) { console.error("IGC upload failed:", igcErr); toast({ title: t("flights.igcUploadFailed"), description: t("flights.igcUploadFailedDesc"), variant: "destructive" }); }
       }
       for (const photo of photoFiles) {
-        try { const path = `${user.id}/${flightId}/${Date.now()}-${photo.name}`; const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, photo); if (photoErr) throw photoErr; const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path }); if (insertErr) throw insertErr; }
+        try { const upload = await compressImage(photo, 1600, 1600, 0.8); const path = `${user.id}/${flightId}/${Date.now()}-${upload.name}`; const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, upload); if (photoErr) throw photoErr; const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path }); if (insertErr) throw insertErr; }
         catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
       // Save YouTube videos: only delete YouTube rows on edit (uploaded videos are managed separately).

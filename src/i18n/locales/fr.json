@@ -832,7 +832,7 @@
     "altitudeCol": "Altitude",
     "andMore": "et {{count}} autres"
   },
-  "settings": {"followPermission": {"title": "Qui peut me suivre ?", "groups": "Seulement les membres de mes groupes et écoles", "everyone": "Tous les pilotes Flyary", "hint": "Tes abonnés voient ton profil ainsi que tes vols et photos publiés. En passant à « seulement les membres », les autres abonnés sont retirés."},
+  "settings": {"trainingLevelBySchool": "C’est ton école de vol qui définit ton niveau de formation.", "followPermission": {"title": "Qui peut me suivre ?", "groups": "Seulement les membres de mes groupes et écoles", "everyone": "Tous les pilotes Flyary", "hint": "Tes abonnés voient ton profil ainsi que tes vols et photos publiés. En passant à « seulement les membres », les autres abonnés sont retirés."},
     "title": "Paramètres",
     "appearance": "Apparence",
     "theme": "Thème",
