@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-29T19:41:27.101Z",
+  "capturedAt": "2026-09-29T20:44:32.944Z",
   "source": "Local Flyary app, fictional fixtures, no live API access",
   "screenshots": [
     {
@@ -755,6 +755,19 @@
         "height": 1688
       },
       "demo": true
+    },
+    {
+      "name": "59-flight-memories",
+      "path": "/flights/flight-1",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
     }
   ],
   "errors": [],
@@ -762,11 +775,6 @@
     "official_sites",
     "rpc/my_school_flight_imports",
     "rpc/has_role",
-    "rpc/my_open_passenger_confirmations",
-    "rpc/my_instructor_ratings",
-    "rpc/training_status",
-    "pilot_licences",
-    "pilot_evidence",
-    "flight_confirmations"
+    "rpc/my_instructor_ratings"
   ]
 }

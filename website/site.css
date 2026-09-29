@@ -235,8 +235,52 @@ details[open]::details-content { height: auto; }
 .final-cta { padding: 20px 0 clamp(90px, 10vw, 130px); }
 .final-card { position: relative; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: clamp(40px, 6vw, 80px); border-radius: 36px; color: #fff; background: linear-gradient(120deg, #075985 0%, #0284c7 38%, #0ea5e9 62%, #059669 100%); box-shadow: 0 40px 100px -40px rgba(3, 105, 161, .8); }
 .final-card h2 { font-size: clamp(32px, 4vw, 54px); line-height: 1.05; font-weight: 760; }
+.final-actions { display: grid; justify-items: center; gap: 16px; flex: none; }
+.final-link { color: #fff; font-weight: 650; font-size: 15px; text-decoration: underline; text-underline-offset: 4px; }
 .final-card p { margin-top: 16px; font-size: 17px; color: rgba(255, 255, 255, .82); }
 .final-sheen { position: absolute; inset: -50%; z-index: -1; background: radial-gradient(closest-side, rgba(255, 255, 255, .28), transparent), radial-gradient(closest-side, rgba(52, 211, 153, .45), transparent); background-size: 40% 40%, 55% 55%; background-position: 20% 30%, 80% 70%; background-repeat: no-repeat; }
+
+/* About: the founder's portrait in the glow, in place of a phone */
+.about-trust { color: var(--ink) !important; font-weight: 600; }
+.about-visual .portrait { position: relative; width: min(340px, 78%); aspect-ratio: 1; border-radius: 50%; object-fit: cover; border: 8px solid #fff; box-shadow: var(--shadow), 0 0 0 1px var(--line); }
+
+/* ---------- Pilot sign-up & thank-you pages ---------- */
+.signup { position: relative; overflow: hidden; isolation: isolate; color: #fff; background: linear-gradient(180deg, var(--night) 0%, var(--night-2) 100%); padding: clamp(64px, 8vw, 110px) 0 clamp(90px, 10vw, 130px); }
+.signup-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 72px; align-items: start; }
+.signup .eyebrow { color: #7dd3fc; }
+.signup h1 { font-size: clamp(40px, 5.4vw, 72px); line-height: 1.02; font-weight: 780; margin: 18px 0 24px; }
+.signup .section-intro { color: rgba(226, 238, 250, .72); }
+.signup-points { list-style: none; padding: 0; margin: 34px 0 0; display: grid; gap: 14px; }
+.signup-points li { display: flex; gap: 12px; align-items: flex-start; line-height: 1.6; color: rgba(226, 238, 250, .88); }
+.signup-points .icon { flex: none; margin-top: 2px; color: var(--green); }
+.signup-card { display: grid; gap: 20px; padding: clamp(24px, 4vw, 40px); border-radius: var(--radius); background: #fff; color: var(--ink); box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .65); }
+.signup-card h2 { font-size: 24px; }
+.field { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.field label, .field legend { padding: 0; font-size: 14px; font-weight: 650; }
+.field legend { margin-bottom: 10px; }
+.optional { font-weight: 400; color: var(--muted); }
+.field input, .field textarea { width: 100%; min-height: 50px; padding: 12px 16px; border: 1px solid #c9d6e0; border-radius: 14px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; }
+.field textarea { min-height: 96px; resize: vertical; }
+.field input:focus-visible, .field textarea:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; border-color: var(--blue); }
+.choice-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.choice { position: relative; }
+.choice input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.choice span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #f3f8fb; color: #22384d; font-size: 14px; font-weight: 650; transition: background .2s, border-color .2s, color .2s; }
+.choice input:checked + span { background: #e0f2fe; border-color: var(--blue); color: #075985; }
+.choice input:focus-visible + span { outline: 3px solid var(--sky); outline-offset: 2px; }
+.consent { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.consent input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--blue); }
+.consent a, .form-status a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+.signup-card .button { justify-self: start; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+/* The Edge Function redirects back with #status-…; :target shows the message without JavaScript. */
+.form-status { display: none; scroll-margin-top: 110px; padding: 14px 16px; border-radius: 14px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; font-size: 14px; line-height: 1.6; }
+.form-status:target { display: block; }
+.thanks { min-height: calc(100svh - 76px); display: flex; align-items: center; }
+.thanks-inner { display: grid; justify-items: center; max-width: 760px; text-align: center; }
+.thanks-inner .section-intro { max-width: 560px; margin-bottom: 34px; }
+.thanks-icon { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 22px; border-radius: 50%; background: var(--brand); color: #fff; box-shadow: 0 18px 50px -12px rgba(14, 165, 233, .8); }
+.thanks-icon .icon { width: 30px; height: 30px; }
 
 /* ---------- Footer ---------- */
 .footer { padding: 64px 0 36px; border-top: 1px solid var(--line); }
@@ -322,7 +366,7 @@ details[open]::details-content { height: auto; }
   .hero-grid { grid-template-columns: 1fr; gap: 72px; }
   .hero-copy { max-width: 680px; }
   .hero-stage { height: 560px; width: min(560px, 100%); margin-inline: auto; }
-  .explorer-grid, .school-grid, .together, .faq-section { grid-template-columns: 1fr; gap: 56px; }
+  .explorer-grid, .school-grid, .together, .faq-section, .signup-grid { grid-template-columns: 1fr; gap: 56px; }
   .section-heading.split { grid-template-columns: 1fr; gap: 20px; }
   .feature-grid { grid-template-columns: 1fr; }
   .faq-intro { position: static; }
@@ -359,6 +403,8 @@ details[open]::details-content { height: auto; }
   .faq-answer p { padding-right: 0; }
   .final-card { border-radius: 28px; }
   .final-card .button { width: 100%; }
+  .final-actions { width: 100%; }
+  .signup-card .button { width: 100%; }
   .footer-top { flex-direction: column; }
 }
 @media (max-width: 360px) {

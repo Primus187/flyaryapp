@@ -547,6 +547,13 @@
       "when": 1795305600000,
       "tag": "0077_confirm_by_school_staff",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1795392000000,
+      "tag": "0078_pilot_waitlist",
+      "breakpoints": true
     }
   ]
 }

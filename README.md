@@ -1,5 +1,33 @@
 # Flyary
 
+## Website v2: Flugtagebuch-Positionierung und Testpiloten-Formular (2026-09-29)
+
+- **Texte** (`website/content.mjs`, DE/FR/EN): Flyary als Flugtagebuch mit den drei Säulen
+  Erinnerungen · Fortschritt · Gemeinsam. Reihenfolge: Hero → App-Ansicht → Tagebuch → Flugschulen →
+  Über Flyary (Porträt `website/assets/tobias.jpg`) → FAQ → Abschluss. Design unverändert.
+- **App-Ansicht:** vier Reiter mit `memories.png` (neue, nur für die Website erfasste Ansicht
+  `docs/handbook/mobile/59-flight-memories.png`: Flug mit Beispielfotos, Ausschnitte aus
+  `public/splash-bg.png`), `training.png`, `school-flight.png` (Flug mit Bestätigung), `feed.png`.
+  Das Bild pro Reiter steht im HTML (`data-src`); `site.js` hat keine eigene Liste mehr.
+- **Formular** `/{de,fr,en}/testpilot/` und Danke-Seite `/{lang}/danke/` (noindex): normales
+  HTML-POST an die Edge Function `website-waitlist` (`verify_jwt = false`), funktioniert ohne
+  JavaScript. Die Function prüft die Angaben (`waitlist.ts`), ruft mit dem Service-Role-Key
+  `join_pilot_waitlist` auf und leitet per 303 zurück: Erfolg → Danke-Seite, sonst
+  `/testpilot/?status=…#status-…` (die Meldung erscheint per CSS `:target`). Weiterleitungen nur an
+  bekannte Website-Origins.
+- **Spamschutz:** verstecktes Feld `website`, Mindestzeit 3 s (`started`, von `site.js` gesetzt),
+  höchstens 5 Anmeldungen pro Absender-Hash und Stunde, 200 insgesamt pro Stunde.
+- **Migration `0078_pilot_waitlist.sql`:** Tabelle `pilot_waitlist` (eine Zeile pro E-Mail, erneute
+  Anmeldung aktualisiert), RLS nur für App-Admins (lesen, `handled_at` setzen, löschen),
+  `join_pilot_waitlist(...)` nur für `service_role`. Bei einer neuen Anmeldung erhalten alle
+  App-Admins eine Push-Nachricht «Neuer Testpilot».
+- **App:** Admin-Seite «Testliste» `/admin/waitlist` (Mehr → Admin) mit Erledigt, Löschen und
+  CSV-Export (`src/lib/waitlist.ts`).
+- **CSP** (`website/vercel.json`): `form-action 'self' https://pvhxrgvhzzqcyadyksvk.supabase.co`,
+  sonst unverändert.
+- Tests: `src/test/pilot-waitlist-database.test.ts`, `src/lib/website-waitlist.test.ts`,
+  `src/lib/waitlist.test.ts`, `npm run landing:check` (Formular, Fehleranker, Danke-Seite, ohne JS).
+
 ## Korrektur: Flüge bestätigt das ganze Schulteam mit Zertifikat (2026-09-29)
 
 Befund aus dem Test: Ein Admin der Schule mit gültigem Fluglehrer-Zertifikat konnte keine Flüge

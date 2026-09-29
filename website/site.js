@@ -37,7 +37,6 @@ if (header) {
 const tabs = [...document.querySelectorAll('.preview-tab')];
 const panels = [...document.querySelectorAll('.preview-panel')];
 const image = document.querySelector('#preview-image');
-const images = ['overview.png', 'flight-detail.png', 'training.png', 'school.png'];
 if (tabs.length && panels.length === tabs.length && image) {
   document.querySelector('.preview-tabs').setAttribute('role', 'tablist');
   tabs.forEach((tab, i) => {
@@ -61,7 +60,7 @@ if (tabs.length && panels.length === tabs.length && image) {
       tab.tabIndex = i === index ? 0 : -1;
       panels[i].hidden = i !== index;
     });
-    const src = `/assets/${images[index]}`;
+    const src = tabs[index].dataset.src;
     const alt = tabs[index].dataset.alt;
     if (image.getAttribute('src') === src) return;
     clearTimeout(swap);
@@ -82,9 +81,13 @@ if (tabs.length && panels.length === tabs.length && image) {
 // Keep the section when visitors change language; language choice is in the URL, not a cookie.
 document.querySelectorAll('.languages a').forEach((link) => {
   link.addEventListener('click', () => {
-    if (['#pilots', '#schools', '#app', '#faq'].includes(location.hash)) link.hash = location.hash;
+    if (['#pilots', '#schools', '#app', '#about', '#faq'].includes(location.hash)) link.hash = location.hash;
   });
 });
+
+// Pilot sign-up: when the page was opened, so the server can reject bots that submit instantly.
+const started = document.querySelector('#form input[name="started"]');
+if (started) started.value = String(Date.now());
 
 // Reveal on scroll, staggered within each group of siblings.
 const reveals = [...document.querySelectorAll('.reveal')];

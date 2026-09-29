@@ -51,6 +51,14 @@ data.chat_messages=channels.flatMap(c=>[
  {id:c.id+'-1',channel_id:c.id,user_id:peer,message:'Treffpunkt am Samstag: Talstation Emmetten.',created_at:'2026-09-24T09:00:00Z',is_announcement:false,requires_confirmation:false,attachment_path:null,mentions:[],reply_to:null}
 ]);
 data.chat_message_receipts=[];data.chat_message_reactions=[];
+// Flightbook replacement (0073–0076): the demo flight is confirmed by the school, the training status has progress.
+data.flight_confirmations=[{flight_id:fid,status:'confirmed',school_name:'Flugschule Beispiel',group_id:gid,instructor_name:'Iris Keller',reason:null,submitted_at:'2026-09-22T16:00:00Z',decided_at:'2026-09-23T07:30:00Z'}];
+for(const table of ['flight_changes','flight_passengers','pilot_licences','pilot_evidence','flight_confirmation_events']) data[table]=[];
+const trainingStatus={discipline:'paraglider',licence:'pilot',confirmedWithoutKind:0,confirmedPractice:12,licenceIssuedAt:null,requirements:[
+ {rule:'confirmed_altitude_flights',threshold:50,value:34,met:false,source:'SHV-Weisung Gleitschirm-Pilot, Juli 2025, Ziff. 5.1',params:{},sort:1},
+ {rule:'distinct_takeoff_sites',threshold:5,value:5,met:true,source:'SHV-Weisung Gleitschirm-Pilot, Juli 2025, Ziff. 5.1',params:{},sort:2},
+ {rule:'distinct_landing_sites',threshold:5,value:4,met:false,source:'SHV-Weisung Gleitschirm-Pilot, Juli 2025, Ziff. 5.1',params:{},sort:3},
+ {rule:'confirmed_solo_flights',threshold:1,value:0,met:false,source:'SHV-Weisung Gleitschirm-Pilot, Juli 2025, Ziff. 5.1',params:{},sort:4}]};
 for(const table of ['hidden_events','flight_photos','challenges','flight_templates','event_program_items','event_carpools','pilot_badges','profile_photos','flight_videos','igc_tracks','flight_training_items']) data[table]=[];
 data.flight_coach_notes[0].coach_id=peer;
 const market=marketFixtures({uid,gid,peer});
@@ -65,8 +73,10 @@ await context.addInitScript(({user,token,authKey})=>{
 }, {user,token,authKey});
 await context.routeWebSocket(/.*/, ws=>ws.close());
 const unknown = new Set();
+const demoPhotos={};
 await context.route('**/*', async route=>{
   const request=route.request(), url=new URL(request.url());
+  if(url.origin===base && demoPhotos[url.pathname]) return route.fulfill({status:200,contentType:'image/jpeg',body:demoPhotos[url.pathname]});
   if(url.origin===base) return route.continue();
   if(url.pathname.startsWith('/auth/v1/')) return route.fulfill({json:user});
   if(url.pathname.includes('/rest/v1/')) {
@@ -89,6 +99,8 @@ await context.route('**/*', async route=>{
       else if(table==='list_flights_page') result={rows:flights,total:flights.length,counts:{all:8,season:8,track:0}};
       else if(table==='get_own_profile_private') result=[profile];
       else if(table==='get_public_profile') result=[profile];
+      else if(table==='training_status') result=trainingStatus;
+      else if(table==='my_open_passenger_confirmations') result=[];
       else {unknown.add("rpc/"+table);result=[];}
     } else {
       result=[...(data[table]||[])];
@@ -220,6 +232,21 @@ try {
   flights[0].group_id=null;flights[0].published_to_feed=false;
   await shot('44-flight-no-group',`/flights/${fid}`,async()=>{await page.getByText('Um diesen Flug im Feed zu teilen, ordne ihn beim Bearbeiten einer Gruppe zu.',{exact:true}).evaluate(el=>el.scrollIntoView({block:'center'}));},true);
   flights[0].group_id=gid;flights[0].published_to_feed=true;
+  // Landing page only: a flight as a memory, with photos (crops of public/splash-bg.png).
+  const crops=[[300,200,400],[0,600,420],[360,880,408]];
+  const photoPage=await context.newPage();
+  await photoPage.goto(base+'/splash-bg.png');
+  const photoData=await photoPage.evaluate(async(crops)=>{
+    const img=document.querySelector('img'); await img.decode();
+    return crops.map(([x,y,size])=>{const c=document.createElement('canvas');c.width=c.height=480;c.getContext('2d').drawImage(img,x,y,size,size,0,0,480,480);return c.toDataURL('image/jpeg',.88).split(',')[1];});
+  },crops);
+  await photoPage.close();
+  photoData.forEach((b64,i)=>{demoPhotos[`/__demo/photo-${i+1}.jpg`]=Buffer.from(b64,'base64');});
+  const memory=flights[1], saved={...memory};
+  Object.assign(memory,{group_id:null,is_solo_shv:false,thermals:'Mässig',wind_speed:8,wind_direction:'NW',tags:[],comments:'Erster Thermikflug mit Abendsonne über dem Tal. Diesen Blick vergesse ich nicht.'});
+  data.flight_photos=photoData.map((_,i)=>({id:`photo-${i+1}`,flight_id:memory.id,storage_path:`${base}/__demo/photo-${i+1}.jpg`,created_at:'2026-09-20T18:00:00Z'}));
+  await shot('59-flight-memories',`/flights/${memory.id}`,async()=>{await page.locator('img[src*="__demo/photo-1"]').waitFor();await page.locator('img[src*="__demo/photo-3"]').evaluate(async img=>{await img.decode();const r=img.getBoundingClientRect();window.scrollBy(0,Math.max(0,r.bottom-(innerHeight-96)));});},true);
+  data.flight_photos=[];for(const k of Object.keys(memory)) if(!(k in saved)) delete memory[k];Object.assign(memory,saved);
   await captureMarket({page,shot,market,gid});
   manifest.sort((a,b)=>a.name.localeCompare(b.name));
   writeFileSync(`${out}/manifest.json`,JSON.stringify({capturedAt:new Date().toISOString(),source:'Local Flyary app, fictional fixtures, no live API access',screenshots:manifest,errors,unpopulatedTables:[...unknown]},null,2));

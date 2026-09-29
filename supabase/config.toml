@@ -15,3 +15,7 @@ verify_jwt = false
 # Public share link of a marketplace listing (plan 8.4): previews for crawlers, data for /shared/market/<token>.
 [functions.get-shared-listing]
 verify_jwt = false
+
+# Pilot sign-up form of the website (migration 0078): no session, answers with a redirect to the website.
+[functions.website-waitlist]
+verify_jwt = false

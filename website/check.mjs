@@ -10,6 +10,7 @@ import { checkDocumentation } from './check-docs.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = 'http://127.0.0.1:4186';
+const waitlistEndpoint = 'https://pvhxrgvhzzqcyadyksvk.supabase.co/functions/v1/website-waitlist';
 const server = spawn(process.execPath, [join(here, 'preview.mjs')], { env: { ...process.env, PORT: '4186' }, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
 let browser;
 try {
@@ -84,6 +85,9 @@ try {
       assert.equal(appLinks, 2);
       const schoolLink = await page.locator('.school-copy a.button').getAttribute('href');
       assert(schoolLink.startsWith('mailto:tobias.a.bolliger@gmail.com?subject='));
+      assert.equal(await page.locator('.hero-actions a.button-primary').getAttribute('href'), `/${lang}/testpilot/`);
+      assert.equal(await page.locator('.final-actions a.button').getAttribute('href'), `/${lang}/testpilot/`);
+      assert(await page.locator('#about img.portrait').count() === 1);
       await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });
       if (width === 1440 || width === 390) {
         await page.locator('img').evaluateAll(async (els) => {
@@ -96,6 +100,41 @@ try {
       checked++;
       console.log(`PASS ${lang} / ${width}px: layout, tabs, keyboard, FAQ, links, menu`);
     }
+    // Pilot sign-up form: plain POST to the Edge Function, browser validation, error anchors, thank-you page.
+    const signup = content[lang].signup;
+    for (const width of [1440, 390, 320]) {
+      await page.setViewportSize({ width, height: width < 700 ? 844 : 1000 });
+      await page.goto(`${base}/${lang}/testpilot/`, { waitUntil: 'networkidle' });
+      assert.equal(await page.title(), signup.title);
+      assert.equal(await page.locator('h1').count(), 1);
+      const dims = await page.evaluate(() => ({ width: innerWidth, scroll: document.documentElement.scrollWidth }));
+      assert(dims.scroll <= dims.width, `signup ${lang}/${width}: horizontal overflow ${dims.scroll}`);
+      const form = page.locator('form#form');
+      assert.equal(await form.getAttribute('action'), waitlistEndpoint);
+      assert.equal(await form.getAttribute('method'), 'post');
+      assert.equal(await form.locator('input[name="lang"]').inputValue(), lang);
+      assert(Number(await form.locator('input[name="started"]').inputValue()) > 0, 'started timestamp set');
+      assert.equal(await form.locator('input[name="role"]').count(), 4);
+      assert.equal(await form.locator('input[name="discipline"]').count(), 2);
+      for (const required of ['name', 'email', 'consent']) assert(await form.locator(`[name="${required}"][required]`).count() === 1, required);
+      assert(await page.locator('#f-website').evaluate((el) => el.getBoundingClientRect().right <= 0), 'honeypot off-screen');
+      assert.equal(await page.locator('.form-status:visible').count(), 0);
+      if (width !== 320) await page.screenshot({ path: join(here, '.preview', `signup-${lang}-${width}.png`), fullPage: true });
+      await form.locator('button[type="submit"]').click();
+      assert.equal(new URL(page.url()).pathname, `/${lang}/testpilot/`, 'empty form must not submit');
+      assert.equal(await page.locator(`.header .languages a[lang="${lang === 'de' ? 'fr' : 'de'}"]`).getAttribute('href'), `/${lang === 'de' ? 'fr' : 'de'}/testpilot/`);
+    }
+    for (const status of ['invalid', 'rate_limited', 'error']) {
+      await page.goto(`${base}/${lang}/testpilot/?status=${status}#status-${status}`, { waitUntil: 'networkidle' });
+      assert(await page.locator(`#status-${status}`).isVisible(), status);
+      assert.equal(await page.locator('.form-status:visible').count(), 1);
+    }
+    await page.goto(`${base}/${lang}/danke/`, { waitUntil: 'networkidle' });
+    assert.equal(await page.title(), content[lang].thanks.title);
+    assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'), 'noindex');
+    assert.equal(await page.locator('main a.button').getAttribute('href'), `/${lang}/`);
+    if (lang === 'de') await page.screenshot({ path: join(here, '.preview', 'thanks-de-390.png'), fullPage: true });
+    console.log(`PASS ${lang}: pilot sign-up form and thank-you page`);
     await page.goto(`${base}/${lang}/#app`);
     const next = lang === 'de' ? 'fr' : 'de';
     await page.locator(`.header .languages a[lang="${next}"]`).click();
@@ -111,6 +150,9 @@ try {
   assert(await page.locator('.no-script-nav').isVisible());
   await page.locator('.faq-list summary').first().click();
   assert(await page.locator('.faq-list details').first().getAttribute('open') !== null);
+  await page.goto(base + '/de/testpilot/?status=invalid#status-invalid');
+  assert(await page.locator('form#form').isVisible());
+  assert(await page.locator('#status-invalid').isVisible(), 'error message without JavaScript');
   await nojs.close();
   assert.equal((await fetch(base + '/unknown')).status, 404);
   await checkDocumentation(browser, base, here);
