@@ -3964,31 +3964,11 @@ export type Database = {
       }
     }
     Functions: {
+      build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
       can_follow: {
         Args: { _follower: string; _target: string }
         Returns: boolean
       }
-      follow_info: {
-        Args: { _user_id: string }
-        Returns: Json
-      }
-      group_invite_code: {
-        Args: { _group_id: string }
-        Returns: string
-      }
-      regenerate_group_invite_code: {
-        Args: { _group_id: string }
-        Returns: string
-      }
-      merge_locations: {
-        Args: { _keep: string; _remove: string }
-        Returns: number
-      }
-      set_official_site_name: {
-        Args: { _name: string; _site_id: string }
-        Returns: undefined
-      }
-      build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
       chat_can_manage: {
         Args: { _channel: string; _uid: string }
         Returns: boolean
@@ -4056,6 +4036,10 @@ export type Database = {
         Args: { _event_id: string }
         Returns: undefined
       }
+      display_name: {
+        Args: { l: Database["public"]["Tables"]["locations"]["Row"] }
+        Returns: string
+      }
       event_detail_data: { Args: { _event_id: string }; Returns: Json }
       feed_achievement_item: { Args: { _id: string }; Returns: Json }
       feed_event_item: { Args: { _id: string }; Returns: Json }
@@ -4094,6 +4078,7 @@ export type Database = {
         Args: { _event_id: string; _user_id: string }
         Returns: string
       }
+      follow_info: { Args: { _user_id: string }; Returns: Json }
       get_emergency_contact_info: {
         Args: { _event_id: string; _target_user_id: string }
         Returns: {
@@ -4153,6 +4138,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      group_invite_code: { Args: { _group_id: string }; Returns: string }
       has_group_function: {
         Args: {
           _function: Database["public"]["Enums"]["group_function"]
@@ -4488,9 +4474,21 @@ export type Database = {
       }
       marketplace_storage_usage: { Args: never; Returns: Json }
       marketplace_trigger_cleanup: { Args: never; Returns: undefined }
+      merge_locations: {
+        Args: { _keep: string; _remove: string }
+        Returns: number
+      }
       my_instructor_ratings: { Args: never; Returns: Json }
       my_school_flight_imports: { Args: never; Returns: Json }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
+      official_name: {
+        Args: { l: Database["public"]["Tables"]["locations"]["Row"] }
+        Returns: string
+      }
+      regenerate_group_invite_code: {
+        Args: { _group_id: string }
+        Returns: string
+      }
       reopen_flight_day: { Args: { _event_id: string }; Returns: undefined }
       report_client_error: {
         Args: {
@@ -4794,6 +4792,10 @@ export type Database = {
         Args: { _group_id: string; _training_level: string; _user_id: string }
         Returns: undefined
       }
+      set_official_site_name: {
+        Args: { _name: string; _site_id: string }
+        Returns: undefined
+      }
       set_signup_confirmed: {
         Args: { _confirmed: boolean; _event_id: string; _student_id: string }
         Returns: boolean
@@ -4806,6 +4808,7 @@ export type Database = {
         Args: { _event_id: string; _student_ids: string[] }
         Returns: number
       }
+      shares_group: { Args: { _a: string; _b: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
