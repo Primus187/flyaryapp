@@ -1979,6 +1979,59 @@ export type Database = {
           },
         ]
       }
+      flight_passengers: {
+        Row: {
+          confirmed_at: string | null
+          confirmed_data: Json | null
+          created_at: string
+          flight_id: string
+          id: string
+          passenger_name: string
+          passenger_user_id: string | null
+          pilot_id: string
+          status: string
+          token_expires_at: string | null
+          token_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          confirmed_data?: Json | null
+          created_at?: string
+          flight_id: string
+          id?: string
+          passenger_name: string
+          passenger_user_id?: string | null
+          pilot_id: string
+          status?: string
+          token_expires_at?: string | null
+          token_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          confirmed_data?: Json | null
+          created_at?: string
+          flight_id?: string
+          id?: string
+          passenger_name?: string
+          passenger_user_id?: string | null
+          pilot_id?: string
+          status?: string
+          token_expires_at?: string | null
+          token_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_passengers_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: true
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_photos: {
         Row: {
           created_at: string
@@ -2175,6 +2228,7 @@ export type Database = {
           tags: string[] | null
           takeoff_at: string | null
           takeoff_location_id: string | null
+          tandem_kind: string | null
           thermals: string | null
           updated_at: string
           user_id: string
@@ -2212,6 +2266,7 @@ export type Database = {
           tags?: string[] | null
           takeoff_at?: string | null
           takeoff_location_id?: string | null
+          tandem_kind?: string | null
           thermals?: string | null
           updated_at?: string
           user_id: string
@@ -2249,6 +2304,7 @@ export type Database = {
           tags?: string[] | null
           takeoff_at?: string | null
           takeoff_location_id?: string | null
+          tandem_kind?: string | null
           thermals?: string | null
           updated_at?: string
           user_id?: string
@@ -4349,9 +4405,14 @@ export type Database = {
         }
         Returns: Json
       }
+      confirm_as_passenger: { Args: { _token: string }; Returns: boolean }
       confirm_flights: {
         Args: { _flight_ids: string[]; _group_id: string; _set_kind?: string }
         Returns: Json
+      }
+      confirm_passenger_flight: {
+        Args: { _flight_id: string }
+        Returns: undefined
       }
       confirm_solo_flight: {
         Args: {
@@ -4364,6 +4425,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_passenger_token: { Args: { _flight_id: string }; Returns: string }
       dismiss_school_flight_import: {
         Args: { _event_id: string }
         Returns: undefined
@@ -4825,12 +4887,15 @@ export type Database = {
         Returns: number
       }
       my_instructor_ratings: { Args: never; Returns: Json }
+      my_open_passenger_confirmations: { Args: never; Returns: Json }
       my_school_flight_imports: { Args: never; Returns: Json }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
       official_name: {
         Args: { l: Database["public"]["Tables"]["locations"]["Row"] }
         Returns: string
       }
+      passenger_confirmation_info: { Args: { _token: string }; Returns: Json }
+      passenger_token_hash: { Args: { _token: string }; Returns: string }
       regenerate_group_invite_code: {
         Args: { _group_id: string }
         Returns: string
@@ -5146,6 +5211,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_flight_passenger: {
+        Args: { _flight_id: string; _name: string; _passenger_user_id?: string }
+        Returns: undefined
+      }
       set_member_training_level: {
         Args: { _group_id: string; _training_level: string; _user_id: string }
         Returns: undefined
@@ -5185,6 +5254,20 @@ export type Database = {
       training_status: {
         Args: { _discipline: string; _licence: string; _user_id: string }
         Returns: Json
+      }
+      training_tandem_flights: {
+        Args: {
+          _discipline: string
+          _params: Json
+          _since: string
+          _user_id: string
+        }
+        Returns: {
+          flight_date: string
+          landing_key: string
+          passenger_key: string
+          takeoff_key: string
+        }[]
       }
       withdraw_flight_submission: {
         Args: { _flight_id: string }
