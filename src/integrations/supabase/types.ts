@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          redeemed_at: string | null
+          redeemed_by: string | null
+          token_hash: string
+          waitlist_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          token_hash: string
+          waitlist_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          token_hash?: string
+          waitlist_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_invites_waitlist_id_fkey"
+            columns: ["waitlist_id"]
+            isOneToOne: false
+            referencedRelation: "pilot_waitlist"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_read_receipts: {
         Row: {
           confirmed_at: string
@@ -77,6 +118,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      app_access: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          granted_via: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          granted_via: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          granted_via?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
       }
       billing_items: {
         Row: {
@@ -3581,12 +3658,14 @@ export type Database = {
           email: string
           handled_at: string | null
           id: string
+          invited_at: string | null
           language: string
           name: string
           requester_hash: string | null
           role: string
           school: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           comment?: string | null
@@ -3596,12 +3675,14 @@ export type Database = {
           email: string
           handled_at?: string | null
           id?: string
+          invited_at?: string | null
           language: string
           name: string
           requester_hash?: string | null
           role: string
           school?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           comment?: string | null
@@ -3611,12 +3692,14 @@ export type Database = {
           email?: string
           handled_at?: string | null
           id?: string
+          invited_at?: string | null
           language?: string
           name?: string
           requester_hash?: string | null
           role?: string
           school?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -4377,6 +4460,7 @@ export type Database = {
       }
     }
     Functions: {
+      access_invite_hash: { Args: { _token: string }; Returns: string }
       build_track_thumbnail: { Args: { raw: Json }; Returns: Json }
       can_confirm_training: {
         Args: { _discipline: string; _group_id: string; _user_id: string }
@@ -4473,6 +4557,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_access_invite: { Args: { _waitlist_id: string }; Returns: string }
       create_passenger_token: { Args: { _flight_id: string }; Returns: string }
       dismiss_school_flight_import: {
         Args: { _event_id: string }
@@ -4583,7 +4668,9 @@ export type Database = {
           user_id: string
         }[]
       }
+      grant_app_access: { Args: { _user_id: string }; Returns: undefined }
       group_invite_code: { Args: { _group_id: string }; Returns: string }
+      has_app_access: { Args: { _user_id: string }; Returns: boolean }
       has_group_function: {
         Args: {
           _function: Database["public"]["Enums"]["group_function"]
@@ -4642,6 +4729,16 @@ export type Database = {
           _language: string
           _name: string
           _requester_hash: string
+          _role: string
+          _school: string
+        }
+        Returns: string
+      }
+      join_waitlist_from_app: {
+        Args: {
+          _comment: string
+          _disciplines: string[]
+          _language: string
           _role: string
           _school: string
         }
@@ -4947,6 +5044,7 @@ export type Database = {
         Args: { _keep: string; _remove: string }
         Returns: number
       }
+      my_access: { Args: never; Returns: Json }
       my_instructor_ratings: { Args: never; Returns: Json }
       my_open_passenger_confirmations: { Args: never; Returns: Json }
       my_school_flight_imports: { Args: never; Returns: Json }
@@ -4957,6 +5055,7 @@ export type Database = {
       }
       passenger_confirmation_info: { Args: { _token: string }; Returns: Json }
       passenger_token_hash: { Args: { _token: string }; Returns: string }
+      redeem_access_invite: { Args: { _token: string }; Returns: string }
       regenerate_group_invite_code: {
         Args: { _group_id: string }
         Returns: string
