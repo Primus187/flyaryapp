@@ -58,6 +58,7 @@ const sky = `<div class="sky" aria-hidden="true">
 function render(lang) {
   const c = content[lang];
   const mail = `mailto:${email}?subject=${encodeURIComponent(c.emailSubject)}`;
+  const demoMail = `mailto:${email}?subject=${encodeURIComponent(c.demoEmailSubject)}`;
   const docsLink = `<a href="/${lang}/docs/">${esc(docsLabels[lang].name)}</a>`;
   const nav = c.nav.map((label, i) => `<a href="#${ids[i]}">${esc(label)}</a>`).join('') + docsLink;
   const langs = Object.entries(languages).map(([code, label]) => `<a href="${languagePath(code)}" lang="${code}" hreflang="${code}" aria-label="${label}" ${code === lang ? 'aria-current="page"' : ''}>${code.toUpperCase()}</a>`).join('');
@@ -109,7 +110,8 @@ function render(lang) {
           <p class="eyebrow eyebrow-pill reveal"><span class="pulse" aria-hidden="true"></span>${esc(c.eyebrow)}</p>
           <h1 id="hero-title" class="reveal">${esc(c.hero[0])}<br><span class="gradient-text">${esc(c.hero[1])}</span></h1>
           <p class="hero-intro reveal">${esc(c.intro)}</p>
-          <div class="hero-actions reveal"><a class="button button-primary button-glow" href="${app}">${esc(c.start)} ${arrow}</a><a class="button button-ghost" href="#schools">${esc(c.secondary)} ${icon('diagonal')}</a></div>
+          <p class="small-note reveal">${esc(c.phase)}</p>
+          <div class="hero-actions reveal"><a class="button button-primary button-glow" href="${demoMail}">${esc(c.start)} ${arrow}</a><a class="button button-ghost" href="#schools">${esc(c.secondary)} ${icon('diagonal')}</a></div>
           <p class="small-note reveal">${icon('check')}${esc(c.note)}</p>
         </div>
         <figure class="hero-stage reveal" data-tilt>
@@ -142,7 +144,7 @@ function render(lang) {
     <section id="pilots" class="section wrap pilot-section" aria-labelledby="pilot-title">
       <div class="section-heading split reveal"><div><p class="eyebrow">${esc(c.pilotLabel)}</p><h2 id="pilot-title">${lines(c.pilotTitle)}</h2></div><p class="section-intro">${esc(c.pilotIntro)}</p></div>
       <div class="feature-grid">${c.pilotFeatures.map(([title, text, label], i) => `<article class="feature-card reveal" data-glow><span class="feature-icon">${icon(featureIcons[i])}</span><p class="feature-label">${esc(label)}</p><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`).join('')}</div>
-      <a class="text-link reveal" href="${app}">${esc(c.start)} ${arrow}</a>
+      <a class="text-link reveal" href="${demoMail}">${esc(c.start)} ${arrow}</a>
     </section>
 
     <section id="schools" class="school-section" aria-labelledby="school-title">
@@ -162,13 +164,13 @@ function render(lang) {
     </section>
 
     <section class="section wrap together" aria-labelledby="together-title">
-      <div class="together-copy reveal"><p class="eyebrow">${icon('people')} Community</p><h2 id="together-title">${lines(c.togetherTitle)}</h2><p>${esc(c.togetherText)}</p><ul class="tag-list">${c.togetherTags.map((tag, i) => `<li>${icon(['calendar', 'chat', 'bag'][i])}${esc(tag)}</li>`).join('')}</ul><a class="text-link" href="${app}">${esc(c.open)} ${arrow}</a></div>
+      <div class="together-copy reveal"><p class="eyebrow">${icon('people')} Community</p><h2 id="together-title">${lines(c.togetherTitle)}</h2><p>${esc(c.togetherText)}</p><ul class="tag-list">${c.togetherTags.map((tag, i) => `<li>${icon(['calendar', 'chat', 'bag'][i])}${esc(tag)}</li>`).join('')}</ul><a class="text-link" href="${demoMail}">${esc(c.start)} ${arrow}</a></div>
       <figure class="community-visual reveal" data-tilt><div class="stage-glow" aria-hidden="true"></div>${phone(`<img src="/assets/feed.png" width="780" height="1688" loading="lazy" alt="${esc(c.communityAlt)}">`)}</figure>
     </section>
 
     <section id="faq" class="section wrap faq-section" aria-labelledby="faq-title"><div class="faq-intro reveal"><p class="eyebrow">FAQ</p><h2 id="faq-title">${esc(c.faqTitle)}</h2><a class="text-link" href="mailto:${email}">${esc(c.contact)} ${icon('diagonal')}</a></div><div class="faq-list">${c.faqs.map(([q, a]) => `<details class="reveal"><summary>${esc(q)}<span class="faq-plus" aria-hidden="true"></span></summary><div class="faq-answer"><p>${esc(a)}</p></div></details>`).join('')}</div></section>
 
-    <section class="final-cta" aria-labelledby="final-title"><div class="wrap"><div class="final-card reveal"><div class="final-sheen" aria-hidden="true"></div><div><h2 id="final-title">${lines(c.finalTitle)}</h2><p>${esc(c.finalNote)}</p></div><a class="button button-white" href="${app}">${esc(c.finalCta)} ${arrow}</a></div></div></section>
+    <section class="final-cta" aria-labelledby="final-title"><div class="wrap"><div class="final-card reveal"><div class="final-sheen" aria-hidden="true"></div><div><h2 id="final-title">${lines(c.finalTitle)}</h2><p>${esc(c.finalNote)}</p></div><a class="button button-white" href="${demoMail}">${esc(c.finalCta)} ${arrow}</a></div></div></section>
   </main>
   <footer class="footer wrap"><div class="footer-top"><div>${logo}<p>${esc(c.footerText)}</p><p class="sample-note">${esc(c.sampleNote)} ${esc(c.screenLanguage)}.</p></div><nav class="languages" aria-label="${esc(c.language)}">${langs}</nav></div><div class="footer-bottom"><span>© ${new Date().getUTCFullYear()} Flyary · ${esc(c.copyright)}</span><nav aria-label="${esc(c.contact)}">${docsLink}<a href="mailto:${email}">${esc(c.contact)}</a><a href="${app}/legal">${esc(c.privacy)}</a><a href="${app}/legal/terms">${esc(c.terms)}</a></nav><a class="back-top" href="#top">${esc(c.top)} ${icon('diagonal')}</a></div></footer>
 </body></html>`;

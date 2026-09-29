@@ -81,7 +81,7 @@ try {
       const brokenAnchors = await page.locator('a[href^="#"]').evaluateAll((els) => els.map((a) => a.getAttribute('href')).filter((href) => !document.getElementById(href.slice(1))));
       assert.deepEqual(brokenAnchors, []);
       const appLinks = await page.locator('a[href="https://app.flyary.ch"]').count();
-      assert(appLinks >= 4);
+      assert.equal(appLinks, 2);
       const schoolLink = await page.locator('.school-copy a.button').getAttribute('href');
       assert(schoolLink.startsWith('mailto:tobias.a.bolliger@gmail.com?subject='));
       await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });

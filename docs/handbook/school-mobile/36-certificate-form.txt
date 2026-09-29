@@ -13,10 +13,10 @@ Robin Beispiel: 0 von 15 Unterrichtstagen seit 2025-03-01 (maximal drei Jahre)
 
 Robin Beispiel
 
-Schulleitung · Fluglehrer:in
+Schulleitung · Fluglehrer:in · Admin
 
 0 Unterrichtstage im Zeitraum
-Fluglehrer · 2028-03-01
+Fluglehrer Gleitschirm · 2028-03-01
 Zertifikate bearbeiten
 
 Sam Muster
@@ -33,7 +33,11 @@ Schüler
 Nachrichten
 Mehr
 Robin Beispiel
-Fluglehrer
+Fluglehrer Gleitschirm
+
+Links: ausgestellt am · Rechts: gültig bis
+
+Fluglehrer Delta
 
 Links: ausgestellt am · Rechts: gültig bis
 

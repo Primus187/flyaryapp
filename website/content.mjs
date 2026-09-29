@@ -18,16 +18,18 @@ export const content = {
       "Für Flugschulen",
       "Fragen"
     ],
-    "open": "App öffnen",
+    "open": "Zum Login",
     "eyebrow": "FLUGBUCH · AUSBILDUNG · FLUGSCHULE",
     "hero": [
       "Deine Flüge.",
       "Dein Fortschritt."
     ],
     "intro": "Das digitale Flugbuch fürs Gleitschirmfliegen. Halte deine Flüge fest, sieh deine Entwicklung und plane den nächsten Flugtag mit deiner Community.",
-    "start": "Flugbuch starten",
+    "phase": "Flyary befindet sich in der Testphase. Lerne die App in einer persönlichen Demo kennen und besprich mit uns eine mögliche Testnutzung.",
+    "demoEmailSubject": "Demo-Anfrage für Flyary",
+    "start": "Demo anfragen",
     "secondary": "Für Flugschulen",
-    "note": "Anmeldung mit Google. Direkt im Browser. Auch auf dem Smartphone.",
+    "note": "Für Pilotinnen, Piloten und Flugschulen. Direkter Kontakt mit Tobias.",
     "productLabel": "SO SIEHT FLYARY AUS",
     "tabsLabel": "App-Ansicht auswählen",
     "tabs": [
@@ -125,8 +127,8 @@ export const content = {
         "Ausbildung dokumentieren, Nachweise ausgeben und Material sowie Abrechnung verwalten."
       ]
     ],
-    "schoolCta": "Über deine Flugschule sprechen",
-    "schoolNote": "Direkter Kontakt mit Tobias, dem Betreiber von Flyary.",
+    "schoolCta": "Demo für eure Flugschule anfragen",
+    "schoolNote": "Persönliche Demo mit Tobias. Eine mögliche Testnutzung vereinbaren wir anschliessend gemeinsam.",
     "schoolRoles": "Schulleitung · Fluglehrer · Starthelfer",
     "schoolBadge": "Für euren Schulalltag",
     "schoolImageAlt": "Flugtag-Cockpit mit Ausbildungsblatt und Rückmeldung zum Schulflug",
@@ -137,7 +139,7 @@ export const content = {
       "Nachrichten",
       "Marktplatz"
     ],
-    "faqTitle": "Vor deinem ersten Login.",
+    "faqTitle": "Vor deiner Demo.",
     "faqs": [
       [
         "Muss ich eine App installieren?",
@@ -148,12 +150,12 @@ export const content = {
         "Ja. Du kannst Flugdaten aus unterstützten Tabellenformaten importieren und IGC-Aufzeichnungen im Flugformular einlesen. Prüfe die Vorschau und die übernommenen Werte vor dem Speichern."
       ],
       [
-        "Wie starte ich als Flugschule?",
-        "Kontaktiere uns, damit wir gemeinsam euren Ablauf und den Einstieg anschauen können. Die Schulansicht richtet sich nach Schulmitgliedschaft und Teamfunktion; ein persönliches Konto allein richtet noch keine Schule ein."
+        "Wie kann ich Flyary ausprobieren?",
+        "Flyary befindet sich aktuell in der Testphase. Melde dich bei Tobias für eine persönliche Demo. Anschliessend besprechen wir gemeinsam, ob eine Testnutzung für dich oder eure Flugschule möglich ist."
       ],
       [
         "Was kostet Flyary?",
-        "Auf dieser Website sind keine verbindlichen Tarife veröffentlicht. Melde dich bei uns, wenn du Fragen zu Nutzung, Konditionen oder zum Einsatz an deiner Flugschule hast."
+        "Die Bedingungen einer möglichen Testnutzung klären wir im persönlichen Austausch vor dem Start."
       ],
       [
         "Sind meine Flüge automatisch öffentlich?",
@@ -161,14 +163,14 @@ export const content = {
       ]
     ],
     "finalTitle": "Dein nächster Flug\ngehört ins Flugbuch.",
-    "finalCta": "Flyary öffnen",
-    "finalNote": "Mit Google anmelden und den ersten Flug erfassen.",
+    "finalCta": "Demo anfragen",
+    "finalNote": "Flyary ist in der Testphase. Frage eine persönliche Demo an und besprich mit Tobias eine mögliche Testnutzung.",
     "footerText": "Das Flugbuch fürs Gleitschirmfliegen.",
     "contact": "Kontakt",
     "privacy": "Datenschutz & Impressum",
     "terms": "Nutzungsbedingungen",
     "top": "Nach oben",
-    "emailSubject": "Flyary für unsere Flugschule",
+    "emailSubject": "Flyary-Demo für unsere Flugschule",
     "copyright": "Tobias Bolliger",
     "heroChips": [
       "IGC-Import",
@@ -208,16 +210,18 @@ export const content = {
       "Pour les écoles",
       "Questions"
     ],
-    "open": "Ouvrir l’app",
+    "open": "Se connecter",
     "eyebrow": "CARNET DE VOL · FORMATION · ÉCOLE",
     "hero": [
       "Vos vols.",
       "Vos progrès."
     ],
     "intro": "Le carnet de vol numérique pour le parapente. Gardez une trace de vos vols, suivez votre progression et préparez la prochaine sortie avec votre communauté.",
-    "start": "Commencer mon carnet",
+    "phase": "Flyary est en phase de test. Découvrez l’application lors d’une démo personnalisée et échangez avec nous sur la possibilité de la tester.",
+    "demoEmailSubject": "Demande de démo Flyary",
+    "start": "Demander une démo",
     "secondary": "Pour les écoles",
-    "note": "Connexion avec Google. Dans le navigateur. Aussi sur votre téléphone.",
+    "note": "Pour les pilotes et les écoles de parapente. Contact direct avec Tobias.",
     "productLabel": "DÉCOUVREZ L’APPLICATION",
     "tabsLabel": "Choisir une vue de l’application",
     "tabs": [
@@ -315,8 +319,8 @@ export const content = {
         "Documentez la formation, exportez les justificatifs et gérez le matériel et la facturation."
       ]
     ],
-    "schoolCta": "Parlons de votre école",
-    "schoolNote": "Contact direct avec Tobias, responsable de Flyary.",
+    "schoolCta": "Demander une démo pour votre école",
+    "schoolNote": "Démo personnalisée avec Tobias. Nous conviendrons ensuite ensemble d’un éventuel accès test.",
     "schoolRoles": "Direction · Moniteurs · Aides au décollage",
     "schoolBadge": "Pour votre école au quotidien",
     "schoolImageAlt": "Cockpit du jour de vol avec fiche de formation et retour sur le vol école",
@@ -327,7 +331,7 @@ export const content = {
       "Messages",
       "Marché"
     ],
-    "faqTitle": "Avant votre première connexion.",
+    "faqTitle": "Avant votre démo.",
     "faqs": [
       [
         "Faut-il installer une application ?",
@@ -338,12 +342,12 @@ export const content = {
         "Oui. Vous pouvez importer des données depuis les formats de tableaux pris en charge et lire des fichiers IGC dans le formulaire de vol. Vérifiez l’aperçu et les valeurs avant d’enregistrer."
       ],
       [
-        "Comment commencer avec mon école ?",
-        "Contactez-nous pour examiner ensemble votre fonctionnement et les premiers pas. L’accès école dépend de l’appartenance à l’école et des fonctions dans l’équipe. Un compte personnel ne crée pas automatiquement une école."
+        "Comment essayer Flyary ?",
+        "Flyary est actuellement en phase de test. Contactez Tobias pour une démo personnalisée. Nous discuterons ensuite ensemble de la possibilité d’un accès test pour vous ou votre école."
       ],
       [
         "Combien coûte Flyary ?",
-        "Ce site ne publie pas de tarifs contractuels. Contactez-nous pour toute question sur l’utilisation, les conditions ou le déploiement dans votre école."
+        "Les conditions d’un éventuel accès test sont convenues lors d’un échange personnel avant de commencer."
       ],
       [
         "Mes vols sont-ils automatiquement publics ?",
@@ -351,14 +355,14 @@ export const content = {
       ]
     ],
     "finalTitle": "Votre prochain vol\na sa place ici.",
-    "finalCta": "Ouvrir Flyary",
-    "finalNote": "Connectez-vous avec Google et enregistrez votre premier vol.",
+    "finalCta": "Demander une démo",
+    "finalNote": "Flyary est en phase de test. Demandez une démo personnalisée et discutez avec Tobias d’un éventuel accès test.",
     "footerText": "Le carnet de vol pour le parapente.",
     "contact": "Contact",
     "privacy": "Confidentialité & mentions légales",
     "terms": "Conditions d’utilisation",
     "top": "Retour en haut",
-    "emailSubject": "Flyary pour notre école de vol",
+    "emailSubject": "Démo Flyary pour notre école de parapente",
     "copyright": "Tobias Bolliger",
     "heroChips": [
       "Import IGC",
@@ -398,16 +402,18 @@ export const content = {
       "For schools",
       "Questions"
     ],
-    "open": "Open app",
+    "open": "Log in",
     "eyebrow": "LOGBOOK · TRAINING · FLIGHT SCHOOL",
     "hero": [
       "Your flights.",
       "Your progress."
     ],
     "intro": "The digital logbook for paragliding. Record your flights, see how far you’ve come and plan your next flying day with your community.",
-    "start": "Start your logbook",
+    "phase": "Flyary is in its testing phase. Explore the app in a personal demo and talk to us about a possible trial.",
+    "demoEmailSubject": "Flyary demo request",
+    "start": "Request a demo",
     "secondary": "For flight schools",
-    "note": "Sign in with Google. In your browser. On your phone, too.",
+    "note": "For pilots and paragliding schools. Contact Tobias directly.",
     "productLabel": "THIS IS FLYARY",
     "tabsLabel": "Choose an app view",
     "tabs": [
@@ -505,8 +511,8 @@ export const content = {
         "Document training, export records and manage equipment and billing."
       ]
     ],
-    "schoolCta": "Let’s talk about your school",
-    "schoolNote": "A direct conversation with Tobias, the person behind Flyary.",
+    "schoolCta": "Request a demo for your school",
+    "schoolNote": "A personal demo with Tobias. We will then discuss whether a trial is possible and agree on the terms together.",
     "schoolRoles": "School leaders · Instructors · Launch helpers",
     "schoolBadge": "For your school’s day-to-day",
     "schoolImageAlt": "Flight-day cockpit with training sheet and feedback on the school flight",
@@ -517,7 +523,7 @@ export const content = {
       "Messages",
       "Marketplace"
     ],
-    "faqTitle": "Before your first login.",
+    "faqTitle": "Before your demo.",
     "faqs": [
       [
         "Do I need to install an app?",
@@ -528,12 +534,12 @@ export const content = {
         "Yes. Import flight data from supported spreadsheet formats and read IGC recordings in the flight form. Review the preview and imported values before saving."
       ],
       [
-        "How does my school get started?",
-        "Contact us to look at your workflow and first steps together. The school view depends on school membership and team roles; a personal account does not automatically create a school."
+        "How can I try Flyary?",
+        "Flyary is currently in its testing phase. Contact Tobias for a personal demo. Afterwards, we will discuss whether a trial is possible for you or your school."
       ],
       [
         "How much does Flyary cost?",
-        "This website does not publish binding prices. Contact us with questions about use, terms or introducing Flyary at your school."
+        "We agree on the terms of a possible trial in a personal conversation before you start."
       ],
       [
         "Are my flights automatically public?",
@@ -541,14 +547,14 @@ export const content = {
       ]
     ],
     "finalTitle": "Your next flight\nbelongs in your logbook.",
-    "finalCta": "Open Flyary",
-    "finalNote": "Sign in with Google and record your first flight.",
+    "finalCta": "Request a demo",
+    "finalNote": "Flyary is in its testing phase. Request a personal demo and discuss a possible trial with Tobias.",
     "footerText": "The logbook for paragliding.",
     "contact": "Contact",
     "privacy": "Privacy & legal notice",
     "terms": "Terms of use",
     "top": "Back to top",
-    "emailSubject": "Flyary for our flight school",
+    "emailSubject": "Flyary demo for our paragliding school",
     "copyright": "Tobias Bolliger",
     "heroChips": [
       "IGC import",

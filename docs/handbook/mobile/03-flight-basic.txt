@@ -11,6 +11,11 @@ Advance Alpha (26)
 Advance Alpha (26)
 StartplatzNiederbauen
 LandeplatzEmmetten
+Flugart
+Nicht angegeben
+Nicht angegeben
+Übungshang
+Höhenflug
 SHV Soloflug
 Gruppe
 Gruppe wählen...

@@ -58,9 +58,25 @@ Grösse
 Letzter Check
 Nächster Check
 Rettungsschirm
+Fluggerät
+Gleitschirm
+Delta
+Tandemgerät
 Standardschirm
 Speichern
 Abbrechen
+Ausweise und Nachweise
+
+Pilotenausweise mit Ausstellungsdatum und Kurse wie das Sicherheitstraining. Der Ausbildungsstand zählt damit «seit dem Ausweis» und prüft Fristen.
+
+AUSWEISE
+
+Noch kein Ausweis erfasst.
+
+KURSE UND NACHWEISE
+
+Noch kein Nachweis erfasst.
+
 Notfall-Informationen
 
 Sichtbar für Admins und Teilnehmer deiner Termine
