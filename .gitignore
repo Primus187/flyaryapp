@@ -32,3 +32,5 @@ website/.preview/
 # Word lock files and Supabase CLI state
 ~$*
 supabase/.temp/
+# Word handbooks are generated from the Markdown sources (scripts/build-handbook.py)
+docs/*.docx
