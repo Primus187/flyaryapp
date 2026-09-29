@@ -1792,6 +1792,7 @@ export type Database = {
           instructor_name: string | null
           reason: string | null
           school_name: string
+          solo_checklist: Json | null
           status: string
           student_id: string
           submitted_at: string
@@ -1808,6 +1809,7 @@ export type Database = {
           instructor_name?: string | null
           reason?: string | null
           school_name: string
+          solo_checklist?: Json | null
           status: string
           student_id: string
           submitted_at?: string
@@ -1824,6 +1826,7 @@ export type Database = {
           instructor_name?: string | null
           reason?: string | null
           school_name?: string
+          solo_checklist?: Json | null
           status?: string
           student_id?: string
           submitted_at?: string
@@ -3369,6 +3372,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pilot_evidence: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          kind: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at: string
+          created_at?: string
+          id?: string
+          kind: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pilot_gliders: {
         Row: {
           created_at: string
@@ -3452,6 +3482,36 @@ export type Database = {
           title?: string
           unit?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pilot_licences: {
+        Row: {
+          created_at: string
+          discipline: string
+          id: string
+          issued_at: string
+          level: string
+          licence_number: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discipline: string
+          id?: string
+          issued_at: string
+          level: string
+          licence_number?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discipline?: string
+          id?: string
+          issued_at?: string
+          level?: string
+          licence_number?: string | null
           user_id?: string
         }
         Relationships: []
@@ -4084,6 +4144,42 @@ export type Database = {
           },
         ]
       }
+      training_requirements: {
+        Row: {
+          discipline: string
+          id: string
+          licence: string
+          params: Json
+          rule: string
+          sort: number
+          source: string
+          threshold: number
+          valid_from: string
+        }
+        Insert: {
+          discipline: string
+          id?: string
+          licence: string
+          params?: Json
+          rule: string
+          sort?: number
+          source: string
+          threshold: number
+          valid_from: string
+        }
+        Update: {
+          discipline?: string
+          id?: string
+          licence?: string
+          params?: Json
+          rule?: string
+          sort?: number
+          source?: string
+          threshold?: number
+          valid_from?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -4186,6 +4282,10 @@ export type Database = {
         Args: { _follower: string; _target: string }
         Returns: boolean
       }
+      can_view_training_of: {
+        Args: { _pilot: string; _viewer: string }
+        Returns: boolean
+      }
       chat_can_manage: {
         Args: { _channel: string; _uid: string }
         Returns: boolean
@@ -4250,8 +4350,19 @@ export type Database = {
         Returns: Json
       }
       confirm_flights: {
-        Args: { _flight_ids: string[]; _group_id: string }
+        Args: { _flight_ids: string[]; _group_id: string; _set_kind?: string }
         Returns: Json
+      }
+      confirm_solo_flight: {
+        Args: {
+          _briefing: boolean
+          _contact: boolean
+          _flight_id: string
+          _group_id: string
+          _note?: string
+          _readiness: boolean
+        }
+        Returns: undefined
       }
       dismiss_school_flight_import: {
         Args: { _event_id: string }
@@ -5058,6 +5169,21 @@ export type Database = {
       shares_group: { Args: { _a: string; _b: string }; Returns: boolean }
       submit_flights_for_confirmation: {
         Args: { _flight_ids: string[]; _group_id: string }
+        Returns: Json
+      }
+      training_confirmed_flights: {
+        Args: { _discipline: string; _user_id: string }
+        Returns: {
+          is_solo: boolean
+          kind: string
+          landing_key: string
+          minutes: number
+          solo_ok: boolean
+          takeoff_key: string
+        }[]
+      }
+      training_status: {
+        Args: { _discipline: string; _licence: string; _user_id: string }
         Returns: Json
       }
       withdraw_flight_submission: {
