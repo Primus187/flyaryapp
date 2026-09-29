@@ -3572,6 +3572,54 @@ export type Database = {
         }
         Relationships: []
       }
+      pilot_waitlist: {
+        Row: {
+          comment: string | null
+          consent_at: string
+          created_at: string
+          disciplines: string[]
+          email: string
+          handled_at: string | null
+          id: string
+          language: string
+          name: string
+          requester_hash: string | null
+          role: string
+          school: string | null
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          consent_at: string
+          created_at?: string
+          disciplines?: string[]
+          email: string
+          handled_at?: string | null
+          id?: string
+          language: string
+          name: string
+          requester_hash?: string | null
+          role: string
+          school?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          consent_at?: string
+          created_at?: string
+          disciplines?: string[]
+          email?: string
+          handled_at?: string | null
+          id?: string
+          language?: string
+          name?: string
+          requester_hash?: string | null
+          role?: string
+          school?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pilot_xp: {
         Row: {
           id: string
@@ -4585,6 +4633,19 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      join_pilot_waitlist: {
+        Args: {
+          _comment: string
+          _disciplines: string[]
+          _email: string
+          _language: string
+          _name: string
+          _requester_hash: string
+          _role: string
+          _school: string
+        }
+        Returns: string
       }
       list_flights_page: {
         Args: {
