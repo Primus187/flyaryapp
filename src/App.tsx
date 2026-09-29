@@ -12,6 +12,8 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
 import PageErrorBoundary from "@/components/PageErrorBoundary";
 import { pathToKeepThroughLogin, rememberAfterLogin, takeAfterLogin } from "@/lib/after-login";
+import { allowedWithoutAccess } from "@/lib/app-access";
+import { useAppAccess } from "@/hooks/use-app-access";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prefetchDashboard } from "@/hooks/use-dashboard-data";
 
@@ -50,6 +52,8 @@ const TrainingItemDetail = lazy(() => import("@/pages/TrainingItemDetail"));
 const Legal = lazy(() => import("@/pages/Legal"));
 const AdminErrors = lazy(() => import("@/pages/AdminErrors"));
 const AdminWaitlist = lazy(() => import("@/pages/AdminWaitlist"));
+const WaitingRoom = lazy(() => import("@/pages/WaitingRoom"));
+const RedeemInvite = lazy(() => import("@/pages/RedeemInvite"));
 const AdminSites = lazy(() => import("@/pages/AdminSites"));
 const LegalTerms = lazy(() => import("@/pages/LegalTerms"));
 const LegalLicenses = lazy(() => import("@/pages/LegalLicenses"));
@@ -89,6 +93,7 @@ function PageFallback() {
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const access = useAppAccess();
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">...</div>;
   if (!user) {
     // Shared .igc files and invite links bring the pilot back to them after signing in.
@@ -99,6 +104,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // coming from a public listing (plan 8.4): go on to the listing instead of the dashboard
   const afterLogin = takeAfterLogin();
   if (afterLogin) return <Navigate to={afterLogin} replace />;
+  // Pilot phase (migration 0079): accounts without an invitation wait. If the check fails, let them in
+  // (the gate is a product gate; the database enforces what matters).
+  if (!allowedWithoutAccess(location.pathname)) {
+    if (access.isLoading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">...</div>;
+    if (access.data && !access.data.has_access) return <WaitingRoom access={access.data} />;
+  }
   return <>{children}</>;
 }
 
@@ -226,6 +237,7 @@ const App = () => {
                       <Route path="/legal/licenses" element={<LegalLicenses />} />
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
+                    <Route path="/welcome/:token" element={<ProtectedRoute><RedeemInvite /></ProtectedRoute>} />
                     <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
                     {/* Tandem passenger confirms through a single-use link, no account needed (migration 0076) */}
                     <Route path="/passenger/:token" element={<PassengerConfirm />} />

@@ -22,11 +22,13 @@ export function takeAfterLogin(): string | null {
 
 /**
  * Links that must survive the Google sign-in when opened signed out: an .igc shared from the phone
- * (waits in Cache Storage) and a group or school invite link (/groups?invite=…, SchoolInvite).
+ * (waits in Cache Storage), a group or school invite link (/groups?invite=…, SchoolInvite) and a
+ * personal invitation link (/welcome/<token>, migration 0079).
  */
 export function pathToKeepThroughLogin(pathname: string, search: string): string | null {
   const params = new URLSearchParams(search);
   if (pathname === "/flights/new" && params.has("shared")) return pathname + search;
   if (pathname === "/groups" && params.get("invite")) return pathname + search;
+  if (/^\/welcome\/[0-9a-f]{64}$/i.test(pathname)) return pathname;
   return null;
 }

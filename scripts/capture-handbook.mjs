@@ -101,6 +101,7 @@ await context.route('**/*', async route=>{
       else if(table==='get_public_profile') result=[profile];
       else if(table==='training_status') result=trainingStatus;
       else if(table==='my_open_passenger_confirmations') result=[];
+      else if(table==='my_access') result={has_access:true,waitlisted:false,invited:false};
       else {unknown.add("rpc/"+table);result=[];}
     } else {
       result=[...(data[table]||[])];

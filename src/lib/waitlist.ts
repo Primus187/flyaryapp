@@ -13,6 +13,9 @@ export interface WaitlistRow {
   created_at: string;
   updated_at: string;
   handled_at: string | null;
+  /** Set when the entry was made in the app's waiting room or a personal link was redeemed (0079). */
+  user_id?: string | null;
+  invited_at?: string | null;
 }
 
 const esc = (v: unknown) => {

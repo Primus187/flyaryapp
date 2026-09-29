@@ -17,6 +17,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import { fetchGroupMembers, type GroupMemberRow } from "@/lib/group-members";
 import InviteCodeControls from "@/components/InviteCodeControls";
 import { loadInviteCode } from "@/lib/invite-code";
+import { useAppAdmin } from "@/hooks/use-app-admin";
 
 interface GroupRow { id: string; name: string; description: string | null; created_by: string; group_type: string; role: string; }
 type MemberRow = GroupMemberRow;
@@ -30,6 +31,8 @@ export default function Groups() {
   const [groups, setGroups] = useState<GroupRow[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
+  // Flight schools are set up by Flyary admins only (migration 0079, after a demo).
+  const isAppAdmin = useAppAdmin();
   const [newName, setNewName] = useState(""); const [newDesc, setNewDesc] = useState(""); const [newType, setNewType] = useState<string>("pilot_group");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(true);
@@ -55,7 +58,7 @@ export default function Groups() {
   const handleCreate = async () => {
     if (!user || !newName.trim()) return;
     const { data, error } = await supabase.from("groups").insert({ name: newName.trim(), description: newDesc.trim() || null, created_by: user.id, group_type: newType as any }).select("id").single();
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: t("common.error"), description: /Only Flyary admins/.test(error.message) ? t("groups.schoolOnlyAdmin") : error.message, variant: "destructive" }); return; }
     await supabase.from("group_members").insert({ group_id: data.id, user_id: user.id, role: "admin" });
     toast({ title: t("groups.groupCreated") }); setNewName(""); setNewDesc(""); setNewType("pilot_group"); setCreateOpen(false); fetchGroups();
   };
@@ -95,7 +98,7 @@ export default function Groups() {
         action={
           <>
         <Dialog open={joinOpen} onOpenChange={setJoinOpen}><DialogTrigger asChild><Button size="sm" variant="outline" className="gap-1.5"><Link className="h-4 w-4" /> {t("groups.join")}</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>{t("groups.joinGroup")}</DialogTitle></DialogHeader><div className="space-y-3"><div className="space-y-1.5"><Label className="text-xs">{t("groups.inviteCode")}</Label><Input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder={t("groups.inviteCodePlaceholder")} /></div><Button className="w-full" onClick={handleJoin}>{t("groups.join")}</Button></div></DialogContent></Dialog>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}><DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> {t("groups.new")}</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>{t("groups.createGroup")}</DialogTitle></DialogHeader><div className="space-y-3"><div className="space-y-1.5"><Label className="text-xs">{t("groups.name")}</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t("groups.namePlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("groups.groupType")}</Label><Select value={newType} onValueChange={setNewType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pilot_group">{t("groups.pilotGroup")}</SelectItem><SelectItem value="school">{t("groups.school")}</SelectItem></SelectContent></Select></div><div className="space-y-1.5"><Label className="text-xs">{t("groups.description")}</Label><Input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder={t("common.optional")} /></div><Button className="w-full" onClick={handleCreate}>{t("common.create")}</Button></div></DialogContent></Dialog>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}><DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> {t("groups.new")}</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>{t("groups.createGroup")}</DialogTitle></DialogHeader><div className="space-y-3"><div className="space-y-1.5"><Label className="text-xs">{t("groups.name")}</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t("groups.namePlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("groups.groupType")}</Label><Select value={newType} onValueChange={setNewType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pilot_group">{t("groups.pilotGroup")}</SelectItem>{isAppAdmin && <SelectItem value="school">{t("groups.school")}</SelectItem>}</SelectContent></Select>{!isAppAdmin && <p className="text-[11px] text-muted-foreground">{t("groups.schoolOnlyAdmin")}</p>}</div><div className="space-y-1.5"><Label className="text-xs">{t("groups.description")}</Label><Input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder={t("common.optional")} /></div><Button className="w-full" onClick={handleCreate}>{t("common.create")}</Button></div></DialogContent></Dialog>
           </>
         }
       />

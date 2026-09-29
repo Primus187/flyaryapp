@@ -15,7 +15,8 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const website = ["de", "fr", "en"].includes(i18n.language?.slice(0, 2)) ? i18n.language.slice(0, 2) : "de";
   useEffect(() => {
     const redirectError = takeAuthRedirectError();
     if (redirectError) toast({ title: t("common.error"), description: redirectError, variant: "destructive" });
@@ -45,7 +46,15 @@ export default function Auth() {
             {googleLoading ? "..." : t("auth.withGoogle")}
           </Button>
           <p className="text-xs text-center text-muted-foreground">{t("auth.googleOnlyHint")}</p>
-          <div className="flex justify-center gap-3 text-[10px] text-muted-foreground pt-2">
+          {/* Pilot phase (migration 0079): new accounts need an invitation; say so before they sign in. */}
+          <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground space-y-1.5">
+            <p className="font-medium text-foreground">{t("auth.pilotPhaseTitle")}</p>
+            <p>{t("auth.pilotPhaseInvite")}</p>
+            <p>{t("auth.pilotPhaseNew")} <a className="font-medium text-primary hover:underline" href={`https://www.flyary.ch/${website}/testpilot/`}>{t("auth.pilotPhaseSignup")}</a></p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground pt-2">
+            <a href={`https://www.flyary.ch/${website}/`} className="hover:text-primary transition-colors">www.flyary.ch</a>
+            <span>·</span>
             <button onClick={() => navigate("/legal/terms")} className="hover:text-primary transition-colors">{t("legal.termsTitle")}</button>
             <span>·</span>
             <button onClick={() => navigate("/legal")} className="hover:text-primary transition-colors">{t("legal.privacyTitle")}</button>

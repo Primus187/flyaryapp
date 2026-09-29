@@ -24,5 +24,7 @@ describe("after login", () => {
     expect(pathToKeepThroughLogin("/groups", "?invite=")).toBeNull();
     expect(pathToKeepThroughLogin("/flights/new", "")).toBeNull();
     expect(pathToKeepThroughLogin("/settings", "?invite=x")).toBeNull();
+    expect(pathToKeepThroughLogin("/welcome/" + "a".repeat(64), "")).toBe("/welcome/" + "a".repeat(64));
+    expect(pathToKeepThroughLogin("/welcome/x", "")).toBeNull();
   });
 });

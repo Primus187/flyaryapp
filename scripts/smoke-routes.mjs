@@ -23,6 +23,8 @@ const profile = { id: uid, user_id: uid, pilot_name: "Smoke Test", training_leve
 const rpcResults = {
   feed_page: { items: [], nextCursor: null, groupIds: [] },
   list_flights_page: { rows: [], total: 0 },
+  // pilot phase gate (migration 0079): the smoke user has access
+  my_access: { has_access: true, waitlisted: false, invited: false },
   // training status on /training (migration 0075)
   training_status: { discipline: "paraglider", licence: "pilot", requirements: [{ rule: "confirmed_altitude_flights", threshold: 50, value: 12, met: false, source: "SHV", params: {} }], confirmedWithoutKind: 0, confirmedPractice: 0, licenceIssuedAt: null },
   // today's school flying day for /events/2222…, seen by an instructor

@@ -1,5 +1,35 @@
 # Flyary
 
+## Pilotphase: Warteraum, persönliche Einladungen, Flugschulen nur durch Flyary (2026-09-30)
+
+Entscheid 2026-09-30: Anmelden mit Google bleibt für alle offen, ein neues Konto braucht aber eine
+Einladung. Migration `0079_access_gate.sql`.
+
+- **Zugang** (`app_access`): Alle Konten, die beim Einspielen bestehen, behalten ihn (`existing`).
+  Neu erhält ihn, wer einer Schule oder Gruppe beitritt (Trigger auf `group_members`, also auch der
+  Einladungslink einer Schule), wer einen persönlichen Link einlöst oder wen ein App-Admin
+  freischaltet. `app_settings.signup_mode = 'open'` beendet die Pilotphase (dann haben alle Zugang).
+- **Warteraum** (`src/pages/WaitingRoom.tsx`, Sperre in `ProtectedRoute`): Ohne Zugang sieht man
+  statt der App eine Seite zum Einlösen einer Einladung (Code oder Link einer Schule/Gruppe,
+  persönlicher Link) oder zum Eintrag in die Testliste (`join_waitlist_from_app`, Name und E-Mail
+  aus dem Konto, Push an die App-Admins). Abmelden und Konto löschen bleiben möglich. Schlägt die
+  Prüfung fehl (`my_access`), lässt die App durch: Der Warteraum ist eine Produkt-Schranke, ein neues
+  Konto sieht ohnehin nur eigene Daten.
+- **Persönlicher Link** `/welcome/<token>` (`src/pages/RedeemInvite.tsx`): In der Testliste erzeugt
+  «Einladungslink» (`create_access_invite`) einen Link, 14 Tage gültig und nur einmal verwendbar,
+  gespeichert wird nur der SHA-256-Hash. Er wird einmal angezeigt, mit «Kopieren» und einer
+  vorbereiteten E-Mail in der Sprache des Eintrags. Ein neuer Link ersetzt den alten. Einträge aus
+  dem Warteraum schaltet «Freischalten» (`grant_app_access`) direkt frei.
+- **Links überstehen die Anmeldung:** Personal-Link und Einladungslinks werden vor dem Google-Login
+  gemerkt (`pathToKeepThroughLogin`).
+- **Flugschulen nur durch App-Admins** (Trigger `groups_guard_school`): anlegen oder den Gruppentyp
+  ändern darf nur ein App-Admin; Gruppen erstellen nur, wer Zugang hat. Übergabe an die Schule: Schule
+  anlegen, Einladungslink an die Schulleitung, in den Gruppendetails zum Admin machen.
+- **Login-Seite:** Hinweis auf die Pilotphase mit Link «Als Pilot mitfliegen» und zurück auf
+  www.flyary.ch. Website: Danke-Seite und FAQ nennen den persönlichen Link.
+- Tests: `src/test/access-gate-database.test.ts`, `src/lib/app-access.test.ts`,
+  `src/lib/after-login.test.ts`; Fixtures `my_access` in Smoke- und Handbuch-Aufnahmen.
+
 ## Einladungslinks überstehen die Anmeldung (2026-09-30)
 
 Befund: Wer einen Einladungslink einer Schule oder Gruppe (`/groups?invite=…`) abgemeldet öffnete,

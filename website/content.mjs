@@ -150,7 +150,7 @@ export const content = {
       ],
       [
         "Wie werde ich Testpilot?",
-        "Trag dich über das Formular ein. Wir melden uns, sobald wir weitere Testpiloten aufnehmen."
+        "Trag dich über das Formular ein. Sobald wir weitere Testpiloten aufnehmen, bekommst du einen persönlichen Link per E-Mail."
       ],
       [
         "Wie steigen wir als Flugschule ein?",
@@ -269,7 +269,7 @@ export const content = {
         "Danke!",
         "Du stehst auf der Testliste."
       ],
-      "text": "Wir melden uns per E-Mail, sobald wir weitere Testpiloten aufnehmen. Bis dahin: guten Flug.",
+      "text": "Sobald wir weitere Testpiloten aufnehmen, schicken wir dir deinen persönlichen Link per E-Mail. Bis dahin: guten Flug.",
       "back": "Zurück zur Startseite"
     }
   },
@@ -416,7 +416,7 @@ export const content = {
       ],
       [
         "Comment devenir pilote test ?",
-        "Inscrivez-vous via le formulaire. Nous vous contactons dès que nous accueillons de nouveaux pilotes test."
+        "Inscrivez-vous via le formulaire. Dès que nous accueillons de nouveaux pilotes test, vous recevez un lien personnel par e-mail."
       ],
       [
         "Comment notre école peut-elle commencer ?",
@@ -535,7 +535,7 @@ export const content = {
         "Merci !",
         "Vous êtes sur la liste."
       ],
-      "text": "Nous vous contactons par e-mail dès que nous accueillons de nouveaux pilotes test. D’ici là : bons vols.",
+      "text": "Dès que nous accueillons de nouveaux pilotes test, nous vous envoyons votre lien personnel par e-mail. D’ici là : bons vols.",
       "back": "Retour à l’accueil"
     }
   },
@@ -682,7 +682,7 @@ export const content = {
       ],
       [
         "How do I become a test pilot?",
-        "Sign up with the form. We’ll get in touch as soon as we take on more test pilots."
+        "Sign up with the form. As soon as we take on more test pilots, you’ll get a personal link by e-mail."
       ],
       [
         "How does our flight school get started?",
@@ -801,7 +801,7 @@ export const content = {
         "Thank you!",
         "You’re on the test list."
       ],
-      "text": "We’ll e-mail you as soon as we take on more test pilots. Until then: happy flying.",
+      "text": "As soon as we take on more test pilots, we’ll e-mail you your personal link. Until then: happy flying.",
       "back": "Back to the home page"
     }
   }
