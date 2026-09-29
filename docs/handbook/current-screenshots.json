@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-09-29T04:05:54.103Z",
-  "sourceHash": "c15e0123d6ab43bb772cdff7f405c5d2c11e3e9f434da9fa7c65c0d7bf70fe6d",
+  "capturedAt": "2026-09-29T04:12:11.733Z",
+  "sourceHash": "a376ee77a61418d053a50a9e10ebc2410f4c048a09b205d1d2aaba423a636295",
   "images": {
     "handbook/mobile/01-home.png": "fffb86b27e1818953ee84c447ba87240100d782df27cb784516c7dc5d1923106",
     "handbook/mobile/02-more.png": "68f75a27016357d434b8f889021ed237e7b788f35ebc2e8df9a8e0993463f9a4",
@@ -39,11 +39,11 @@
     "handbook/mobile/35-channel.png": "197a9ba219922a41124552d09833385bb95dfdd22162dd1bdfdbb329a0b84c28",
     "handbook/mobile/36-message-actions.png": "89f5d343c41c3e9a35d4bd9ba3071a3e5f77e477f9518a1e275eb094ce354052",
     "handbook/mobile/37-notify.png": "95d0e549dd45503178c235b8450b2cb2519bb7f10de6cb6d10abfec1260e2b17",
-    "handbook/mobile/38-direct.png": "7657019b99812d8eda241947c86f7266e2c7d4b6001f4953ddc9add3e83da4dc",
+    "handbook/mobile/38-direct.png": "597dc0e9ccedb48279e5bdcc3abe7bb983706e087b5e2737121a28c9ce2d5a62",
     "handbook/mobile/39-message-search.png": "9683ecc049635adcc8a09f52851659fb8c9ae3d0700e372882344f9aa2473ea6",
     "handbook/mobile/40-event-participants.png": "e4fbeb2d07acd7c283830dacf264bbc2be33c15c421606c877453c427bf17988",
     "handbook/mobile/41-event-chat.png": "8eba12d8808840c6a70f04c13f5e50076b79ba7ae82e78403f082002337d3fbb",
-    "handbook/mobile/42-app-update.png": "a5472c1dbb1748c5b7eaff8fb21369c5e2bbe8f475739dfb38cb5eb6112ab041",
+    "handbook/mobile/42-app-update.png": "c41a700bffa9d086539af779c03a2cf67c44d3cb0e146432182f8679c8d269d3",
     "handbook/mobile/43-reply.png": "a513e19238b455aea384c813878740285a70a72ab90bdfecc071e30227e8789c",
     "handbook/mobile/44-flight-no-group.png": "7cb2d487fabb4d5bbb17889918bcaa76eeb0f65800090dd8c57d03ae8b7cc6ef",
     "handbook/mobile/45-market.png": "c3bf03e945e6a2acad82c8f60d7f0954341d593d6cf6e5dbb1697484268bd05b",
@@ -114,7 +114,7 @@
     "handbook/school-mobile/52-shop.png": "9c4911fdd729c9c2d8d1fc16fe8361328c454686567ddf60b934472f43e611cc",
     "handbook/school-mobile/53-shop-profile.png": "2a247252663ed174738b8c7c8ac52fe205f648d73fda1ed19bcbe30835141ca9",
     "handbook/school-mobile/54-shop-sale.png": "6f1eb20d4f17f2469fe8450bb68380a8c42f5dfb6e1d871b4e50e9f55b3b75c5",
-    "handbook/school-mobile/55-equipment-market.png": "a427fa5c08888257ca749fdc3a6aec748fa437e2e8e775387afcbce9e2ea78d6",
+    "handbook/school-mobile/55-equipment-market.png": "9e519ca4eb23318d640cc0deb045f47a89f854f9a9fe466753c010dc74027fb9",
     "handbook/school-mobile/56-school-listing.png": "a7f6897d7fbc03cf53e04bd1a5cd8b919391223b086eda6850f6a4cbe3563590",
     "handbook/school-mobile/57-school-form.png": "32187c88d757a1a6edbeee8f28f42bf927e864d0a3949ac33384c6e35eaf33f4",
     "handbook/school-mobile/58-shop-activation.png": "c5c7f9e4ffaf1081a9a4abd127d3a9fb9c08bbe4cab0e26dacee838785813049"

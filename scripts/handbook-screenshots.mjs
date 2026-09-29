@@ -35,6 +35,8 @@ function imageHashes() {
     }
   }
   for (const document of documents) {
+    // The Word sources in docs/ are local-only; CI builds see just the website editions.
+    if (!existsSync(resolve(root, document))) continue;
     const markdown = readFileSync(resolve(root, document), 'utf8');
     for (const match of markdown.matchAll(/!\[[^\]]*\]\((handbook\/[^)]+\.png)\)/g)) {
       result[match[1]] = digest(readFileSync(resolve(root, 'docs', match[1])));
@@ -60,7 +62,7 @@ function capture(script, base) {
 // cannot run the capture. There the committed images just have to match the committed receipt.
 function assertCommittedImages() {
   const saved = existsSync(receipt) ? JSON.parse(readFileSync(receipt, 'utf8')) : null;
-  if (!saved || JSON.stringify(saved.images) !== JSON.stringify(imageHashes())) {
+  if (!saved || Object.entries(imageHashes()).some(([path, hash]) => saved.images[path] !== hash)) {
     throw new Error('Committed handbook screenshots do not match current-screenshots.json. Run npm run handbook:screenshots locally and commit both.');
   }
 }
