@@ -519,6 +519,13 @@
       "when": 1794960000000,
       "tag": "0073_flight_proof_data",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1795046400000,
+      "tag": "0074_flight_confirmations",
+      "breakpoints": true
     }
   ]
 }

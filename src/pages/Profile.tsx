@@ -23,9 +23,16 @@ import { DISCIPLINES, type Discipline } from "@/lib/flight-proof";
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
 const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
 
-interface Glider { id?: string; manufacturer: string; model: string; size: string; is_default: boolean; last_check_date?: string | null; next_check_date?: string | null; reserve_repack_date?: string | null; discipline?: Discipline; is_tandem?: boolean; }
+interface Glider { id?: string; manufacturer: string; model: string; size: string; is_default: boolean; last_check_date?: string | null; next_check_date?: string | null; reserve_repack_date?: string | null; discipline?: Discipline; is_tandem?: boolean; wing_area_m2?: number | string | null; glider_class?: string | null; }
 
 const selectClass = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm";
+
+// Wing area and class only apply to hang gliders (migration 0074); cleared for paragliders.
+function hangGliderFields(g: Glider) {
+  const hg = g.discipline === "hangglider";
+  const area = hg && g.wing_area_m2 !== "" && g.wing_area_m2 != null ? Number(g.wing_area_m2) : null;
+  return { wing_area_m2: area != null && Number.isFinite(area) ? area : null, glider_class: hg && g.glider_class ? g.glider_class : null };
+}
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -242,7 +249,7 @@ export default function Profile() {
   const handleAddGlider = async () => {
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
     if (newGlider.is_default) await supabase.from("pilot_gliders").update({ is_default: false } as any).eq("user_id", user.id);
-    const insertData: any = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null, discipline: newGlider.discipline || "paraglider", is_tandem: !!newGlider.is_tandem };
+    const insertData: any = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null, discipline: newGlider.discipline || "paraglider", is_tandem: !!newGlider.is_tandem, ...hangGliderFields(newGlider) };
     const { data, error } = await supabase.from("pilot_gliders").insert(insertData).select().single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     if (newGlider.is_default) setGliders(prev => [...prev.map(g => ({ ...g, is_default: false })), data as any]);
@@ -257,7 +264,7 @@ export default function Profile() {
       manufacturer: glider.manufacturer, model: glider.model, size: glider.size || null,
       last_check_date: glider.last_check_date || null, next_check_date: glider.next_check_date || null,
       reserve_repack_date: glider.reserve_repack_date || null,
-      discipline: glider.discipline || "paraglider", is_tandem: !!glider.is_tandem,
+      discipline: glider.discipline || "paraglider", is_tandem: !!glider.is_tandem, ...hangGliderFields(glider),
     } as any).eq("id", glider.id);
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setGliders(prev => prev.map(g => g.id === glider.id ? { ...glider } : g));
@@ -609,6 +616,12 @@ export default function Profile() {
                     </div>
                     <label className="flex items-center gap-2 text-sm pb-2"><input type="checkbox" checked={!!g.is_tandem} onChange={e => setGliders(prev => prev.map(gl => gl.id === g.id ? { ...gl, is_tandem: e.target.checked } : gl))} />{t("flightProof.tandemGlider")}</label>
                   </div>
+                  {g.discipline === "hangglider" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1"><Label className="text-xs">{t("flightProof.wingArea")}</Label><Input type="number" step="0.1" value={g.wing_area_m2 ?? ""} onChange={e => setGliders(prev => prev.map(gl => gl.id === g.id ? { ...gl, wing_area_m2: e.target.value } : gl))} /></div>
+                      <div className="space-y-1"><Label className="text-xs">{t("flightProof.gliderClass")}</Label><Input value={g.glider_class ?? ""} onChange={e => setGliders(prev => prev.map(gl => gl.id === g.id ? { ...gl, glider_class: e.target.value } : gl))} /></div>
+                    </div>
+                  )}
                   <Button size="sm" onClick={() => handleUpdateGlider(g)}>{t("common.save")}</Button>
                 </div>
               )}
@@ -631,6 +644,12 @@ export default function Profile() {
             </div>
             <label className="flex items-center gap-2 text-sm pb-2"><input type="checkbox" checked={!!newGlider.is_tandem} onChange={e => setNewGlider({ ...newGlider, is_tandem: e.target.checked })} />{t("flightProof.tandemGlider")}</label>
           </div>
+          {newGlider.discipline === "hangglider" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1"><Label className="text-xs">{t("flightProof.wingArea")}</Label><Input type="number" step="0.1" value={newGlider.wing_area_m2 ?? ""} onChange={e => setNewGlider({ ...newGlider, wing_area_m2: e.target.value })} /></div>
+              <div className="space-y-1"><Label className="text-xs">{t("flightProof.gliderClass")}</Label><Input value={newGlider.glider_class ?? ""} onChange={e => setNewGlider({ ...newGlider, glider_class: e.target.value })} /></div>
+            </div>
+          )}
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={newGlider.is_default} onChange={e => setNewGlider({ ...newGlider, is_default: e.target.checked })} />{t("profile.defaultGlider")}</label>
           <div className="flex gap-2"><Button size="sm" onClick={handleAddGlider} disabled={!newGlider.manufacturer || !newGlider.model}>{t("common.save")}</Button><Button size="sm" variant="outline" onClick={() => setShowAddGlider(false)}>{t("common.cancel")}</Button></div>
         </div>)}

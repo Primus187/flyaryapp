@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plane, Plus, Filter, Loader2, Trash2 } from "lucide-react";
+import { Search, Plane, Plus, Filter, Loader2, Trash2, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/layout/EmptyState";
 import FlightThumbnailMap from "@/components/FlightThumbnailMap";
@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { useSiteName } from "@/lib/official-sites-store";
+import SubmitFlightsDialog from "@/components/SubmitFlightsDialog";
+import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
 
 type QuickFilter = "all" | "season" | "track";
 
@@ -64,6 +66,7 @@ export default function Flights() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
+  const [submitOpen, setSubmitOpen] = useState(false);
   const currentYear = new Date().getFullYear();
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   useEffect(() => {
@@ -86,12 +89,13 @@ export default function Flights() {
   const groupQuery = useQuery({
     queryKey: ["flight-groups", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user!.id);
+      const { data, error } = await supabase.from("group_members").select("group_id, groups(id, name, group_type)").eq("user_id", user!.id);
       if (error) throw error;
       return (data || []).flatMap((row) => row.groups ? [row.groups] : []);
     },
   });
   const groups = groupQuery.data || [];
+  const inSchool = groups.some((g) => g.group_type === "school");
   const flights = useMemo(() => list.data?.pages.flatMap((page) => page.rows) || [], [list.data]);
   const filtered = flights;
   const counts = list.data?.pages[0].counts || { all: 0, season: 0, track: 0 };
@@ -102,8 +106,8 @@ export default function Flights() {
     if (!confirm(t("flights.deleteFlight"))) return;
     const { error } = await supabase.from("flights").delete().eq("id", flightId);
     if (error) {
-
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      // A confirmed training flight is cancelled on its detail page instead (migration 0074).
+      toast({ title: t("common.error"), description: isConfirmedDeleteError(error) ? t("confirmations.deleteRefused") : error.message, variant: "destructive" });
     } else {
       await queryClient.invalidateQueries({ queryKey: ["flight-list", user?.id] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard", user?.id] });
@@ -160,6 +164,12 @@ export default function Flights() {
       />
 
       <SchoolFlightImportCard />
+      {inSchool && (
+        <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setSubmitOpen(true)}>
+          <BadgeCheck className="h-4 w-4" />{t("confirmations.submitTitle")}
+        </Button>
+      )}
+      <SubmitFlightsDialog open={submitOpen} onOpenChange={setSubmitOpen} locale={locale} />
 
       <div className="flex gap-2">
         <div className="relative flex-1">

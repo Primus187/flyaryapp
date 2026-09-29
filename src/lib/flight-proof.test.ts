@@ -66,6 +66,8 @@ describe("change history texts", () => {
     expect(formatChangeValue("is_solo_shv", true, t)).toBe("flightProof.yes");
     expect(formatChangeValue("flight_kind", "altitude", t)).toBe("flightProof.kind.altitude");
     expect(formatChangeValue("landing_location", null, t)).toBe("—");
+    expect(formatChangeValue("cancelled", { at: "2026-09-29T10:00:00Z", reason: "Doppelt" }, t)).toBe("flightProof.cancelledValue");
+    expect(formatChangeValue("cancelled", null, t)).toBe("—");
     expect(formatChangeValue("date", "2025-01-18", t)).toBe(new Date(2025, 0, 18).toLocaleDateString("de-CH"));
   });
 

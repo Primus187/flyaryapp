@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  aircraftColumnLabel, flownSites, heightDifference, logbookSummary, pageLabel, sortForPrint, summaryLines, type LogbookFlight, type LogbookPlace,
+  aircraftColumnLabel, confirmationLabel, flownSites, hasConfirmations, heightDifference, logbookSummary, pageLabel, printableFlights,
+  sortForPrint, summaryLines, type LogbookFlight, type LogbookPlace,
 } from "../../supabase/functions/export-flightbook-pdf/logbook";
 
 const place = (id: string, name: string, altitude: number | null, official: string | null = null): LogbookPlace =>
@@ -50,6 +51,19 @@ describe("logbook PDF", () => {
     expect(aircraftColumnLabel([{ discipline: "hangglider" }])).toBe("Delta");
     expect(aircraftColumnLabel([{ discipline: "paraglider" }, { discipline: "hangglider" }])).toBe("Fluggerät");
     expect(aircraftColumnLabel([])).toBe("Gleitschirm");
+  });
+
+  it("leaves cancelled flights out and labels confirmed ones with initials and date", () => {
+    const confirmed = flight(bergbo, lehn, { confirmation: { status: "confirmed", instructor_name: "Iris  Beatrice Keller", decided_at: "2025-03-12T10:00:00Z" } });
+    const asArray = flight(bergbo, lehn, { confirmation: [{ status: "confirmed", instructor_name: null, decided_at: null }] });
+    const revoked = flight(bergbo, lehn, { confirmation: { status: "revoked", instructor_name: "Iris", decided_at: "2025-03-12T10:00:00Z" } });
+    const cancelled = flight(bergbo, lehn, { cancelled_at: "2025-04-01T00:00:00Z" });
+    expect(printableFlights([confirmed, cancelled]).map((f) => f.id)).toEqual([confirmed.id]);
+    expect(confirmationLabel(confirmed)).toBe("IBK 12.03.25");
+    expect(confirmationLabel(asArray)).toBe("ja");
+    expect(confirmationLabel(revoked)).toBe("");
+    expect(hasConfirmations([revoked, cancelled])).toBe(false);
+    expect(hasConfirmations([revoked, confirmed])).toBe(true);
   });
 
   it("labels pages with the total", () => {

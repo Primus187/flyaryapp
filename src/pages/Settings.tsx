@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { exportFlightsCsv, downloadBlob } from "@/lib/csv-export";
+import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
 
 function TrainingLevelCard() {
   const { t } = useTranslation();
@@ -231,7 +232,8 @@ export default function Settings() {
       setDeleteFlightsOpen(false);
       setDeleteFlightsConfirm("");
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      // Nothing was deleted: confirmed training flights stay (migration 0074), the whole delete is refused.
+      toast({ title: t("common.error"), description: isConfirmedDeleteError(e) ? t("confirmations.deleteAllRefused") : e.message, variant: "destructive" });
     } finally {
       setDeletingFlights(false);
     }

@@ -1,5 +1,47 @@
 # Flyary
 
+## Flightbook-Ersatz Schritt 3: Flugbestätigung durch Fluglehrer (2026-09-29)
+
+Umsetzung von Schritt 3 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md).
+Migration `0074_flight_confirmations.sql`.
+
+- **Ablauf:** Der Schüler reicht Flüge bei seiner Flugschule ein (auf der Flugdetailseite oder
+  gesammelt über «Flüge zur Bestätigung einreichen» in der Flugliste, z. B. nach einem
+  Flightbook-Import, Variante B). Fluglehrer bestätigen im neuen Schulbereich «Flugbestätigungen»
+  einzeln oder mehrere auf einmal; die Datenbank legt pro Flug eine eigene Bestätigung und ein
+  eigenes Historienereignis an. Zurückgeben (mit Begründung), Widerrufen (mit Begründung) und
+  Zurückziehen durch den Schüler sind eigene, protokollierte Schritte.
+- **Wer bestätigen darf** (`can_confirm_training`): Funktion Fluglehrer oder Schulleitung in der
+  Schule **und** ein am Bestätigungstag gültiges Zertifikat für die Disziplin des Flugs
+  (`instructor` = Gleitschirm, neu `instructor_hg` = Delta, mit Gültigkeitsdatum), nie der eigene
+  Flug. Admin-Rechte allein, Starthelfer und andere Schulen bestätigen nicht. Widerrufen verlangt
+  dieselbe Qualifikation.
+- **Nachweis:** `flight_confirmations` speichert Status, Lehrperson (Name als Text), Schule (Name
+  als Text), Zertifikatstyp und den Flug im bestätigten Zustand (`confirmed_data`). Die Namen bleiben
+  erhalten, wenn die Schule gelöscht wird oder der Schüler wechselt (`group_id` wird dann `NULL`).
+  `flight_confirmation_events` ist die nur anfügbare Historie. Lesen dürfen Schüler und Team der
+  Schule; schreiben nur die RPCs.
+- **Spätere Änderungen** heben die Bestätigung nicht auf (Entscheid 29. September 2026); sie stehen
+  in der Änderungshistorie, die nun auch die Schule sieht, und die Schulliste markiert «Nach
+  Bestätigung geändert».
+- **Storno statt Löschen:** Ein bestätigter Flug lässt sich in der App nicht löschen (Trigger); er
+  wird mit Begründung storniert (`flights.cancelled_at`, `cancel_reason`, protokolliert) und kann
+  wieder aktiviert werden. «Alle Flüge löschen» bricht dann ohne Änderung ab. Das Löschen des Kontos
+  entfernt weiterhin alles (läuft ohne Benutzersitzung).
+- **PDF/CSV:** Stornierte Flüge erscheinen nicht im Flugbuch-PDF. Sind gedruckte Flüge bestätigt,
+  zeigt die neue Spalte «Bestätigt» Kürzel der Lehrperson und Datum; Stempel und Unterschrift pro
+  Seite bleiben der Nachweis. CSV: Bestätigungsstatus, Schule, Lehrperson, Zeitpunkt und Storno.
+- **Delta-Geräte:** `pilot_gliders.wing_area_m2` und `glider_class`, im Profil nur bei Delta.
+
+Tests: `src/test/flight-confirmations-database.test.ts` (PGlite, 17 Fälle: Rechte inkl. abgelaufenem
+Zertifikat, Admin ohne Funktion, Starthelfer, fremde Schule, falsche Disziplin, Selbstbestätigung;
+Sammelbestätigung; Zurückgeben/Widerrufen/Zurückziehen; Änderung nach Bestätigung; Storno;
+Kontolöschung; gelöschte Schule; Sichtbarkeit), `src/lib/flight-confirmation.test.ts`,
+`src/lib/logbook-pdf.test.ts`, `src/lib/csv-export.test.ts`.
+Ausrollen: Migration anwenden, `npm run gen-types`, dann `export-flightbook-pdf` deployen und
+Frontend pushen (die Function liest `flight_confirmations`; vor der Migration würde das PDF scheitern).
+Schulen müssen für Fluglehrer das Zertifikat mit Gültigkeitsdatum erfassen, sonst kann niemand bestätigen.
+
 ## Flugbuch-PDF und CSV nach Flightbook-Vorlage (2026-09-29)
 
 Teil von Schritt 5 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md),

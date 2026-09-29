@@ -20,6 +20,8 @@ import FlightCoachNote from "@/components/FlightCoachNote";
 import { useSiteName } from "@/lib/official-sites-store";
 import { youtubeEmbedUrl, youtubeLink } from "@/lib/youtube";
 import FlightChangeHistory from "@/components/FlightChangeHistory";
+import FlightConfirmationCard from "@/components/FlightConfirmationCard";
+import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
 import { isoToLocalTime } from "@/lib/flight-proof";
 
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
@@ -130,7 +132,26 @@ export default function FlightDetail() {
     return () => { cancelled = true; };
   }, [videos]);
 
-  const handleDelete = async () => { if (!confirm(t("flights.deleteFlight"))) return; await supabase.from("flights").delete().eq("id", id); toast({ title: t("flights.flightDeleted") }); navigate("/flights"); };
+  const handleDelete = async () => {
+    if (!confirm(t("flights.deleteFlight"))) return;
+    const { error } = await supabase.from("flights").delete().eq("id", id);
+    if (!error) { toast({ title: t("flights.flightDeleted") }); navigate("/flights"); return; }
+    if (!isConfirmedDeleteError(error)) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    // A confirmed training flight stays in the record: it is cancelled with a reason (migration 0074).
+    const reason = window.prompt(t("confirmations.cancelPrompt"))?.trim();
+    if (!reason) return;
+    const cancelledAt = new Date().toISOString();
+    const { error: cancelError } = await supabase.from("flights").update({ cancelled_at: cancelledAt, cancel_reason: reason } as never).eq("id", id);
+    if (cancelError) { toast({ title: t("common.error"), description: cancelError.message, variant: "destructive" }); return; }
+    setFlight({ ...flight, cancelled_at: cancelledAt, cancel_reason: reason });
+    toast({ title: t("confirmations.cancelledDone") });
+  };
+
+  const handleRestore = async () => {
+    const { error } = await supabase.from("flights").update({ cancelled_at: null, cancel_reason: null } as never).eq("id", id);
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    setFlight({ ...flight, cancelled_at: null, cancel_reason: null });
+  };
 
   const handleDuplicate = async () => {
     if (!user || !flight) return;
@@ -215,6 +236,7 @@ export default function FlightDetail() {
               {flight.is_tandem && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t("flightProof.tandem")}</Badge>}
               {flight.flight_kind && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`flightProof.kind.${flight.flight_kind}`)}</Badge>}
               {flight.source === "flightbook" && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t("flightProof.fromFlightbook")}</Badge>}
+              {flight.cancelled_at && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{t("confirmations.cancelled")}</Badge>}
             </div>
             <p className="text-xs text-muted-foreground">
               {flight.flight_no != null && <span>{t("flightProof.number", { no: flight.flight_no })} · </span>}
@@ -266,6 +288,12 @@ export default function FlightDetail() {
           <Button variant="ghost" size="icon" onClick={handleDelete}><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       </div>
+      {flight.cancelled_at && (
+        <Card className="border-destructive/40 bg-destructive/5"><CardContent className="p-3 flex items-center justify-between gap-2">
+          <p className="text-xs">{t("confirmations.cancelledReason", { reason: flight.cancel_reason || "—" })}</p>
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => void handleRestore()}>{t("confirmations.restore")}</Button>
+        </CardContent></Card>
+      )}
       {(flight.takeoff || flight.landing) && (
         <Card className="border-0 shadow-sm"><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
       )}
@@ -334,6 +362,9 @@ export default function FlightDetail() {
         </div>
       )}
       {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
+      {id && user && flight.user_id === user.id && (
+        <FlightConfirmationCard flightId={id} cancelled={!!flight.cancelled_at} preferredGroupId={flight.group_id} locale={locale} />
+      )}
       {id && <FlightChangeHistory flightId={id} locale={locale} />}
       {trainedManeuvers.length > 0 && (
         <Card className="border-0 shadow-sm">

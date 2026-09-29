@@ -31,7 +31,12 @@ export interface CsvFlight {
   comments: string | null;
   takeoff_location: CsvPlace | null;
   landing_location: CsvPlace | null;
+  cancelled_at?: string | null;
+  cancel_reason?: string | null;
+  confirmation?: CsvConfirmation | CsvConfirmation[] | null;
 }
+
+interface CsvConfirmation { status: string; school_name: string | null; instructor_name: string | null; decided_at: string | null }
 
 export const CSV_HEADERS = [
   "flight_no", "date", "takeoff_at", "landing_at",
@@ -39,7 +44,8 @@ export const CSV_HEADERS = [
   "landing", "landing_lat", "landing_lng", "landing_altitude_m",
   "duration_minutes", "distance_km", "altitude_gain_m", "height_difference_m",
   "glider", "discipline", "is_tandem", "flight_kind", "is_solo_shv",
-  "source", "source_ref", "thermals", "wind_speed_kmh", "wind_direction", "comments", "id",
+  "source", "source_ref", "confirmation_status", "confirmation_school", "confirmed_by", "confirmation_decided_at",
+  "cancelled_at", "cancel_reason", "thermals", "wind_speed_kmh", "wind_direction", "comments", "id",
 ];
 
 /** The logbook as CSV (UTF-8 with BOM so Excel reads umlauts), in the order of the flight number. */
@@ -48,13 +54,15 @@ export function flightsCsv(flights: CsvFlight[]): string {
   for (const f of [...flights].sort((a, b) => a.flight_no - b.flight_no)) {
     const t = f.takeoff_location, l = f.landing_location;
     const diff = t?.altitude != null && l?.altitude != null ? t.altitude - l.altitude : null;
+    const c = Array.isArray(f.confirmation) ? f.confirmation[0] : f.confirmation;
     lines.push([
       f.flight_no, f.date, f.takeoff_at, f.landing_at,
       t?.name, t?.latitude, t?.longitude, t?.altitude,
       l?.name, l?.latitude, l?.longitude, l?.altitude,
       f.duration_minutes, f.distance_km, f.altitude_gain, diff,
       f.glider, f.discipline, f.is_tandem ? "true" : "false", f.flight_kind, f.is_solo_shv ? "true" : "false",
-      f.source, f.source_ref, f.thermals, f.wind_speed, f.wind_direction, f.comments, f.id,
+      f.source, f.source_ref, c?.status, c?.school_name, c?.instructor_name, c?.decided_at,
+      f.cancelled_at, f.cancel_reason, f.thermals, f.wind_speed, f.wind_direction, f.comments, f.id,
     ].map(csvEscape).join(","));
   }
   return "﻿" + lines.join("\n");
@@ -84,6 +92,7 @@ export async function exportFlightsCsv(userId: string): Promise<{ rows: number; 
     .select(`
       id, flight_no, date, takeoff_at, landing_at, duration_minutes, distance_km, altitude_gain, glider, discipline,
       is_tandem, flight_kind, is_solo_shv, source, source_ref, thermals, wind_speed, wind_direction, comments,
+      cancelled_at, cancel_reason, confirmation:flight_confirmations ( status, school_name, instructor_name, decided_at ),
       takeoff_location:locations!flights_takeoff_location_id_fkey ( ${PLACE} ),
       landing_location:locations!flights_landing_location_id_fkey ( ${PLACE} )
     `)

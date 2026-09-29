@@ -2,7 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
 import { PROOF_COLUMNS, proofFileName, proofHeaderLines, proofRows, proofTotalLines, type SchoolProof } from "./school-proof.ts";
 import {
-  aircraftColumnLabel, flownSites, formatDuration, heightDifference, logbookSummary, pageLabel, sortForPrint, summaryLines,
+  aircraftColumnLabel, confirmationLabel, flownSites, formatDuration, hasConfirmations, heightDifference, logbookSummary, pageLabel,
+  printableFlights, sortForPrint, summaryLines,
   type LogbookFlight, type LogbookPlace,
 } from "./logbook.ts";
 
@@ -50,7 +51,7 @@ async function fetchAllFlights(supabase: any, userId: string): Promise<LogbookFl
   const all: LogbookFlight[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabase.from("flights")
-      .select(`id, flight_no, date, glider, discipline, duration_minutes, altitude_gain, distance_km, comments, group_id, is_solo_shv, takeoff:locations!flights_takeoff_location_id_fkey(${PLACE_COLUMNS}), landing:locations!flights_landing_location_id_fkey(${PLACE_COLUMNS})`)
+      .select(`id, flight_no, date, glider, discipline, duration_minutes, altitude_gain, distance_km, comments, group_id, is_solo_shv, cancelled_at, confirmation:flight_confirmations(status, instructor_name, decided_at), takeoff:locations!flights_takeoff_location_id_fkey(${PLACE_COLUMNS}), landing:locations!flights_landing_location_id_fkey(${PLACE_COLUMNS})`)
       .eq("user_id", userId)
       .order("flight_no", { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -213,7 +214,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const flights = sortForPrint(allFlights);
+    const flights = sortForPrint(printableFlights(allFlights));
     const gliders: Glider[] = glidersRes.data || [];
     const soloFlights = flights.filter((f) => f.is_solo_shv);
     // Sites and counts from the flights on this printout, not from all saved places.
@@ -475,9 +476,14 @@ Deno.serve(async (req) => {
       { label: "Flugdauer", x: marginL + 142 },
       { label: "Km", x: marginL + 162 },
       { label: "Diff.", x: marginL + 174 },
-      { label: "Beschreibung", x: marginL + 188 },
     ];
-    const descW = lW - marginR - colsF[8].x;
+    // "Bestätigt" (instructor's initials and date of the confirmation in Flyary) only when a printed
+    // flight is confirmed; the stamp and signature on the page stay the legal proof.
+    const withConfirmation = hasConfirmations(flights);
+    if (withConfirmation) colsF.push({ label: "Bestätigt", x: marginL + 188 });
+    colsF.push({ label: "Beschreibung", x: marginL + (withConfirmation ? 210 : 188) });
+    const descCol = colsF[colsF.length - 1];
+    const descW = lW - marginR - descCol.x;
 
     const drawFlightHeader = () => {
       doc.setFontSize(8);
@@ -528,7 +534,8 @@ Deno.serve(async (req) => {
       doc.text(f.duration_minutes ? formatDuration(f.duration_minutes) : "", colsF[5].x, y);
       doc.text(f.distance_km ? String(Number(f.distance_km).toFixed(1)) : "", colsF[6].x, y);
       doc.text(diff != null ? String(diff) : "", colsF[7].x, y);
-      if (descLines.length > 0) doc.text(descLines, colsF[8].x, y);
+      if (withConfirmation) doc.text(confirmationLabel(f), colsF[8].x, y);
+      if (descLines.length > 0) doc.text(descLines, descCol.x, y);
 
       if (f.is_solo_shv) {
         doc.setFont("helvetica", "normal");

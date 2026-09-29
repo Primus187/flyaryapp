@@ -24,6 +24,17 @@ describe("flights CSV", () => {
     expect(second).toContain('"Alleinflug, ""gut"""');
   });
 
+  it("includes the confirmation and a cancellation", () => {
+    const csv = flightsCsv([flight(1, {
+      confirmation: [{ status: "confirmed", school_name: "Vertical", instructor_name: "Iris", decided_at: "2026-09-29T10:00:00Z" }],
+      cancelled_at: "2026-09-30T08:00:00Z", cancel_reason: "Doppelt",
+    })]);
+    const cols = csv.slice(1).split("\n")[1].split(",");
+    const col = (name: string) => cols[CSV_HEADERS.indexOf(name)];
+    expect([col("confirmation_status"), col("confirmation_school"), col("confirmed_by"), col("cancel_reason")])
+      .toEqual(["confirmed", "Vertical", "Iris", "Doppelt"]);
+  });
+
   it("leaves the height difference empty when a site has no height", () => {
     const csv = flightsCsv([flight(1, { landing_location: null })]);
     const cols = csv.slice(1).split("\n")[1].split(",");

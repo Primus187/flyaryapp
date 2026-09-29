@@ -84,7 +84,7 @@ export function flightTimesForSave(date: string, takeoffTime: string, landingAt:
 
 export type ChangeField =
   | "date" | "takeoff_at" | "landing_at" | "duration_minutes" | "takeoff_location" | "landing_location"
-  | "glider" | "discipline" | "is_tandem" | "flight_kind" | "is_solo_shv" | "igc_track";
+  | "glider" | "discipline" | "is_tandem" | "flight_kind" | "is_solo_shv" | "igc_track" | "cancelled";
 
 export interface FlightChange {
   id: number;
@@ -129,6 +129,10 @@ export function formatChangeValue(field: string, value: unknown, t: Translate, l
     case "is_tandem":
     case "is_solo_shv":
       return value ? t("flightProof.yes") : t("flightProof.no");
+    case "cancelled": {
+      const v = value as { at?: string; reason?: string | null };
+      return t("flightProof.cancelledValue", { reason: v.reason || "—" });
+    }
     default:
       return String(value);
   }

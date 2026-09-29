@@ -25,6 +25,40 @@ export interface LogbookFlight {
   is_solo_shv: boolean;
   takeoff: LogbookPlace | null;
   landing: LogbookPlace | null;
+  cancelled_at?: string | null;
+  /** Embedded flight_confirmations row (object or one-element array, depending on PostgREST). */
+  confirmation?: LogbookConfirmation | LogbookConfirmation[] | null;
+}
+
+export interface LogbookConfirmation { status: string; instructor_name: string | null; decided_at: string | null }
+
+/** Cancelled flights are kept in the record (migration 0074) but not printed. */
+export function printableFlights(flights: LogbookFlight[]): LogbookFlight[] {
+  return flights.filter((f) => !f.cancelled_at);
+}
+
+function currentConfirmation(f: LogbookFlight): LogbookConfirmation | null {
+  const c = Array.isArray(f.confirmation) ? f.confirmation[0] : f.confirmation;
+  return c && c.status === "confirmed" ? c : null;
+}
+
+/**
+ * "Bestätigt" column: initials of the confirming instructor and the date ("IB 12.03.25"), empty
+ * when the flight is not (or no longer) confirmed in Flyary.
+ */
+export function confirmationLabel(f: LogbookFlight): string {
+  const c = currentConfirmation(f);
+  if (!c) return "";
+  const initials = (c.instructor_name || "").split(/\s+/).filter(Boolean).map((p) => p[0].toUpperCase()).join("").slice(0, 3);
+  const d = c.decided_at ? new Date(c.decided_at) : null;
+  const date = d && !Number.isNaN(d.getTime())
+    ? `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getFullYear()).slice(2)}`
+    : "";
+  return [initials || "ja", date].filter(Boolean).join(" ");
+}
+
+export function hasConfirmations(flights: LogbookFlight[]): boolean {
+  return flights.some((f) => currentConfirmation(f) !== null);
 }
 
 /**

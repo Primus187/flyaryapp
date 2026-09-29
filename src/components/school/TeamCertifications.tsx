@@ -14,7 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { startOfDay, subYears } from "date-fns";
 import { certificationExpiry, countTeachingDays, MIN_TEACHING_DAYS, teachingWindowStart } from "@/lib/instructor-certifications";
 
-const CERT_TYPES = ["instructor", "launch_leader", "biplace_1", "biplace_2", "biplace_3", "first_aid"] as const;
+// "instructor" = paragliding instructor, "instructor_hg" = hang glider instructor (who may confirm which flights, migration 0074).
+const CERT_TYPES = ["instructor", "instructor_hg", "launch_leader", "biplace_1", "biplace_2", "biplace_3", "first_aid"] as const;
 const TEAM_FUNCTIONS = ["school_lead", "instructor", "launch_helper"] as const;
 
 interface Props {
