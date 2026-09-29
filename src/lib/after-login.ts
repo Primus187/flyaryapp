@@ -19,3 +19,14 @@ export function takeAfterLogin(): string | null {
     return path && isAppPath(path) ? path : null;
   } catch { return null; }
 }
+
+/**
+ * Links that must survive the Google sign-in when opened signed out: an .igc shared from the phone
+ * (waits in Cache Storage) and a group or school invite link (/groups?invite=…, SchoolInvite).
+ */
+export function pathToKeepThroughLogin(pathname: string, search: string): string | null {
+  const params = new URLSearchParams(search);
+  if (pathname === "/flights/new" && params.has("shared")) return pathname + search;
+  if (pathname === "/groups" && params.get("invite")) return pathname + search;
+  return null;
+}

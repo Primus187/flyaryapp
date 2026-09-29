@@ -1,5 +1,13 @@
 # Flyary
 
+## Einladungslinks überstehen die Anmeldung (2026-09-30)
+
+Befund: Wer einen Einladungslink einer Schule oder Gruppe (`/groups?invite=…`) abgemeldet öffnete,
+landete nach der Google-Anmeldung auf der Startseite; die Einladung war verloren. Jetzt merkt sich
+`ProtectedRoute` solche Links wie bisher geteilte IGC-Dateien (`pathToKeepThroughLogin` in
+`src/lib/after-login.ts`, nur App-Pfade, nur im selben Tab). Nach der Anmeldung öffnet sich der
+Beitrittsdialog mit dem Code. Test: `src/lib/after-login.test.ts`.
+
 ## Website v2: Flugtagebuch-Positionierung und Testpiloten-Formular (2026-09-29)
 
 - **Texte** (`website/content.mjs`, DE/FR/EN): Flyary als Flugtagebuch mit den drei Säulen

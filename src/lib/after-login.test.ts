@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { isAppPath, rememberAfterLogin, takeAfterLogin } from "./after-login";
+import { isAppPath, pathToKeepThroughLogin, rememberAfterLogin, takeAfterLogin } from "./after-login";
 
 describe("after login", () => {
   beforeEach(() => sessionStorage.clear());
@@ -16,5 +16,13 @@ describe("after login", () => {
     expect(takeAfterLogin()).toBeNull();
     rememberAfterLogin("//evil.example");
     expect(takeAfterLogin()).toBeNull();
+  });
+  it("keeps shared tracks and invite links through the sign-in, nothing else", () => {
+    expect(pathToKeepThroughLogin("/flights/new", "?shared=abc")).toBe("/flights/new?shared=abc");
+    expect(pathToKeepThroughLogin("/groups", "?invite=0b1c2d3e-0000-4000-8000-000000000000")).toBe("/groups?invite=0b1c2d3e-0000-4000-8000-000000000000");
+    expect(pathToKeepThroughLogin("/groups", "")).toBeNull();
+    expect(pathToKeepThroughLogin("/groups", "?invite=")).toBeNull();
+    expect(pathToKeepThroughLogin("/flights/new", "")).toBeNull();
+    expect(pathToKeepThroughLogin("/settings", "?invite=x")).toBeNull();
   });
 });

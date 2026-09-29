@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppLayout from "@/components/AppLayout";
 import PageErrorBoundary from "@/components/PageErrorBoundary";
-import { rememberAfterLogin, takeAfterLogin } from "@/lib/after-login";
+import { pathToKeepThroughLogin, rememberAfterLogin, takeAfterLogin } from "@/lib/after-login";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prefetchDashboard } from "@/hooks/use-dashboard-data";
 
@@ -91,8 +91,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">...</div>;
   if (!user) {
-    // An .igc shared from the phone waits in Cache Storage; bring the pilot back to it after signing in.
-    if (location.pathname === "/flights/new" && location.search.startsWith("?shared=")) rememberAfterLogin(location.pathname + location.search);
+    // Shared .igc files and invite links bring the pilot back to them after signing in.
+    const keep = pathToKeepThroughLogin(location.pathname, location.search);
+    if (keep) rememberAfterLogin(keep);
     return <Navigate to="/auth" replace />;
   }
   // coming from a public listing (plan 8.4): go on to the listing instead of the dashboard
