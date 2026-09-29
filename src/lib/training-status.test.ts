@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allMet, progress, valueText, type RequirementResult } from "./training-status";
+import { allMet, progress, requirementLabelKey, valueText, type RequirementResult } from "./training-status";
 
 const req = (rule: RequirementResult["rule"], value: number | null, threshold: number, met = false): RequirementResult =>
   ({ rule, value, threshold, met, source: "SHV", params: {} });
@@ -18,6 +18,11 @@ describe("training status display", () => {
     expect(valueText(req("longest_flight_km_since_licence", 51.23, 50, true))).toBe("51.2 / 50 km");
     expect(valueText(req("licence_held_years", null, 2))).toBe("—");
     expect(valueText(req("evidence_within_years", 1, 3, true))).toBe("1");
+  });
+
+  it("tells repeated rules apart by their label", () => {
+    expect(requirementLabelKey({ rule: "tandem_flights", params: { label: "tandem_practice" } })).toBe("trainingStatus.rule.tandem_practice");
+    expect(requirementLabelKey({ rule: "confirmed_solo_flights", params: {} })).toBe("trainingStatus.rule.confirmed_solo_flights");
   });
 
   it("is complete only when every requirement is met", () => {

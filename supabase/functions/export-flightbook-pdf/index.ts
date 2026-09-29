@@ -3,7 +3,7 @@ import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
 import { PROOF_COLUMNS, proofFileName, proofHeaderLines, proofRows, proofTotalLines, type SchoolProof } from "./school-proof.ts";
 import {
   aircraftColumnLabel, confirmationLabel, flownSites, formatDuration, hasConfirmations, heightDifference, logbookSummary, pageLabel,
-  printableFlights, sortForPrint, summaryLines,
+  passengerText, printableFlights, sortForPrint, summaryLines,
   type LogbookFlight, type LogbookPlace,
 } from "./logbook.ts";
 
@@ -51,7 +51,7 @@ async function fetchAllFlights(supabase: any, userId: string): Promise<LogbookFl
   const all: LogbookFlight[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabase.from("flights")
-      .select(`id, flight_no, date, glider, discipline, duration_minutes, altitude_gain, distance_km, comments, group_id, is_solo_shv, cancelled_at, confirmation:flight_confirmations(status, instructor_name, decided_at), takeoff:locations!flights_takeoff_location_id_fkey(${PLACE_COLUMNS}), landing:locations!flights_landing_location_id_fkey(${PLACE_COLUMNS})`)
+      .select(`id, flight_no, date, glider, discipline, duration_minutes, altitude_gain, distance_km, comments, group_id, is_solo_shv, cancelled_at, confirmation:flight_confirmations(status, instructor_name, decided_at), passenger:flight_passengers(passenger_name, status, confirmed_at), takeoff:locations!flights_takeoff_location_id_fkey(${PLACE_COLUMNS}), landing:locations!flights_landing_location_id_fkey(${PLACE_COLUMNS})`)
       .eq("user_id", userId)
       .order("flight_no", { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -501,7 +501,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(7.5);
     for (let i = 0; i < flights.length; i++) {
       const f = flights[i];
-      const desc = (f.comments || "") + (f.is_solo_shv ? `${f.comments ? " · " : ""}SHV-Soloflug` : "");
+      const desc = [passengerText(f), f.comments, f.is_solo_shv ? "SHV-Soloflug" : null].filter(Boolean).join(" · ");
       const descLines = doc.splitTextToSize(desc, descW);
       const rowH = Math.max(4.5, descLines.length * 3.5);
 

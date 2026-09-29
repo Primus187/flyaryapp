@@ -21,6 +21,7 @@ import { useSiteName } from "@/lib/official-sites-store";
 import { youtubeEmbedUrl, youtubeLink } from "@/lib/youtube";
 import FlightChangeHistory from "@/components/FlightChangeHistory";
 import FlightConfirmationCard from "@/components/FlightConfirmationCard";
+import TandemPassengerCard from "@/components/TandemPassengerCard";
 import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
 import { isoToLocalTime } from "@/lib/flight-proof";
 
@@ -233,7 +234,7 @@ export default function FlightDetail() {
               <h1 className="text-lg font-bold">{siteName(flight.takeoff?.name) || t("flights.flight")}</h1>
               {(flight as any).is_solo_shv && <Badge variant="default" className="text-[10px] px-1.5 py-0">SHV Solo</Badge>}
               {flight.discipline === "hangglider" && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t("flightProof.discipline.hangglider")}</Badge>}
-              {flight.is_tandem && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t("flightProof.tandem")}</Badge>}
+              {flight.is_tandem && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{flight.tandem_kind ? t(`tandem.kind.${flight.tandem_kind}`) : t("flightProof.tandem")}</Badge>}
               {flight.flight_kind && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`flightProof.kind.${flight.flight_kind}`)}</Badge>}
               {flight.source === "flightbook" && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t("flightProof.fromFlightbook")}</Badge>}
               {flight.cancelled_at && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{t("confirmations.cancelled")}</Badge>}
@@ -364,6 +365,9 @@ export default function FlightDetail() {
       {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
       {id && user && flight.user_id === user.id && (
         <FlightConfirmationCard flightId={id} cancelled={!!flight.cancelled_at} preferredGroupId={flight.group_id} locale={locale} />
+      )}
+      {id && user && flight.user_id === user.id && flight.is_tandem && (
+        <TandemPassengerCard flightId={id} cancelled={!!flight.cancelled_at} locale={locale} />
       )}
       {id && <FlightChangeHistory flightId={id} locale={locale} />}
       {trainedManeuvers.length > 0 && (

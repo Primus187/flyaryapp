@@ -1,5 +1,40 @@
 # Flyary
 
+## Flightbook-Ersatz Schritt 4b: Tandemflüge und Passagierbestätigung (2026-09-29)
+
+Umsetzung von Schritt 4b aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md).
+Migration `0076_tandem_passengers.sql`.
+
+- **Tandemart** `flights.tandem_kind`: Instruktionsflug (mit Fluglehrer), Übungsflug (Pilot oder
+  Schüler als Passagier, unter Aufsicht), Tandemflug mit Gast. Im Flugformular unter «Tandem».
+- **Passagier** (`flight_passengers`, ein Passagier pro Flug): Der Pilot erfasst auf der
+  Flugdetailseite den Namen. Bestätigung entweder in der App (Passagier mit Konto; Hinweis «Du
+  wurdest als Passagier eingetragen» in der Flugliste) oder über einen **Einmal-Link bzw. QR-Code
+  ohne Konto** (`/passenger/<token>`, öffentliche Seite). Der Token wird nur als SHA-256-Hash
+  gespeichert, gilt 14 Tage und verfällt bei Gebrauch. Die öffentliche Seite zeigt nur Datum,
+  Start-/Landeplatz, Pilot, Dauer und den eigenen Namen. Die Spalte mit dem Hash ist für App-Rollen
+  nicht lesbar (Spaltenrechte statt Spalten-REVOKE, siehe `profiles`-Falle).
+- Wechselt die Person, beginnt die Bestätigung neu (in der Änderungshistorie als «Passagier»).
+  Spätere Änderungen am Flug fragen den Passagier nicht erneut (Entscheid 29. September 2026); die
+  Passagierkarte weist darauf hin.
+- **Tandem-Anforderungen** in `training_requirements` (Regeln dürfen sich jetzt mit anderen Parametern
+  wiederholen, `params.label` benennt die Zeile): Doppelsitzer Stufe 1 Teil «Doppelsitzerflüge»
+  (Instruktionsflug, 20 bzw. 10 Übungsflüge), Gleitschirm Stufe 3 (30 vom Passagier bestätigte
+  Übungsflüge seit Stufe 1, je 5 Start- und Landeplätze, 3 verschiedene Passagiere, Kurs
+  Passagierbetreuung), Delta Stufe 3 (30 Übungsflüge seit Stufe 1, Checkflug), Verlängerung Stufe 3
+  (50 bzw. 30 Doppelsitzerflüge in drei Jahren, mindestens 10 bzw. 5 pro Jahr; vereinfacht als die
+  letzten drei Jahre ab heute).
+- **PDF/CSV:** Im Flugbuch-PDF steht der Passagier am Anfang der Beschreibung («Passagier: Anna
+  (bestätigt 12.03.25)»), wie es der Nachweis für die Verlängerung verlangt (Pilot, Passagier, Ort,
+  Datum). CSV: Tandemart, Passagier, Status, Bestätigungszeit.
+
+Tests: `src/test/tandem-passengers-database.test.ts` (PGlite: App- und Link-Bestätigung, verbrauchter,
+falscher und abgelaufener Token, Pilot als Passagier, Wechsel des Passagiers, Rechte, Stufe-3-Zählung
+mit Passagieren und Plätzen, Stufe-1-Zeilen, Verlängerung), `src/lib/tandem.test.ts`,
+`src/lib/logbook-pdf.test.ts`, `src/lib/training-status.test.ts`, `src/lib/flight-proof.test.ts`.
+Ausrollen: Migration anwenden, `npm run gen-types`, dann `export-flightbook-pdf` deployen (liest
+`flight_passengers`) und Frontend pushen.
+
 ## Flightbook-Ersatz Schritt 4: Ausbildungsstand und Soloflug (2026-09-29)
 
 Umsetzung von Schritt 4 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md).

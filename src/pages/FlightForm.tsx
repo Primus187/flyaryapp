@@ -30,6 +30,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { cn } from "@/lib/utils";
 import { isYoutubeUrl } from "@/lib/youtube";
+import { TANDEM_KINDS } from "@/lib/tandem";
 import { DISCIPLINES, FLIGHT_KINDS, findGliderByLabel, flightTimesForSave, gliderLabel, igcFlightTimes, isoToLocalTime, type Discipline } from "@/lib/flight-proof";
 
 const DRAFT_KEY = "flyary.flightDraft";
@@ -91,7 +92,7 @@ export default function FlightForm() {
     duration_minutes: "", altitude_gain: "", distance_km: "", thermals: "", wind_speed: "",
     wind_direction: "", glider: "", comments: "", group_id: "", is_solo_shv: false,
     // Proof data (migration 0073): the glider by id, discipline, tandem, flight kind, times.
-    glider_id: "", discipline: "paraglider" as Discipline, is_tandem: false, flight_kind: "", takeoff_time: "", landing_at: "",
+    glider_id: "", discipline: "paraglider" as Discipline, is_tandem: false, tandem_kind: "", flight_kind: "", takeoff_time: "", landing_at: "",
   });
 
   // Choosing a glider also sets discipline and tandem from it; the pilot can still change them.
@@ -177,8 +178,8 @@ export default function FlightForm() {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
         if (data) {
           // Proof columns of migration 0073 (not in generated types.ts yet)
-          const proof = data as unknown as { glider_id?: string | null; discipline?: Discipline | null; is_tandem?: boolean; flight_kind?: string | null; takeoff_at?: string | null; landing_at?: string | null };
-          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv, glider_id: proof.glider_id || "", discipline: proof.discipline || "paraglider", is_tandem: !!proof.is_tandem, flight_kind: proof.flight_kind || "", takeoff_time: isoToLocalTime(proof.takeoff_at), landing_at: proof.landing_at || "" });
+          const proof = data as unknown as { glider_id?: string | null; discipline?: Discipline | null; is_tandem?: boolean; tandem_kind?: string | null; flight_kind?: string | null; takeoff_at?: string | null; landing_at?: string | null };
+          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv, glider_id: proof.glider_id || "", discipline: proof.discipline || "paraglider", is_tandem: !!proof.is_tandem, tandem_kind: proof.tandem_kind || "", flight_kind: proof.flight_kind || "", takeoff_time: isoToLocalTime(proof.takeoff_at), landing_at: proof.landing_at || "" });
           if (Array.isArray((data as any).tags)) setTags((data as any).tags);
         }
       });
@@ -406,7 +407,7 @@ export default function FlightForm() {
         if (matchingEvent) eventId = matchingEvent.id;
       }
 
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null, glider_id: form.glider_id || null, discipline: form.discipline, is_tandem: form.is_tandem, flight_kind: form.flight_kind || null, ...flightTimesForSave(form.date, form.takeoff_time, form.landing_at || null) } as any;
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null, glider_id: form.glider_id || null, discipline: form.discipline, is_tandem: form.is_tandem, tandem_kind: form.is_tandem && form.tandem_kind ? form.tandem_kind : null, flight_kind: form.flight_kind || null, ...flightTimesForSave(form.date, form.takeoff_time, form.landing_at || null) } as any;
 
       // Offline save when not connected
       if (!navigator.onLine && !isEdit) {
@@ -797,6 +798,17 @@ export default function FlightForm() {
               <Checkbox id="tandem" checked={form.is_tandem} onCheckedChange={(checked) => setForm({ ...form, is_tandem: !!checked })} />
               <Label htmlFor="tandem" className="text-xs cursor-pointer">{t("flightProof.tandem")}</Label>
             </div>
+            {form.is_tandem && (
+              <div className="space-y-1.5"><Label className="text-xs">{t("tandem.kindLabel")}</Label>
+                <Select value={form.tandem_kind || "__none__"} onValueChange={(v) => setForm({ ...form, tandem_kind: v === "__none__" ? "" : v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">{t("flightProof.kindUnset")}</SelectItem>
+                    {TANDEM_KINDS.map((k) => <SelectItem key={k} value={k}>{t(`tandem.kind.${k}`)}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5"><Label className="text-xs">{t("flights.duration")}</Label><Input type="number" value={form.duration_minutes} onChange={set("duration_minutes")} /></div>
               <div className="space-y-1.5"><Label className="text-xs">{t("flights.altitudeGain")}</Label><Input type="number" value={form.altitude_gain} onChange={set("altitude_gain")} /></div>

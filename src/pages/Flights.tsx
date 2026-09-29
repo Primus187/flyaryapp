@@ -21,6 +21,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { useSiteName } from "@/lib/official-sites-store";
 import SubmitFlightsDialog from "@/components/SubmitFlightsDialog";
+import PassengerRequestsCard from "@/components/PassengerRequestsCard";
 import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
 
 type QuickFilter = "all" | "season" | "track";
@@ -164,6 +165,7 @@ export default function Flights() {
       />
 
       <SchoolFlightImportCard />
+      <PassengerRequestsCard locale={locale} />
       {inSchool && (
         <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setSubmitOpen(true)}>
           <BadgeCheck className="h-4 w-4" />{t("confirmations.submitTitle")}

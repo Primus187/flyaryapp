@@ -14,7 +14,8 @@ const routes = [
   // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
   "/events/22222222-2222-4222-8222-222222222222",
 ];
-const publicRoutes = ["/legal", "/legal/terms", "/legal/licenses"];
+// the tandem passenger page opens without an account (migration 0076); the mock token is simply unknown
+const publicRoutes = ["/legal", "/legal/terms", "/legal/licenses", "/passenger/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"];
 const uid = "11111111-1111-4111-8111-111111111111";
 const user = { id: uid, aud: "authenticated", role: "authenticated", email: "smoke@example.invalid", app_metadata: { provider: "email" }, user_metadata: {}, created_at: "2026-01-01T00:00:00Z" };
 const profile = { id: uid, user_id: uid, pilot_name: "Smoke Test", training_level: "pilot" };

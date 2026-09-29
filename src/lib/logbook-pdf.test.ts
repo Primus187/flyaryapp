@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  aircraftColumnLabel, confirmationLabel, flownSites, hasConfirmations, heightDifference, logbookSummary, pageLabel, printableFlights,
+  aircraftColumnLabel, confirmationLabel, flownSites, hasConfirmations, heightDifference, logbookSummary, pageLabel, passengerText, printableFlights,
   sortForPrint, summaryLines, type LogbookFlight, type LogbookPlace,
 } from "../../supabase/functions/export-flightbook-pdf/logbook";
 
@@ -64,6 +64,13 @@ describe("logbook PDF", () => {
     expect(confirmationLabel(revoked)).toBe("");
     expect(hasConfirmations([revoked, cancelled])).toBe(false);
     expect(hasConfirmations([revoked, confirmed])).toBe(true);
+  });
+
+  it("names the tandem passenger and whether they confirmed", () => {
+    expect(passengerText(flight(bergbo, lehn, { passenger: { passenger_name: "Anna", status: "confirmed", confirmed_at: "2025-03-12T10:00:00Z" } })))
+      .toBe("Passagier: Anna (bestätigt 12.03.25)");
+    expect(passengerText(flight(bergbo, lehn, { passenger: [{ passenger_name: "Gast", status: "pending", confirmed_at: null }] }))).toBe("Passagier: Gast");
+    expect(passengerText(flight(bergbo, lehn))).toBe("");
   });
 
   it("labels pages with the total", () => {

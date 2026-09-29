@@ -28,9 +28,26 @@ export interface LogbookFlight {
   cancelled_at?: string | null;
   /** Embedded flight_confirmations row (object or one-element array, depending on PostgREST). */
   confirmation?: LogbookConfirmation | LogbookConfirmation[] | null;
+  passenger?: LogbookPassenger | LogbookPassenger[] | null;
 }
 
 export interface LogbookConfirmation { status: string; instructor_name: string | null; decided_at: string | null }
+
+export interface LogbookPassenger { passenger_name: string; status: string; confirmed_at: string | null }
+
+/**
+ * Tandem passenger at the start of the description ("Passagier: Anna (bestätigt 12.03.25)"): the
+ * stage 3 renewal proof needs pilot, passenger, site and date.
+ */
+export function passengerText(f: LogbookFlight): string {
+  const p = Array.isArray(f.passenger) ? f.passenger[0] : f.passenger;
+  if (!p) return "";
+  const d = p.status === "confirmed" && p.confirmed_at ? new Date(p.confirmed_at) : null;
+  const when = d && !Number.isNaN(d.getTime())
+    ? ` (bestätigt ${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getFullYear()).slice(2)})`
+    : p.status === "confirmed" ? " (bestätigt)" : "";
+  return `Passagier: ${p.passenger_name}${when}`;
+}
 
 /** Cancelled flights are kept in the record (migration 0074) but not printed. */
 export function printableFlights(flights: LogbookFlight[]): LogbookFlight[] {

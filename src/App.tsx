@@ -63,6 +63,7 @@ const Messages = lazy(() => import("@/pages/Messages"));
 const MessageChannel = lazy(() => import("@/pages/MessageChannel"));
 const Weather = lazy(() => import("@/pages/Weather"));
 const SharedFlightDetail = lazy(() => import("@/pages/SharedFlightDetail"));
+const PassengerConfirm = lazy(() => import("@/pages/PassengerConfirm"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -223,6 +224,8 @@ const App = () => {
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                     <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
+                    {/* Tandem passenger confirms through a single-use link, no account needed (migration 0076) */}
+                    <Route path="/passenger/:token" element={<PassengerConfirm />} />
                     <Route path="/shared/market/:token" element={<SharedListing />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
