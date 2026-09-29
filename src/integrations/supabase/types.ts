@@ -1647,6 +1647,50 @@ export type Database = {
           },
         ]
       }
+      flight_changes: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          field: string
+          flight_id: string
+          id: number
+          new_value: Json | null
+          old_value: Json | null
+          origin: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          field: string
+          flight_id: string
+          id?: never
+          new_value?: Json | null
+          old_value?: Json | null
+          origin?: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          field?: string
+          flight_id?: string
+          id?: never
+          new_value?: Json | null
+          old_value?: Json | null
+          origin?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_changes_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_coach_notes: {
         Row: {
           coach_id: string
@@ -1985,20 +2029,29 @@ export type Database = {
           comments: string | null
           created_at: string
           date: string
+          discipline: string
           distance_km: number | null
           duration_minutes: number | null
           event_id: string | null
           feed_photo_ids: Json | null
+          flight_kind: string | null
+          flight_no: number
           glider: string | null
+          glider_id: string | null
           group_id: string | null
           id: string
           is_solo_shv: boolean
+          is_tandem: boolean
+          landing_at: string | null
           landing_location_id: string | null
           published_at: string | null
           published_to_feed: boolean
           school_flight_id: string | null
           share_token: string | null
+          source: string
+          source_ref: string | null
           tags: string[] | null
+          takeoff_at: string | null
           takeoff_location_id: string | null
           thermals: string | null
           updated_at: string
@@ -2011,20 +2064,29 @@ export type Database = {
           comments?: string | null
           created_at?: string
           date?: string
+          discipline?: string
           distance_km?: number | null
           duration_minutes?: number | null
           event_id?: string | null
           feed_photo_ids?: Json | null
+          flight_kind?: string | null
+          flight_no: number
           glider?: string | null
+          glider_id?: string | null
           group_id?: string | null
           id?: string
           is_solo_shv?: boolean
+          is_tandem?: boolean
+          landing_at?: string | null
           landing_location_id?: string | null
           published_at?: string | null
           published_to_feed?: boolean
           school_flight_id?: string | null
           share_token?: string | null
+          source?: string
+          source_ref?: string | null
           tags?: string[] | null
+          takeoff_at?: string | null
           takeoff_location_id?: string | null
           thermals?: string | null
           updated_at?: string
@@ -2037,20 +2099,29 @@ export type Database = {
           comments?: string | null
           created_at?: string
           date?: string
+          discipline?: string
           distance_km?: number | null
           duration_minutes?: number | null
           event_id?: string | null
           feed_photo_ids?: Json | null
+          flight_kind?: string | null
+          flight_no?: number
           glider?: string | null
+          glider_id?: string | null
           group_id?: string | null
           id?: string
           is_solo_shv?: boolean
+          is_tandem?: boolean
+          landing_at?: string | null
           landing_location_id?: string | null
           published_at?: string | null
           published_to_feed?: boolean
           school_flight_id?: string | null
           share_token?: string | null
+          source?: string
+          source_ref?: string | null
           tags?: string[] | null
+          takeoff_at?: string | null
           takeoff_location_id?: string | null
           thermals?: string | null
           updated_at?: string
@@ -2064,6 +2135,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "flight_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flights_glider_id_fkey"
+            columns: ["glider_id"]
+            isOneToOne: false
+            referencedRelation: "pilot_gliders"
             referencedColumns: ["id"]
           },
           {
@@ -3171,8 +3249,10 @@ export type Database = {
       pilot_gliders: {
         Row: {
           created_at: string
+          discipline: string
           id: string
           is_default: boolean
+          is_tandem: boolean
           last_check_date: string | null
           manufacturer: string
           model: string
@@ -3183,8 +3263,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discipline?: string
           id?: string
           is_default?: boolean
+          is_tandem?: boolean
           last_check_date?: string | null
           manufacturer: string
           model: string
@@ -3195,8 +3277,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discipline?: string
           id?: string
           is_default?: boolean
+          is_tandem?: boolean
           last_check_date?: string | null
           manufacturer?: string
           model?: string
@@ -4047,6 +4131,8 @@ export type Database = {
       feed_mention_members: { Args: never; Returns: Json }
       feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
       feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
+      flight_change_origin: { Args: never; Returns: string }
+      flight_change_place: { Args: { _id: string }; Returns: Json }
       flight_day_close_preview: { Args: { _event_id: string }; Returns: Json }
       flight_day_daily_run: { Args: { _since?: string }; Returns: Json }
       flight_day_feedback_recipients: {
