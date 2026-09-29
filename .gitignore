@@ -28,3 +28,7 @@ website/.preview/
 
 # DHV site database exports (import source for scripts/import-official-sites.mjs; not redistributed)
 /data/
+
+# Word lock files and Supabase CLI state
+~$*
+supabase/.temp/
