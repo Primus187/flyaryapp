@@ -18,7 +18,7 @@ export interface WaitlistEntry {
 
 export type ParseResult =
   | { kind: "entry"; entry: WaitlistEntry }
-  | { kind: "spam" }       // honeypot filled or sent faster than a person can type: pretend success
+  | { kind: "spam"; language: string } // honeypot filled or sent faster than a person can type: pretend success
   | { kind: "invalid"; language: string };
 
 const text = (v: FormDataEntryValue | string | null | undefined) => (typeof v === "string" ? v.trim() : "");
@@ -27,9 +27,9 @@ const text = (v: FormDataEntryValue | string | null | undefined) => (typeof v ==
 export function parseWaitlistForm(form: { get(k: string): FormDataEntryValue | string | null; getAll(k: string): (FormDataEntryValue | string)[] }, now: number): ParseResult {
   const lang = text(form.get("lang"));
   const language = (LANGUAGES as readonly string[]).includes(lang) ? lang : "de";
-  if (text(form.get("website"))) return { kind: "spam" };
+  if (text(form.get("website"))) return { kind: "spam", language };
   const started = Number(text(form.get("started")));
-  if (Number.isFinite(started) && started > 0 && now - started < 3000) return { kind: "spam" };
+  if (Number.isFinite(started) && started > 0 && now - started < 3000) return { kind: "spam", language };
 
   const entry: WaitlistEntry = {
     name: text(form.get("name")),

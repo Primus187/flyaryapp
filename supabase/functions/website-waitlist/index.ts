@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   let form: FormData;
   try { form = await req.formData(); } catch { return redirect(redirectTarget(origin, "de", "invalid")); }
   const parsed = parseWaitlistForm(form, Date.now());
-  if (parsed.kind === "spam") return redirect(redirectTarget(origin, "de", "ok"));
+  if (parsed.kind === "spam") return redirect(redirectTarget(origin, parsed.language, "ok"));
   if (parsed.kind === "invalid") return redirect(redirectTarget(origin, parsed.language, "invalid"));
 
   const { entry } = parsed;

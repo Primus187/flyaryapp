@@ -16,7 +16,7 @@ describe("website pilot sign-up form", () => {
   });
 
   it("treats a filled honeypot or a too fast submission as spam", () => {
-    expect(parseWaitlistForm(form({ ...valid, website: "http://spam" }), now).kind).toBe("spam");
+    expect(parseWaitlistForm(form({ ...valid, website: "http://spam" }), now)).toEqual({ kind: "spam", language: "fr" });
     expect(parseWaitlistForm(form({ ...valid, started: String(now - 1000) }), now).kind).toBe("spam");
     expect(parseWaitlistForm(form({ ...valid, started: String(now - 10_000) }), now).kind).toBe("entry");
   });
