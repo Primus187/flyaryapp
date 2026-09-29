@@ -12,6 +12,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import { isCategoryLocked, prerequisiteName } from "@/lib/training-categories";
 import { trainingFilter, matchesTrainingFilter } from "@/lib/training-level";
 import { useToast } from "@/hooks/use-toast";
+import TrainingStatusCard from "@/components/TrainingStatusCard";
 
 interface Category {
   id: string;
@@ -121,6 +122,7 @@ export default function Training() {
   return (
     <PageContainer className="pb-24">
       <PageHeader title={t("training.title")} />
+      {user && <TrainingStatusCard userId={user.id} />}
 
       {/* Level filter tabs */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">

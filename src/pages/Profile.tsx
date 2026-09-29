@@ -19,6 +19,7 @@ import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Glob
 import { useNavigate } from "react-router-dom";
 import { useWingStats } from "@/hooks/use-wing-stats";
 import { DISCIPLINES, type Discipline } from "@/lib/flight-proof";
+import PilotCredentialsCard from "@/components/PilotCredentialsCard";
 
 const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000];
 const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
@@ -38,7 +39,7 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { stats: wingStats } = useWingStats(user?.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -654,6 +655,8 @@ export default function Profile() {
           <div className="flex gap-2"><Button size="sm" onClick={handleAddGlider} disabled={!newGlider.manufacturer || !newGlider.model}>{t("common.save")}</Button><Button size="sm" variant="outline" onClick={() => setShowAddGlider(false)}>{t("common.cancel")}</Button></div>
         </div>)}
       </CardContent></Card>
+
+      <PilotCredentialsCard locale={i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH"} />
 
       <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
         {!healthConsent && (

@@ -75,7 +75,12 @@ export function groupByStudent(rows: SchoolConfirmationRow[], unknownName: strin
   return [...groups.values()];
 }
 
+/** A row that can go into a bulk confirmation (solo flights are confirmed on their own, migration 0075). */
+export function isBulkConfirmable(r: SchoolConfirmationRow): boolean {
+  return r.canConfirm && !r.cancelled && !r.flight?.isSoloShv;
+}
+
 /** Flights of the selection the viewer may confirm (the others would only be skipped). */
 export function confirmableIds(rows: SchoolConfirmationRow[], selected: Set<string>): string[] {
-  return rows.filter((r) => selected.has(r.flightId) && r.canConfirm && !r.cancelled).map((r) => r.flightId);
+  return rows.filter((r) => selected.has(r.flightId) && isBulkConfirmable(r)).map((r) => r.flightId);
 }

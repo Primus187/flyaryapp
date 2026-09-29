@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EmptyState from "@/components/layout/EmptyState";
 import { useToast } from "@/hooks/use-toast";
-import { confirmableIds, groupByStudent, skippedSummary, type BatchResult, type SchoolConfirmationRow } from "@/lib/flight-confirmation";
+import { confirmableIds, groupByStudent, isBulkConfirmable, skippedSummary, type BatchResult, type SchoolConfirmationRow } from "@/lib/flight-confirmation";
 
 type Tab = "submitted" | "confirmed";
 type ReasonAction = { kind: "return" | "revoke"; row: SchoolConfirmationRow } | null;
@@ -33,6 +33,10 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
   const [busy, setBusy] = useState(false);
   const [reasonAction, setReasonAction] = useState<ReasonAction>(null);
   const [reason, setReason] = useState("");
+  // Flights without a flight kind can be marked as altitude flights while confirming (logged).
+  const [setKindAltitude, setSetKindAltitude] = useState(false);
+  const [soloRow, setSoloRow] = useState<SchoolConfirmationRow | null>(null);
+  const [checklist, setChecklist] = useState({ briefing: false, contact: false, readiness: false, note: "" });
 
   const query = useQuery({
     queryKey: ["school-confirmations", groupId, tab],
@@ -60,11 +64,29 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
   const confirmSelected = async () => {
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("confirm_flights" as never, { _flight_ids: toConfirm, _group_id: groupId } as never);
+      const { data, error } = await supabase.rpc("confirm_flights" as never, { _flight_ids: toConfirm, _group_id: groupId, _set_kind: setKindAltitude ? "altitude" : null } as never);
       if (error) throw error;
       const result = data as unknown as BatchResult;
       const skipped = skippedSummary(result.skipped).map(([r, n]) => `${n}× ${t(`confirmations.skip.${r}`, { defaultValue: r })}`).join(", ");
       toast({ title: t("confirmations.confirmedMany", { count: result.confirmed ?? 0 }), description: skipped || undefined });
+      await refresh();
+    } catch (err) {
+      toast({ title: t("common.error"), description: (err as Error).message, variant: "destructive" });
+    } finally { setBusy(false); }
+  };
+
+  const confirmSolo = async () => {
+    if (!soloRow) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.rpc("confirm_solo_flight" as never, {
+        _flight_id: soloRow.flightId, _group_id: groupId, _briefing: checklist.briefing, _contact: checklist.contact,
+        _readiness: checklist.readiness, _note: checklist.note.trim() || null,
+      } as never);
+      if (error) throw error;
+      toast({ title: t("confirmations.soloConfirmed") });
+      setSoloRow(null);
+      setChecklist({ briefing: false, contact: false, readiness: false, note: "" });
       await refresh();
     } catch (err) {
       toast({ title: t("common.error"), description: (err as Error).message, variant: "destructive" });
@@ -118,7 +140,7 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
               <p className="text-xs text-amber-700 dark:text-amber-400 flex gap-2"><AlertTriangle className="h-4 w-4 shrink-0" />{t("confirmations.noCertificate")}</p>
             )}
             {groups.map((g) => {
-              const ids = g.rows.filter((r) => r.canConfirm && !r.cancelled).map((r) => r.flightId);
+              const ids = g.rows.filter(isBulkConfirmable).map((r) => r.flightId);
               const allOn = ids.length > 0 && ids.every((id) => selected.has(id));
               return (
                 <Card key={g.studentId} className="border-0 shadow-sm">
@@ -133,7 +155,7 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
                       {g.rows.map((r) => (
                         <div key={r.flightId} className="py-2 flex items-start gap-2 text-xs">
                           {tab === "submitted" && (
-                            <Checkbox className="mt-0.5" disabled={!r.canConfirm || r.cancelled} checked={selected.has(r.flightId)}
+                            <Checkbox className="mt-0.5" disabled={!isBulkConfirmable(r)} checked={selected.has(r.flightId)}
                               onCheckedChange={(v) => toggle([r.flightId], !!v)} aria-label={t("confirmations.select")} />
                           )}
                           <div className="flex-1 min-w-0 space-y-0.5">
@@ -150,6 +172,9 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
                               {r.changedAfterConfirmation && <Badge variant="outline" className="text-[10px]">{t("confirmations.changedAfter")}</Badge>}
                               {r.cancelled && <Badge variant="destructive" className="text-[10px]">{t("confirmations.cancelled")}</Badge>}
                               {tab === "submitted" && !r.canConfirm && <Badge variant="outline" className="text-[10px]">{t("confirmations.notQualifiedShort")}</Badge>}
+                              {tab === "submitted" && r.canConfirm && !r.cancelled && r.flight?.isSoloShv && (
+                                <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setSoloRow(r)}>{t("confirmations.confirmSolo")}</Button>
+                              )}
                             </div>
                           </div>
                           {tab === "submitted" && (
@@ -172,6 +197,9 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
           </>
         )}
 
+      {tab === "submitted" && rows.some((r) => isBulkConfirmable(r) && !r.flight?.flightKind) && (
+        <label className="flex items-center gap-2 text-xs"><Checkbox checked={setKindAltitude} onCheckedChange={(v) => setSetKindAltitude(!!v)} />{t("confirmations.setKindAltitude")}</label>
+      )}
       {tab === "submitted" && toConfirm.length > 0 && (
         <div className="sticky bottom-20 z-10">
           <Button className="w-full shadow-lg gap-2" disabled={busy} onClick={() => void confirmSelected()}>
@@ -179,6 +207,23 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
           </Button>
         </div>
       )}
+
+      <Dialog open={!!soloRow} onOpenChange={(o) => { if (!o) setSoloRow(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t("confirmations.soloTitle")}</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground">{t("confirmations.soloHint")}</p>
+          <div className="space-y-2">
+            {(["briefing", "contact", "readiness"] as const).map((key) => (
+              <label key={key} className="flex items-start gap-2 text-sm"><Checkbox className="mt-0.5" checked={checklist[key]} onCheckedChange={(v) => setChecklist({ ...checklist, [key]: !!v })} />{t(`confirmations.solo.${key}`)}</label>
+            ))}
+            <Textarea value={checklist.note} onChange={(e) => setChecklist({ ...checklist, note: e.target.value })} placeholder={t("confirmations.soloNote")} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSoloRow(null)}>{t("common.cancel")}</Button>
+            <Button disabled={busy || !checklist.briefing || !checklist.contact || !checklist.readiness} onClick={() => void confirmSolo()}>{t("confirmations.confirmSolo")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!reasonAction} onOpenChange={(o) => { if (!o) { setReasonAction(null); setReason(""); } }}>
         <DialogContent>

@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import StudentEquipmentCheck from "@/components/school/StudentEquipmentCheck";
 import SchoolProofPanel from "@/components/school/SchoolProofPanel";
+import TrainingStatusCard from "@/components/TrainingStatusCard";
 
 // The training proof (6.2) has its own RPC, so it is not one of the dossier RPC sections.
 const tabs = [...dossierSections, "proof"] as const;
@@ -80,7 +81,7 @@ function Dossier({ groupId, studentId, schoolName }: Context & { schoolName: str
         <TabsContent value="notes"><PagedPanel {...context} section="notes" /></TabsContent>
         <TabsContent value="equipment"><EquipmentPanel {...context} gliderInfo={overview.data.gliderInfo} /></TabsContent>
         <TabsContent value="billing"><PagedPanel {...context} section="billing" /></TabsContent>
-        <TabsContent value="proof"><SchoolProofPanel {...context} /></TabsContent>
+        <TabsContent value="proof" className="space-y-4"><TrainingStatusCard userId={studentId} /><SchoolProofPanel {...context} /></TabsContent>
       </Tabs>
     </>}
   </PageContainer>;

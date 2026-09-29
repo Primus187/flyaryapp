@@ -34,7 +34,8 @@ describe("flight confirmation helpers", () => {
   });
 
   it("sends only flights the viewer may confirm", () => {
-    const rows = [row("1", "a"), row("2", "a", { canConfirm: false }), row("3", "a", { cancelled: true }), row("4", "a")];
-    expect(confirmableIds(rows, new Set(["1", "2", "3"]))).toEqual(["1"]);
+    const solo = { flightNo: 5, date: "2026-09-29", durationMinutes: 20, takeoff: null, landing: null, glider: null, discipline: "paraglider", isTandem: false, flightKind: null, isSoloShv: true, source: "manual" };
+    const rows = [row("1", "a"), row("2", "a", { canConfirm: false }), row("3", "a", { cancelled: true }), row("4", "a"), row("5", "a", { flight: solo })];
+    expect(confirmableIds(rows, new Set(["1", "2", "3", "5"]))).toEqual(["1"]);
   });
 });

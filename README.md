@@ -1,5 +1,39 @@
 # Flyary
 
+## Flightbook-Ersatz Schritt 4: Ausbildungsstand und Soloflug (2026-09-29)
+
+Umsetzung von Schritt 4 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md).
+Migration `0075_training_status.sql`.
+
+- **Anforderungen als Daten** (`training_requirements`) mit Quelle (Weisung, Ausgabe, Ziffer) und
+  Gültigkeitsbeginn: Gleitschirm-Pilot (50 bestätigte Höhenflüge, je 5 Start- und Landeplätze,
+  bestätigter Soloflug), Delta-Pilot (30 Höhenflüge, je 3 Start- und Landeplätze, Flug ≥ 60 min),
+  Doppelsitzer Stufe 1 Teil «Soloflüge» (Ausweis seit 2 Jahren, 200 Höhenflüge seit Ausweis,
+  Streckenflug ≥ 50 km, Sicherheitstraining ≤ 3 Jahre; Delta ohne die letzten beiden).
+  Tandem-Anforderungen (Instruktions-/Übungsflüge, Passagiere) folgen mit Schritt 4b.
+- **`training_status(user, discipline, licence)`** wertet serverseitig aus: bestätigte, nicht
+  stornierte Flüge der Disziplin mit Flugart Höhenflug; Start- und Landeplätze getrennt, eine
+  offizielle Platz-ID einmal. «Seit dem Ausweis» zählt alle erfassten Flüge ohne Übungshang (dort
+  verlangt die Weisung keine Bestätigung). Lesen dürfen der Pilot und das Team seiner Schulen.
+  Anzeige: Karte «Ausbildungsstand» auf der Seite Ausbildung und im Schülerdossier (Reiter
+  Nachweis), mit Hinweis, dass die Prüfungsexperten entscheiden.
+- **Ausweise und Nachweise** (`pilot_licences`, `pilot_evidence`) im Profil: Kategorie, Stufe,
+  Ausstellungsdatum, Nummer; Kurse mit Datum (Sicherheitstraining, Passagierbetreuung, Checkflug,
+  Theorie). Das Schulteam liest mit.
+- **Überwachter Soloflug:** wird nicht mehr gesammelt bestätigt, sondern einzeln mit der
+  Checkliste (Briefing, Kontakt während des Flugs, Bereitschaft; alle drei nötig), gespeichert in
+  `flight_confirmations.solo_checklist`. Nur so bestätigte Soloflüge zählen.
+- **Flugart beim Bestätigen:** Fluglehrer können Flüge ohne Flugart beim Bestätigen als Höhenflug
+  erfassen (Option in «Flugbestätigungen»); die Änderung steht mit Herkunft «confirmation» in der
+  Historie. Der Ausbildungsstand zeigt, wie viele bestätigte Flüge keine Flugart haben.
+
+Noch offen: Der Schulnachweis im Dossier (`school_student_proof`, 0058) zählt weiterhin nur
+Startplätze aus den Schulflügen des Flugtags; der neue Ausbildungsstand steht darüber.
+Tests: `src/test/training-status-database.test.ts` (PGlite: Zählung, Plätze, Storno, Flugart,
+Solo-Checkliste, Grenzfall 49/50, Delta-Dauerflug, Doppelsitzer Stufe 1, Zugriffe),
+`src/lib/training-status.test.ts`. Ausrollen: Migration anwenden, `npm run gen-types`, pushen
+(keine Edge Function betroffen).
+
 ## Flightbook-Ersatz Schritt 3: Flugbestätigung durch Fluglehrer (2026-09-29)
 
 Umsetzung von Schritt 3 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md).
