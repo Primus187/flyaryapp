@@ -685,6 +685,7 @@
     "xcontestSyncDone_zero": "Aucun nouveau vol trouvé",
     "xcontestWarning": "Vos identifiants sont stockés de manière chiffrée et utilisés uniquement pour l'import des vols.",
     "xcontestSaved": "Identifiants XContest enregistrés",
+    "xcontestSaveFailed": "Impossible d’enregistrer les identifiants XContest",
     "xcontestError": "Échec de la synchronisation",
     "healthConsentInfo": "Pour stocker les données d'urgence, nous avons besoin de votre consentement explicite selon l'art. 9 RGPD (catégories spéciales de données).",
     "giveConsent": "Donner le consentement",

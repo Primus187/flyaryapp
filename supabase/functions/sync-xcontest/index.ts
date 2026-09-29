@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { decryptPassword, encryptPassword, isEncryptedPassword } from "../_shared/xcontest-crypto.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,27 +13,6 @@ const RATE_DELAY = 600; // ms between requests
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
-}
-
-// Simple XOR-based encryption/decryption with a key
-function decryptPassword(encrypted: string, key: string): string {
-  const data = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0));
-  const keyBytes = new TextEncoder().encode(key);
-  const result = new Uint8Array(data.length);
-  for (let i = 0; i < data.length; i++) {
-    result[i] = data[i] ^ keyBytes[i % keyBytes.length];
-  }
-  return new TextDecoder().decode(result);
-}
-
-export function encryptPassword(password: string, key: string): string {
-  const data = new TextEncoder().encode(password);
-  const keyBytes = new TextEncoder().encode(key);
-  const result = new Uint8Array(data.length);
-  for (let i = 0; i < data.length; i++) {
-    result[i] = data[i] ^ keyBytes[i % keyBytes.length];
-  }
-  return btoa(String.fromCharCode(...result));
 }
 
 type LoginResult =
@@ -241,6 +221,24 @@ Deno.serve(async (req) => {
 
     // Admin client for DB operations
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const json = (body: unknown, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    // Saving credentials: the password is encrypted here and never returned to the browser.
+    // Clients cannot write xcontest_password_encrypted directly (trigger, migration 0072).
+    const body = await req.json().catch(() => ({}));
+    if (body?.action === "save_credentials") {
+      const username = typeof body.username === "string" ? body.username.trim() : "";
+      const password = typeof body.password === "string" ? body.password : "";
+      if (!username || username.length > 200 || password.length > 200) {
+        return json({ code: "invalid_credentials", error: "Invalid XContest credentials" }, 400);
+      }
+      const update: Record<string, string> = { xcontest_username: username };
+      if (password) update.xcontest_password_encrypted = await encryptPassword(password, user.id, encryptionKey);
+      const { error } = await supabase.from("profiles").update(update).eq("user_id", user.id);
+      if (error) return json({ error: "Could not save XContest credentials" }, 500);
+      return json({ saved: true });
+    }
 
     // Get user's XContest credentials
     const { data: profile } = await supabase
@@ -256,8 +254,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Password is stored as base64 from the frontend
-    const password = atob(profile.xcontest_password_encrypted);
+    const stored = profile.xcontest_password_encrypted;
+    const password = await decryptPassword(stored, user.id, encryptionKey);
+    // Legacy values (plain Base64 from the former client) are encrypted on first use.
+    if (!isEncryptedPassword(stored)) {
+      await supabase.from("profiles")
+        .update({ xcontest_password_encrypted: await encryptPassword(password, user.id, encryptionKey) })
+        .eq("user_id", user.id);
+    }
 
     // Login to XContest
     const login = await loginToXContest(profile.xcontest_username, password);

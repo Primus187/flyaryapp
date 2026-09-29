@@ -4122,10 +4122,10 @@ export type Database = {
           emergency_contact_phone: string
           exam_practical_date: string
           exam_theory_date: string
+          has_xcontest_password: boolean
           health_data_consent_at: string
           medical_notes: string
           shv_number: string
-          xcontest_password_encrypted: string
           xcontest_username: string
         }[]
       }

@@ -505,6 +505,13 @@
       "when": 1794787200000,
       "tag": "0071_follow_permission",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1794873600000,
+      "tag": "0072_xcontest_password_protection",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,23 @@
 # Flyary
 
+## XContest-Passwort verschlüsselt (2026-09-29)
+
+Befund aus der technischen Dokumentation: Das XContest-Passwort lag trotz Spaltenname
+`xcontest_password_encrypted` nur Base64-kodiert in `profiles` (Browser schrieb `btoa`), und
+`get_own_profile_private()` gab es an den Browser zurück. Das `XCONTEST_ENCRYPTION_KEY`-Secret
+wurde nie verwendet.
+
+- Speichern läuft jetzt über die Edge Function `sync-xcontest` (`action: "save_credentials"`).
+  Sie verschlüsselt mit AES-256-GCM (Schlüssel = SHA-256 des Secrets, Benutzer-ID als
+  Zusatzdaten), Format `v1:<Base64(IV‖Chiffrat)>`; Code in `supabase/functions/_shared/xcontest-crypto.ts`.
+- Alte Base64-Werte werden beim nächsten Sync verschlüsselt (Auto-Sync auf dem Dashboard, stündlich).
+- Migration `0072_xcontest_password_protection.sql`: Trigger verbietet `anon`/`authenticated`,
+  das Passwort zu setzen (Löschen erlaubt; Fehlermeldung statt stillem Ignorieren, damit eine alte
+  App-Version den Fehler zeigt). `get_own_profile_private()` liefert nur noch `has_xcontest_password`.
+- Tests: `src/test/xcontest-password.test.ts` (Verschlüsselung, Altwerte, Trigger/RPC unter PGlite).
+- Reihenfolge beim Ausrollen: zuerst Edge Function deployen, dann Migration anwenden und Frontend pushen.
+  Das Secret darf nicht mehr gewechselt werden, ohne die gespeicherten Werte neu zu verschlüsseln.
+
 ## Datenschutz: Wer darf mir folgen? (2026-09-28)
 
 Befund der Sicherheitsanalyse, Entscheid Variante 1. Migration `0071_follow_permission.sql`, Test in

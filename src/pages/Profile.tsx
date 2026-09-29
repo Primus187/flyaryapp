@@ -90,7 +90,7 @@ export default function Profile() {
         }
         if ((data as any).xcontest_username) {
           setXcontestUsername((data as any).xcontest_username);
-          setXcontestHasCredentials(!!(data as any).xcontest_password_encrypted);
+          setXcontestHasCredentials(!!(data as any).has_xcontest_password);
         }
       }
     });
@@ -294,16 +294,12 @@ export default function Profile() {
   // XContest handlers
   const handleSaveXcontest = async () => {
     if (!user || !xcontestUsername) return;
-    // Encrypt password client-side with a simple XOR — real encryption happens server-side
-    // We send it to the profile; the edge function decrypts with the server key
-    const updateData: any = { xcontest_username: xcontestUsername };
-    if (xcontestPassword) {
-      // Simple base64 encoding for transit — the edge function uses the encryption key
-      updateData.xcontest_password_encrypted = btoa(xcontestPassword);
-    }
-    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
-    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-    setXcontestHasCredentials(true);
+    // The edge function encrypts the password with a server-side key; it is never sent back.
+    const { error } = await supabase.functions.invoke("sync-xcontest", {
+      body: { action: "save_credentials", username: xcontestUsername, password: xcontestPassword },
+    });
+    if (error) { toast({ title: t("common.error"), description: t("profile.xcontestSaveFailed"), variant: "destructive" }); return; }
+    if (xcontestPassword) setXcontestHasCredentials(true);
     setXcontestPassword("");
     toast({ title: t("profile.xcontestSaved") });
   };

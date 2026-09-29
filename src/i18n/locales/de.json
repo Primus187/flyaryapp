@@ -660,6 +660,7 @@
     "xcontestSyncDone_zero": "Keine neuen Flüge gefunden",
     "xcontestWarning": "Deine Zugangsdaten werden verschlüsselt gespeichert und nur für den Flug-Import verwendet.",
     "xcontestSaved": "XContest-Zugangsdaten gespeichert",
+    "xcontestSaveFailed": "XContest-Zugangsdaten konnten nicht gespeichert werden",
     "xcontestError": "Synchronisation fehlgeschlagen",
     "healthConsentInfo": "Um Notfalldaten speichern zu können, benötigen wir deine ausdrückliche Einwilligung gemäss Art. 9 DSGVO / revDSG (besondere Datenkategorien).",
     "giveConsent": "Einwilligung erteilen",

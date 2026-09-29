@@ -685,6 +685,7 @@
     "xcontestSyncDone_zero": "No new flights found",
     "xcontestWarning": "Your credentials are stored encrypted and only used for flight import.",
     "xcontestSaved": "XContest credentials saved",
+    "xcontestSaveFailed": "Could not save XContest credentials",
     "xcontestError": "Sync failed",
     "healthConsentInfo": "To store emergency data, we need your explicit consent per Art. 9 GDPR (special data categories).",
     "giveConsent": "Give consent",
