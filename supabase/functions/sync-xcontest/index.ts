@@ -360,6 +360,7 @@ Deno.serve(async (req) => {
           distance_km: flight.distanceKm || null,
           glider: flight.glider || null,
           comments: `Imported from XContest: ${flight.launch}`,
+          source: "xcontest",
         })
         .select("id")
         .single();

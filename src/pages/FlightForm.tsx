@@ -30,13 +30,14 @@ import PageHeader from "@/components/layout/PageHeader";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { cn } from "@/lib/utils";
 import { isYoutubeUrl } from "@/lib/youtube";
+import { DISCIPLINES, FLIGHT_KINDS, findGliderByLabel, flightTimesForSave, gliderLabel, igcFlightTimes, isoToLocalTime, type Discipline } from "@/lib/flight-proof";
 
 const DRAFT_KEY = "flyary.flightDraft";
 // Older drafts are dropped: restoring them silently backdated new flights to the draft day.
 const DRAFT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 interface LocationOption { id: string; name: string; type: string; altitude?: number | null; latitude: number; longitude: number; official_site_id: string | null; }
-interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; }
+interface GliderOption { id: string; manufacturer: string; model: string; size: string | null; is_default: boolean; discipline: Discipline; is_tandem: boolean; }
 interface TrainingItem { id: string; name: string; category_name: string; }
 interface GroupOption { id: string; name: string; }
 interface FlightTemplate { id: string; name: string; takeoff_location_id: string | null; landing_location_id: string | null; glider: string | null; group_id: string | null; }
@@ -89,7 +90,27 @@ export default function FlightForm() {
     date: new Date().toISOString().split("T")[0], takeoff_location_id: "", landing_location_id: "",
     duration_minutes: "", altitude_gain: "", distance_km: "", thermals: "", wind_speed: "",
     wind_direction: "", glider: "", comments: "", group_id: "", is_solo_shv: false,
+    // Proof data (migration 0073): the glider by id, discipline, tandem, flight kind, times.
+    glider_id: "", discipline: "paraglider" as Discipline, is_tandem: false, flight_kind: "", takeoff_time: "", landing_at: "",
   });
+
+  // Choosing a glider also sets discipline and tandem from it; the pilot can still change them.
+  const gliderPatch = (g: GliderOption) => ({ glider_id: g.id, glider: gliderLabel(g), discipline: g.discipline, is_tandem: g.is_tandem });
+
+  // Data an imported IGC track brings: date, times, duration, height, distance and the glider named in it.
+  const igcPatch = (parsed: IGCData, prev: typeof form, ownGliders: GliderOption[]) => {
+    const times = igcFlightTimes(parsed.date, parsed.startTime, parsed.endTime);
+    const named = parsed.glider ? findGliderByLabel(ownGliders, parsed.glider) : null;
+    return {
+      ...prev,
+      date: parsed.date || prev.date,
+      duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes,
+      altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain,
+      distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km,
+      ...(times ? { takeoff_time: isoToLocalTime(times.takeoffAt), landing_at: times.landingAt || "" } : {}),
+      ...(named ? gliderPatch(named) : parsed.glider ? { glider: parsed.glider, glider_id: "" } : {}),
+    };
+  };
 
   const reloadLocations = useCallback(() => {
     if (!user) return;
@@ -134,20 +155,30 @@ export default function FlightForm() {
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
     });
-    supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- discipline/is_tandem not in generated types.ts yet (migration 0073)
+    supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default, discipline, is_tandem" as any).eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
       if (data) {
-        setGliders(data);
-        if (!isEdit && !form.glider) {
-          const def = data.find((g) => g.is_default);
-          // An imported IGC may already have named the glider; keep that.
-          if (def) setForm((prev) => (prev.glider ? prev : { ...prev, glider: `${def.manufacturer} ${def.model}${def.size ? ` (${def.size})` : ""}` }));
+        const own = data as unknown as GliderOption[];
+        setGliders(own);
+        if (!isEdit) {
+          const def = own.find((g) => g.is_default);
+          // An imported IGC may already have named the glider; keep that and link it if it is one of the pilot's.
+          setForm((prev) => {
+            if (prev.glider) {
+              const named = prev.glider_id ? null : findGliderByLabel(own, prev.glider);
+              return named ? { ...prev, ...gliderPatch(named) } : prev;
+            }
+            return def ? { ...prev, ...gliderPatch(def) } : prev;
+          });
         }
       }
     });
     if (isEdit) {
       supabase.from("flights").select("*").eq("id", id).single().then(({ data }) => {
         if (data) {
-          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv });
+          // Proof columns of migration 0073 (not in generated types.ts yet)
+          const proof = data as unknown as { glider_id?: string | null; discipline?: Discipline | null; is_tandem?: boolean; flight_kind?: string | null; takeoff_at?: string | null; landing_at?: string | null };
+          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv, glider_id: proof.glider_id || "", discipline: proof.discipline || "paraglider", is_tandem: !!proof.is_tandem, flight_kind: proof.flight_kind || "", takeoff_time: isoToLocalTime(proof.takeoff_at), landing_at: proof.landing_at || "" });
           if (Array.isArray((data as any).tags)) setTags((data as any).tags);
         }
       });
@@ -171,7 +202,7 @@ export default function FlightForm() {
       try {
         const parsed = parseIGC(locationState.igcContent);
         setIgcData(parsed); setIgcFile(locationState.igcFile);
-        setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km, glider: parsed.glider || prev.glider }));
+        setForm((prev) => igcPatch(parsed, prev, gliders));
         toast({ title: t("flights.uploadRecording"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
       } catch (err) { console.error("Failed to parse recorded IGC:", err); }
     }
@@ -218,7 +249,7 @@ export default function FlightForm() {
         const content = ev.target?.result as string; const parsed = parseIGC(content);
         if (parsed.points.length === 0) throw new Error(t("flights.igcNoPoints"));
         setIgcData(parsed);
-        setForm((prev) => ({ ...prev, date: parsed.date || prev.date, duration_minutes: parsed.durationMinutes > 0 ? parsed.durationMinutes.toString() : prev.duration_minutes, altitude_gain: parsed.maxAltitude > 0 ? (parsed.maxAltitude - parsed.minAltitude).toString() : prev.altitude_gain, distance_km: parsed.xcDistanceKm > 0 ? parsed.xcDistanceKm.toString() : prev.distance_km, glider: parsed.glider || prev.glider }));
+        setForm((prev) => igcPatch(parsed, prev, gliders));
         const shapeLabel = parsed.xcOptimization
           ? ({ fai_triangle: "FAI ▲", flat_triangle: "Flach ▲", free_3tp: "3-TP", free: "Frei" } as Record<string, string>)[parsed.xcOptimization.shape]
           : null;
@@ -375,7 +406,7 @@ export default function FlightForm() {
         if (matchingEvent) eventId = matchingEvent.id;
       }
 
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null } as any;
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null, glider_id: form.glider_id || null, discipline: form.discipline, is_tandem: form.is_tandem, flight_kind: form.flight_kind || null, ...flightTimesForSave(form.date, form.takeoff_time, form.landing_at || null) } as any;
 
       // Offline save when not connected
       if (!navigator.onLine && !isEdit) {
@@ -554,7 +585,7 @@ export default function FlightForm() {
       ...prev,
       takeoff_location_id: tpl.takeoff_location_id || "",
       landing_location_id: tpl.landing_location_id || "",
-      glider: tpl.glider || prev.glider,
+      ...(tpl.glider ? (() => { const g = findGliderByLabel(gliders, tpl.glider); return g ? gliderPatch(g) : { glider: tpl.glider, glider_id: "" }; })() : {}),
       group_id: tpl.group_id || "",
     }));
     toast({ title: t("flights.templateLoaded") });
@@ -657,9 +688,16 @@ export default function FlightForm() {
               <div className="space-y-1.5"><Label className="text-xs">{t("flights.date")}</Label><Input type="date" value={form.date} onChange={set("date")} required /></div>
               <div className="space-y-1.5"><Label className="text-xs">{t("flights.glider")}</Label>
                 {gliders.length > 0 ? (
-                  <Select value={form.glider} onValueChange={(v) => setForm({ ...form, glider: v })}>
+                  <Select
+                    value={form.glider_id || (form.glider ? "__label__" : "")}
+                    onValueChange={(v) => { const g = gliders.find((gl) => gl.id === v); if (g) setForm({ ...form, ...gliderPatch(g) }); }}
+                  >
                     <SelectTrigger><SelectValue placeholder={t("flights.selectGlider")} /></SelectTrigger>
-                    <SelectContent>{gliders.map((g) => { const label = `${g.manufacturer} ${g.model}${g.size ? ` (${g.size})` : ""}`; return <SelectItem key={g.id} value={label}>{label}</SelectItem>; })}</SelectContent>
+                    <SelectContent>
+                      {/* A glider entered as text (older flight, IGC, template) that is none of the pilot's gliders */}
+                      {!form.glider_id && form.glider && <SelectItem value="__label__">{form.glider}</SelectItem>}
+                      {gliders.map((g) => <SelectItem key={g.id} value={g.id}>{gliderLabel(g)}</SelectItem>)}
+                    </SelectContent>
                   </Select>
                 ) : <Input value={form.glider} onChange={set("glider")} placeholder={t("flights.gliderPlaceholder")} />}
               </div>
@@ -706,7 +744,17 @@ export default function FlightForm() {
                 }}
               />
             </div>
-             <div className="flex items-center gap-3 pt-1">
+            <div className="grid grid-cols-2 gap-3 items-end">
+              <div className="space-y-1.5"><Label className="text-xs">{t("flightProof.flightKind")}</Label>
+                <Select value={form.flight_kind || "__none__"} onValueChange={(v) => setForm({ ...form, flight_kind: v === "__none__" ? "" : v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">{t("flightProof.kindUnset")}</SelectItem>
+                    {FLIGHT_KINDS.map((k) => <SelectItem key={k} value={k}>{t(`flightProof.kind.${k}`)}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-3 pb-2">
                 <Checkbox
                   id="solo-shv"
                   checked={form.is_solo_shv}
@@ -714,6 +762,7 @@ export default function FlightForm() {
                 />
                 <Label htmlFor="solo-shv" className="text-xs cursor-pointer">{t("flights.soloShv")}</Label>
               </div>
+            </div>
            </CardContent>
         </Card>
         {groups.length > 0 && (
@@ -735,6 +784,19 @@ export default function FlightForm() {
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">{t("flights.extendedData")}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label className="text-xs">{t("flightProof.takeoffTime")}</Label><Input type="time" value={form.takeoff_time} onChange={set("takeoff_time")} /></div>
+              <div className="space-y-1.5"><Label className="text-xs">{t("flightProof.disciplineLabel")}</Label>
+                <Select value={form.discipline} onValueChange={(v) => setForm({ ...form, discipline: v as Discipline })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{DISCIPLINES.map((d) => <SelectItem key={d} value={d}>{t(`flightProof.discipline.${d}`)}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Checkbox id="tandem" checked={form.is_tandem} onCheckedChange={(checked) => setForm({ ...form, is_tandem: !!checked })} />
+              <Label htmlFor="tandem" className="text-xs cursor-pointer">{t("flightProof.tandem")}</Label>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5"><Label className="text-xs">{t("flights.duration")}</Label><Input type="number" value={form.duration_minutes} onChange={set("duration_minutes")} /></div>
               <div className="space-y-1.5"><Label className="text-xs">{t("flights.altitudeGain")}</Label><Input type="number" value={form.altitude_gain} onChange={set("altitude_gain")} /></div>

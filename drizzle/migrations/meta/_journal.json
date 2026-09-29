@@ -512,6 +512,13 @@
       "when": 1794873600000,
       "tag": "0072_xcontest_password_protection",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1794960000000,
+      "tag": "0073_flight_proof_data",
+      "breakpoints": true
     }
   ]
 }

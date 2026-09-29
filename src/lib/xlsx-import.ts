@@ -10,24 +10,41 @@ export interface ParsedFlight {
   distanceKm: number | null;
   glider: string;
   comments: string;
+  /** The flight's number in Flightbook ("Nr"), kept as the imported flight's source reference. */
+  sourceRef: string | null;
 }
 
-function parseDate(raw: any): string {
-  if (!raw) return new Date().toISOString().slice(0, 10);
-  // If it's already a JS Date (xlsx auto-parses)
+export interface ParseResult {
+  flights: ParsedFlight[];
+  /** Spreadsheet row numbers (1 = header) whose date could not be read; they are not imported. */
+  invalidRows: number[];
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * A flight date as YYYY-MM-DD, or null when it cannot be read. Never falls back to today: an
+ * invented date would end up in the flight log as if it were the real one.
+ */
+export function parseDate(raw: unknown): string | null {
+  if (raw == null || raw === "") return null;
+  // xlsx turns date cells into JS Dates around midnight (local or UTC, sometimes seconds before);
+  // toISOString() shifted them to the previous day east of UTC. Round to the nearest day instead.
   if (raw instanceof Date) {
-    return raw.toISOString().slice(0, 10);
+    if (Number.isNaN(raw.getTime())) return null;
+    const noon = new Date(raw.getTime() + 12 * 60 * 60 * 1000);
+    return `${noon.getFullYear()}-${pad(noon.getMonth() + 1)}-${pad(noon.getDate())}`;
   }
   const s = String(raw).trim();
-  // DD.MM.YYYY
   const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-  // Already YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  return new Date().toISOString().slice(0, 10);
+  const [y, mo, d] = m ? [Number(m[3]), Number(m[2]), Number(m[1])]
+    : /^\d{4}-\d{2}-\d{2}$/.test(s) ? s.split("-").map(Number) : [NaN, NaN, NaN];
+  const check = new Date(y, mo - 1, d);
+  if (Number.isNaN(check.getTime()) || check.getFullYear() !== y || check.getMonth() !== mo - 1 || check.getDate() !== d) return null;
+  return `${y}-${pad(mo)}-${pad(d)}`;
 }
 
-function parseDuration(raw: any): number | null {
+function parseDuration(raw: unknown): number | null {
   if (raw == null || raw === "") return null;
   // xlsx may parse time as fraction of day
   if (typeof raw === "number") {
@@ -39,7 +56,7 @@ function parseDuration(raw: any): number | null {
   return null;
 }
 
-function parseNum(raw: any): number | null {
+function parseNum(raw: unknown): number | null {
   if (raw == null || raw === "") return null;
   const n = parseFloat(String(raw).replace(",", "."));
   return isNaN(n) ? null : n;
@@ -50,15 +67,17 @@ function stripLocationPrefix(name: string): string {
   return name.replace(/^(SP|LP)\s+/i, "").trim();
 }
 
-export function parseXlsx(data: ArrayBuffer): ParsedFlight[] {
-  const wb = XLSX.read(data, { type: "array", cellDates: true });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json<any>(sheet);
-
-  return rows
-    .filter((r: any) => r["Datum"])
-    .map((r: any) => ({
-      date: parseDate(r["Datum"]),
+/** Rows of a Flightbook export (header names as in Flightbook) to flights. */
+export function parseRows(rows: Record<string, unknown>[]): ParseResult {
+  const flights: ParsedFlight[] = [];
+  const invalidRows: number[] = [];
+  rows.forEach((r, index) => {
+    if (r["Datum"] == null || r["Datum"] === "") return;
+    const date = parseDate(r["Datum"]);
+    if (!date) { invalidRows.push(index + 2); return; }
+    const nr = r["Nr"];
+    flights.push({
+      date,
       takeoff: stripLocationPrefix(String(r["Start"] || "").trim()),
       takeoffCountry: String(r["Start Land"] || "").trim(),
       landing: stripLocationPrefix(String(r["Landung"] || "").trim()),
@@ -67,7 +86,16 @@ export function parseXlsx(data: ArrayBuffer): ParsedFlight[] {
       distanceKm: parseNum(r["Km"]),
       glider: String(r["Gleitschirm"] || "").trim(),
       comments: String(r["Beschreibung"] || "").trim(),
-    }));
+      sourceRef: nr == null || String(nr).trim() === "" ? null : String(nr).trim(),
+    });
+  });
+  return { flights, invalidRows };
+}
+
+export function parseXlsx(data: ArrayBuffer): ParseResult {
+  const wb = XLSX.read(data, { type: "array", cellDates: true });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  return parseRows(XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet));
 }
 
 export function collectUniqueLocations(flights: ParsedFlight[]) {

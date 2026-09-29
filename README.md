@@ -1,5 +1,44 @@
 # Flyary
 
+## Flightbook-Ersatz Schritt 2: Flugdaten und Änderungshistorie (2026-09-29)
+
+Umsetzung von Schritt 2 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md)
+(Entscheide vom 29. September 2026: Änderungen nach einer Bestätigung werden nur protokolliert,
+Altbelege nach Variante B). Migration `0073_flight_proof_data.sql`.
+
+- **Stabile Flugnummer** `flights.flight_no` pro Pilot (wie «Nr» im Flightbook-Ausdruck). Bestehende
+  Flüge nach Datum, dann Erfassungszeit nummeriert; neue erhalten die nächste Nummer (auch bei
+  Mehrfach-Insert, Advisory-Lock pro Pilot). Nummer, `source` und `source_ref` sind nach dem Anlegen
+  nicht mehr änderbar (Trigger).
+- **Flugdaten:** `takeoff_at`/`landing_at` (aus IGC übernommen, Startzeit auch manuell),
+  `glider_id` (Freitext `glider` bleibt als historische Bezeichnung; bestehende Flüge verknüpft, wo
+  genau ein Schirm des Piloten passt), `discipline` (Gleitschirm/Delta), `is_tandem`, `flight_kind`
+  (Übungshang/Höhenflug). Ein fremder Schirm wird abgewiesen.
+- **Herkunft** `source`: `manual`, `flightbook` (Excel-Import, mit Flightbook-«Nr» in `source_ref`),
+  `xcontest`, `school` (nur durch die Schulflug-Übernahme). Grundlage für Altbelege nach Variante B.
+- **Schirmverwaltung:** `pilot_gliders.discipline` und `is_tandem`; die Auswahl im Flugformular
+  setzt Disziplin und Tandem mit.
+- **Änderungshistorie** `flight_changes`: Trigger protokollieren jede Änderung von Datum, Zeiten,
+  Dauer, Start-/Landeplatz (mit Namen), Fluggerät, Disziplin, Tandem, Flugart, SHV-Solo und IGC-Track
+  mit Akteur, Zeit, altem und neuem Wert und Herkunft (`app`, `system`, `igc`, oder
+  `flyary.change_origin`). Beschreibung, Fotos, Tags, Wind werden nicht protokolliert. Lesen dürfen
+  der Pilot und das Team der Schule des Flugs; schreiben oder löschen kann keine App-Rolle.
+  Anzeige auf der Flugdetailseite («Änderungshistorie»).
+- **Excel-Import (Flightbook):** Ein fehlendes oder unlesbares Datum wurde bisher durch das heutige
+  Datum ersetzt; jetzt werden solche Zeilen nicht importiert und in der Vorschau genannt.
+  Datumszellen werden auf den Kalendertag gerundet (vorher konnte `toISOString()` den Vortag liefern).
+
+Abweichungen vom Plan: «Storno statt Löschen» folgt mit Schritt 3, weil erst bestätigte Flüge
+geschützt werden müssen. Statt einer IGC-Prüfsumme protokolliert ein Trigger auf `igc_tracks` das
+Hinzufügen, Ersetzen und Entfernen des Tracks. Deltaspezifische Geräteangaben (Fläche, Klasse) und
+das Schulwechsel-/Archivmodell folgen mit Schritt 3.
+
+Tests: `src/test/flight-proof-database.test.ts` (PGlite: Nummerierung, Backfill, Schutz, Historie,
+Rechte), `src/lib/flight-proof.test.ts`, `src/lib/xlsx-import.test.ts`.
+Ausrollen: zuerst Migration anwenden (`node scripts/db-migrate.mjs --apply`), dann `npm run gen-types`,
+dann Frontend pushen; die Edge Function `sync-xcontest` neu deployen (setzt `source = 'xcontest'`).
+Die Seite [Datenbank](docs/technical/database.md) beschreibt die neuen Spalten und `flight_changes` noch nicht.
+
 ## XContest-Passwort verschlüsselt (2026-09-29)
 
 Befund aus der technischen Dokumentation: Das XContest-Passwort lag trotz Spaltenname

@@ -19,6 +19,8 @@ import CoachFeedback from "@/components/CoachFeedback";
 import FlightCoachNote from "@/components/FlightCoachNote";
 import { useSiteName } from "@/lib/official-sites-store";
 import { youtubeEmbedUrl, youtubeLink } from "@/lib/youtube";
+import FlightChangeHistory from "@/components/FlightChangeHistory";
+import { isoToLocalTime } from "@/lib/flight-proof";
 
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
 const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
@@ -139,6 +141,7 @@ export default function FlightDetail() {
         altitude_gain: flight.altitude_gain, distance_km: flight.distance_km, thermals: flight.thermals,
         wind_speed: flight.wind_speed, wind_direction: flight.wind_direction, glider: flight.glider, comments: flight.comments,
         group_id: (flight as any).group_id || null, is_solo_shv: (flight as any).is_solo_shv || false,
+        glider_id: flight.glider_id || null, discipline: flight.discipline || "paraglider", is_tandem: !!flight.is_tandem, flight_kind: flight.flight_kind || null,
       } as any).select("id").single();
       if (error) throw error;
       if (trainedManeuvers.length > 0) {
@@ -208,8 +211,16 @@ export default function FlightDetail() {
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold">{siteName(flight.takeoff?.name) || t("flights.flight")}</h1>
               {(flight as any).is_solo_shv && <Badge variant="default" className="text-[10px] px-1.5 py-0">SHV Solo</Badge>}
+              {flight.discipline === "hangglider" && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t("flightProof.discipline.hangglider")}</Badge>}
+              {flight.is_tandem && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t("flightProof.tandem")}</Badge>}
+              {flight.flight_kind && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`flightProof.kind.${flight.flight_kind}`)}</Badge>}
+              {flight.source === "flightbook" && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t("flightProof.fromFlightbook")}</Badge>}
             </div>
-            <p className="text-xs text-muted-foreground">{new Date(flight.date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
+            <p className="text-xs text-muted-foreground">
+              {flight.flight_no != null && <span>{t("flightProof.number", { no: flight.flight_no })} · </span>}
+              {new Date(flight.date).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+              {flight.takeoff_at && <span> · {isoToLocalTime(flight.takeoff_at)}{flight.landing_at ? `–${isoToLocalTime(flight.landing_at)}` : ""}</span>}
+            </p>
           </div>
         </div>
         <div className="flex gap-1">
@@ -323,6 +334,7 @@ export default function FlightDetail() {
         </div>
       )}
       {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
+      {id && <FlightChangeHistory flightId={id} locale={locale} />}
       {trainedManeuvers.length > 0 && (
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
