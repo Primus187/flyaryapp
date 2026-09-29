@@ -18,6 +18,7 @@ function load() {
   response([{ user_id: "teacher", function: "instructor" }]);
   response([]);
   const staff = response([]);
+  response([]); // admins
   response([{ user_id: "teacher", pilot_name: "Alex" }]);
   return staff;
 }
@@ -39,7 +40,7 @@ it("restricts teaching data to confirmed instructor assignments and shows missin
 });
 
 it("shows a load error instead of an empty team", async () => {
-  response(null, { message: "offline" }); response([]); response([]);
+  response(null, { message: "offline" }); response([]); response([]); response([]);
   render(<TeamCertifications groupId="school" />);
   expect(await screen.findByRole("alert")).toHaveTextContent("school.certs.loadFailed");
   expect(screen.queryByText("school.certs.noTeam")).not.toBeInTheDocument();
@@ -52,7 +53,7 @@ it("rejects an expiry date before issue without writing", async () => {
   fill("instructor", "2026-01-01", "2025-01-01");
   fireEvent.click(screen.getByRole("button", { name: "common.save" }));
   expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "school.certs.invalidDates" }));
-  expect(from).toHaveBeenCalledTimes(4);
+  expect(from).toHaveBeenCalledTimes(5);
   expect(screen.getByRole("dialog")).toBeInTheDocument();
 });
 
@@ -72,5 +73,5 @@ it("retains failed edits and retries only changes not already saved", async () =
   fireEvent.click(screen.getByRole("button", { name: "common.save" }));
   await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   expect(retry.upsert).toHaveBeenCalledWith(expect.objectContaining({ cert_type: "first_aid", group_id: "school" }), expect.anything());
-  expect(from).toHaveBeenCalledTimes(7);
+  expect(from).toHaveBeenCalledTimes(8);
 });

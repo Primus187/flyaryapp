@@ -540,6 +540,13 @@
       "when": 1795219200000,
       "tag": "0076_tandem_passengers",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1795305600000,
+      "tag": "0077_confirm_by_school_staff",
+      "breakpoints": true
     }
   ]
 }

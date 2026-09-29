@@ -1,5 +1,21 @@
 # Flyary
 
+## Korrektur: Flüge bestätigt das ganze Schulteam mit Zertifikat (2026-09-29)
+
+Befund aus dem Test: Ein Admin der Schule mit gültigem Fluglehrer-Zertifikat konnte keine Flüge
+bestätigen, weil `can_confirm_training` (0074) zusätzlich die Funktion Fluglehrer oder Schulleitung
+verlangte. Zudem erschienen Admins ohne Funktion nicht in der Zertifikatsliste und konnten darum
+kein Zertifikat hinterlegen.
+
+- Migration `0077_confirm_by_school_staff.sql`: Bestätigen darf, wer zum Schulteam gehört
+  (`is_group_staff`: Admin, Schulleitung oder Fluglehrer; Starthelfer nicht) **und** ein am
+  Bestätigungstag gültiges Zertifikat für die Disziplin des Flugs hat; nie der eigene Flug.
+  Das Zertifikat bleibt der Nachweis der Qualifikation.
+- Zertifikate (Sicherheit → Zertifikate) listet jetzt auch Admins ohne weitere Funktion.
+  Ein Admin kann wie bisher zusätzlich die Funktion Fluglehrer erhalten (Personen → Funktionen).
+- Tests: `src/test/flight-confirmations-database.test.ts` (Admin mit Zertifikat bestätigt, Admin ohne
+  Zertifikat und Starthelfer mit Zertifikat nicht), `src/components/school/TeamCertifications.test.tsx`.
+
 ## Flightbook-Ersatz Schritt 4b: Tandemflüge und Passagierbestätigung (2026-09-29)
 
 Umsetzung von Schritt 4b aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md).

@@ -57,7 +57,7 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
     setLoadError(false);
     try {
       const now = new Date();
-      const [funcRes, certRes, staffRes] = await Promise.all([
+      const [funcRes, certRes, staffRes, adminRes] = await Promise.all([
         supabase.from("group_member_functions").select("user_id, function", { count: "exact" }).eq("group_id", groupId),
         supabase.from("instructor_certifications").select("id, user_id, cert_type, issued_at, valid_until", { count: "exact" }).eq("group_id", groupId),
         supabase
@@ -68,12 +68,17 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
           .gte("flight_events.event_date", startOfDay(subYears(now, 3)).toISOString())
           .lte("flight_events.event_date", now.toISOString())
           .eq("flight_events.status", "confirmed"),
+        // Admins belong to the school staff too and may confirm flights with a certificate (migration 0077).
+        supabase.from("group_members").select("user_id", { count: "exact" }).eq("group_id", groupId).eq("role", "admin"),
       ]);
-      if ([funcRes, certRes, staffRes].some((result) => result.error || result.data === null || (result.count != null && result.count > result.data.length))) {
+      if ([funcRes, certRes, staffRes, adminRes].some((result) => result.error || result.data === null || (result.count != null && result.count > result.data.length))) {
         throw new Error("Incomplete certification data");
       }
 
-      const funcs = (funcRes.data || []).filter((f) => (TEAM_FUNCTIONS as readonly string[]).includes(f.function));
+      const funcs = [
+        ...(funcRes.data || []).filter((f) => (TEAM_FUNCTIONS as readonly string[]).includes(f.function)),
+        ...(adminRes.data || []).map((a) => ({ user_id: a.user_id, function: "admin" })),
+      ];
       const userIds = Array.from(new Set(funcs.map((f) => f.user_id)));
 
       const nameMap: Record<string, string> = {};

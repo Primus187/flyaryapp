@@ -8,8 +8,9 @@ let db: PGlite;
 const anna = "00000000-0000-0000-0000-000000000001";   // student
 const iris = "00000000-0000-0000-0000-000000000002";   // paragliding instructor, valid certificate
 const hans = "00000000-0000-0000-0000-000000000003";   // instructor, certificate expired
-const adele = "00000000-0000-0000-0000-000000000004";  // school admin only
-const luca = "00000000-0000-0000-0000-000000000005";   // launch helper
+const adele = "00000000-0000-0000-0000-000000000004";  // school admin without a function, valid certificate
+const alex = "00000000-0000-0000-0000-000000000008";   // school admin without a function or certificate
+const luca = "00000000-0000-0000-0000-000000000005";   // launch helper (even with a certificate)
 const dora = "00000000-0000-0000-0000-000000000006";   // hang glider instructor
 const otto = "00000000-0000-0000-0000-000000000007";   // instructor of another school
 const school = "10000000-0000-0000-0000-000000000001";
@@ -49,18 +50,20 @@ beforeAll(async () => {
 
     INSERT INTO groups VALUES ('${school}','Vertical','school'),('${other}','Andere Schule','school'),('${club}','Club','pilot_group');
     INSERT INTO group_members(group_id,user_id,role) VALUES ('${school}','${anna}','member'),('${school}','${iris}','member'),
-      ('${school}','${hans}','member'),('${school}','${adele}','admin'),('${school}','${luca}','member'),('${school}','${dora}','member'),
+      ('${school}','${hans}','member'),('${school}','${adele}','admin'),('${school}','${alex}','admin'),('${school}','${luca}','member'),('${school}','${dora}','member'),
       ('${other}','${otto}','member'),('${club}','${anna}','member');
     INSERT INTO group_member_functions VALUES ('${school}','${anna}','student'),('${school}','${iris}','instructor'),
       ('${school}','${hans}','instructor'),('${school}','${luca}','launch_helper'),('${school}','${dora}','instructor'),('${other}','${otto}','instructor');
     INSERT INTO instructor_certifications VALUES ('${school}','${iris}','instructor', current_date + 365),
       ('${school}','${hans}','instructor', current_date - 1),('${school}','${adele}','instructor', current_date + 365),
-      ('${school}','${dora}','instructor_hg', current_date + 365),('${other}','${otto}','instructor', current_date + 365);
+      ('${school}','${dora}','instructor_hg', current_date + 365),('${other}','${otto}','instructor', current_date + 365),
+      ('${school}','${luca}','instructor', current_date + 365);
     INSERT INTO profiles VALUES ('${anna}','Anna'),('${iris}','Iris Instruktor'),('${dora}','Dora');
     INSERT INTO locations(id,user_id,name,altitude) VALUES ('${bergbo}','${anna}','SP Bergbo',1289),('${lehn}','${anna}','LP Lehn',565);
   `);
   await db.exec(migration("0073_flight_proof_data.sql"));
   await db.exec(migration("0074_flight_confirmations.sql"));
+  await db.exec(migration("0077_confirm_by_school_staff.sql"));
 }, 60_000);
 afterAll(async () => { await db?.close(); });
 
@@ -126,18 +129,25 @@ describe("who may confirm", () => {
     expect(c.confirmed_data).toMatchObject({ takeoff: { name: "SP Bergbo", altitude: 1289 }, durationMinutes: 10, discipline: "paraglider" });
   });
 
-  it("refuses an expired certificate, admin rights alone, launch helpers and other schools", async () => {
+  it("refuses an expired certificate, staff without a certificate, launch helpers and other schools", async () => {
     const f = await newFlight();
     await asUser(anna); await submit([f]);
     await asUser(hans);
     expect((await confirm([f])).skipped[0].reason).toBe("not_qualified");
-    await asUser(adele); // admin with a certificate but no instructor function
+    await asUser(alex); // admin without a certificate
     expect((await confirm([f])).skipped[0].reason).toBe("not_qualified");
-    await asUser(luca);
+    await asUser(luca); // launch helper with a certificate: not school staff
     await expect(confirm([f])).rejects.toThrow(/staff access/);
     await asUser(otto);
     await expect(confirm([f])).rejects.toThrow(/staff access/);
     expect((await status(f)).status).toBe("submitted");
+  });
+
+  it("lets a school admin with a valid certificate confirm without the instructor function (0077)", async () => {
+    const f = await newFlight();
+    await asUser(anna); await submit([f]);
+    await asUser(adele);
+    expect(await confirm([f])).toEqual({ confirmed: 1, skipped: [] });
   });
 
   it("checks the discipline: a hang glider flight needs a hang glider instructor", async () => {
