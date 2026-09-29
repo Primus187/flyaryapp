@@ -7,45 +7,92 @@ function csvEscape(v: unknown): string {
   return s;
 }
 
-export async function exportFlightsCsv(userId: string): Promise<{ rows: number; blob: Blob }> {
-  const { data, error } = await supabase
-    .from("flights")
-    .select(`
-      date, duration_minutes, distance_km, altitude_gain, glider, thermals,
-      wind_speed, wind_direction, comments, is_solo_shv,
-      takeoff_location:takeoff_location_id ( name, latitude, longitude ),
-      landing_location:landing_location_id ( name, latitude, longitude )
-    `)
-    .eq("user_id", userId)
-    .order("date", { ascending: false });
+interface CsvPlace { name: string | null; latitude: number | null; longitude: number | null; altitude: number | null }
 
-  if (error) throw error;
+export interface CsvFlight {
+  id: string;
+  flight_no: number;
+  date: string;
+  takeoff_at: string | null;
+  landing_at: string | null;
+  duration_minutes: number | null;
+  distance_km: number | null;
+  altitude_gain: number | null;
+  glider: string | null;
+  discipline: string | null;
+  is_tandem: boolean;
+  flight_kind: string | null;
+  is_solo_shv: boolean;
+  source: string | null;
+  source_ref: string | null;
+  thermals: string | null;
+  wind_speed: number | null;
+  wind_direction: string | null;
+  comments: string | null;
+  takeoff_location: CsvPlace | null;
+  landing_location: CsvPlace | null;
+}
 
-  const headers = [
-    "date", "takeoff", "takeoff_lat", "takeoff_lng",
-    "landing", "landing_lat", "landing_lng",
-    "duration_minutes", "distance_km", "altitude_gain_m",
-    "glider", "thermals", "wind_speed_kmh", "wind_direction",
-    "is_solo_shv", "comments",
-  ];
+export const CSV_HEADERS = [
+  "flight_no", "date", "takeoff_at", "landing_at",
+  "takeoff", "takeoff_lat", "takeoff_lng", "takeoff_altitude_m",
+  "landing", "landing_lat", "landing_lng", "landing_altitude_m",
+  "duration_minutes", "distance_km", "altitude_gain_m", "height_difference_m",
+  "glider", "discipline", "is_tandem", "flight_kind", "is_solo_shv",
+  "source", "source_ref", "thermals", "wind_speed_kmh", "wind_direction", "comments", "id",
+];
 
-  const lines = [headers.join(",")];
-  for (const f of data ?? []) {
-    const t: any = (f as any).takeoff_location;
-    const l: any = (f as any).landing_location;
+/** The logbook as CSV (UTF-8 with BOM so Excel reads umlauts), in the order of the flight number. */
+export function flightsCsv(flights: CsvFlight[]): string {
+  const lines = [CSV_HEADERS.join(",")];
+  for (const f of [...flights].sort((a, b) => a.flight_no - b.flight_no)) {
+    const t = f.takeoff_location, l = f.landing_location;
+    const diff = t?.altitude != null && l?.altitude != null ? t.altitude - l.altitude : null;
     lines.push([
-      f.date,
-      t?.name ?? "", t?.latitude ?? "", t?.longitude ?? "",
-      l?.name ?? "", l?.latitude ?? "", l?.longitude ?? "",
-      f.duration_minutes ?? "", f.distance_km ?? "", f.altitude_gain ?? "",
-      f.glider ?? "", f.thermals ?? "", f.wind_speed ?? "", f.wind_direction ?? "",
-      f.is_solo_shv ? "true" : "false",
-      f.comments ?? "",
+      f.flight_no, f.date, f.takeoff_at, f.landing_at,
+      t?.name, t?.latitude, t?.longitude, t?.altitude,
+      l?.name, l?.latitude, l?.longitude, l?.altitude,
+      f.duration_minutes, f.distance_km, f.altitude_gain, diff,
+      f.glider, f.discipline, f.is_tandem ? "true" : "false", f.flight_kind, f.is_solo_shv ? "true" : "false",
+      f.source, f.source_ref, f.thermals, f.wind_speed, f.wind_direction, f.comments, f.id,
     ].map(csvEscape).join(","));
   }
+  return "﻿" + lines.join("\n");
+}
 
-  const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
-  return { rows: data?.length ?? 0, blob };
+const PAGE_SIZE = 1000;
+
+/**
+ * Reads all pages of a query. A single request stops at the API row limit (1000), and an export that
+ * silently lacks rows must not happen; errors are thrown instead of returning a partial result.
+ */
+export async function fetchAllPages<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>): Promise<T[]> {
+  const all: T[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    all.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) return all;
+  }
+}
+
+const PLACE = "name:display_name, latitude, longitude, altitude";
+
+export async function exportFlightsCsv(userId: string): Promise<{ rows: number; blob: Blob }> {
+  const flights = await fetchAllPages<CsvFlight>((from, to) => supabase
+    .from("flights")
+    .select(`
+      id, flight_no, date, takeoff_at, landing_at, duration_minutes, distance_km, altitude_gain, glider, discipline,
+      is_tandem, flight_kind, is_solo_shv, source, source_ref, thermals, wind_speed, wind_direction, comments,
+      takeoff_location:locations!flights_takeoff_location_id_fkey ( ${PLACE} ),
+      landing_location:locations!flights_landing_location_id_fkey ( ${PLACE} )
+    `)
+    .eq("user_id", userId)
+    .order("flight_no", { ascending: true })
+    .range(from, to) as unknown as PromiseLike<{ data: CsvFlight[] | null; error: { message: string } | null }>);
+
+  const blob = new Blob([flightsCsv(flights)], { type: "text/csv;charset=utf-8" });
+  return { rows: flights.length, blob };
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

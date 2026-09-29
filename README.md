@@ -1,5 +1,34 @@
 # Flyary
 
+## Flugbuch-PDF und CSV nach Flightbook-Vorlage (2026-09-29)
+
+Teil von Schritt 5 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md),
+Abschnitt «Vorlage Flightbook-Ausdruck». Edge Function `export-flightbook-pdf`, Logik in
+`supabase/functions/export-flightbook-pdf/logbook.ts`, CSV in `src/lib/csv-export.ts`.
+
+- **Start-/Landeplätze** werden aus den gedruckten Flügen gezählt und gelistet (Reihenfolge der
+  ersten Benutzung), nicht mehr aus allen gespeicherten Orten nach Ortstyp. Orte mit Typ «beide»
+  zählten doppelt, nie beflogene Orte zählten mit, eine Toplandung fehlte bei den Landeplätzen.
+  Dieselbe offizielle Platz-ID zählt einmal. Neue Spalte «Land».
+- **Diff.** = Höhe Startplatz minus Höhe Landeplatz (wie Flightbook), nicht mehr der erfasste
+  Höhengewinn unter derselben Überschrift.
+- **Nr** = stabile Flugnummer (Migration 0073); gedruckt wird in dieser Reihenfolge, damit bereits
+  gestempelte Seiten bei nachgetragenen Flügen gleich bleiben.
+- **Seitenzahl «x/y»** auf allen Seiten, auch im Schulnachweis; **«Anzahl Alleinflüge»** im Kopf.
+- Spaltenüberschrift «Gleitschirm», «Delta» oder «Fluggerät» je nach gedruckten Flügen.
+- **Vollständigkeit:** PDF und CSV lesen die Flüge seitenweise (vorher brach eine Abfrage beim
+  API-Limit von 1000 Zeilen stillschweigend ab) und brechen bei einem Fehler ab statt ein
+  unvollständiges Dokument zu liefern.
+- Darstellungsfehler behoben: die Zeile vor einem mehrzeiligen Eintrag wurde vom Hintergrund
+  überdeckt; «★» fehlt in der Standardschrift und erschien als «&» mit gesperrten Buchstaben
+  (jetzt «SHV-Soloflug» bzw. «(Standard)»); «Pilot:» überlappte den Titel der ersten Flugseite.
+- **CSV:** zusätzliche Spalten Flugnummer, Start-/Landezeit, Ortshöhen, Höhendifferenz, Disziplin,
+  Tandem, Flugart, Herkunft, Flug-ID; sortiert nach Flugnummer.
+
+Geprüft mit `deno check` und einer lokal gerenderten Probe (Function gegen einen Supabase-Mock mit
+65 Flügen, inkl. Toplandung, Platzvariante und nachgetragenem Flug). Tests:
+`src/lib/logbook-pdf.test.ts`, `src/lib/csv-export.test.ts`.
+
 ## Flightbook-Ersatz Schritt 2: Flugdaten und Änderungshistorie (2026-09-29)
 
 Umsetzung von Schritt 2 aus [flightbook-replacement-plan.md](docs/technical/flightbook-replacement-plan.md)
