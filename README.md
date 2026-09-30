@@ -1,5 +1,34 @@
 # Flyary
 
+## Betriebsbereich Schritt 3: Schulen einrichten und übergeben (2026-09-30)
+
+Plan §6. Entscheid 2026-09-30: ganze Schulen pausieren erst bei Bedarf.
+
+- **Schule ohne eigene Mitgliedschaft** (Migration `0085_school_setup.sql`): `ops_create_school(_name,
+  _description, _lead_email, _language)` legt die Schule an, ohne dass der Admin Mitglied wird, und
+  erstellt einen **Leitungslink** (`school_lead_invites`, 14 Tage, einmal gültig, nur der Hash gespeichert,
+  höchstens ein offener Link pro Schule).
+- **Übergabe:** `/welcome/lead/<token>` → `redeem_school_lead_invite` macht das Konto zum Gruppen-Admin
+  der Schule (ein bestehendes Mitglied wird befördert) und gibt App-Zugang. Pausierte Konten erhalten
+  `revoked`, der Link bleibt dann unverbraucht. Der Link übersteht die Google-Anmeldung (`after-login.ts`)
+  und lässt sich auch im Wartebereich einfügen. Danach greift das Staff-Onboarding (0081).
+- **Weitere RPCs:** `ops_create_lead_invite` (neuer Link für eine bestehende Schule, ersetzt einen offenen),
+  `ops_revoke_lead_invite`, `ops_school_list` (Mitglieder, Team, Administration, offener Link, letzter Flug)
+  und `ops_leave_school`. Austreten geht nur, wenn eine weitere Person Gruppen-Admin ist.
+  Alle Schritte stehen im Protokoll (`ops_admin_log`, neue Aktionen).
+- **App:** neue Seite `/admin/schools` «Schulen» mit Status (Leitung fehlt, eingeladen, übergeben,
+  du bist noch Mitglied), «Schule einrichten», Leitungslink mit Kopieren und vorbereiteter E-Mail (DE/FR/EN),
+  Link zurückziehen und Austreten. Im Gruppen-Dialog gibt es den Typ «Schule» nicht mehr, auch nicht
+  für Admins. Der Hinweis dort verweist auf den Betriebsbereich.
+- **Abweichungen vom Plan:** Zusätzlich gibt es `ops_create_lead_invite` und `ops_revoke_lead_invite`, damit
+  bestehende Schulen wie Vertical nachträglich eine Leitung erhalten. «Letzte Aktivität» ist vorerst der
+  letzte erfasste Flug der Schule. Den Gruppentyp in den Gruppendetails kann ein Admin weiterhin ändern.
+- **Übergang Vertical:** Tobias ist dort einziger Gruppen-Admin. Zuerst Leitungslink an die Schulleitung
+  schicken, nach der Einlösung austreten.
+- Tests: `src/test/school-setup-database.test.ts`, `src/lib/ops-schools.test.ts`, ergänzt
+  `app-access.test.ts` und `after-login.test.ts`. Smoke mit `/admin/schools`.
+- **Einspielen:** `node scripts/db-migrate.mjs --apply`, dann `npm run gen-types`, dann pushen.
+
 ## Betriebsbereich Schritt 2: Zugänge pausieren, wiederherstellen, Protokoll (2026-09-30)
 
 Plan §5. Entscheid 2026-09-30: Pausieren beendet keine Schulmitgliedschaften.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BadgeCheck, Bug, Database, HardDrive, Store, UserPlus, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Bug, Database, GraduationCap, HardDrive, Store, UserPlus, type LucideIcon } from "lucide-react";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
@@ -69,6 +69,7 @@ export default function AdminOverview() {
       })()}
       <section className="lg:hidden">
         <SectionHeading title={t("ops.more")} />
+        <ListRow icon={GraduationCap} label={t("ops.nav.schools")} description={t("adminSchools.subtitle")} onClick={() => navigate("/admin/schools")} className="mb-2" />
         <ListRow icon={BadgeCheck} label={t("ops.nav.sites")} description={t("adminSites.subtitle")} onClick={() => navigate("/admin/sites")} />
       </section>
     </PageContainer>

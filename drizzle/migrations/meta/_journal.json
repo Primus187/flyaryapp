@@ -596,6 +596,13 @@
       "when": 1795910400000,
       "tag": "0084_access_revoke",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1795996800000,
+      "tag": "0085_school_setup",
+      "breakpoints": true
     }
   ]
 }

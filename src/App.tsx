@@ -52,6 +52,7 @@ const TrainingItemDetail = lazy(() => import("@/pages/TrainingItemDetail"));
 const Legal = lazy(() => import("@/pages/Legal"));
 const AdminErrors = lazy(() => import("@/pages/AdminErrors"));
 const AdminAccess = lazy(() => import("@/pages/AdminAccess"));
+const AdminSchools = lazy(() => import("@/pages/AdminSchools"));
 const WaitingRoom = lazy(() => import("@/pages/WaitingRoom"));
 const RedeemInvite = lazy(() => import("@/pages/RedeemInvite"));
 const AdminSites = lazy(() => import("@/pages/AdminSites"));
@@ -220,6 +221,7 @@ const App = () => {
                         <Route path="access" element={<AdminAccess />} />
                         {/* pushes and bookmarks from before migration 0084 */}
                         <Route path="waitlist" element={<Navigate to="/admin/access" replace />} />
+                        <Route path="schools" element={<AdminSchools />} />
                         <Route path="backups" element={<AdminBackups />} />
                         <Route path="sites" element={<AdminSites />} />
                       </Route>
@@ -247,6 +249,7 @@ const App = () => {
                     </Route>
                     <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
                     <Route path="/welcome/:token" element={<ProtectedRoute><RedeemInvite /></ProtectedRoute>} />
+                    <Route path="/welcome/lead/:token" element={<ProtectedRoute><RedeemInvite kind="lead" /></ProtectedRoute>} />
                     <Route path="/shared/flights/:token" element={<SharedFlightDetail />} />
                     {/* Tandem passenger confirms through a single-use link, no account needed (migration 0076) */}
                     <Route path="/passenger/:token" element={<PassengerConfirm />} />

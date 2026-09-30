@@ -8,14 +8,14 @@ export interface AppAccess {
   revoked?: boolean;
 }
 
-export type InviteInput = { kind: "group"; code: string } | { kind: "personal"; token: string };
+export type InviteInput = { kind: "group"; code: string } | { kind: "personal"; token: string } | { kind: "lead"; token: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOKEN = /^[0-9a-f]{64}$/i;
 
 /**
  * What someone pasted into the waiting room: a school/group invite code or link (/groups?invite=<uuid>)
- * or a personal invitation link (/welcome/<token>) or its token.
+ * or a personal invitation link (/welcome/<token>) or its token, or a school lead link (/welcome/lead/<token>, 0085).
  */
 export function parseInviteInput(input: string): InviteInput | null {
   const text = input.trim();
@@ -23,6 +23,8 @@ export function parseInviteInput(input: string): InviteInput | null {
   if (TOKEN.test(text)) return { kind: "personal", token: text.toLowerCase() };
   let url: URL;
   try { url = new URL(text); } catch { return null; }
+  const lead = url.pathname.match(/^\/welcome\/lead\/([0-9a-f]{64})\/?$/i);
+  if (lead) return { kind: "lead", token: lead[1].toLowerCase() };
   const welcome = url.pathname.match(/^\/welcome\/([0-9a-f]{64})\/?$/i);
   if (welcome) return { kind: "personal", token: welcome[1].toLowerCase() };
   const code = url.searchParams.get("invite");

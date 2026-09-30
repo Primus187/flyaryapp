@@ -10,8 +10,11 @@ import { APP_ACCESS_KEY } from "@/hooks/use-app-access";
 
 type Outcome = "ok" | "invalid" | "expired" | "used" | "revoked" | "error";
 
-/** Personal invitation link from the test list (/welcome/<token>, migration 0079). Signed-in only. */
-export default function RedeemInvite() {
+/**
+ * Personal invitation link from the test list (/welcome/<token>, migration 0079) or school lead link
+ * (/welcome/lead/<token>, migration 0085: the account becomes group admin of the school). Signed-in only.
+ */
+export default function RedeemInvite({ kind = "personal" }: { kind?: "personal" | "lead" }) {
   const { token = "" } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -23,17 +26,18 @@ export default function RedeemInvite() {
     if (started.current) return;
     started.current = true;
     void (async () => {
-      const { data, error } = await supabase.rpc("redeem_access_invite" as never, { _token: token } as never);
+      const rpc = kind === "lead" ? "redeem_school_lead_invite" : "redeem_access_invite";
+      const { data, error } = await supabase.rpc(rpc as never, { _token: token } as never);
       const result = (error ? "error" : data) as Outcome;
       if (result === "ok") {
         await queryClient.invalidateQueries({ queryKey: [APP_ACCESS_KEY] });
-        toast.success(t("access.redeemed"));
-        navigate("/", { replace: true });
+        toast.success(t(kind === "lead" ? "access.leadRedeemed" : "access.redeemed"));
+        navigate(kind === "lead" ? "/school" : "/", { replace: true });
         return;
       }
       setOutcome(result);
     })();
-  }, [token, navigate, queryClient, t]);
+  }, [kind, token, navigate, queryClient, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "linear-gradient(145deg, hsl(199 89% 28%) 0%, hsl(199 89% 38%) 35%, hsl(152 44% 40%) 100%)" }}>

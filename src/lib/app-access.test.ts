@@ -10,6 +10,7 @@ describe("pilot phase access", () => {
     expect(parseInviteInput(`https://app.flyary.ch/groups?invite=${code}`)).toEqual({ kind: "group", code });
     expect(parseInviteInput(token)).toEqual({ kind: "personal", token });
     expect(parseInviteInput(`https://app.flyary.ch/welcome/${token}`)).toEqual({ kind: "personal", token });
+    expect(parseInviteInput(`https://app.flyary.ch/welcome/lead/${token}`)).toEqual({ kind: "lead", token });
     expect(parseInviteInput("hallo")).toBeNull();
     expect(parseInviteInput("https://app.flyary.ch/groups?invite=nope")).toBeNull();
     expect(parseInviteInput("https://app.flyary.ch/welcome/short")).toBeNull();

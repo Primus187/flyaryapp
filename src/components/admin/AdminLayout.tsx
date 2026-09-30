@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BadgeCheck, Bug, HardDrive, LayoutDashboard, Store, UserPlus, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Bug, GraduationCap, HardDrive, LayoutDashboard, Store, UserPlus, type LucideIcon } from "lucide-react";
 import LoadingState from "@/components/layout/LoadingState";
 import { useOpsAdminState } from "@/hooks/use-app-admin";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const ADMIN_NAV: { path: string; icon: LucideIcon; labelKey: string }[] = [
   { path: "/admin", icon: LayoutDashboard, labelKey: "ops.nav.overview" },
   { path: "/admin/access", icon: UserPlus, labelKey: "ops.nav.access" },
+  { path: "/admin/schools", icon: GraduationCap, labelKey: "ops.nav.schools" },
   { path: "/admin/errors", icon: Bug, labelKey: "ops.nav.errors" },
   { path: "/admin/backups", icon: HardDrive, labelKey: "ops.nav.backups" },
   { path: "/market/moderation", icon: Store, labelKey: "ops.nav.market" },

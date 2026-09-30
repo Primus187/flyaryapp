@@ -50,6 +50,7 @@ export default function WaitingRoom({ access }: { access: AppAccess }) {
     const parsed = parseInviteInput(invite);
     if (!parsed) { toast.error(t("access.inviteUnknown")); return; }
     if (parsed.kind === "personal") { navigate(`/welcome/${parsed.token}`); return; }
+    if (parsed.kind === "lead") { navigate(`/welcome/lead/${parsed.token}`); return; }
     setRedeeming(true);
     const { data, error } = await supabase.rpc("join_group_by_invite_code", { _invite_code: parsed.code });
     setRedeeming(false);
