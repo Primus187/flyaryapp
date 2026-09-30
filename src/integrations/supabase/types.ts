@@ -4780,6 +4780,7 @@ export type Database = {
       is_market_banned: { Args: { _uid: string }; Returns: boolean }
       is_market_moderator: { Args: { _uid: string }; Returns: boolean }
       is_market_staff: { Args: { _uid: string }; Returns: boolean }
+      is_ops_admin: { Args: never; Returns: boolean }
       is_owner_of_flight: { Args: { _flight_id: string }; Returns: boolean }
       is_school_student: { Args: { _user_id: string }; Returns: boolean }
       join_group_by_invite_code: {
@@ -5128,6 +5129,7 @@ export type Database = {
         Args: { l: Database["public"]["Tables"]["locations"]["Row"] }
         Returns: string
       }
+      ops_overview: { Args: never; Returns: Json }
       passenger_confirmation_info: { Args: { _token: string }; Returns: Json }
       passenger_token_hash: { Args: { _token: string }; Returns: string }
       redeem_access_invite: { Args: { _token: string }; Returns: string }

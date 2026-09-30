@@ -36,8 +36,7 @@ export function openItems(o: OpsOverview, now = new Date()): number {
 }
 
 export async function fetchOpsOverview(): Promise<OpsOverview> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0083)
-  const { data, error } = await supabase.rpc("ops_overview" as any);
+  const { data, error } = await supabase.rpc("ops_overview");
   if (error) throw error;
   return data as unknown as OpsOverview;
 }

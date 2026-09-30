@@ -10,8 +10,7 @@ export function useOpsAdminState(): boolean | null {
     if (!userId) { setIsAdmin(false); return; }
     let active = true;
     setIsAdmin(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0083)
-    void supabase.rpc("is_ops_admin" as any).then(({ data }) => { if (active) setIsAdmin(data === true); });
+    void supabase.rpc("is_ops_admin").then(({ data }) => { if (active) setIsAdmin(data === true); });
     return () => { active = false; };
   }, [userId]);
   return isAdmin;
