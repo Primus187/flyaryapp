@@ -42,9 +42,9 @@ async function fitScreenshot(file: File): Promise<File | null> {
 export interface SubmitResult { uploaded: number; failed: number }
 
 export async function submitFeedback(userId: string, kind: FeedbackKind, message: string, files: File[], ctx: FeedbackContext): Promise<SubmitResult> {
-  const { data: id, error } = await supabase.rpc("submit_feedback" as never, {
+  const { data: id, error } = await supabase.rpc("submit_feedback", {
     _kind: kind, _message: message.trim(), _path: ctx.path, _app_version: ctx.appVersion, _user_agent: ctx.userAgent,
-  } as never);
+  });
   if (error || typeof id !== "string") throw error ?? new Error("submit_feedback failed");
 
   let uploaded = 0;
@@ -61,7 +61,7 @@ export async function submitFeedback(userId: string, kind: FeedbackKind, message
     }
   }
   // Finish in any case: the feedback text must reach the admins even if a screenshot did not make it.
-  const { error: finishError } = await supabase.rpc("finish_feedback" as never, { _id: id } as never);
+  const { error: finishError } = await supabase.rpc("finish_feedback", { _id: id });
   if (finishError) throw finishError;
   return { uploaded, failed };
 }
@@ -107,13 +107,13 @@ export function replyMailto(row: Pick<FeedbackRow, "email" | "message" | "create
 }
 
 export async function fetchFeedbackList(): Promise<FeedbackRow[]> {
-  const { data, error } = await supabase.rpc("ops_feedback_list" as never);
+  const { data, error } = await supabase.rpc("ops_feedback_list");
   if (error) throw error;
   return (data ?? []) as unknown as FeedbackRow[];
 }
 
 export async function setFeedback(id: string, status: FeedbackStatus, note: string): Promise<void> {
-  const { error } = await supabase.rpc("ops_set_feedback" as never, { _id: id, _status: status, _note: note } as never);
+  const { error } = await supabase.rpc("ops_set_feedback", { _id: id, _status: status, _note: note });
   if (error) throw error;
 }
 

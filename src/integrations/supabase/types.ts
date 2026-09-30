@@ -149,6 +149,54 @@ export type Database = {
         }
         Relationships: []
       }
+      app_feedback: {
+        Row: {
+          admin_note: string | null
+          app_version: string | null
+          created_at: string
+          finished_at: string | null
+          handled_at: string | null
+          id: string
+          kind: string
+          message: string
+          path: string | null
+          screenshot_paths: string[]
+          status: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          app_version?: string | null
+          created_at?: string
+          finished_at?: string | null
+          handled_at?: string | null
+          id?: string
+          kind: string
+          message: string
+          path?: string | null
+          screenshot_paths?: string[]
+          status?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          app_version?: string | null
+          created_at?: string
+          finished_at?: string | null
+          handled_at?: string | null
+          id?: string
+          kind?: string
+          message?: string
+          path?: string | null
+          screenshot_paths?: string[]
+          status?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -4728,6 +4776,10 @@ export type Database = {
       feed_mention_members: { Args: never; Returns: Json }
       feed_page: { Args: { _cursor?: string; _limit?: number }; Returns: Json }
       feed_social: { Args: { _id: string; _kind: string }; Returns: Json }
+      feedback_daily_cleanup: { Args: never; Returns: Json }
+      feedback_trigger_cleanup: { Args: never; Returns: undefined }
+      feedback_upload_allowed: { Args: { _name: string }; Returns: boolean }
+      finish_feedback: { Args: { _id: string }; Returns: undefined }
       flight_change_origin: { Args: never; Returns: string }
       flight_change_place: { Args: { _id: string }; Returns: Json }
       flight_day_close_preview: { Args: { _event_id: string }; Returns: Json }
@@ -5229,6 +5281,7 @@ export type Database = {
         }
         Returns: Json
       }
+      ops_feedback_list: { Args: never; Returns: Json }
       ops_leave_school: { Args: { _group_id: string }; Returns: undefined }
       ops_log: {
         Args: {
@@ -5250,6 +5303,10 @@ export type Database = {
         Returns: undefined
       }
       ops_school_list: { Args: never; Returns: Json }
+      ops_set_feedback: {
+        Args: { _id: string; _note: string; _status: string }
+        Returns: undefined
+      }
       passenger_confirmation_info: { Args: { _token: string }; Returns: Json }
       passenger_token_hash: { Args: { _token: string }; Returns: string }
       redeem_access_invite: { Args: { _token: string }; Returns: string }
@@ -5618,6 +5675,16 @@ export type Database = {
         Returns: number
       }
       shares_group: { Args: { _a: string; _b: string }; Returns: boolean }
+      submit_feedback: {
+        Args: {
+          _app_version: string
+          _kind: string
+          _message: string
+          _path: string
+          _user_agent: string
+        }
+        Returns: string
+      }
       submit_flights_for_confirmation: {
         Args: { _flight_ids: string[]; _group_id: string }
         Returns: Json
