@@ -794,6 +794,7 @@
     ]
   },
   "import": {
+    "reconcileTitle": "Comparison with the file", "reconcileFile": "In the file: {{flights}} flights, {{time}} h", "reconcileNew": "New to import: {{flights}} flights, {{time}} h", "reconcileDuplicates": "{{count}} already in the logbook, skipped", "reconcileInvalid": "{{count}} rows without a readable date, not imported",
     "invalidDateRows": "Rows without a readable date are not imported: {{rows}}",
     "importFlights": "Import flights",
     "importLocations": "Import sites",

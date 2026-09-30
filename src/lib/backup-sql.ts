@@ -51,3 +51,44 @@ export function restoreOrder(tables: string[], foreignKeys: { table: string; ref
 export function snapshotsToPrune(names: string[], keep: number): string[] {
   return [...names].sort().reverse().slice(Math.max(0, keep));
 }
+
+/**
+ * What to do with one storage object in the file mirror. The eTag (MD5 of the content for normal
+ * uploads) detects changes of equal size, which a size check alone missed. `replace` keeps the old
+ * local file as a version before overwriting it.
+ */
+export function mirrorAction(local: { exists: boolean; size: number | null; etag: string | null }, remote: { size: number; etag: string | null }): "skip" | "download" | "replace" {
+  if (!local.exists) return "download";
+  if (remote.etag && local.etag) return remote.etag === local.etag ? "skip" : "replace";
+  return local.size === remote.size ? "skip" : "replace";
+}
+
+/** Call of public.report_backup_run (migration 0082) with safely quoted values. */
+export function reportRunSql(run: { ok: boolean; snapshot: string; host: string; gitCommit: string | null; tables: number; rows: number; filesTotal: number; downloaded: number; failed: number; message: string | null }): string {
+  const text = (v: string | null) => (v === null ? "null" : dollarQuote(v));
+  return `select public.report_backup_run(${run.ok}, ${text(run.snapshot)}, ${text(run.host)}, ${text(run.gitCommit)}, ${run.tables | 0}, ${Math.trunc(run.rows)}, ${run.filesTotal | 0}, ${run.downloaded | 0}, ${run.failed | 0}, ${text(run.message)})`;
+}
+
+/**
+ * Differences between a backup manifest and a restored project: row counts per table and every file
+ * (present, same size, same eTag = same content). An empty list means the restore is complete.
+ */
+export function compareRestore(
+  manifest: { row_counts: Record<string, number>; files: { bucket: string; name: string; size: number; etag?: string | null }[] },
+  target: { rowCounts: Record<string, number>; files: { bucket: string; name: string; size: number; etag: string | null }[] },
+): string[] {
+  const problems: string[] = [];
+  for (const [table, expected] of Object.entries(manifest.row_counts)) {
+    const actual = target.rowCounts[table];
+    if (actual === undefined) problems.push(`table missing: ${table}`);
+    else if (actual !== expected) problems.push(`${table}: ${actual} rows instead of ${expected}`);
+  }
+  const restored = new Map(target.files.map((f) => [`${f.bucket}/${f.name}`, f]));
+  for (const f of manifest.files) {
+    const r = restored.get(`${f.bucket}/${f.name}`);
+    if (!r) problems.push(`file missing: ${f.bucket}/${f.name}`);
+    else if (r.size !== f.size) problems.push(`file size differs: ${f.bucket}/${f.name}`);
+    else if (f.etag && r.etag && f.etag !== r.etag) problems.push(`file content differs: ${f.bucket}/${f.name}`);
+  }
+  return problems;
+}

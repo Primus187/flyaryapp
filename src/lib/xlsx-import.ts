@@ -124,3 +124,40 @@ export function collectUniqueLocations(flights: ParsedFlight[]) {
 
   return Array.from(map.values());
 }
+
+/** A flight already in the logbook, as needed to recognise a repeated import. */
+export interface ExistingFlight {
+  date: string;
+  duration_minutes: number | null;
+  source: string | null;
+  source_ref: string | null;
+  takeoff_name: string | null;
+  landing_name: string | null;
+}
+
+const flightKey = (date: string, takeoff: string | null, landing: string | null, minutes: number | null) =>
+  `${date}|${(takeoff ?? "").trim().toLowerCase()}|${(landing ?? "").trim().toLowerCase()}|${minutes ?? ""}`;
+
+/**
+ * Splits parsed flights into new ones and ones already in the logbook, so that importing the same export
+ * twice does not double the flights. Same Flightbook number, or same date, take-off, landing and
+ * duration as an existing flight (or as an earlier row of the same file), counts as already present.
+ */
+export function splitDuplicates(parsed: ParsedFlight[], existing: ExistingFlight[]): { fresh: ParsedFlight[]; duplicates: ParsedFlight[] } {
+  const refs = new Set(existing.filter((e) => e.source === "flightbook" && e.source_ref).map((e) => e.source_ref as string));
+  const keys = new Set(existing.map((e) => flightKey(e.date, e.takeoff_name, e.landing_name, e.duration_minutes)));
+  const fresh: ParsedFlight[] = [], duplicates: ParsedFlight[] = [];
+  for (const f of parsed) {
+    const key = flightKey(f.date, f.takeoff, f.landing, f.durationMinutes);
+    if ((f.sourceRef && refs.has(f.sourceRef)) || keys.has(key)) { duplicates.push(f); continue; }
+    fresh.push(f);
+    keys.add(key);
+    if (f.sourceRef) refs.add(f.sourceRef);
+  }
+  return { fresh, duplicates };
+}
+
+/** Number of flights and total flight time, for the comparison with the source system. */
+export function totals(flights: ParsedFlight[]): { flights: number; minutes: number } {
+  return { flights: flights.length, minutes: flights.reduce((sum, f) => sum + (f.durationMinutes ?? 0), 0) };
+}

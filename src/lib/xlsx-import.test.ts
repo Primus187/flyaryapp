@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDate, parseRows } from "./xlsx-import";
+import { parseDate, parseRows, splitDuplicates, totals, type ParsedFlight } from "./xlsx-import";
 
 describe("parseDate", () => {
   it("reads Swiss and ISO dates", () => {
@@ -43,5 +43,24 @@ describe("parseRows", () => {
     ]);
     expect(flights.map((f) => f.sourceRef)).toEqual(["1", null]);
     expect(invalidRows).toEqual([3]);
+  });
+});
+
+describe("repeated Flightbook import", () => {
+  const f = (sourceRef: string | null, extra: Partial<ParsedFlight> = {}): ParsedFlight => ({ date: "2026-09-22", takeoff: "Niederbauen", takeoffCountry: "CH",
+    landing: "Emmetten", landingCountry: "CH", durationMinutes: 48, distanceKm: null, glider: "", comments: "", sourceRef, ...extra });
+
+  it("skips flights already imported (same number) or already logged (same date, places and duration)", () => {
+    const existing = [
+      { date: "2026-09-20", duration_minutes: 30, source: "flightbook", source_ref: "7", takeoff_name: "A", landing_name: "B" },
+      { date: "2026-09-22", duration_minutes: 48, source: "manual", source_ref: null, takeoff_name: "niederbauen", landing_name: "EMMETTEN" },
+    ];
+    const { fresh, duplicates } = splitDuplicates([f("7", { date: "2026-09-20" }), f("8"), f("9", { durationMinutes: 50 }), f("9", { durationMinutes: 50 })], existing);
+    expect(fresh.map((x) => x.sourceRef)).toEqual(["9"]);
+    expect(duplicates.map((x) => x.sourceRef)).toEqual(["7", "8", "9"]);
+  });
+
+  it("sums flights and flight time for the comparison with the source", () => {
+    expect(totals([f("1"), f("2", { durationMinutes: null }), f("3", { durationMinutes: 12 })])).toEqual({ flights: 3, minutes: 60 });
   });
 });

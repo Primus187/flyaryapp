@@ -9,7 +9,10 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, ArrowLeft, FileSpreadsheet, CheckCircle2 } from "lucide-react";
-import { parseXlsx, collectUniqueLocations, type ParsedFlight } from "@/lib/xlsx-import";
+import { parseXlsx, collectUniqueLocations, splitDuplicates, totals, type ExistingFlight, type ParsedFlight } from "@/lib/xlsx-import";
+import { fetchAllPages } from "@/lib/csv-export";
+
+const hhmm = (minutes: number) => `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}`;
 
 type ImportState = "idle" | "preview" | "importing" | "done";
 
@@ -22,6 +25,9 @@ export default function ImportFlights() {
   const [state, setState] = useState<ImportState>("idle");
   const [flights, setFlights] = useState<ParsedFlight[]>([]);
   const [invalidRows, setInvalidRows] = useState<number[]>([]);
+  // Rows of the file that are already in the logbook (repeated import) and the file totals, for the comparison with Flightbook.
+  const [duplicates, setDuplicates] = useState<ParsedFlight[]>([]);
+  const [fileTotals, setFileTotals] = useState({ flights: 0, minutes: 0 });
   const [newLocations, setNewLocations] = useState<{ name: string; country: string; type: "takeoff" | "landing" | "both" }[]>([]);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState({ flights: 0, locations: 0 });
@@ -32,8 +38,16 @@ export default function ImportFlights() {
       const buf = await file.arrayBuffer(); const { flights: parsed, invalidRows: invalid } = parseXlsx(buf);
       setInvalidRows(invalid);
       if (parsed.length === 0) { toast({ title: t("import.noFlightsFound"), description: t("import.noFlightsFoundDesc"), variant: "destructive" }); return; }
-      setFlights(parsed);
-      const allLocs = collectUniqueLocations(parsed);
+      const logged = await fetchAllPages<{ date: string; duration_minutes: number | null; source: string | null; source_ref: string | null; takeoff: { name: string } | null; landing: { name: string } | null }>((from, to) =>
+        supabase.from("flights").select("date, duration_minutes, source, source_ref, takeoff:locations!flights_takeoff_location_id_fkey(name), landing:locations!flights_landing_location_id_fkey(name)")
+          .eq("user_id", user!.id).order("id", { ascending: true }).range(from, to) as never);
+      const known: ExistingFlight[] = logged.map((e) => ({ date: e.date, duration_minutes: e.duration_minutes, source: e.source, source_ref: e.source_ref, takeoff_name: e.takeoff?.name ?? null, landing_name: e.landing?.name ?? null }));
+      const { fresh, duplicates: dupes } = splitDuplicates(parsed, known);
+      // All rows of the file, so that new + already present + unreadable add up to it.
+      setFileTotals({ flights: parsed.length + invalid.length, minutes: totals(parsed).minutes });
+      setDuplicates(dupes);
+      setFlights(fresh);
+      const allLocs = collectUniqueLocations(fresh);
       const { data: existing } = await supabase.from("locations").select("name").eq("user_id", user!.id);
       const existingNames = new Set((existing || []).map((l) => l.name.toLowerCase()));
       setNewLocations(allLocs.filter((l) => !existingNames.has(l.name.toLowerCase())));
@@ -70,9 +84,9 @@ export default function ImportFlights() {
       <button onClick={() => navigate("/profile")} className="flex items-center gap-1 text-sm text-muted-foreground mb-2"><ArrowLeft className="h-4 w-4" /> {t("import.backToProfile")}</button>
       <h1 className="text-2xl font-bold tracking-tight">{t("import.importFlights")}</h1>
       {state === "idle" && (<Card className="border-0 shadow-sm"><CardContent className="pt-6 space-y-4 text-center"><FileSpreadsheet className="h-12 w-12 mx-auto text-muted-foreground" /><p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("import.selectXlsx") }} /><input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleFile} className="hidden" /><Button onClick={() => fileRef.current?.click()} className="gap-2"><Upload className="h-4 w-4" /> {t("import.selectFile")}</Button></CardContent></Card>)}
-      {state === "preview" && (<><Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-base">{t("import.preview")}</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex gap-4 text-sm"><span className="font-medium">{flights.length} {t("import.flights")}</span><span className="text-muted-foreground">{newLocations.length} {t("import.newLocations")}</span></div><div className="max-h-64 overflow-auto rounded border"><Table><TableHeader><TableRow><TableHead className="text-xs">{t("import.date")}</TableHead><TableHead className="text-xs">{t("import.takeoff")}</TableHead><TableHead className="text-xs">{t("import.landingCol")}</TableHead><TableHead className="text-xs">{t("import.durationCol")}</TableHead></TableRow></TableHeader><TableBody>{flights.slice(0, 20).map((f, i) => (<TableRow key={i}><TableCell className="text-xs py-1.5">{f.date}</TableCell><TableCell className="text-xs py-1.5">{f.takeoff}</TableCell><TableCell className="text-xs py-1.5">{f.landing}</TableCell><TableCell className="text-xs py-1.5">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</TableCell></TableRow>))}</TableBody></Table>{flights.length > 20 && <p className="text-xs text-muted-foreground text-center py-2">… {t("import.andMore", { count: flights.length - 20 })}</p>}</div>{newLocations.length > 0 && <p className="text-xs text-muted-foreground">{t("import.dummyCoordsNote")}</p>}{invalidRows.length > 0 && <p className="text-xs text-destructive">{t("import.invalidDateRows", { rows: invalidRows.join(", ") })}</p>}</CardContent></Card><div className="flex gap-2"><Button variant="outline" className="flex-1" onClick={() => { setState("idle"); setFlights([]); }}>{t("common.cancel")}</Button><Button className="flex-1" onClick={handleImport}>{t("import.importFlightsAction")}</Button></div></>)}
+      {state === "preview" && (<><Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-base">{t("import.preview")}</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex gap-4 text-sm"><span className="font-medium">{flights.length} {t("import.flights")}</span><span className="text-muted-foreground">{newLocations.length} {t("import.newLocations")}</span></div><div className="rounded-lg bg-muted/60 p-2.5 text-xs space-y-0.5"><p className="font-medium">{t("import.reconcileTitle")}</p><p>{t("import.reconcileFile", { flights: fileTotals.flights, time: hhmm(fileTotals.minutes) })}</p><p>{t("import.reconcileNew", { flights: flights.length, time: hhmm(totals(flights).minutes) })}</p>{duplicates.length > 0 && <p>{t("import.reconcileDuplicates", { count: duplicates.length })}</p>}{invalidRows.length > 0 && <p className="text-destructive">{t("import.reconcileInvalid", { count: invalidRows.length })}</p>}</div><div className="max-h-64 overflow-auto rounded border"><Table><TableHeader><TableRow><TableHead className="text-xs">{t("import.date")}</TableHead><TableHead className="text-xs">{t("import.takeoff")}</TableHead><TableHead className="text-xs">{t("import.landingCol")}</TableHead><TableHead className="text-xs">{t("import.durationCol")}</TableHead></TableRow></TableHeader><TableBody>{flights.slice(0, 20).map((f, i) => (<TableRow key={i}><TableCell className="text-xs py-1.5">{f.date}</TableCell><TableCell className="text-xs py-1.5">{f.takeoff}</TableCell><TableCell className="text-xs py-1.5">{f.landing}</TableCell><TableCell className="text-xs py-1.5">{f.durationMinutes ? `${f.durationMinutes} min` : "—"}</TableCell></TableRow>))}</TableBody></Table>{flights.length > 20 && <p className="text-xs text-muted-foreground text-center py-2">… {t("import.andMore", { count: flights.length - 20 })}</p>}</div>{newLocations.length > 0 && <p className="text-xs text-muted-foreground">{t("import.dummyCoordsNote")}</p>}{invalidRows.length > 0 && <p className="text-xs text-destructive">{t("import.invalidDateRows", { rows: invalidRows.join(", ") })}</p>}</CardContent></Card><div className="flex gap-2"><Button variant="outline" className="flex-1" onClick={() => { setState("idle"); setFlights([]); setDuplicates([]); }}>{t("common.cancel")}</Button><Button className="flex-1" onClick={handleImport} disabled={flights.length === 0}>{t("import.importFlightsAction")}</Button></div></>)}
       {state === "importing" && (<Card className="border-0 shadow-sm"><CardContent className="pt-6 space-y-3 text-center"><p className="text-sm font-medium">{t("import.importing")}…</p><Progress value={progress} className="h-2" /><p className="text-xs text-muted-foreground">{progress}%</p></CardContent></Card>)}
-      {state === "done" && (<Card className="border-0 shadow-sm"><CardContent className="pt-6 space-y-4 text-center"><CheckCircle2 className="h-12 w-12 mx-auto text-green-600" /><p className="text-sm font-medium">{result.flights} {t("import.flights")} & {result.locations} {t("import.newLocations")} {t("import.importDone")}</p><Button onClick={() => navigate("/flights")} className="w-full">{t("import.toLogbook")}</Button></CardContent></Card>)}
+      {state === "done" && (<Card className="border-0 shadow-sm"><CardContent className="pt-6 space-y-4 text-center"><CheckCircle2 className="h-12 w-12 mx-auto text-green-600" /><p className="text-sm font-medium">{result.flights} {t("import.flights")} & {result.locations} {t("import.newLocations")} {t("import.importDone")}</p><p className="text-xs text-muted-foreground">{t("import.reconcileFile", { flights: fileTotals.flights, time: hhmm(fileTotals.minutes) })}{duplicates.length > 0 ? ` · ${t("import.reconcileDuplicates", { count: duplicates.length })}` : ""}{invalidRows.length > 0 ? ` · ${t("import.reconcileInvalid", { count: invalidRows.length })}` : ""}</p><Button onClick={() => navigate("/flights")} className="w-full">{t("import.toLogbook")}</Button></CardContent></Card>)}
     </div>
   );
 }

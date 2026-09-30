@@ -575,6 +575,13 @@
       "when": 1795651200000,
       "tag": "0081_onboarding",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1795737600000,
+      "tag": "0082_backup_monitoring",
+      "breakpoints": true
     }
   ]
 }

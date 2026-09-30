@@ -206,7 +206,7 @@ try {
     await page.getByPlaceholder('z.B. Gin').evaluate(el=>el.closest('.p-3').scrollIntoView({block:'start'}));
   },true);
   await shot('32-import-preview','/import',async()=>{
-    const book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet([{Datum:'22.09.2026',Start:'Niederbauen','Start Land':'CH',Landung:'Emmetten','Landung Land':'CH',Flugdauer:'00:48',Km:12.4,Gleitschirm:'Advance Alpha',Beschreibung:'Trainingsflug'}]),'Flüge');
+    const book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet([{Nr:41,Datum:'16.08.2026',Start:'Niederbauen','Start Land':'CH',Landung:'Emmetten','Landung Land':'CH',Flugdauer:'00:36',Km:8.1,Gleitschirm:'Advance Alpha',Beschreibung:'Abendflug'},{Nr:42,Datum:'22.09.2026',Start:'Niederbauen','Start Land':'CH',Landung:'Emmetten','Landung Land':'CH',Flugdauer:'00:48',Km:12.4,Gleitschirm:'Advance Alpha',Beschreibung:'Trainingsflug'}]),'Flüge');
     await page.locator('input[type=file]').setInputFiles({name:'Beispielfluege.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:XLSX.write(book,{type:'buffer',bookType:'xlsx'})});
     await page.getByText('Vorschau',{exact:true}).waitFor();
   });

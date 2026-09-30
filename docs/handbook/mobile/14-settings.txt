@@ -21,6 +21,9 @@ Benachrichtigungen bei Likes und Kommentaren
 Export & Import
 Flugbuch als PDF exportieren
 Als CSV exportieren
+Als Excel exportieren
+Vollständiges Archiv (ZIP)
+Fotos ins Archiv aufnehmen (grössere Datei)
 
 Deine Daten gehören dir — exportiere jederzeit alle Flüge.
 

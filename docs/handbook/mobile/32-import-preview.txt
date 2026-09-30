@@ -3,8 +3,17 @@ Flüge importieren
 Vorschau
 1 Flüge
 0 neue Orte
+
+Abgleich mit der Datei
+
+In der Datei: 2 Flüge, 1:24 h
+
+Neu zu übernehmen: 1 Flüge, 0:36 h
+
+1 schon im Flugbuch, werden übersprungen
+
 Datum	Start	Landung	Dauer
-2026-09-22	Niederbauen	Emmetten	48 min
+2026-08-16	Niederbauen	Emmetten	36 min
 Abbrechen
 Importieren
 Home

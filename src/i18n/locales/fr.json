@@ -794,6 +794,7 @@
     ]
   },
   "import": {
+    "reconcileTitle": "Comparaison avec le fichier", "reconcileFile": "Dans le fichier : {{flights}} vols, {{time}} h", "reconcileNew": "Nouveaux à reprendre : {{flights}} vols, {{time}} h", "reconcileDuplicates": "{{count}} déjà dans le carnet, ignorés", "reconcileInvalid": "{{count}} lignes sans date lisible, non reprises",
     "invalidDateRows": "Les lignes sans date lisible ne sont pas importées : {{rows}}",
     "importFlights": "Importer des vols",
     "importLocations": "Importer des sites",

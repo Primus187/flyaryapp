@@ -1,5 +1,29 @@
 # Flyary
 
+## Flightbook-Ersatz Schritt 6: überwachte Sicherung, Wiederherstellungsprüfung, Import-Abgleich (2026-09-30)
+
+Entscheide 2026-09-30: tägliche Sicherung auf dem Betreiber-PC, Wiederherstellungsprobe in einem
+zweiten Gratis-Projekt, Übernahme aus Flightbook über den Excel-Export.
+
+- **Tägliche Sicherung:** `scripts/install-backup-task.ps1` richtet einmalig die Windows-Aufgabe
+  «Flyary Backup» ein (Standard 12:30, verpasste Läufe werden nachgeholt). Sie startet
+  `scripts/run-backup.ps1` → `scripts/db-backup.mjs` und schreibt ein Protokoll nach
+  `%USERPROFILE%\FlyaryBackups\logs` (60 Tage).
+- **Überwachung** (Migration `0082_backup_monitoring.sql`): Jeder Lauf meldet sich mit
+  `report_backup_run` (Tabelle `ops_backup_runs`, nur Admins lesen). Fehler → sofort Push «Sicherung mit
+  Fehlern» an die App-Admins; 48 Stunden ohne erfolgreichen Lauf → einmal täglich «Sicherung fehlt»
+  (pg_cron `backup-freshness`).
+- **Dateispiegel:** Änderungen werden am eTag erkannt (auch bei gleicher Grösse), der vorherige Inhalt
+  bleibt unter `file-versions/<Zeitstempel>/`; das Manifest enthält den eTag jeder Datei.
+- **Wiederherstellungsprüfung:** `scripts/restore-verify.mjs <Snapshot> --ref <Ziel>` vergleicht die
+  Zeilenzahl jeder Tabelle und jede Datei (vorhanden, gleiche Grösse, gleicher eTag) mit dem Manifest.
+  Ablauf der Probe: Schema per `db-migrate` ins Zielprojekt, `db-restore --yes`, dann `restore-verify`.
+- **Excel-Übernahme:** Ein wiederholter Import verdoppelt keine Flüge mehr (gleiche Flightbook-Nr oder
+  gleiches Datum, Start, Landung und Dauer gelten als vorhanden). Die Vorschau zeigt den Abgleich mit der
+  Datei: Zeilen und Flugzeit, neu, schon vorhanden, unlesbar.
+- Tests: `src/test/backup-monitoring-database.test.ts`, `src/lib/backup-sql.test.ts`,
+  `src/lib/xlsx-import.test.ts`.
+
 ## Flightbook-Ersatz Schritt 5: Excel-Export und vollständiges Archiv (2026-09-30)
 
 Einstellungen → Export & Import:

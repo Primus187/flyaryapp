@@ -769,6 +769,7 @@
     ]
   },
   "import": {
+    "reconcileTitle": "Abgleich mit der Datei", "reconcileFile": "In der Datei: {{flights}} Flüge, {{time}} h", "reconcileNew": "Neu zu übernehmen: {{flights}} Flüge, {{time}} h", "reconcileDuplicates": "{{count}} schon im Flugbuch, werden übersprungen", "reconcileInvalid": "{{count}} Zeilen ohne lesbares Datum, nicht übernommen",
     "invalidDateRows": "Zeilen ohne lesbares Datum werden nicht importiert: {{rows}}",
     "importFlights": "Flüge importieren",
     "importLocations": "Orte importieren",
