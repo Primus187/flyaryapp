@@ -59,28 +59,24 @@ export interface LogEntry {
 }
 
 export async function fetchAccounts(): Promise<AccountRow[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0084)
-  const { data, error } = await supabase.rpc("ops_access_list" as any);
+  const { data, error } = await supabase.rpc("ops_access_list");
   if (error) throw error;
   return (data ?? []) as unknown as AccountRow[];
 }
 
 export async function fetchLogEntries(limit = 100): Promise<LogEntry[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0084)
-  const { data, error } = await supabase.rpc("ops_log_entries" as any, { _limit: limit } as any);
+  const { data, error } = await supabase.rpc("ops_log_entries", { _limit: limit });
   if (error) throw error;
   return (data ?? []) as unknown as LogEntry[];
 }
 
 export async function revokeAccess(userId: string, reason: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0084)
-  const { error } = await supabase.rpc("revoke_app_access" as any, { _user_id: userId, _reason: reason } as any);
+  const { error } = await supabase.rpc("revoke_app_access", { _user_id: userId, _reason: reason });
   if (error) throw error;
 }
 
 export async function restoreAccess(userId: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0084)
-  const { error } = await supabase.rpc("restore_app_access" as any, { _user_id: userId } as any);
+  const { error } = await supabase.rpc("restore_app_access", { _user_id: userId });
   if (error) throw error;
 }
 
@@ -90,7 +86,6 @@ export async function grantAccess(userId: string): Promise<void> {
 }
 
 export async function revokeInvite(waitlistId: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0084)
-  const { error } = await supabase.rpc("revoke_access_invite" as any, { _waitlist_id: waitlistId } as any);
+  const { error } = await supabase.rpc("revoke_access_invite", { _waitlist_id: waitlistId });
   if (error) throw error;
 }

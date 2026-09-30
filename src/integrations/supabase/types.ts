@@ -124,18 +124,27 @@ export type Database = {
           granted_at: string
           granted_by: string | null
           granted_via: string
+          revoke_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
           user_id: string
         }
         Insert: {
           granted_at?: string
           granted_by?: string | null
           granted_via: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           user_id: string
         }
         Update: {
           granted_at?: string
           granted_by?: string | null
           granted_via?: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           user_id?: string
         }
         Relationships: []
@@ -3484,6 +3493,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_admin_log: {
+        Row: {
+          action: string
+          actor: string | null
+          created_at: string
+          detail: Json
+          id: string
+          target_group: string | null
+          target_user: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          target_group?: string | null
+          target_user?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          target_group?: string | null
+          target_user?: string | null
+        }
+        Relationships: []
+      }
       ops_backup_alerts: {
         Row: {
           id: string
@@ -5129,6 +5168,17 @@ export type Database = {
         Args: { l: Database["public"]["Tables"]["locations"]["Row"] }
         Returns: string
       }
+      ops_access_list: { Args: never; Returns: Json }
+      ops_log: {
+        Args: {
+          _action: string
+          _detail: Json
+          _target_group: string
+          _target_user: string
+        }
+        Returns: undefined
+      }
+      ops_log_entries: { Args: { _limit?: number }; Returns: Json }
       ops_overview: { Args: never; Returns: Json }
       passenger_confirmation_info: { Args: { _token: string }; Returns: Json }
       passenger_token_hash: { Args: { _token: string }; Returns: string }
@@ -5164,8 +5214,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      restore_app_access: { Args: { _user_id: string }; Returns: undefined }
       return_flight_for_correction: {
         Args: { _flight_id: string; _reason: string }
+        Returns: undefined
+      }
+      revoke_access_invite: {
+        Args: { _waitlist_id: string }
+        Returns: undefined
+      }
+      revoke_app_access: {
+        Args: { _reason: string; _user_id: string }
         Returns: undefined
       }
       revoke_flight_confirmation: {
