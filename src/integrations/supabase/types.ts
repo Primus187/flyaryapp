@@ -4029,6 +4029,53 @@ export type Database = {
           },
         ]
       }
+      school_lead_invites: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          group_id: string
+          id: string
+          language: string
+          redeemed_at: string | null
+          redeemed_by: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          group_id: string
+          id?: string
+          language: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          group_id?: string
+          id?: string
+          language?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_lead_invites_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_rates: {
         Row: {
           amount: number
@@ -5169,6 +5216,20 @@ export type Database = {
         Returns: string
       }
       ops_access_list: { Args: never; Returns: Json }
+      ops_create_lead_invite: {
+        Args: { _email: string; _group_id: string; _language: string }
+        Returns: string
+      }
+      ops_create_school: {
+        Args: {
+          _description: string
+          _language: string
+          _lead_email: string
+          _name: string
+        }
+        Returns: Json
+      }
+      ops_leave_school: { Args: { _group_id: string }; Returns: undefined }
       ops_log: {
         Args: {
           _action: string
@@ -5179,10 +5240,20 @@ export type Database = {
         Returns: undefined
       }
       ops_log_entries: { Args: { _limit?: number }; Returns: Json }
+      ops_new_lead_invite: {
+        Args: { _email: string; _group_id: string; _language: string }
+        Returns: string
+      }
       ops_overview: { Args: never; Returns: Json }
+      ops_revoke_lead_invite: {
+        Args: { _group_id: string }
+        Returns: undefined
+      }
+      ops_school_list: { Args: never; Returns: Json }
       passenger_confirmation_info: { Args: { _token: string }; Returns: Json }
       passenger_token_hash: { Args: { _token: string }; Returns: string }
       redeem_access_invite: { Args: { _token: string }; Returns: string }
+      redeem_school_lead_invite: { Args: { _token: string }; Returns: string }
       regenerate_group_invite_code: {
         Args: { _group_id: string }
         Returns: string

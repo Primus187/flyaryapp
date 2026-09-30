@@ -64,34 +64,29 @@ export function leadInviteMailto(email: string, school: string, language: string
 }
 
 export async function fetchSchools(): Promise<SchoolRow[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0085)
-  const { data, error } = await supabase.rpc("ops_school_list" as any);
+  const { data, error } = await supabase.rpc("ops_school_list");
   if (error) throw error;
   return (data ?? []) as unknown as SchoolRow[];
 }
 
 export async function createSchool(name: string, description: string, email: string, language: LeadLanguage): Promise<{ group_id: string; token: string }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0085)
-  const { data, error } = await supabase.rpc("ops_create_school" as any, { _name: name.trim(), _description: description.trim() || null, _lead_email: email.trim(), _language: language } as any);
+  const { data, error } = await supabase.rpc("ops_create_school", { _name: name.trim(), _description: description.trim(), _lead_email: email.trim(), _language: language });
   if (error) throw error;
   return data as unknown as { group_id: string; token: string };
 }
 
 export async function createLeadInvite(groupId: string, email: string, language: LeadLanguage): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0085)
-  const { data, error } = await supabase.rpc("ops_create_lead_invite" as any, { _group_id: groupId, _email: email.trim(), _language: language } as any);
+  const { data, error } = await supabase.rpc("ops_create_lead_invite", { _group_id: groupId, _email: email.trim(), _language: language });
   if (error) throw error;
   return data as unknown as string;
 }
 
 export async function revokeLeadInvite(groupId: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0085)
-  const { error } = await supabase.rpc("ops_revoke_lead_invite" as any, { _group_id: groupId } as any);
+  const { error } = await supabase.rpc("ops_revoke_lead_invite", { _group_id: groupId });
   if (error) throw error;
 }
 
 export async function leaveSchool(groupId: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0085)
-  const { error } = await supabase.rpc("ops_leave_school" as any, { _group_id: groupId } as any);
+  const { error } = await supabase.rpc("ops_leave_school", { _group_id: groupId });
   if (error) throw error;
 }
