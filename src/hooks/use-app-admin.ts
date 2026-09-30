@@ -36,8 +36,7 @@ export function useAdminRole(): boolean | null {
     if (!userId) { setIsAdmin(false); return; }
     let active = true;
     setIsAdmin(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types.ts yet (migration 0088)
-    void supabase.rpc("is_admin_role" as any).then(async ({ data, error }) => {
+    void supabase.rpc("is_admin_role").then(async ({ data, error }) => {
       // Before migration 0088 the function does not exist: fall back to the admin check itself.
       const result = error ? (await supabase.rpc("is_ops_admin")).data === true : data === true;
       if (active) setIsAdmin(result);

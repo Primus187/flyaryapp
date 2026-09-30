@@ -4898,6 +4898,7 @@ export type Database = {
       }
       inactive_school_students: { Args: { _group_id: string }; Returns: Json }
       instructor_cert_for: { Args: { _discipline: string }; Returns: string }
+      is_admin_role: { Args: never; Returns: boolean }
       is_avatar_path: { Args: { _name: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
