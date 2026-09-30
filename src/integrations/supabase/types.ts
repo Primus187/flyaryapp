@@ -3484,6 +3484,69 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_backup_alerts: {
+        Row: {
+          id: string
+          kind: string
+          sent_at: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          sent_at?: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
+      ops_backup_runs: {
+        Row: {
+          files_downloaded: number | null
+          files_failed: number | null
+          files_total: number | null
+          finished_at: string
+          git_commit: string | null
+          host: string | null
+          id: string
+          message: string | null
+          ok: boolean
+          rows_total: number | null
+          snapshot: string | null
+          tables: number | null
+        }
+        Insert: {
+          files_downloaded?: number | null
+          files_failed?: number | null
+          files_total?: number | null
+          finished_at?: string
+          git_commit?: string | null
+          host?: string | null
+          id?: string
+          message?: string | null
+          ok: boolean
+          rows_total?: number | null
+          snapshot?: string | null
+          tables?: number | null
+        }
+        Update: {
+          files_downloaded?: number | null
+          files_failed?: number | null
+          files_total?: number | null
+          finished_at?: string
+          git_commit?: string | null
+          host?: string | null
+          id?: string
+          message?: string | null
+          ok?: boolean
+          rows_total?: number | null
+          snapshot?: string | null
+          tables?: number | null
+        }
+        Relationships: []
+      }
       pilot_badges: {
         Row: {
           badge_key: string
@@ -4531,6 +4594,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      check_backup_freshness: { Args: never; Returns: undefined }
       close_flight_day: {
         Args: {
           _credit_user_ids?: string[]
@@ -5056,6 +5120,10 @@ export type Database = {
       my_open_passenger_confirmations: { Args: never; Returns: Json }
       my_school_flight_imports: { Args: never; Returns: Json }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
+      notify_admins_backup: {
+        Args: { _body: string; _kind: string }
+        Returns: undefined
+      }
       official_name: {
         Args: { l: Database["public"]["Tables"]["locations"]["Row"] }
         Returns: string
@@ -5068,6 +5136,21 @@ export type Database = {
         Returns: string
       }
       reopen_flight_day: { Args: { _event_id: string }; Returns: undefined }
+      report_backup_run: {
+        Args: {
+          _files_downloaded: number
+          _files_failed: number
+          _files_total: number
+          _git_commit: string
+          _host: string
+          _message: string
+          _ok: boolean
+          _rows_total: number
+          _snapshot: string
+          _tables: number
+        }
+        Returns: undefined
+      }
       report_client_error: {
         Args: {
           _app_version?: string
