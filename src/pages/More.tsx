@@ -97,7 +97,7 @@ export default function More() {
     ].join("\n");
     const subject = encodeURIComponent("Flyary Feedback");
     const body = encodeURIComponent(`\n\n---\n${info}\n`);
-    window.location.href = `mailto:tobias.a.bolliger@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:info@flyary.ch?subject=${subject}&body=${body}`;
   };
 
   return (

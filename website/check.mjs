@@ -84,7 +84,7 @@ try {
       const appLinks = await page.locator('a[href="https://app.flyary.ch"]').count();
       assert.equal(appLinks, 2);
       const schoolLink = await page.locator('.school-copy a.button').getAttribute('href');
-      assert(schoolLink.startsWith('mailto:tobias.a.bolliger@gmail.com?subject='));
+      assert(schoolLink.startsWith('mailto:info@flyary.ch?subject='));
       assert.equal(await page.locator('.hero-actions a.button-primary').getAttribute('href'), `/${lang}/testpilot/`);
       assert.equal(await page.locator('.final-actions a.button').getAttribute('href'), `/${lang}/testpilot/`);
       assert(await page.locator('#about img.portrait').count() === 1);

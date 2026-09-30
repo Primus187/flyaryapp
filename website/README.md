@@ -25,7 +25,7 @@ Der Ordner `website/` hat einen eigenen Build: Alternativ darin `npm ci --ignore
 - `assets/`: Kopien des bestehenden Flyary-Bildmaterials; keine externen Bild- oder Schriftanfragen.
 
 **App-Adresse:** `https://app.flyary.ch`.
-**Kontakt:** `tobias.a.bolliger@gmail.com`. Die Schulanfrage öffnet einen E-Mail-Entwurf; die Website versendet selbst keine Nachricht.
+**Kontakt:** `info@flyary.ch`. Die Schulanfrage öffnet einen E-Mail-Entwurf; die Website versendet selbst keine Nachricht.
 
 Die Gestaltung orientiert sich an [Framers Landingpage-Empfehlungen](https://www.framer.com/blog/landing-page-best-practices/): ein verständlicher Einstieg, sichtbares Produkt, ein klarer Hauptaufruf und konkrete Antworten vor der Anmeldung. Flyarys Blau, eine klare typografische Hierarchie und ein ruhiges Raster verbinden die Website mit der App. Der dunkle Flugschulbereich hat einen eigenen Kontaktaufruf.
 

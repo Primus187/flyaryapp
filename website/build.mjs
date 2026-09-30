@@ -9,7 +9,7 @@ import { ensureCurrentScreenshots } from '../scripts/handbook-screenshots.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, 'dist');
 const app = 'https://app.flyary.ch';
-const email = 'tobias.a.bolliger@gmail.com';
+const email = 'info@flyary.ch';
 // The pilot sign-up form posts to this Edge Function (supabase/functions/website-waitlist); vercel.json allows it in form-action.
 const waitlistEndpoint = 'https://pvhxrgvhzzqcyadyksvk.supabase.co/functions/v1/website-waitlist';
 // Set the final marketing-site origin at build time; never guess a canonical domain.

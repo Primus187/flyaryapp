@@ -6,6 +6,7 @@ Erweiterte Daten
 Startzeit
 Fluggerät
 Gleitschirm
+Gleitschirm
 Delta
 Tandem
 Flugzeit (min)
