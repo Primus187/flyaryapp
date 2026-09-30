@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 /** Sections of the Betriebsbereich; the marketplace moderation keeps its own page for school moderators. */
 const ADMIN_NAV: { path: string; icon: LucideIcon; labelKey: string }[] = [
   { path: "/admin", icon: LayoutDashboard, labelKey: "ops.nav.overview" },
-  { path: "/admin/waitlist", icon: UserPlus, labelKey: "ops.nav.waitlist" },
+  { path: "/admin/access", icon: UserPlus, labelKey: "ops.nav.access" },
   { path: "/admin/errors", icon: Bug, labelKey: "ops.nav.errors" },
   { path: "/admin/backups", icon: HardDrive, labelKey: "ops.nav.backups" },
   { path: "/market/moderation", icon: Store, labelKey: "ops.nav.market" },

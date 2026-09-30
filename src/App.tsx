@@ -51,7 +51,7 @@ const Training = lazy(() => import("@/pages/Training"));
 const TrainingItemDetail = lazy(() => import("@/pages/TrainingItemDetail"));
 const Legal = lazy(() => import("@/pages/Legal"));
 const AdminErrors = lazy(() => import("@/pages/AdminErrors"));
-const AdminWaitlist = lazy(() => import("@/pages/AdminWaitlist"));
+const AdminAccess = lazy(() => import("@/pages/AdminAccess"));
 const WaitingRoom = lazy(() => import("@/pages/WaitingRoom"));
 const RedeemInvite = lazy(() => import("@/pages/RedeemInvite"));
 const AdminSites = lazy(() => import("@/pages/AdminSites"));
@@ -217,7 +217,9 @@ const App = () => {
                       <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<AdminOverview />} />
                         <Route path="errors" element={<AdminErrors />} />
-                        <Route path="waitlist" element={<AdminWaitlist />} />
+                        <Route path="access" element={<AdminAccess />} />
+                        {/* pushes and bookmarks from before migration 0084 */}
+                        <Route path="waitlist" element={<Navigate to="/admin/access" replace />} />
                         <Route path="backups" element={<AdminBackups />} />
                         <Route path="sites" element={<AdminSites />} />
                       </Route>

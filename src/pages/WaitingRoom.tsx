@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Hourglass, KeyRound, LogOut, Mail, Trash2 } from "lucide-react";
+import { Check, Hourglass, KeyRound, LogOut, Mail, PauseCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,7 @@ const WEBSITE = "https://www.flyary.ch";
 /**
  * Pilot phase (migration 0079): a signed-in account without an invitation sees this instead of the app.
  * It can redeem an invitation (school/group code or personal link) or join the test list.
+ * A paused account (migration 0084) only sees that its access is paused and how to reach Flyary.
  */
 export default function WaitingRoom({ access }: { access: AppAccess }) {
   const { t, i18n } = useTranslation();
@@ -88,9 +89,19 @@ export default function WaitingRoom({ access }: { access: AppAccess }) {
         <CardContent className="space-y-6 p-6">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-bold tracking-tight">{name ? t("access.welcomeName", { name }) : t("access.welcome")}</h1>
-            <p className="text-sm text-muted-foreground">{t("access.intro")}</p>
+            {!access.revoked && <p className="text-sm text-muted-foreground">{t("access.intro")}</p>}
           </div>
 
+          {access.revoked ? (
+            <section className="flex gap-3 rounded-lg bg-muted p-3 text-sm">
+              <PauseCircle className="h-5 w-5 shrink-0 text-primary" />
+              <div>
+                <p className="font-medium">{t("access.revokedTitle")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t("access.revokedText")}</p>
+                <a href="mailto:info@flyary.ch" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary"><Mail className="h-3.5 w-3.5" />info@flyary.ch</a>
+              </div>
+            </section>
+          ) : (<>
           <section className="space-y-2">
             <Label htmlFor="invite" className="flex items-center gap-2 text-sm font-semibold"><KeyRound className="h-4 w-4 text-primary" />{t("access.inviteTitle")}</Label>
             <p className="text-xs text-muted-foreground">{linkedCode ? t("access.inviteDetected") : t("access.inviteHint")}</p>
@@ -131,6 +142,7 @@ export default function WaitingRoom({ access }: { access: AppAccess }) {
               </>
             )}
           </section>
+          </>)}
 
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t pt-4 text-xs text-muted-foreground">
             <a href={`${WEBSITE}/${lang}/`} className="hover:text-primary">{t("access.about")}</a>

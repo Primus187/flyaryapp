@@ -1,5 +1,31 @@
 # Flyary
 
+## Betriebsbereich Schritt 2: Zugänge pausieren, wiederherstellen, Protokoll (2026-09-30)
+
+Plan §5. Entscheid 2026-09-30: Pausieren beendet keine Schulmitgliedschaften.
+
+- **Pausieren statt löschen** (Migration `0084_access_revoke.sql`): `app_access` erhält `revoked_at`,
+  `revoked_by`, `revoke_reason`. `has_app_access()` ist für pausierte Konten falsch. Weil die Zeile bleibt,
+  gibt ein neuer Gruppenbeitritt den Zugang nicht zurück. Mitgliedschaften und Flüge bleiben unverändert.
+- **RPCs** (nur `is_ops_admin()`): `revoke_app_access(_user_id, _reason)` mit Pflichtgrund (≤ 300 Zeichen),
+  nicht für das eigene Konto und nicht für Admins; `restore_app_access(_user_id)`;
+  `revoke_access_invite(_waitlist_id)` löscht eine noch nicht eingelöste Einladung;
+  `ops_access_list()` (alle Konten mit E-Mail, Zugangsweg, Schulen, letzter Anmeldung);
+  `ops_log_entries(_limit)`.
+- **Protokoll** `ops_admin_log`: Freischalten, Pausieren, Wiederherstellen, Einladung erstellen und
+  zurückziehen, mit Handelndem und Ziel. Nur Admins lesen, geschrieben wird nur über die Funktionen.
+- `my_access()` liefert `revoked`. Der Wartebereich zeigt pausierten Konten nur den Hinweis mit
+  info@flyary.ch. `redeem_access_invite` antwortet `revoked` und verbraucht den Link nicht.
+- **App:** neue Seite `/admin/access` «Zugänge» mit den Reitern Testliste (bisherige Seite, neu mit
+  «Einladung zurückziehen» und Badge «pausiert»), Konten (Suche, Filter, Pausieren mit Grund,
+  Wiederherstellen, Freischalten) und Protokoll. `/admin/waitlist` leitet weiter (Push-Links der Testliste).
+- **Abweichungen vom Plan:** Ein pausiertes Konto bleibt auch bei `signup_mode = 'open'` pausiert.
+  `revoke_access_invite` nimmt die Testlisten-ID statt der Einladungs-ID, weil die Testliste nur diese kennt.
+  Die Einlösung durch ein pausiertes Konto wird abgelehnt (im Plan nicht vorgesehen).
+- Tests: `src/test/access-revoke-database.test.ts`, `src/lib/ops-access.test.ts`; Smoke mit
+  `/admin/access` und den Reitern Konten und Protokoll.
+- **Einspielen:** `node scripts/db-migrate.mjs --apply`, dann `npm run gen-types`, dann pushen.
+
 ## Betriebsbereich Schritt 1: `/admin` und eine Admin-Prüfung (2026-09-30)
 
 Plan: `Umsetzungsplan Betriebsbereich für Flyary (technische Spezifikation).md`, §4. Entscheid: keine

@@ -52,7 +52,7 @@ export default function AdminOverview() {
         return (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
             <Tile icon={UserPlus} label={t("ops.nav.waitlist")} value={String(data.waitlist_open)} hint={t("ops.tiles.waitlist")}
-              tone={count(data.waitlist_open)} onClick={() => navigate("/admin/waitlist")} />
+              tone={count(data.waitlist_open)} onClick={() => navigate("/admin/access")} />
             <Tile icon={Bug} label={t("ops.nav.errors")} value={String(data.errors_open)}
               hint={t("ops.tiles.errors", { new: data.errors_new_24h })}
               tone={data.errors_new_24h > 0 ? "alert" : count(data.errors_open)} onClick={() => navigate("/admin/errors")} />

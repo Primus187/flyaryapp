@@ -10,7 +10,8 @@ import { loadEnv, preview } from "vite";
 const routes = [
   "/", "/feed", "/flights", "/flights/new", "/locations", "/events", "/events/new", "/groups", "/training",
   "/profile", "/more", "/settings", "/stats", "/search", "/legal", "/leaderboard", "/weather", "/notifications",
-  "/messages", "/market", "/market/mine", "/market/new", "/admin", "/admin/errors", "/admin/waitlist", "/admin/backups", "/admin/sites",
+  "/messages", "/market", "/market/mine", "/market/new", "/admin", "/admin/errors", "/admin/access", "/admin/access?tab=accounts", "/admin/access?tab=log",
+  "/admin/backups", "/admin/sites",
   // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
   "/events/22222222-2222-4222-8222-222222222222",
 ];
@@ -43,6 +44,9 @@ const rpcResults = {
   flight_day_role: "instructor",
   // Betriebsbereich (migration 0083): the smoke user is a Flyary admin, so /admin and its pages render
   is_ops_admin: true,
+  // Zugänge (migration 0084): one account each for the accounts tab, the log starts empty
+  ops_access_list: [{ user_id: uid, name: "Smoke Test", email: "smoke@example.invalid", created_at: "2026-09-01T00:00:00Z", last_sign_in_at: null, granted_via: "group", granted_at: "2026-09-01T00:00:00Z", revoked_at: null, revoke_reason: null, is_admin: false, schools: ["Smoke Schule"] }],
+  ops_log_entries: [],
   ops_overview: { waitlist_open: 1, errors_open: 2, errors_new_24h: 1, market_reports_open: 0, backup_last_at: null, backup_last_ok: null, backup_last_success_at: null, storage_bytes: 0 },
 };
 const authKey = "sb-" + new URL(loadEnv("production", process.cwd(), "VITE_").VITE_SUPABASE_URL).hostname.split(".")[0] + "-auth-token";

@@ -4,6 +4,8 @@ export interface AppAccess {
   has_access: boolean;
   waitlisted: boolean;
   invited: boolean;
+  /** Access paused by a Flyary admin (migration 0084). */
+  revoked?: boolean;
 }
 
 export type InviteInput = { kind: "group"; code: string } | { kind: "personal"; token: string };

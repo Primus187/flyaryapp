@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { APP_ACCESS_KEY } from "@/hooks/use-app-access";
 
-type Outcome = "ok" | "invalid" | "expired" | "used" | "error";
+type Outcome = "ok" | "invalid" | "expired" | "used" | "revoked" | "error";
 
 /** Personal invitation link from the test list (/welcome/<token>, migration 0079). Signed-in only. */
 export default function RedeemInvite() {
