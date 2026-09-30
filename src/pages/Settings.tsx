@@ -4,19 +4,20 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteOwnAccount } from "@/lib/delete-account";
+import { buildFlightArchive, type ArchiveProgress } from "@/lib/flight-archive";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sun, Moon, Monitor, FileDown, GraduationCap, UserCheck, Bell, FileSpreadsheet, Trash2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, FileDown, GraduationCap, UserCheck, Bell, FileSpreadsheet, Trash2, ShieldAlert, Archive } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
-import { exportFlightsCsv, downloadBlob } from "@/lib/csv-export";
+import { exportFlightsCsv, exportFlightsXlsx, downloadBlob } from "@/lib/csv-export";
 import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
 
 function TrainingLevelCard() {
@@ -105,6 +106,9 @@ export default function Settings() {
   const { toast } = useToast();
   const [exporting, setExporting] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
+  const [exportingXlsx, setExportingXlsx] = useState(false);
+  const [archiveProgress, setArchiveProgress] = useState<string | null>(null);
+  const [archivePhotos, setArchivePhotos] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
@@ -162,6 +166,42 @@ export default function Settings() {
 
   const toggleGroup = (id: string) => {
     setSelectedGroupIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
+  const handleExportXlsx = async () => {
+    if (!user) return;
+    setExportingXlsx(true);
+    try {
+      const { rows, blob } = await exportFlightsXlsx(user.id);
+      downloadBlob(blob, `flyary-flights-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast({ title: t("settings.xlsxExported"), description: `${rows} ${t("settings.csvRows")}` });
+    } catch (e: unknown) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally { setExportingXlsx(false); }
+  };
+
+  // Complete archive (Flightbook replacement step 5): data, CSV, Excel, PDF and every original IGC file.
+  const handleExportArchive = async () => {
+    if (!user) return;
+    setArchiveProgress(t("settings.archiveStage.data"));
+    try {
+      const fetchPdf = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error(t("profile.notLoggedIn"));
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-flightbook-pdf`, {
+          headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        });
+        if (!res.ok) throw new Error(t("profile.exportFailed"));
+        return new Uint8Array(await res.arrayBuffer());
+      };
+      const onProgress: ArchiveProgress = (stage, done, total) =>
+        setArchiveProgress(total > 1 ? `${t(`settings.archiveStage.${stage}`)} ${done}/${total}` : t(`settings.archiveStage.${stage}`));
+      const result = await buildFlightArchive({ userId: user.id, email: user.email ?? null, includePhotos: archivePhotos, fetchPdf, onProgress });
+      downloadBlob(new Blob([result.zip], { type: "application/zip" }), `flyary-archiv-${new Date().toISOString().slice(0, 10)}.zip`);
+      toast({ title: t("settings.archiveDone"), description: t("settings.archiveDoneDesc", { flights: result.flights, igcs: result.igcs }) });
+    } catch (e: unknown) {
+      toast({ title: t("settings.archiveFailed"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally { setArchiveProgress(null); }
   };
 
   const handleExportCsv = async () => {
@@ -326,6 +366,16 @@ export default function Settings() {
           <Button variant="outline" className="w-full gap-2 justify-start" onClick={handleExportCsv} disabled={exportingCsv}>
             <FileSpreadsheet className="h-4 w-4" /> {exportingCsv ? t("profile.exporting") : t("settings.exportCsv")}
           </Button>
+          <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => void handleExportXlsx()} disabled={exportingXlsx}>
+            <FileSpreadsheet className="h-4 w-4" /> {exportingXlsx ? t("profile.exporting") : t("settings.exportXlsx")}
+          </Button>
+          <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => void handleExportArchive()} disabled={archiveProgress !== null}>
+            <Archive className="h-4 w-4" /> {archiveProgress ?? t("settings.exportArchive")}
+          </Button>
+          <label className="flex items-center gap-2 pl-1 text-xs text-muted-foreground">
+            <Checkbox checked={archivePhotos} onCheckedChange={(v) => setArchivePhotos(v === true)} disabled={archiveProgress !== null} />
+            {t("settings.archivePhotos")}
+          </label>
           <p className="text-[11px] text-muted-foreground pt-1">{t("settings.exportHint")}</p>
         </CardContent>
       </Card>

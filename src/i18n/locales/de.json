@@ -807,7 +807,7 @@
     "altitudeCol": "Höhe",
     "andMore": "und {{count}} weitere"
   },
-  "settings": {"trainingLevelBySchool": "Deinen Ausbildungsstand setzt deine Flugschule.", "followPermission": {"title": "Wer darf mir folgen?", "groups": "Nur Mitglieder meiner Gruppen und Schulen", "everyone": "Alle Flyary-Piloten", "hint": "Wer dir folgt, sieht dein Profil sowie deine veröffentlichten Flüge und Fotos. Wechselst du auf «Nur Mitglieder», werden andere Follower entfernt."},
+  "settings": {"exportXlsx": "Als Excel exportieren", "xlsxExported": "Excel-Datei exportiert", "exportArchive": "Vollständiges Archiv (ZIP)", "archivePhotos": "Fotos ins Archiv aufnehmen (grössere Datei)", "archiveDone": "Archiv erstellt", "archiveDoneDesc": "{{flights}} Flüge und {{igcs}} IGC-Dateien, mit PDF, CSV, Excel und allen Daten.", "archiveFailed": "Archiv nicht erstellt", "archiveStage": {"data":"Daten werden gelesen …","igc":"IGC-Dateien","photos":"Fotos","pdf":"PDF wird erstellt …","zip":"Archiv wird gepackt …"}, "trainingLevelBySchool": "Deinen Ausbildungsstand setzt deine Flugschule.", "followPermission": {"title": "Wer darf mir folgen?", "groups": "Nur Mitglieder meiner Gruppen und Schulen", "everyone": "Alle Flyary-Piloten", "hint": "Wer dir folgt, sieht dein Profil sowie deine veröffentlichten Flüge und Fotos. Wechselst du auf «Nur Mitglieder», werden andere Follower entfernt."},
     "title": "Einstellungen",
     "appearance": "Erscheinungsbild",
     "theme": "Design",

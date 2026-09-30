@@ -832,7 +832,7 @@
     "altitudeCol": "Altitude",
     "andMore": "and {{count}} more"
   },
-  "settings": {"trainingLevelBySchool": "Your flight school sets your training level.", "followPermission": {"title": "Who may follow me?", "groups": "Only members of my groups and schools", "everyone": "All Flyary pilots", "hint": "Followers see your profile and your published flights and photos. Switching to “only members” removes other followers."},
+  "settings": {"exportXlsx": "Export as Excel", "xlsxExported": "Excel file exported", "exportArchive": "Complete archive (ZIP)", "archivePhotos": "Include photos (larger file)", "archiveDone": "Archive created", "archiveDoneDesc": "{{flights}} flights and {{igcs}} IGC files, with PDF, CSV, Excel and all data.", "archiveFailed": "Archive not created", "archiveStage": {"data":"Reading data …","igc":"IGC files","photos":"Photos","pdf":"Creating PDF …","zip":"Packing archive …"}, "trainingLevelBySchool": "Your flight school sets your training level.", "followPermission": {"title": "Who may follow me?", "groups": "Only members of my groups and schools", "everyone": "All Flyary pilots", "hint": "Followers see your profile and your published flights and photos. Switching to “only members” removes other followers."},
     "title": "Settings",
     "appearance": "Appearance",
     "theme": "Theme",

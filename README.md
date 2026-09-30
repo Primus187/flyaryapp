@@ -1,5 +1,21 @@
 # Flyary
 
+## Flightbook-Ersatz Schritt 5: Excel-Export und vollständiges Archiv (2026-09-30)
+
+Einstellungen → Export & Import:
+
+- **Als Excel exportieren:** dieselben Spalten wie das CSV (`flightRow` in `src/lib/csv-export.ts`,
+  gemeinsam für CSV, Excel und Archiv), Blatt «Flüge», Zahlen als Zahlen, Autofilter.
+- **Vollständiges Archiv (ZIP)** (`src/lib/flight-archive.ts`): `flugbuch.pdf`, `flights.csv`,
+  `flights.xlsx`, `flyary.json` (alle Daten mit IDs: Flüge, Änderungshistorie, Bestätigungen und ihr
+  Verlauf, Passagiere ohne Token, IGC-Liste, Pilotenausweise, Nachweise, Geräte, Orte und
+  Ausbildungsstand für alle Disziplinen und Ausweise), alle Original-IGC-Dateien unter `igc/`,
+  optional Fotos, `README.txt` und `manifest.json` mit Anzahl und SHA-256 jeder Datei.
+- **Vollständigkeit:** Alle Abfragen lesen seitenweise; weicht die Zahl der gelesenen Flüge von der
+  Serverzählung ab oder fehlt eine Datei, bricht der Export mit Meldung ab statt ein lückenhaftes
+  Archiv zu liefern. Geprüft mit 1203 Flügen (mehr als eine Seite) und einer fehlenden IGC-Datei.
+- Neue Abhängigkeit `fflate` (ZIP). Test: `src/lib/flight-archive.test.ts`.
+
 ## Onboarding je nach Weg (2026-09-30)
 
 Migration `0081_onboarding.sql`. Der Willkommensdialog (`src/components/OnboardingDialog.tsx`) richtet
