@@ -1,9 +1,10 @@
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BadgeCheck, Bug, GraduationCap, HardDrive, LayoutDashboard, MessageSquare, Store, UserPlus, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Bug, GraduationCap, HardDrive, KeyRound, LayoutDashboard, MessageSquare, Store, UserPlus, type LucideIcon } from "lucide-react";
 import LoadingState from "@/components/layout/LoadingState";
-import { useOpsAdminState } from "@/hooks/use-app-admin";
+import AdminMfaGate from "@/components/admin/AdminMfaGate";
+import { useAdminRole, useOpsAdminState } from "@/hooks/use-app-admin";
 import { cn } from "@/lib/utils";
 
 /** Sections of the Betriebsbereich; the marketplace moderation keeps its own page for school moderators. */
@@ -16,18 +17,25 @@ const ADMIN_NAV: { path: string; icon: LucideIcon; labelKey: string }[] = [
   { path: "/admin/backups", icon: HardDrive, labelKey: "ops.nav.backups" },
   { path: "/market/moderation", icon: Store, labelKey: "ops.nav.market" },
   { path: "/admin/sites", icon: BadgeCheck, labelKey: "ops.nav.sites" },
+  { path: "/admin/security", icon: KeyRound, labelKey: "ops.nav.security" },
 ];
 
 /**
  * Betriebsbereich (/admin, migration 0083): only for Flyary admins; everyone else goes to the start page.
  * The database checks every admin action itself (is_ops_admin); this only keeps the pages out of sight.
+ * Since migration 0088 admin rights need the second factor: an admin without a confirmed session gets the
+ * code prompt (or the first setup) instead of the pages.
  * Wide screens get a side navigation, phones use the overview page as menu.
  */
 export default function AdminLayout() {
   const { t } = useTranslation();
-  const isAdmin = useOpsAdminState();
-  if (isAdmin === null) return <LoadingState />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+  const [refresh, setRefresh] = useState(0);
+  const role = useAdminRole();
+  const isAdmin = useOpsAdminState(refresh);
+  const verified = useCallback(() => setRefresh((n) => n + 1), []);
+  if (role === null || isAdmin === null) return <LoadingState />;
+  if (!role) return <Navigate to="/" replace />;
+  if (!isAdmin) return <AdminMfaGate onVerified={verified} />;
 
   return (
     <div className="lg:mx-auto lg:flex lg:max-w-5xl lg:gap-4 lg:px-4">

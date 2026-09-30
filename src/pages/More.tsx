@@ -11,7 +11,7 @@ import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { canOpenSchoolSection } from "@/lib/school-sections";
 import { APP_VERSION, forceAppUpdate } from "@/lib/app-update";
 import { toast } from "sonner";
-import { useAppAdmin } from "@/hooks/use-app-admin";
+import { useAdminRole, useAppAdmin } from "@/hooks/use-app-admin";
 import { fetchOpsOverview, openItems } from "@/lib/ops-overview";
 import { Badge } from "@/components/ui/badge";
 import FeedbackDialog from "@/components/FeedbackDialog";
@@ -86,6 +86,8 @@ export default function More() {
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const { mode, canSwitch, canManageSchool, canShopSchool, setMode } = useRoleMode();
+  // "Betrieb" shows for the admin role; the counter needs admin rights, i.e. a confirmed second factor (0088).
+  const isAdminRole = useAdminRole() === true;
   const isAppAdmin = useAppAdmin();
   const [opsOpen, setOpsOpen] = useState(0);
 
@@ -158,7 +160,7 @@ export default function More() {
           />
           <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} mode={mode} />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
-          {isAppAdmin && (
+          {isAdminRole && (
             <ListRow icon={ShieldCheck} label={t("ops.title")} description={t("ops.moreHint")} onClick={() => navigate("/admin")}
               trailing={<span className="flex shrink-0 items-center gap-1">{opsOpen > 0 && <Badge>{opsOpen}</Badge>}<ChevronRight className="h-4 w-4 text-muted-foreground" /></span>} />
           )}

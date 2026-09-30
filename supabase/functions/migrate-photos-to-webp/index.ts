@@ -3,7 +3,7 @@
 // - Batched via ?limit=N (default 25, max 100) and ?offset=N
 // - Updates flight_photos.storage_path, event_photos.storage_path, profile_photos.storage_path,
 //   profiles.avatar_url and profiles.cover_photo_url when they reference the renamed file.
-// - Requires admin role (checked via has_role).
+// - Requires Flyary admin rights (is_ops_admin with the caller's token, i.e. confirmed second factor).
 //
 // Invoke (from a logged-in admin):
 //   const { data } = await supabase.functions.invoke("migrate-photos-to-webp", {
@@ -125,11 +125,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Asked with the caller's token: since migration 0088 admin rights need the second factor (aal2).
+    const { data: isAdmin, error: roleErr } = await userClient.rpc("is_ops_admin");
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-    const { data: isAdmin, error: roleErr } = await admin.rpc("has_role", {
-      _user_id: userData.user.id,
-      _role: "admin",
-    });
     if (roleErr || !isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden — admin role required" }), {
         status: 403,

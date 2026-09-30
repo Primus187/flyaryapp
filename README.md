@@ -1,5 +1,33 @@
 # Flyary
 
+## Betriebsbereich Schritt 5: Zwei-Faktor-Anmeldung für Admins (2026-09-30)
+
+Plan §8. Entscheid 2026-09-30: nur für Flyary-Admins, nicht für Schulleitungen.
+
+- **Datenbank** (Migration `0088_admin_mfa.sql`): `is_ops_admin()` verlangt zusätzlich eine mit dem zweiten
+  Faktor bestätigte Sitzung (`auth.jwt() ->> 'aal' = 'aal2'`, Supabase Auth MFA mit TOTP). Weil seit 0083
+  alle Betreiber-Policies und -Funktionen diese eine Funktion fragen, gilt das für alle. `is_admin_role()`
+  sagt der App nur, ob das Konto Admin ist, damit sie den Code verlangen kann. Rechte gibt sie keine.
+- **App:** «Mehr → Betrieb» erscheint für die Admin-Rolle. Ohne bestätigte Sitzung zeigt `/admin` zuerst
+  die Code-Abfrage (`AdminMfaGate`). Beim ersten Mal wird eine Authenticator-App eingerichtet (QR-Code oder
+  Schlüssel, dann erster Code), danach reicht der 6-stellige Code einmal pro Anmeldung. Neue Seite
+  `/admin/security` «Zwei-Faktor»: eingerichtete Geräte, weiteres Gerät einrichten, Gerät entfernen
+  (das letzte nicht).
+- **Edge Function** `migrate-photos-to-webp` prüft neu `is_ops_admin` mit dem Token der aufrufenden Person
+  statt `has_role` über den Service-Key. Die anderen Functions und Skripte rufen keine Admin-Funktionen auf.
+- **Abweichungen vom Plan:** Die Geräteverwaltung liegt im Betriebsbereich statt unter Einstellungen, weil nur
+  Admins sie brauchen und Supabase das Entfernen und Hinzufügen nur in einer bestätigten Sitzung erlaubt.
+  Supabase kennt für TOTP keine Wiederherstellungscodes. Als Ersatz empfiehlt die App ein zweites Gerät oder
+  eine App mit Sicherung.
+- **Notfall** (Gerät verloren, kein zweites): Im Supabase-Dashboard unter Authentication → Users das
+  Admin-Konto öffnen und den Faktor entfernen. Danach richtet die App beim nächsten Besuch von `/admin`
+  einen neuen ein. (Für `docs/technical/operations.md` vorgesehen.)
+- Tests: `src/test/admin-mfa-database.test.ts`, `src/lib/admin-mfa.test.ts`. Smoke mit
+  `is_admin_role`-Fixture und `/admin/security`.
+- **Einspielen in dieser Reihenfolge:** zuerst pushen (die App fällt ohne 0088 auf die bisherige Prüfung
+  zurück), dann `migrate-photos-to-webp` deployen, dann `node scripts/db-migrate.mjs --apply`, dann
+  `npm run gen-types`. Nach 0088 fragt `/admin` einmal nach der Einrichtung.
+
 ## Betriebsbereich Schritt 4: Feedback mit Screenshots (2026-09-30)
 
 Plan §7. Entscheid 2026-09-30: Feedback braucht Screenshots.

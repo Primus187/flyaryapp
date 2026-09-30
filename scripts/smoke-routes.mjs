@@ -11,7 +11,7 @@ const routes = [
   "/", "/feed", "/flights", "/flights/new", "/locations", "/events", "/events/new", "/groups", "/training",
   "/profile", "/more", "/settings", "/stats", "/search", "/legal", "/leaderboard", "/weather", "/notifications",
   "/messages", "/market", "/market/mine", "/market/new", "/admin", "/admin/errors", "/admin/access", "/admin/access?tab=accounts", "/admin/access?tab=log",
-  "/admin/schools", "/admin/feedback", "/admin/backups", "/admin/sites",
+  "/admin/schools", "/admin/feedback", "/admin/backups", "/admin/sites", "/admin/security",
   // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
   "/events/22222222-2222-4222-8222-222222222222",
 ];
@@ -44,6 +44,8 @@ const rpcResults = {
   flight_day_role: "instructor",
   // Betriebsbereich (migration 0083): the smoke user is a Flyary admin, so /admin and its pages render
   is_ops_admin: true,
+  // admin role with confirmed second factor (migration 0088)
+  is_admin_role: true,
   // Zugänge (migration 0084): one account each for the accounts tab, the log starts empty
   ops_access_list: [{ user_id: uid, name: "Smoke Test", email: "smoke@example.invalid", created_at: "2026-09-01T00:00:00Z", last_sign_in_at: null, granted_via: "group", granted_at: "2026-09-01T00:00:00Z", revoked_at: null, revoke_reason: null, is_admin: false, schools: ["Smoke Schule"] }],
   ops_log_entries: [],
