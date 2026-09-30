@@ -1,5 +1,29 @@
 # Flyary
 
+## Betriebsbereich Schritt 1: `/admin` und eine Admin-Prüfung (2026-09-30)
+
+Plan: `Umsetzungsplan Betriebsbereich für Flyary (technische Spezifikation).md`, §4. Entscheid: keine
+eigene Admin-App, sondern ein abgegrenzter Betriebsbereich in der App.
+
+- **Eine Admin-Prüfung** (Migration `0083_ops_admin.sql`): `is_ops_admin()` = angemeldetes Konto mit
+  Rolle `admin`. Alle 11 Policies und 7 Funktionen, die `has_role(auth.uid(), 'admin')` fragten, fragen
+  jetzt `is_ops_admin()`. Die Funktionskörper stammen aus den Live-Definitionen vom 2026-09-30, nur die
+  Prüfung wurde ersetzt. `is_market_staff(_uid)` nutzt sie für das eigene Konto, für fremde Konten bleibt
+  die Rollenprüfung. Schritt 5 (Zwei-Faktor) ändert damit nur noch diese eine Funktion.
+- **Übersicht** `ops_overview()`: offene Testlisten-Einträge, offene und neue Fehler (24 h), gemeldete
+  Marktplatz-Anzeigen, letzter und letzter erfolgreicher Backup-Lauf, belegter Speicher.
+- **App:** `/admin` mit `AdminLayout` (nur Admins, sonst Umleitung auf `/`; auf breiten Bildschirmen
+  mit Seitennavigation), Übersichtsseite mit Kacheln und neue Seite `/admin/backups` (letzte 30 Läufe).
+  Fehlerprotokoll, Testliste und Platznamen liegen unter dem Layout und führen zurück auf `/admin`.
+  Unter «Mehr» ersetzt ein Eintrag «Betrieb» mit Zähler die bisherigen drei Admin-Einträge.
+  Die Marktplatz-Moderation nutzt dieselbe Admin-Prüfung und führt Admins zurück auf `/admin`.
+- **Abweichung vom Plan:** Backup-Pushes öffnen `/admin/backups` statt `/admin`, weil es dafür jetzt
+  eine eigene Seite gibt.
+- Tests: `src/test/ops-admin-database.test.ts`, `src/lib/ops-overview.test.ts`; Smoke mit
+  `is_ops_admin`/`ops_overview`-Fixtures und den Routen `/admin`, `/admin/waitlist`, `/admin/backups`.
+- **Reihenfolge beim Einspielen:** zuerst `node scripts/db-migrate.mjs --apply`, dann `npm run gen-types`,
+  erst danach pushen. Ohne Migration findet die App `is_ops_admin` nicht und blendet den Betriebsbereich aus.
+
 ## Flightbook-Ersatz Schritt 6: überwachte Sicherung, Wiederherstellungsprüfung, Import-Abgleich (2026-09-30)
 
 Entscheide 2026-09-30: tägliche Sicherung auf dem Betreiber-PC, Wiederherstellungsprobe in einem

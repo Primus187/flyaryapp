@@ -55,6 +55,9 @@ const AdminWaitlist = lazy(() => import("@/pages/AdminWaitlist"));
 const WaitingRoom = lazy(() => import("@/pages/WaitingRoom"));
 const RedeemInvite = lazy(() => import("@/pages/RedeemInvite"));
 const AdminSites = lazy(() => import("@/pages/AdminSites"));
+const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
+const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
+const AdminBackups = lazy(() => import("@/pages/AdminBackups"));
 const LegalTerms = lazy(() => import("@/pages/LegalTerms"));
 const LegalLicenses = lazy(() => import("@/pages/LegalLicenses"));
 const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
@@ -211,9 +214,13 @@ const App = () => {
                       <Route path="/search" element={<SearchPage />} />
                       <Route path="/import" element={<ImportFlights />} />
                       <Route path="/import-locations" element={<ImportLocations />} />
-                      <Route path="/admin/errors" element={<AdminErrors />} />
-                      <Route path="/admin/waitlist" element={<AdminWaitlist />} />
-                      <Route path="/admin/sites" element={<AdminSites />} />
+                      <Route path="/admin" element={<AdminLayout />}>
+                        <Route index element={<AdminOverview />} />
+                        <Route path="errors" element={<AdminErrors />} />
+                        <Route path="waitlist" element={<AdminWaitlist />} />
+                        <Route path="backups" element={<AdminBackups />} />
+                        <Route path="sites" element={<AdminSites />} />
+                      </Route>
                       <Route path="/leaderboard" element={<Leaderboard />} />
                       <Route path="/challenges/:id" element={<ChallengeDetail />} />
                       <Route path="/pilot/:userId" element={<PilotProfile />} />

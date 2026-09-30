@@ -75,11 +75,11 @@ export default function AdminSites() {
 
   const typeLabel = (type: SiteRow["type"]) => t(type === "takeoff" ? "locations.takeoff" : type === "landing" ? "locations.landingPlace" : "locations.both");
 
-  if (!isAdmin) return <PageContainer><PageHeader title={t("adminSites.title")} back="/more" /><EmptyState title={t("adminSites.adminOnly")} /></PageContainer>;
+  if (!isAdmin) return <PageContainer><PageHeader title={t("adminSites.title")} back="/admin" /><EmptyState title={t("adminSites.adminOnly")} /></PageContainer>;
 
   return (
     <PageContainer className="space-y-4">
-      <PageHeader title={t("adminSites.title")} subtitle={t("adminSites.subtitle")} back="/more" />
+      <PageHeader title={t("adminSites.title")} subtitle={t("adminSites.subtitle")} back="/admin" />
       {sites === null ? <LoadingState /> : (
         <>
           <p className="text-xs text-muted-foreground">{t("adminSites.progress", { done: curatedCount, total: numbered.length })}</p>

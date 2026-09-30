@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,9 +12,11 @@ import { canOpenSchoolSection } from "@/lib/school-sections";
 import { APP_VERSION, forceAppUpdate } from "@/lib/app-update";
 import { toast } from "sonner";
 import { useAppAdmin } from "@/hooks/use-app-admin";
+import { fetchOpsOverview, openItems } from "@/lib/ops-overview";
+import { Badge } from "@/components/ui/badge";
 import {
   User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
-  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, Bug, BadgeCheck, UserPlus } from "lucide-react";
+  CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, ShieldCheck, ChevronRight } from "lucide-react";
 
 type Tile = { path: string; icon: any; labelKey: string };
 type Group = { titleKey: string; tiles: Tile[] };
@@ -83,6 +86,11 @@ export default function More() {
   const { signOut } = useAuth();
   const { mode, canSwitch, canManageSchool, canShopSchool, setMode } = useRoleMode();
   const isAppAdmin = useAppAdmin();
+  const [opsOpen, setOpsOpen] = useState(0);
+
+  useEffect(() => {
+    if (isAppAdmin) fetchOpsOverview().then((o) => setOpsOpen(openItems(o))).catch(() => setOpsOpen(0));
+  }, [isAppAdmin]);
 
   const groups = mode === "school" ? schoolGroups.map(group => ({ ...group,
     tiles: group.tiles.filter(tile => canOpenSchoolSection(tile.path.split("/")[2], canManageSchool, canShopSchool)),
@@ -159,13 +167,8 @@ export default function More() {
           />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
           {isAppAdmin && (
-            <ListRow icon={Bug} label={t("adminErrors.title")} description={t("adminErrors.subtitle")} onClick={() => navigate("/admin/errors")} />
-          )}
-          {isAppAdmin && (
-            <ListRow icon={UserPlus} label={t("adminWaitlist.title")} description={t("adminWaitlist.subtitle")} onClick={() => navigate("/admin/waitlist")} />
-          )}
-          {isAppAdmin && (
-            <ListRow icon={BadgeCheck} label={t("adminSites.title")} description={t("adminSites.subtitle")} onClick={() => navigate("/admin/sites")} />
+            <ListRow icon={ShieldCheck} label={t("ops.title")} description={t("ops.moreHint")} onClick={() => navigate("/admin")}
+              trailing={<span className="flex shrink-0 items-center gap-1">{opsOpen > 0 && <Badge>{opsOpen}</Badge>}<ChevronRight className="h-4 w-4 text-muted-foreground" /></span>} />
           )}
           <ListRow
             icon={RefreshCw}

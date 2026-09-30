@@ -7,8 +7,7 @@ import { Stars } from "@/components/market/Stars";
 import { fetchReportedReviews, moderateReview, type ReportedReview } from "@/lib/marketplace-reviews";
 import { Progress } from "@/components/ui/progress";
 import { bucketsBySize, fetchStorageUsage, formatBytes, usageLevel, type StorageUsage } from "@/lib/storage-usage";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAppAdmin } from "@/hooks/use-app-admin";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import EmptyState from "@/components/layout/EmptyState";
@@ -25,9 +24,8 @@ import { ageLabel } from "@/lib/marketplace-search";
 export default function MarketModeration() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [items, setItems] = useState<QueueItem[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdmin = useAppAdmin();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   /** Admins: storage against the Free plan (plan 4.9). */
@@ -45,13 +43,10 @@ export default function MarketModeration() {
     setLoading(false);
   }, [t]);
 
+  useEffect(() => { void load(); }, [load]);
   useEffect(() => {
-    void load();
-    if (user) void supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
-      setIsAdmin(data === true);
-      if (data === true) fetchStorageUsage().then(setUsage).catch(() => setUsage(null));
-    });
-  }, [load, user]);
+    if (isAdmin) fetchStorageUsage().then(setUsage).catch(() => setUsage(null));
+  }, [isAdmin]);
 
   const run = async (item: QueueItem, work: () => Promise<unknown>, done: string) => {
     setBusy(item.listing_id);
@@ -111,7 +106,7 @@ export default function MarketModeration() {
 
   return (
     <PageContainer>
-      <PageHeader title={t("market.moderation.title")} subtitle={t("market.moderation.subtitle")} back="/market" />
+      <PageHeader title={t("market.moderation.title")} subtitle={t("market.moderation.subtitle")} back={isAdmin ? "/admin" : "/market"} />
       {usage && (() => {
         const level = usageLevel(usage.total_bytes);
         return (

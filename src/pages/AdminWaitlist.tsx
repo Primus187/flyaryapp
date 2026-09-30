@@ -75,7 +75,7 @@ export default function AdminWaitlist() {
 
   return (
     <PageContainer className="space-y-4">
-      <PageHeader title={t("adminWaitlist.title")} subtitle={t("adminWaitlist.subtitle")} back="/more"
+      <PageHeader title={t("adminWaitlist.title")} subtitle={t("adminWaitlist.subtitle")} back="/admin"
         action={<Button size="sm" variant="outline" onClick={() => setShowHandled((v) => !v)}>{showHandled ? t("adminWaitlist.onlyOpen") : t("adminWaitlist.showHandled")}</Button>} />
       {rows && rows.length > 0 && (
         <Button size="sm" variant="outline" className="gap-2" onClick={exportCsv}><Download className="h-4 w-4" />{t("adminWaitlist.export")}</Button>

@@ -45,7 +45,7 @@ export default function AdminErrors() {
       <PageHeader
         title={t("adminErrors.title")}
         subtitle={t("adminErrors.subtitle")}
-        back="/more"
+        back="/admin"
         action={
           <Button size="sm" variant="outline" onClick={() => setShowResolved((v) => !v)}>
             {showResolved ? t("adminErrors.onlyOpen") : t("adminErrors.showResolved")}
