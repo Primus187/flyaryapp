@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BadgeCheck, Bug, Database, GraduationCap, HardDrive, Store, UserPlus, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Bug, Database, GraduationCap, HardDrive, MessageSquare, Store, UserPlus, type LucideIcon } from "lucide-react";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionHeading from "@/components/layout/SectionHeading";
@@ -56,6 +56,8 @@ export default function AdminOverview() {
             <Tile icon={Bug} label={t("ops.nav.errors")} value={String(data.errors_open)}
               hint={t("ops.tiles.errors", { new: data.errors_new_24h })}
               tone={data.errors_new_24h > 0 ? "alert" : count(data.errors_open)} onClick={() => navigate("/admin/errors")} />
+            <Tile icon={MessageSquare} label={t("ops.nav.feedback")} value={String(data.feedback_open ?? 0)} hint={t("ops.tiles.feedback")}
+              tone={count(data.feedback_open ?? 0)} onClick={() => navigate("/admin/feedback")} />
             <Tile icon={Store} label={t("ops.nav.market")} value={String(data.market_reports_open)} hint={t("ops.tiles.market")}
               tone={count(data.market_reports_open)} onClick={() => navigate("/market/moderation")} />
             <Tile icon={HardDrive} label={t("ops.nav.backups")} value={t(`ops.backup.${backup}`)}

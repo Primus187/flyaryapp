@@ -32,6 +32,7 @@ describe("openItems", () => {
   it("adds open entries and a backup that needs attention", () => {
     expect(openItems(base, now)).toBe(0);
     expect(openItems({ ...base, waitlist_open: 2, errors_open: 3, market_reports_open: 1 }, now)).toBe(6);
+    expect(openItems({ ...base, feedback_open: 4 }, now)).toBe(4);
     expect(openItems({ ...base, backup_last_success_at: hoursAgo(60) }, now)).toBe(1);
   });
 });

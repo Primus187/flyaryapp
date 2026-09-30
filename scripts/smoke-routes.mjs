@@ -11,7 +11,7 @@ const routes = [
   "/", "/feed", "/flights", "/flights/new", "/locations", "/events", "/events/new", "/groups", "/training",
   "/profile", "/more", "/settings", "/stats", "/search", "/legal", "/leaderboard", "/weather", "/notifications",
   "/messages", "/market", "/market/mine", "/market/new", "/admin", "/admin/errors", "/admin/access", "/admin/access?tab=accounts", "/admin/access?tab=log",
-  "/admin/schools", "/admin/backups", "/admin/sites",
+  "/admin/schools", "/admin/feedback", "/admin/backups", "/admin/sites",
   // a school flying day of today: opens on the flying day tab (check-in, coaching sheet, day booking)
   "/events/22222222-2222-4222-8222-222222222222",
 ];
@@ -47,6 +47,8 @@ const rpcResults = {
   // Zugänge (migration 0084): one account each for the accounts tab, the log starts empty
   ops_access_list: [{ user_id: uid, name: "Smoke Test", email: "smoke@example.invalid", created_at: "2026-09-01T00:00:00Z", last_sign_in_at: null, granted_via: "group", granted_at: "2026-09-01T00:00:00Z", revoked_at: null, revoke_reason: null, is_admin: false, schools: ["Smoke Schule"] }],
   ops_log_entries: [],
+  // Feedback (migration 0086): one problem report without screenshots
+  ops_feedback_list: [{ id: "55555555-5555-4555-8555-555555555555", kind: "problem", message: "Karte lädt nicht", path: "/map", app_version: "smoke", user_agent: "Smoke", screenshot_paths: [], created_at: "2026-09-30T08:00:00Z", status: "new", admin_note: null, handled_at: null, user_id: uid, name: "Smoke Test", email: "smoke@example.invalid" }],
   // Schulen (migration 0085): a school still waiting for its lead
   ops_school_list: [{ id: "33333333-3333-4333-8333-333333333333", name: "Smoke Schule", description: null, created_at: "2026-09-01T00:00:00Z", members: 3, team: 1, admins: ["Smoke Test"], i_am_member: true, other_admins: 0, open_invite: { email: "lead@example.invalid", language: "de", created_at: "2026-09-30T00:00:00Z", expires_at: "2026-10-14T00:00:00Z" }, last_flight_at: null }],
   ops_overview: { waitlist_open: 1, errors_open: 2, errors_new_24h: 1, market_reports_open: 0, backup_last_at: null, backup_last_ok: null, backup_last_success_at: null, storage_bytes: 0 },

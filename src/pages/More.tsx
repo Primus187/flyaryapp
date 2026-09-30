@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useAppAdmin } from "@/hooks/use-app-admin";
 import { fetchOpsOverview, openItems } from "@/lib/ops-overview";
 import { Badge } from "@/components/ui/badge";
+import FeedbackDialog from "@/components/FeedbackDialog";
 import {
   User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
   CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, ShieldCheck, ChevronRight } from "lucide-react";
@@ -96,17 +97,7 @@ export default function More() {
     tiles: group.tiles.filter(tile => canOpenSchoolSection(tile.path.split("/")[2], canManageSchool, canShopSchool)),
   })).filter(group => group.tiles.length) : pilotGroups;
 
-  const sendFeedback = () => {
-    const info = [
-      `Version: ${APP_VERSION}`,
-      `Modus: ${mode}`,
-      `Seite: ${window.location.pathname}`,
-      `Gerät: ${navigator.userAgent}`,
-    ].join("\n");
-    const subject = encodeURIComponent("Flyary Feedback");
-    const body = encodeURIComponent(`\n\n---\n${info}\n`);
-    window.location.href = `mailto:info@flyary.ch?subject=${subject}&body=${body}`;
-  };
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <PageContainer className="space-y-6">
@@ -163,8 +154,9 @@ export default function More() {
             icon={MessageSquare}
             label={t("more.feedback")}
             description={t("more.feedbackHint")}
-            onClick={sendFeedback}
+            onClick={() => setFeedbackOpen(true)}
           />
+          <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} mode={mode} />
           <ListRow icon={Scale} label={t("more.legal")} onClick={() => navigate("/legal")} />
           {isAppAdmin && (
             <ListRow icon={ShieldCheck} label={t("ops.title")} description={t("ops.moreHint")} onClick={() => navigate("/admin")}

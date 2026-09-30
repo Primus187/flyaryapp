@@ -1,5 +1,36 @@
 # Flyary
 
+## Betriebsbereich Schritt 4: Feedback mit Screenshots (2026-09-30)
+
+Plan §7. Entscheid 2026-09-30: Feedback braucht Screenshots.
+
+- **Ablauf** (Migration `0086_app_feedback.sql`): `submit_feedback` speichert den Text (höchstens 10 pro
+  Konto und Stunde) und gibt die ID zurück. Die App lädt bis zu 3 Screenshots in den privaten Bucket
+  `feedback-screenshots` (1 MB, WebP/JPEG) unter `<Konto>/<Feedback>/<n>.webp`. `finish_feedback`
+  übernimmt nur Dateien, die dort wirklich liegen, und schickt dann den Push an die Admins
+  (`/admin/feedback`). Scheitert ein Upload, kommt das Feedback trotzdem an.
+- **Storage-Policies:** Hochladen nur in den eigenen Ordner, zu eigenem, noch offenem Feedback (höchstens
+  1 Stunde alt), höchstens 3 Dateien. Lesen dürfen nur die Autorin oder der Autor und Admins. Überschreiben
+  und Löschen gibt es für Nutzer nicht.
+- **Admin:** `ops_feedback_list` (mit Name und E-Mail zum Antworten), `ops_set_feedback` (Status neu, in Arbeit,
+  erledigt, dazu eine Notiz). `ops_overview` zählt offenes Feedback.
+- **Aufräumen:** `feedback_daily_cleanup` (nur Service-Rolle) löscht Screenshots 90 Tage nach «erledigt»
+  (der Text bleibt), nicht abgeschlossene Einsendungen nach einem Tag und verwaiste Dateien. Die Edge Function
+  `feedback-cleanup` löscht die Dateien, `pg_cron` startet sie täglich um 03:30 UTC
+  (Migration `0087_feedback_cleanup_schedule.sql`, gleiches Muster wie `marketplace-cleanup`).
+- **App:** «Mehr → Feedback» öffnet einen Dialog mit Art (Problem, Idee, Frage, Lob), Text, bis zu 3 Bildern
+  aus der Galerie (vorher mit `compressImage` auf höchstens 1600 px verkleinert, bei Bedarf kleiner, bis sie
+  unter 1 MB liegen) und dem Hinweis auf fremde Daten. «Lieber per E-Mail» bleibt als Ausweg.
+  Neue Seite `/admin/feedback` mit Filtern, Vorschaubildern (signierte Links, 1 Stunde), Grossansicht,
+  Notiz, Status und Antwort per E-Mail. Neue Kachel «Feedback» in der Übersicht, der Zähler unter «Mehr»
+  zählt offenes Feedback mit.
+- **Abweichungen vom Plan:** Als Seite wird der aktuelle Pfad mitgeschickt. Weil der Dialog unter «Mehr»
+  liegt, ist das vorerst immer `/more`. Den Einstieg aus der Fehlerseite habe ich nicht gebaut (im Plan optional).
+- Tests: `src/test/app-feedback-database.test.ts`, `src/lib/feedback.test.ts`, ergänzt `ops-overview.test.ts`.
+  Smoke mit `/admin/feedback`.
+- **Einspielen:** Edge Function `feedback-cleanup` deployen (verify_jwt = false, `supabase/config.toml`),
+  `node scripts/db-migrate.mjs --apply` (0086 und 0087), `npm run gen-types`, dann pushen.
+
 ## Betriebsbereich Schritt 3: Schulen einrichten und übergeben (2026-09-30)
 
 Plan §6. Entscheid 2026-09-30: ganze Schulen pausieren erst bei Bedarf.

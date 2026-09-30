@@ -8,6 +8,8 @@ export interface OpsOverview {
   errors_open: number;
   errors_new_24h: number;
   market_reports_open: number;
+  /** Submitted feedback not marked done (migration 0086). */
+  feedback_open?: number;
   backup_last_at: string | null;
   backup_last_ok: boolean | null;
   backup_last_success_at: string | null;
@@ -32,7 +34,7 @@ export function backupStatus(o: Pick<OpsOverview, "backup_last_at" | "backup_las
 
 /** Things waiting for the admin; shown as the count next to "Betrieb" under "Mehr". */
 export function openItems(o: OpsOverview, now = new Date()): number {
-  return o.waitlist_open + o.errors_open + o.market_reports_open + (backupStatus(o, now) === "ok" ? 0 : 1);
+  return o.waitlist_open + o.errors_open + o.market_reports_open + (o.feedback_open ?? 0) + (backupStatus(o, now) === "ok" ? 0 : 1);
 }
 
 export async function fetchOpsOverview(): Promise<OpsOverview> {
