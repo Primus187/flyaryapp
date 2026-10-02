@@ -133,15 +133,9 @@ export const content = {
     "schoolBadge": "Für euren Schulalltag",
     "schoolImageAlt": "Flugtag-Cockpit mit Ausbildungsblatt und Rückmeldung zum Schulflug",
     "aboutLabel": "ÜBER FLYARY",
-    "aboutTitle": "Von einem Piloten,\nder mehr wollte als ein Flugbuch.",
-    "aboutText": "Ich bin Tobias, Gleitschirmpilot, Jurist und Product Owner in der Softwareentwicklung. Seit meiner Ausbildung halte ich meine Flüge fest. Bei den bestehenden Flugbüchern hat mir vieles gefehlt, und der ständige Wechsel zwischen Vario, Handyfotos, Chat und Flugbuch war mühsam. Als Product Owner und Pilot wollte ich eine bessere Lösung. So ist Flyary entstanden: ein Flugtagebuch, das zusammenhält, was zu jedem Flug gehört, entwickelt gemeinsam mit Flugschulen und betrieben in der Schweiz.",
-    "aboutTrust": "Als Jurist ist mir wichtig, dass deine Daten dir gehören: nichts ist automatisch öffentlich, alles lässt sich exportieren.",
-    "aboutTags": [
-      "Gleitschirmpilot",
-      "Jurist",
-      "Product Owner"
-    ],
-    "aboutAlt": "Porträt von Tobias Bolliger",
+    "aboutTitle": "Die Flyary Story",
+    "aboutVideoPlay": "Video abspielen: Die Flyary Story",
+    "aboutVideoNote": "Beim Abspielen wird das Video von YouTube geladen.",
     "faqTitle": "Häufige Fragen.",
     "faqs": [
       [
@@ -399,15 +393,9 @@ export const content = {
     "schoolBadge": "Pour votre école au quotidien",
     "schoolImageAlt": "Cockpit du jour de vol avec fiche de formation et retour sur le vol école",
     "aboutLabel": "À PROPOS DE FLYARY",
-    "aboutTitle": "D’un pilote\nqui voulait plus qu’un carnet de vol.",
-    "aboutText": "Je suis Tobias, pilote de parapente, juriste et product owner dans le développement logiciel. Depuis ma formation, je note mes vols. Il manquait beaucoup de choses aux carnets de vol existants, et passer sans cesse du vario aux photos du téléphone, au chat et au carnet était pénible. En tant que product owner et pilote, je voulais une meilleure solution. C’est ainsi qu’est né Flyary : un journal de vol qui réunit tout ce qui appartient à chaque vol, développé avec des écoles de vol et exploité en Suisse.",
-    "aboutTrust": "En tant que juriste, il m’importe que vos données vous appartiennent : rien n’est public automatiquement, tout peut être exporté.",
-    "aboutTags": [
-      "Pilote de parapente",
-      "Juriste",
-      "Product owner"
-    ],
-    "aboutAlt": "Portrait de Tobias Bolliger",
+    "aboutTitle": "L’histoire de Flyary",
+    "aboutVideoPlay": "Lire la vidéo : L’histoire de Flyary",
+    "aboutVideoNote": "La vidéo est chargée depuis YouTube lors de la lecture.",
     "faqTitle": "Questions fréquentes.",
     "faqs": [
       [
@@ -665,15 +653,9 @@ export const content = {
     "schoolBadge": "For your school’s day-to-day",
     "schoolImageAlt": "Flight-day cockpit with training sheet and feedback on the school flight",
     "aboutLabel": "ABOUT FLYARY",
-    "aboutTitle": "From a pilot\nwho wanted more than a logbook.",
-    "aboutText": "I’m Tobias: paraglider pilot, lawyer and product owner in software development. I’ve recorded my flights since my training. The existing logbooks lacked a lot, and constantly switching between vario, phone photos, chat and logbook was tedious. As a product owner and pilot, I wanted a better solution. That’s how Flyary came about: a flight diary that keeps together everything that belongs to each flight, developed with flight schools and run in Switzerland.",
-    "aboutTrust": "As a lawyer, it matters to me that your data belongs to you: nothing is public automatically, and everything can be exported.",
-    "aboutTags": [
-      "Paraglider pilot",
-      "Lawyer",
-      "Product owner"
-    ],
-    "aboutAlt": "Portrait of Tobias Bolliger",
+    "aboutTitle": "The Flyary story",
+    "aboutVideoPlay": "Play video: The Flyary story",
+    "aboutVideoNote": "Playing the video loads it from YouTube.",
     "faqTitle": "Frequently asked questions.",
     "faqs": [
       [

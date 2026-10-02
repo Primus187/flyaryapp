@@ -33,17 +33,21 @@ const icons = {
   award: '<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/>',
   chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12Z"/>',
   sparkle: '<path d="M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18M18 6l-2.5 2.5m-7 7L6 18"/>',
+  play: '<path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5Z" fill="currentColor"/>',
   scale: '<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0Zm14 0-3 7a3 3 0 0 0 6 0Z"/>',
 };
 const icon = (name, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
 // Every screenshot appears once: hero = logbook + stats, tour = memories, training, school flight, feed,
-// schools section = flight-day cockpit; the about section shows the founder's portrait.
+// schools section = flight-day cockpit; the about section shows the Flyary story video.
 const screenshots = ['memories.png', 'training.png', 'school-flight.png', 'feed.png'];
 const ids = ['app', 'schools', 'faq'];
 const featureIcons = ['image', 'chart', 'book'];
 const stepIcons = ['calendar', 'radio', 'award'];
 const phone = (inner, cls = '') => `<div class="phone ${cls}"><div class="phone-screen">${inner}</div></div>`;
 const signupPath = (lang) => `/${lang}/testpilot/`;
+// The video is a link to YouTube with a local poster; site.js swaps in the privacy-enhanced
+// player only when the visitor clicks, so nothing is loaded from YouTube before that.
+const videoId = 'ExMtREypB9E';
 
 // Signature element: a flight track that draws itself across the sky, with a glider following it.
 const flightPath = 'M-60 566 C 160 588, 330 528, 520 556 S 760 556, 880 460 S 1010 210, 1150 250 S 1330 170, 1520 50';
@@ -180,9 +184,10 @@ function render(lang) {
       <div class="wrap school-bottom"><span>${esc(c.schoolBadge)}</span><span>${esc(c.schoolRoles)}</span></div>
     </section>
 
-    <section id="about" class="section wrap together about" aria-labelledby="about-title">
-      <div class="together-copy reveal"><p class="eyebrow">${esc(c.aboutLabel)}</p><h2 id="about-title">${lines(c.aboutTitle)}</h2><p>${esc(c.aboutText)}</p><p class="about-trust">${esc(c.aboutTrust)}</p><ul class="tag-list">${c.aboutTags.map((tag, i) => `<li>${icon(['mountain', 'scale', 'sparkle'][i])}${esc(tag)}</li>`).join('')}</ul><a class="text-link" href="${signup}">${esc(c.start)} ${arrow}</a></div>
-      <figure class="community-visual about-visual reveal"><div class="stage-glow" aria-hidden="true"></div><img class="portrait" src="/assets/tobias.jpg" width="640" height="640" loading="lazy" alt="${esc(c.aboutAlt)}"><figcaption>Tobias Bolliger</figcaption></figure>
+    <section id="about" class="section wrap about" aria-labelledby="about-title">
+      <div class="about-heading reveal"><p class="eyebrow">${esc(c.aboutLabel)}</p><h2 id="about-title">${lines(c.aboutTitle)}</h2></div>
+      <figure class="about-video reveal"><div class="stage-glow" aria-hidden="true"></div><a class="video-frame" href="https://www.youtube.com/watch?v=${videoId}" data-video="${videoId}" target="_blank" rel="noopener" aria-label="${esc(c.aboutVideoPlay)}"><img src="/assets/video-poster.jpg" width="1280" height="720" loading="lazy" alt=""><span class="video-play" aria-hidden="true">${icon('play')}</span></a><figcaption>${esc(c.aboutVideoNote)}</figcaption></figure>
+      <a class="text-link about-link reveal" href="${signup}">${esc(c.start)} ${arrow}</a>
     </section>
 
     <section id="faq" class="section wrap faq-section" aria-labelledby="faq-title"><div class="faq-intro reveal"><p class="eyebrow">FAQ</p><h2 id="faq-title">${esc(c.faqTitle)}</h2><a class="text-link" href="mailto:${email}">${esc(c.contact)} ${icon('diagonal')}</a></div><div class="faq-list">${c.faqs.map(([q, a]) => `<details class="reveal"><summary>${esc(q)}<span class="faq-plus" aria-hidden="true"></span></summary><div class="faq-answer"><p>${esc(a)}</p></div></details>`).join('')}</div></section>
@@ -246,7 +251,7 @@ await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 for (const file of ['site.css', 'site.js', 'boot.js']) await cp(join(here, file), join(out, file));
-const assets = ['flyary-192.png', 'tobias.jpg', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png'];
+const assets = ['flyary-192.png', 'video-poster.jpg', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png'];
 const appScreens = {
   'overview.png': 'mobile/01-home.png', 'logbook.png': 'mobile/06-flightbook.png',
   'stats.png': 'mobile/12-stats.png', 'training.png': 'mobile/10-training.png',
