@@ -45,9 +45,6 @@ const featureIcons = ['image', 'chart', 'book'];
 const stepIcons = ['calendar', 'radio', 'award'];
 const phone = (inner, cls = '') => `<div class="phone ${cls}"><div class="phone-screen">${inner}</div></div>`;
 const signupPath = (lang) => `/${lang}/testpilot/`;
-// The video is a link to YouTube with a local poster; site.js swaps in the privacy-enhanced
-// player only when the visitor clicks, so nothing is loaded from YouTube before that.
-const videoId = 'ExMtREypB9E';
 
 // Signature element: a flight track that draws itself across the sky, with a glider following it.
 const flightPath = 'M-60 566 C 160 588, 330 528, 520 556 S 760 556, 880 460 S 1010 210, 1150 250 S 1330 170, 1520 50';
@@ -186,7 +183,7 @@ function render(lang) {
 
     <section id="about" class="section wrap about" aria-labelledby="about-title">
       <div class="about-heading reveal"><p class="eyebrow">${esc(c.aboutLabel)}</p><h2 id="about-title">${lines(c.aboutTitle)}</h2></div>
-      <figure class="about-video reveal"><div class="stage-glow" aria-hidden="true"></div><a class="video-frame" href="https://www.youtube.com/watch?v=${videoId}" data-video="${videoId}" target="_blank" rel="noopener" aria-label="${esc(c.aboutVideoPlay)}"><img src="/assets/video-poster.jpg" width="1280" height="720" loading="lazy" alt=""><span class="video-play" aria-hidden="true">${icon('play')}</span></a><figcaption>${esc(c.aboutVideoNote)}</figcaption></figure>
+      <figure class="about-video reveal"><div class="stage-glow" aria-hidden="true"></div><div class="video-frame"><video src="/assets/flyary-story.mp4" poster="/assets/video-poster.jpg" width="1920" height="1080" controls preload="none" playsinline aria-label="${esc(c.aboutVideoPlay)}"></video><button class="video-play" type="button" hidden aria-label="${esc(c.aboutVideoPlay)}">${icon('play')}</button></div></figure>
       <a class="text-link about-link reveal" href="${signup}">${esc(c.start)} ${arrow}</a>
     </section>
 
@@ -251,7 +248,7 @@ await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 for (const file of ['site.css', 'site.js', 'boot.js']) await cp(join(here, file), join(out, file));
-const assets = ['flyary-192.png', 'video-poster.jpg', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png'];
+const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png'];
 const appScreens = {
   'overview.png': 'mobile/01-home.png', 'logbook.png': 'mobile/06-flightbook.png',
   'stats.png': 'mobile/12-stats.png', 'training.png': 'mobile/10-training.png',

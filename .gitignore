@@ -34,3 +34,6 @@ website/.preview/
 supabase/.temp/
 # Word handbooks are generated from the Markdown sources (scripts/build-handbook.py)
 docs/*.docx
+
+# Original video export; the site serves the compressed website/assets/flyary-story.mp4
+website/assets/Flyary Story-Video.mp4

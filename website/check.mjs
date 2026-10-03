@@ -87,7 +87,7 @@ try {
       assert(schoolLink.startsWith('mailto:info@flyary.ch?subject='));
       assert.equal(await page.locator('.hero-actions a.button-primary').getAttribute('href'), `/${lang}/testpilot/`);
       assert.equal(await page.locator('.final-actions a.button').getAttribute('href'), `/${lang}/testpilot/`);
-      assert.equal(await page.locator('#about a.video-frame[data-video]').count(), 1);
+      assert.equal(await page.locator('#about video[src="/assets/flyary-story.mp4"]').count(), 1);
       assert.equal(await page.locator('#about iframe').count(), 0);
       await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });
       if (width === 1440 || width === 390) {

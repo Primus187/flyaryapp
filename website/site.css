@@ -240,17 +240,17 @@ details[open]::details-content { height: auto; }
 .final-card p { margin-top: 16px; font-size: 17px; color: rgba(255, 255, 255, .82); }
 .final-sheen { position: absolute; inset: -50%; z-index: -1; background: radial-gradient(closest-side, rgba(255, 255, 255, .28), transparent), radial-gradient(closest-side, rgba(52, 211, 153, .45), transparent); background-size: 40% 40%, 55% 55%; background-position: 20% 30%, 80% 70%; background-repeat: no-repeat; }
 
-/* About: the Flyary story video in the glow; the poster becomes the player on click */
+/* About: the self-hosted Flyary story video in the glow; a large play button sits on the poster until it starts */
 .about { display: grid; justify-items: center; text-align: center; }
 .about-heading h2 { font-size: clamp(34px, 4.6vw, 58px); line-height: 1.04; font-weight: 760; margin-top: 16px; }
 .about-video { position: relative; width: min(960px, 100%); margin-top: 48px; }
 .about-video .stage-glow { inset: 6% 4%; }
-.video-frame { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius); background: var(--night); box-shadow: var(--shadow), 0 0 0 1px var(--line); }
-.video-frame img, .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: 0; }
-.video-play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; color: #fff; background: rgba(2, 132, 199, .88); box-shadow: 0 18px 40px -12px rgba(0, 0, 0, .6); transition: transform .3s var(--ease), background .3s var(--ease); }
+.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius); background: var(--night); box-shadow: var(--shadow), 0 0 0 1px var(--line); }
+.video-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; border: 0; }
+.video-play { position: absolute; z-index: 1; border: 0; cursor: pointer; padding: 0; inset: 0; margin: auto; display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; color: #fff; background: rgba(2, 132, 199, .88); box-shadow: 0 18px 40px -12px rgba(0, 0, 0, .6); transition: transform .3s var(--ease), background .3s var(--ease); }
+.video-play[hidden] { display: none; }
 .video-play .icon { width: 34px; height: 34px; margin-left: 4px; }
-.video-frame:hover .video-play, .video-frame:focus-visible .video-play { transform: scale(1.08); background: var(--blue); }
-.about-video figcaption { margin-top: 18px; font-size: 12px; color: var(--muted); }
+.video-play:hover, .video-play:focus-visible { transform: scale(1.08); background: var(--blue); }
 .about-link { margin-top: 28px; }
 
 /* ---------- Pilot sign-up & thank-you pages ---------- */

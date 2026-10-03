@@ -137,20 +137,12 @@ if (finePointer.matches && !reduceMotion.matches) {
   });
 }
 
-// The about video loads YouTube's privacy-enhanced player only after the visitor clicks the poster.
-document.querySelectorAll('.video-frame[data-video]').forEach((link) => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const frame = document.createElement('iframe');
-    frame.src = `https://www.youtube-nocookie.com/embed/${link.dataset.video}?autoplay=1&rel=0`;
-    frame.title = link.getAttribute('aria-label');
-    frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-    frame.allowFullscreen = true;
-    frame.referrerPolicy = 'strict-origin-when-cross-origin';
-    const box = document.createElement('div');
-    box.className = 'video-frame';
-    box.append(frame);
-    link.replaceWith(box);
-    frame.focus();
-  });
+// The about video shows a large play button on its poster; native controls take over once it plays.
+document.querySelectorAll('.video-frame').forEach((frame) => {
+  const video = frame.querySelector('video');
+  const play = frame.querySelector('.video-play');
+  if (!video || !play) return;
+  play.hidden = false;
+  play.addEventListener('click', () => { video.play(); video.focus(); });
+  video.addEventListener('play', () => { play.hidden = true; });
 });

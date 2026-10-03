@@ -135,7 +135,6 @@ export const content = {
     "aboutLabel": "ÜBER FLYARY",
     "aboutTitle": "Die Flyary Story",
     "aboutVideoPlay": "Video abspielen: Die Flyary Story",
-    "aboutVideoNote": "Beim Abspielen wird das Video von YouTube geladen.",
     "faqTitle": "Häufige Fragen.",
     "faqs": [
       [
@@ -395,7 +394,6 @@ export const content = {
     "aboutLabel": "À PROPOS DE FLYARY",
     "aboutTitle": "L’histoire de Flyary",
     "aboutVideoPlay": "Lire la vidéo : L’histoire de Flyary",
-    "aboutVideoNote": "La vidéo est chargée depuis YouTube lors de la lecture.",
     "faqTitle": "Questions fréquentes.",
     "faqs": [
       [
@@ -655,7 +653,6 @@ export const content = {
     "aboutLabel": "ABOUT FLYARY",
     "aboutTitle": "The Flyary story",
     "aboutVideoPlay": "Play video: The Flyary story",
-    "aboutVideoNote": "Playing the video loads it from YouTube.",
     "faqTitle": "Frequently asked questions.",
     "faqs": [
       [
