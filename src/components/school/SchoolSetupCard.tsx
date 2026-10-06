@@ -27,20 +27,20 @@ export default function SchoolSetupCard({ groupId }: Props) {
           .from("group_member_functions")
           .select("id", { count: "exact", head: true })
           .eq("group_id", groupId)
-          .in("function", ["school_lead", "instructor", "launch_helper"] as any),
+          .in("function", ["school_lead", "instructor", "launch_helper"]),
         supabase.from("school_rates").select("id", { count: "exact", head: true }).eq("group_id", groupId),
         supabase.from("school_equipment").select("id", { count: "exact", head: true }).eq("group_id", groupId),
         supabase.from("flight_events").select("id", { count: "exact", head: true }).eq("group_id", groupId),
         user
           ? supabase.from("push_subscriptions").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-          : Promise.resolve({ count: 0 } as any),
+          : Promise.resolve({ count: 0 }),
       ]);
       if (cancelled) return;
       setSteps([
         { key: "functions", done: (funcs.count || 0) > 0, path: "/school/people" },
         { key: "rates", done: (rates.count || 0) > 0, path: "/school/equipment" },
         { key: "equipment", done: (equip.count || 0) > 0, path: "/school/equipment" },
-        { key: "push", done: ((push as any).count || 0) > 0, path: "/settings" },
+        { key: "push", done: (push.count || 0) > 0, path: "/settings" },
         { key: "event", done: (events.count || 0) > 0, path: `/events/new?group=${groupId}` },
       ]);
     };

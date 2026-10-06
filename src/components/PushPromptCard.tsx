@@ -41,7 +41,7 @@ export default function PushPromptCard() {
       body: { user_id: user.id, title: t("push.testTitle"), body: t("push.testBody"), url: "/" },
     });
     setTesting(false);
-    if (error || !(data as any)?.sent) {
+    if (error || !data?.sent) {
       toast({ title: t("push.testFailed"), variant: "destructive" });
       return;
     }

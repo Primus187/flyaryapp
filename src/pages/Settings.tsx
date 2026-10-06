@@ -255,8 +255,8 @@ export default function Settings() {
     setDeletingLocations(true);
     try {
       // Detach from flights first to avoid FK issues
-      await supabase.from("flights").update({ takeoff_location_id: null } as any).eq("user_id", user.id);
-      await supabase.from("flights").update({ landing_location_id: null } as any).eq("user_id", user.id);
+      await supabase.from("flights").update({ takeoff_location_id: null }).eq("user_id", user.id);
+      await supabase.from("flights").update({ landing_location_id: null }).eq("user_id", user.id);
       const { error } = await supabase.from("locations").delete().eq("user_id", user.id);
       if (error) throw error;
       toast({ title: t("settings.allLocationsDeleted", "Alle Orte gelöscht") });

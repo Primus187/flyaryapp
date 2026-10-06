@@ -83,7 +83,7 @@ export default function Leaderboard() {
 
       const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
-      const leaderboard: LeaderboardEntry[] = (xpData as any[] || []).map((xp: any) => {
+      const leaderboard: LeaderboardEntry[] = (xpData || []).map((xp: any) => {
         const profile = profileMap.get(xp.user_id);
         return {
           user_id: xp.user_id,

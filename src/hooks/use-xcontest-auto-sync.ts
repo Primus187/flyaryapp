@@ -40,7 +40,7 @@ export function useXcontestAutoSync() {
             },
           }
         );
-        const data = await res.json().catch(() => ({} as any));
+        const data = await res.json().catch(() => ({}));
         if (res.ok && data?.imported > 0) {
           toast({
             title: `XContest: ${data.imported} neue Flüge importiert`,

@@ -64,7 +64,7 @@ export default function Training() {
       supabase.rpc("my_instructor_ratings"),
     ]).then(([catRes, itemRes, progRes, ratingsRes]) => {
       if (ratingsRes?.data && typeof ratingsRes.data === "object") setInstructorRatings(ratingsRes.data as unknown as Record<string, { rating: 1 | 2 | 3; date: string }>);
-      if (catRes.data) setCategories(catRes.data as any);
+      if (catRes.data) setCategories(catRes.data);
       if (itemRes.data) setItems(itemRes.data);
       if (progRes.data) {
         const map = new Map<string, number>();

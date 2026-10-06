@@ -55,8 +55,8 @@ export default function CoachFeedback({ flightId, flightUserId, groupId }: Coach
         .select("flight_id, item_id, instructor_rating, instructor_note, instructor_id, training_items(name)")
         .eq("flight_id", flightId);
 
-      if (trainingData && (trainingData as any[]).length > 0) {
-        const mapped: TrainingItemFeedback[] = (trainingData as any[]).map((d: any) => ({
+      if (trainingData && trainingData.length > 0) {
+        const mapped: TrainingItemFeedback[] = trainingData.map((d: any) => ({
           flight_id: d.flight_id,
           item_id: d.item_id,
           item_name: d.training_items?.name || "",
@@ -95,7 +95,7 @@ export default function CoachFeedback({ flightId, flightUserId, groupId }: Coach
         instructor_rating: rating || null,
         instructor_note: note || null,
         instructor_id: user.id,
-      } as any)
+      })
       .eq("flight_id", flightId)
       .eq("item_id", itemId);
 

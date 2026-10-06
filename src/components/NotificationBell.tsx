@@ -110,7 +110,7 @@ export default function NotificationBell() {
     if (isOpen && unreadCount > 0 && user) {
       await supabase
         .from("notifications")
-        .update({ read: true } as any)
+        .update({ read: true })
         .eq("user_id", user.id)
         .eq("read", false);
       setUnreadCount(0);

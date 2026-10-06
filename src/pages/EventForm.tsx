@@ -111,7 +111,7 @@ export default function EventForm() {
         supabase.from("group_member_functions").select("user_id, function").eq("group_id", form.group_id),
       ]);
       const funcMap: Record<string, string[]> = {};
-      ((funcs as any[]) || []).forEach((f: any) => {
+      (funcs || []).forEach((f: any) => {
         if (!funcMap[f.user_id]) funcMap[f.user_id] = [];
         funcMap[f.user_id].push(f.function);
       });
@@ -142,22 +142,22 @@ export default function EventForm() {
         event_type: data.event_type || "", meeting_point: data.meeting_point || "",
         instructor: data.instructor || "", launch_helper: data.launch_helper || "",
         max_participants: data.max_participants?.toString() || "",
-        flight_area: (data as any).flight_area || "", day_topic: (data as any).day_topic || "",
-        departure_info: (data as any).departure_info || "", flight_prep_notes: (data as any).flight_prep_notes || "",
-         event_category: normalizeCategory((data as any).event_category),
-        end_date: (data as any).end_date || "",
+        flight_area: data.flight_area || "", day_topic: data.day_topic || "",
+        departure_info: data.departure_info || "", flight_prep_notes: data.flight_prep_notes || "",
+         event_category: normalizeCategory(data.event_category),
+        end_date: data.end_date || "",
       });
       setMeetingRows(parseMeetingRows(data.meeting_point || ""));
 
       // Load briefing tasks
-      const { data: tasks } = await supabase.from("event_briefing_tasks").select("*").eq("event_id", loadId).order("sort_order" as any);
-      if (tasks) setBriefingTasks((tasks as any[]).map((t: any) => ({
+      const { data: tasks } = await supabase.from("event_briefing_tasks").select("*").eq("event_id", loadId).order("sort_order");
+      if (tasks) setBriefingTasks(tasks.map((t: any) => ({
         id: duplicateId ? undefined : t.id, label: t.label, task_type: t.task_type,
         assigned_user_id: duplicateId ? "" : t.assigned_user_id || "", sort_order: t.sort_order,
       })));
 
       const { data: maneuvers } = await supabase.from("event_maneuvers").select("training_item_id").eq("event_id", loadId);
-      if (maneuvers) setSelectedManeuverIds((maneuvers as any[]).map((m: any) => m.training_item_id));
+      if (maneuvers) setSelectedManeuverIds(maneuvers.map((m: any) => m.training_item_id));
     };
     loadEvent();
   }, [isEdit, id, duplicateId, suggestedDate]);
@@ -218,9 +218,9 @@ export default function EventForm() {
       if (!id) { setLoading(false); return; }
       eventId = id;
     } else {
-      const { data, error } = await supabase.from("flight_events").insert(payload as any).select("id");
+      const { data, error } = await supabase.from("flight_events").insert(payload).select("id");
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
-      eventId = (data as any[])[0].id;
+      eventId = data[0].id;
     }
 
     // Save briefing tasks
@@ -230,7 +230,7 @@ export default function EventForm() {
         briefingTasks.map((t, i) => ({
           event_id: eventId, label: t.label, task_type: t.task_type,
           assigned_user_id: t.assigned_user_id || null, sort_order: i,
-        })) as any
+        }))
       );
     }
 
@@ -240,7 +240,7 @@ export default function EventForm() {
       await supabase.from("event_maneuvers").insert(
         selectedManeuverIds.map((itemId, i) => ({
           event_id: eventId, training_item_id: itemId, sort_order: i,
-        })) as any
+        }))
       );
     }
 

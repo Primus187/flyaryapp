@@ -70,9 +70,9 @@ export default function SchoolCredits({ groupId }: Props) {
       names = (profs || []).map((p: any) => ({ user_id: p.user_id, name: p.pilot_name || "—" })).sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    setRows(((creditsRes.data as any[]) || []) as CreditRow[]);
+    setRows((creditsRes.data || []) as CreditRow[]);
     setPeople(names);
-    setEvents((eventsRes.data || []) as any[]);
+    setEvents((eventsRes.data || []));
     setRatePerDay(Number((ratesRes.data || []).find((r: any) => r.rate_key === "launch_leader_per_day")?.amount || 0));
     setLoading(false);
   };
@@ -248,7 +248,7 @@ export default function SchoolCredits({ groupId }: Props) {
             </div>
             <div>
               <Label className="text-xs">{t("school.credits.entryType")}</Label>
-              <Select value={form.entry_type} onValueChange={(v) => setForm((f) => ({ ...f, entry_type: v as any }))}>
+              <Select value={form.entry_type} onValueChange={(v) => setForm((f) => ({ ...f, entry_type: v as typeof f.entry_type }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ENTRY_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{t(`school.credits.types.${tp}`)}</SelectItem>)}

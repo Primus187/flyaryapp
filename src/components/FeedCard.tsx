@@ -81,7 +81,7 @@ function useTrackPoints(flightId: string, hasTrack: boolean) {
     supabase.from("igc_tracks").select("track_data").eq("flight_id", flightId).limit(1).single()
       .then(({ data }) => {
         if (data?.track_data) {
-          const raw = data.track_data as any;
+          const raw = data.track_data as unknown[] | { points?: unknown[] };
           const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
           if (arr && Array.isArray(arr)) {
             setTrackPoints(arr.slice(0, 500).map((p: any) =>

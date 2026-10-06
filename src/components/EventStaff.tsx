@@ -55,8 +55,8 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
 
   const load = async () => {
     const { data } = await supabase.from("event_staff").select("*").eq("event_id", eventId);
-    const rows = (data as any[]) || [];
-    setStaff(rows);
+    const rows = data || [];
+    setStaff(rows as StaffRow[]);
     if (rows.length > 0) {
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", [...new Set(rows.map((r) => r.user_id))]);
       const map: Record<string, string> = {};
@@ -74,7 +74,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
         .select("user_id, function")
         .eq("group_id", groupId)
         .in("function", ["instructor", "launch_helper"]);
-      const rows = (funcs as any[]) || [];
+      const rows = funcs || [];
       if (rows.length === 0) { setOptions([]); return; }
       const ids = [...new Set(rows.map((r) => r.user_id))];
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", ids);
@@ -128,7 +128,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
       user_id: newUserId,
       role: newRole,
       position: newPosition.trim() || null,
-    } as any);
+    });
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } else {
@@ -229,7 +229,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
                     })}
                   </SelectContent>
                 </Select>
-                <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>
+                <Select value={newRole} onValueChange={(v) => setNewRole(v as typeof newRole)}>
                   <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="instructor">{t("events.staff.instructor")}</SelectItem>

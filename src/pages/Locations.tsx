@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,9 +164,9 @@ export default function Locations() {
       toast({ title: t("locations.locationUpdated") }); resetForm(); setOpen(false); fetchLocations();
       return;
     }
-    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type as any, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null, optimal_wind_directions: form.optimal_wind_directions };
-    if (editId) { await supabase.from("locations").update(data).eq("id", editId); toast({ title: t("locations.locationUpdated") }); }
-    else { await supabase.from("locations").insert(data); toast({ title: t("locations.locationCreated") }); }
+    const data = { user_id: user.id, name: form.name, latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude), type: form.type, altitude: form.altitude ? parseInt(form.altitude) : null, description: form.description || null, country_code: form.country_code || null, optimal_wind_directions: form.optimal_wind_directions };
+    if (editId) { await supabase.from("locations").update(data as TablesUpdate<"locations">).eq("id", editId); toast({ title: t("locations.locationUpdated") }); }
+    else { await supabase.from("locations").insert(data as TablesInsert<"locations">); toast({ title: t("locations.locationCreated") }); }
     resetForm(); setOpen(false); fetchLocations();
   };
   const reverseGeocode = async (lat: number, lng: number) => {

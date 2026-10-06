@@ -145,7 +145,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   const overdueGliders: GliderWarning[] = [];
   if (glidersRes.data) {
     const now = new Date();
-    (glidersRes.data as any[]).forEach(g => {
+    glidersRes.data.forEach(g => {
       const name = `${g.manufacturer} ${g.model}`;
       if (g.next_check_date && new Date(g.next_check_date) < now) overdueGliders.push({ name, type: "check" });
       if (g.reserve_repack_date && new Date(g.reserve_repack_date) < now) overdueGliders.push({ name, type: "reserve" });
@@ -211,7 +211,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   let challenges: ActiveChallenge[] = [];
   if (challengesRes.data && challengesRes.data.length > 0) {
     const today = new Date().toISOString().split("T")[0];
-    const activeChallenges = (challengesRes.data as any[]).filter(c => !c.end_date || c.end_date >= today);
+    const activeChallenges = challengesRes.data.filter(c => !c.end_date || c.end_date >= today);
     const challengeIds = activeChallenges.map(c => c.id);
 
     if (challengeIds.length > 0) {

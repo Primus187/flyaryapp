@@ -80,9 +80,9 @@ export default function SchoolBilling({ groupId }: Props) {
     const rateMap: Record<string, number> = {};
     (ratesRes.data || []).forEach((r: any) => { rateMap[r.rate_key] = Number(r.amount) || 0; });
 
-    setItems(((itemsRes.data as any[]) || []) as Item[]);
+    setItems((itemsRes.data || []) as Item[]);
     setPeople(names);
-    setEvents((eventsRes.data || []) as any[]);
+    setEvents((eventsRes.data || []));
     setRates(rateMap);
     setLoading(false);
   };
@@ -341,7 +341,7 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
               <Label className="text-xs">{t("school.billing.itemType")}</Label>
               <Select
                 value={form.item_type}
-                onValueChange={(v) => setForm((f) => ({ ...f, item_type: v as any, unit_amount: defaultRate(v) ? String(defaultRate(v)) : f.unit_amount }))}
+                onValueChange={(v) => setForm((f) => ({ ...f, item_type: v as typeof f.item_type, unit_amount: defaultRate(v) ? String(defaultRate(v)) : f.unit_amount }))}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>

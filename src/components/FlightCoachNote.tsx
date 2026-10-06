@@ -61,7 +61,7 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
       .eq("flight_id", flightId)
       .order("updated_at", { ascending: false });
 
-    const list = (data as any[]) || [];
+    const list = data || [];
     if (list.length > 0) {
       const coachIds = [...new Set(list.map((n) => n.coach_id))];
       const { data: profs } = await supabase
@@ -99,7 +99,7 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
         coach_id: user.id,
         note: draft,
         visible_to_student: draftVisible,
-      } as any, { onConflict: "flight_id,coach_id" });
+      }, { onConflict: "flight_id,coach_id" });
 
     setSaving(false);
     if (error) {

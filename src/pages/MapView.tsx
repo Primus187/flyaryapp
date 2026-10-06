@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 import { useSiteName } from "@/lib/official-sites-store";
 
 // Fix leaflet default icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
   iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
@@ -58,9 +58,9 @@ export default function MapView() {
 
     if (flightId) {
       supabase.from("igc_tracks").select("track_data").eq("flight_id", flightId).maybeSingle().then(({ data }) => {
-        const td = data?.track_data as any;
+        const td = data?.track_data as { points?: { lat: number; lng: number }[] } | null | undefined;
         if (td?.points) {
-          setTrackPoints(td.points.map((p: any) => [p.lat, p.lng]));
+          setTrackPoints(td.points.map((p) => [p.lat, p.lng]));
         }
       });
     }

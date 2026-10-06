@@ -46,7 +46,7 @@ export default function EventAnnounceDialog({ event, profiles, briefingTasks, ma
       toast({ title: t("events.notifyFailed"), variant: "destructive" });
       return;
     }
-    toast({ title: t("events.notifySent", { count: (data as any)?.recipients ?? 0 }) });
+    toast({ title: t("events.notifySent", { count: data?.recipients ?? 0 }) });
     setOpen(false);
   };
 
@@ -61,7 +61,7 @@ export default function EventAnnounceDialog({ event, profiles, briefingTasks, ma
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label className="text-xs">{t("events.notifyAudience")}</Label>
-              <Select value={audience} onValueChange={v => setAudience(v as any)}>
+              <Select value={audience} onValueChange={v => setAudience(v as typeof audience)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="participants">{t("events.notifyAudienceParticipants")}</SelectItem>

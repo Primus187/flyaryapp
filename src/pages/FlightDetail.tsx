@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,7 +59,7 @@ export default function FlightDetail() {
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   const trackPoints3D = useMemo(() => {
-    const raw = (track?.track_data as any)?.points;
+    const raw = track?.track_data?.points;
     if (!raw || !Array.isArray(raw)) return [];
     return raw.map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
   }, [track]);
@@ -82,9 +83,9 @@ export default function FlightDetail() {
     supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name:display_name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name:display_name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
       setFlight(data);
       if (data) {
-        setPublishedToFeed((data as any).published_to_feed || false);
-        if ((data as any).group_id) {
-          supabase.from("groups").select("name").eq("id", (data as any).group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
+        setPublishedToFeed(data.published_to_feed || false);
+        if (data.group_id) {
+          supabase.from("groups").select("name").eq("id", data.group_id).single().then(({ data: g }) => { if (g) setGroupName(g.name); });
         }
       }
     });
@@ -92,7 +93,7 @@ export default function FlightDetail() {
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
     supabase.from("flight_training_items").select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
-      if (data) setTrainedManeuvers((data as any[]).map((d: any) => d.training_items?.name).filter(Boolean));
+      if (data) setTrainedManeuvers(data.map((d: any) => d.training_items?.name).filter(Boolean));
     });
     // Load pilot profile
     if (user) {
@@ -162,14 +163,14 @@ export default function FlightDetail() {
         landing_location_id: flight.landing_location_id || null, duration_minutes: flight.duration_minutes,
         altitude_gain: flight.altitude_gain, distance_km: flight.distance_km, thermals: flight.thermals,
         wind_speed: flight.wind_speed, wind_direction: flight.wind_direction, glider: flight.glider, comments: flight.comments,
-        group_id: (flight as any).group_id || null, is_solo_shv: (flight as any).is_solo_shv || false,
+        group_id: flight.group_id || null, is_solo_shv: flight.is_solo_shv || false,
         glider_id: flight.glider_id || null, discipline: flight.discipline || "paraglider", is_tandem: !!flight.is_tandem, flight_kind: flight.flight_kind || null,
-      } as any).select("id").single();
+      } as TablesInsert<"flights">).select("id").single();
       if (error) throw error;
       if (trainedManeuvers.length > 0) {
         const { data: items } = await supabase.from("flight_training_items").select("item_id").eq("flight_id", id);
         if (items && items.length > 0) {
-          await supabase.from("flight_training_items").insert((items as any[]).map((i: any) => ({ flight_id: data.id, item_id: i.item_id })) as any);
+          await supabase.from("flight_training_items").insert(items.map((i: any) => ({ flight_id: data.id, item_id: i.item_id })));
         }
       }
       toast({ title: t("flights.flightDuplicated") });
@@ -232,7 +233,7 @@ export default function FlightDetail() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{siteName(flight.takeoff?.name) || t("flights.flight")}</h1>
-              {(flight as any).is_solo_shv && <Badge variant="default" className="px-2 py-0">SHV Solo</Badge>}
+              {flight.is_solo_shv && <Badge variant="default" className="px-2 py-0">SHV Solo</Badge>}
               {flight.discipline === "hangglider" && <Badge variant="secondary" className="px-2 py-0">{t("flightProof.discipline.hangglider")}</Badge>}
               {flight.is_tandem && <Badge variant="secondary" className="px-2 py-0">{flight.tandem_kind ? t(`tandem.kind.${flight.tandem_kind}`) : t("flightProof.tandem")}</Badge>}
               {flight.flight_kind && <Badge variant="outline" className="px-2 py-0">{t(`flightProof.kind.${flight.flight_kind}`)}</Badge>}
@@ -249,11 +250,11 @@ export default function FlightDetail() {
         <div className="flex shrink-0">
           <Button variant="ghost" size="icon" className="h-10 w-9" onClick={async () => {
             try {
-              let shareToken = (flight as any).share_token;
+              let shareToken = flight.share_token;
               if (!shareToken) {
                 const { data: updated, error } = await supabase
                   .from("flights")
-                  .update({ share_token: crypto.randomUUID() } as any)
+                  .update({ share_token: crypto.randomUUID() })
                   .eq("id", id)
                   .select("share_token")
                   .single();
@@ -261,8 +262,8 @@ export default function FlightDetail() {
                   toast({ title: "Fehler beim Erstellen des Share-Links", variant: "destructive" });
                   return;
                 }
-                shareToken = (updated as any).share_token;
-                setFlight({ ...flight, share_token: shareToken } as any);
+                shareToken = updated.share_token;
+                setFlight({ ...flight, share_token: shareToken });
               }
               const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
               const url = `${supabaseUrl}/functions/v1/get-shared-flight?token=${shareToken}`;
@@ -274,7 +275,7 @@ export default function FlightDetail() {
               }
             } catch (e: any) {
               if (e?.name !== "AbortError") {
-                const token = (flight as any).share_token;
+                const token = flight.share_token;
                 if (token) {
                   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
                   const url = `${supabaseUrl}/functions/v1/get-shared-flight?token=${token}`;
@@ -299,7 +300,7 @@ export default function FlightDetail() {
         <Card><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-success shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
       )}
       {/* Map with 3D toggle */}
-      {track?.track_data && (track.track_data as any).points?.length > 1 && (
+      {track?.track_data && track.track_data.points?.length > 1 && (
         <div className="flex gap-1 justify-end">
           <Button variant={show3D ? "outline" : "default"} size="sm" className="h-7 text-xs" onClick={() => setShow3D(false)}>2D</Button>
           <Button variant={show3D ? "default" : "outline"} size="sm" className="h-7 text-xs gap-1" onClick={() => setShow3D(true)}>
@@ -321,11 +322,11 @@ export default function FlightDetail() {
           />
         </Suspense>
       ) : (
-        <FlightDetailMap takeoff={flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
+        <FlightDetailMap takeoff={flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? (track.track_data.points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
       )}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 rounded-card border bg-card p-4">
         {(() => {
-          const igcStats = (track?.track_data as any)?.stats;
+          const igcStats = track?.track_data?.stats;
           const items = [
             { label: t("flights.flightTime"), value: flight.duration_minutes ? formatDuration(flight.duration_minutes) : igcStats?.durationMinutes ? formatDuration(igcStats.durationMinutes) : "–" },
             { label: t("flights.altitude"), value: flight.altitude_gain ? `+${flight.altitude_gain} m` : "–" },
@@ -348,9 +349,9 @@ export default function FlightDetail() {
         })()}
       </div>
       {flight.comments && (<Card><CardHeader className="pb-2"><CardTitle className="text-base font-bold">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
-      {Array.isArray((flight as any).tags) && (flight as any).tags.length > 0 && (
+      {Array.isArray(flight.tags) && flight.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {((flight as any).tags as string[]).map((tag) => (
+          {(flight.tags as string[]).map((tag) => (
             <button
               key={tag}
               type="button"
@@ -383,8 +384,8 @@ export default function FlightDetail() {
         </Card>
       )}
       {/* Coach/Instructor Feedback */}
-      <CoachFeedback flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
-      <FlightCoachNote flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
+      <CoachFeedback flightId={id!} flightUserId={flight.user_id} groupId={flight.group_id || null} />
+      <FlightCoachNote flightId={id!} flightUserId={flight.user_id} groupId={flight.group_id || null} />
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-base font-bold">{t("flights.photos")}</CardTitle>
@@ -514,13 +515,13 @@ export default function FlightDetail() {
         <Upload className="h-4 w-4" />{uploading ? t("flights.uploading") : track ? t("flights.igcReplace") : t("flights.igcAttach")}
       </Button>
       {/* Publish to Feed */}
-      {flight.user_id === user?.id && (flight as any).group_id && (
+      {flight.user_id === user?.id && flight.group_id && (
         publishedToFeed ? (
           <Button
             variant="outline"
             className="w-full gap-2"
             onClick={async () => {
-              await supabase.from("flights").update({ published_to_feed: false } as any).eq("id", id);
+              await supabase.from("flights").update({ published_to_feed: false }).eq("id", id);
               setPublishedToFeed(false);
               toast({ title: t("flights.unpublishedFromFeed") });
             }}
@@ -536,7 +537,7 @@ export default function FlightDetail() {
         )
       )}
       {/* The feed is group-based: explain instead of silently hiding the publish option. */}
-      {flight.user_id === user?.id && !(flight as any).group_id && (
+      {flight.user_id === user?.id && !flight.group_id && (
         <div className="rounded-lg border border-dashed p-3 text-center space-y-2">
           <p className="text-xs text-muted-foreground">{t("flights.publishNeedsGroup")}</p>
           <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(`/flights/${id}/edit`)}>
@@ -565,7 +566,7 @@ export default function FlightDetail() {
         groupName={groupName || ""}
         photos={photos.map(p => ({ id: p.id, url: photoUrls[p.id] || "" })).filter(p => p.url)}
         videoUrls={videos.filter(v => v.youtube_url).map(v => v.youtube_url)}
-        trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
+        trackPoints={track?.track_data ? (track.track_data.points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
         loading={publishLoading}
         onPublish={async (selectedPhotoIds, feedComment) => {
           setPublishLoading(true);

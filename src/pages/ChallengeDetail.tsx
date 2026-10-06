@@ -77,11 +77,11 @@ export default function ChallengeDetail() {
     if (!c) { navigate(-1); return; }
     setChallenge(c);
 
-    const { data: adminCheck } = await supabase.rpc("is_group_admin", { _user_id: user!.id, _group_id: (c as any).group_id });
+    const { data: adminCheck } = await supabase.rpc("is_group_admin", { _user_id: user!.id, _group_id: c.group_id });
     setIsAdmin(!!adminCheck);
 
-    const { data: goalsData } = await supabase.from("challenge_goals").select("*").eq("challenge_id", id).order("sort_order" as any);
-    const goalsList = (goalsData as any[] || []) as Goal[];
+    const { data: goalsData } = await supabase.from("challenge_goals").select("*").eq("challenge_id", id).order("sort_order");
+    const goalsList = (goalsData || []) as Goal[];
 
     const locationIds = goalsList.filter(g => g.location_id).map(g => g.location_id!);
     if (locationIds.length) {
@@ -93,11 +93,11 @@ export default function ChallengeDetail() {
     setGoals(goalsList);
 
     const { data: progressData } = await supabase.from("challenge_progress").select("user_id, goal_id").eq("challenge_id", id);
-    const progressList = (progressData as any[] || []);
+    const progressList = (progressData || []);
     const myGoalIds = new Set(progressList.filter(p => p.user_id === user!.id).map(p => p.goal_id));
     setMyProgress(myGoalIds);
 
-    const { data: members } = await supabase.from("group_members").select("user_id").eq("group_id", (c as any).group_id);
+    const { data: members } = await supabase.from("group_members").select("user_id").eq("group_id", c.group_id);
     const memberIds = (members || []).map(m => m.user_id);
     const { data: profiles } = await supabase.from("profiles").select("user_id, pilot_name, avatar_url").in("user_id", memberIds);
 
@@ -139,7 +139,7 @@ export default function ChallengeDetail() {
       await supabase.from("challenge_progress").delete().eq("challenge_id", id).eq("user_id", user.id).eq("goal_id", goalId);
       setMyProgress(prev => { const n = new Set(prev); n.delete(goalId); return n; });
     } else {
-      await supabase.from("challenge_progress").insert({ challenge_id: id, user_id: user.id, goal_id: goalId } as any);
+      await supabase.from("challenge_progress").insert({ challenge_id: id, user_id: user.id, goal_id: goalId });
       setMyProgress(prev => new Set(prev).add(goalId));
     }
     loadData();
@@ -157,7 +157,7 @@ export default function ChallengeDetail() {
       longitude: goal.longitude,
       radius_meters: goal.radius_meters,
       location_id: goal.location_id,
-    } as any);
+    });
     setShowAddGoal(false);
     loadData();
     toast({ title: t("challenges.goalAdded") });
@@ -178,7 +178,7 @@ export default function ChallengeDetail() {
       longitude: goal.longitude,
       radius_meters: goal.radius_meters,
       location_id: goal.location_id,
-    } as any).eq("id", goalId);
+    }).eq("id", goalId);
     setEditingGoalId(null);
     loadData();
     toast({ title: t("common.saved") });
@@ -206,7 +206,7 @@ export default function ChallengeDetail() {
       title: editTitle.trim(),
       description: editDesc.trim() || null,
       end_date: editEndDate || null,
-    } as any).eq("id", id);
+    }).eq("id", id);
     setSaving(false);
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });

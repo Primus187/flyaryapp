@@ -94,7 +94,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
       (profs || []).forEach((p: any) => { profileMap[p.user_id] = p; });
     }
     const funcMap: Record<string, GroupFunction[]> = {};
-    ((funcs as any[]) || []).forEach((f) => {
+    (funcs || []).forEach((f) => {
       if (!funcMap[f.user_id]) funcMap[f.user_id] = [];
       funcMap[f.user_id].push(f.function as GroupFunction);
     });
@@ -113,7 +113,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
   useEffect(() => { load(); }, [groupId]);
 
   const teamPeople = useMemo(
-    () => people.filter((p) => p.functions.some((f) => TEAM_FUNCTIONS.includes(f as any))),
+    () => people.filter((p) => p.functions.some((f) => TEAM_FUNCTIONS.includes(f))),
     [people]
   );
 
@@ -147,7 +147,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
       const toRemove = editing.functions.filter((f) => !editFunctions.includes(f));
       if (toAdd.length > 0) {
         const { error } = await supabase.from("group_member_functions").insert(
-          toAdd.map((f) => ({ group_id: groupId, user_id: editing.userId, function: f })) as any
+          toAdd.map((f) => ({ group_id: groupId, user_id: editing.userId, function: f }))
         );
         if (error) throw error;
       }
@@ -163,7 +163,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
           _group_id: groupId,
           _user_id: editing.userId,
           _training_level: newLevel,
-        } as any);
+        });
         if (error) throw error;
       }
       toast({ title: t("school.people.saved") });
@@ -182,7 +182,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
     const { error } = has
       ? await supabase.from("group_member_functions").delete()
           .eq("group_id", groupId).eq("user_id", p.userId).eq("function", f)
-      : await supabase.from("group_member_functions").insert({ group_id: groupId, user_id: p.userId, function: f } as any);
+      : await supabase.from("group_member_functions").insert({ group_id: groupId, user_id: p.userId, function: f });
     setAssignBusy(null);
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });

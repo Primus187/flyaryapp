@@ -117,7 +117,7 @@ export default function VideoTrimDialog({ file, open, onClose, onTrimmed }: Prop
 
     try {
       // captureStream is widely supported on Chromium/Firefox; Safari iOS limited
-      const anyV = v as any;
+      const anyV = v as import("@/lib/video-compress").CapturableVideo;
       const stream: MediaStream | undefined = anyV.captureStream?.() || anyV.mozCaptureStream?.();
       if (!stream) throw new Error(t("flights.trimUnsupported", { defaultValue: "Trim wird in diesem Browser nicht unterstützt. Bitte vorab kürzen." }));
 

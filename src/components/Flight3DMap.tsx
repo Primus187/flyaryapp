@@ -193,7 +193,7 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
           "horizon-color": "#ffffff",
           "fog-color": "#ffffff",
           "sky-horizon-blend": 0.5,
-        } as any,
+        },
       },
       center,
       zoom: 12,

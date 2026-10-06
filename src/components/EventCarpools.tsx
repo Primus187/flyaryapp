@@ -37,12 +37,12 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
 
   const load = async () => {
     const { data: cps } = await supabase.from("event_carpools").select("*").eq("event_id", eventId);
-    const carpoolList = (cps as any[]) || [];
+    const carpoolList = cps || [];
     setCarpools(carpoolList);
     if (carpoolList.length > 0) {
       const { data: rds } = await supabase.from("event_carpool_riders").select("*").in("carpool_id", carpoolList.map((c) => c.id));
-      setRiders((rds as any[]) || []);
-      const userIds = [...new Set([...carpoolList.map((c) => c.driver_user_id), ...(((rds as any[]) || []).map((r) => r.user_id))])];
+      setRiders(rds || []);
+      const userIds = [...new Set([...carpoolList.map((c) => c.driver_user_id), ...((rds || []).map((r) => r.user_id))])];
       if (userIds.length > 0) {
         const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
         const map: Record<string, string> = {};
@@ -68,7 +68,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
       seats,
       departure_place: form.departure_place.trim() || null,
       departure_time: form.departure_time || null,
-    } as any);
+    });
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } else {
@@ -87,7 +87,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
     if (myRiderEntry) {
       await supabase.from("event_carpool_riders").delete().eq("id", myRiderEntry.id);
     }
-    const { error } = await supabase.from("event_carpool_riders").insert({ carpool_id: carpoolId, user_id: user.id } as any);
+    const { error } = await supabase.from("event_carpool_riders").insert({ carpool_id: carpoolId, user_id: user.id });
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } else {

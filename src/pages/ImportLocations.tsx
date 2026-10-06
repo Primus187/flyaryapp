@@ -65,7 +65,7 @@ export default function ImportLocations() {
         for (const loc of batch) {
           const row = {
             name: loc.name,
-            type: loc.type as any,
+            type: loc.type,
             latitude: loc.latitude,
             longitude: loc.longitude,
             altitude: loc.altitude,

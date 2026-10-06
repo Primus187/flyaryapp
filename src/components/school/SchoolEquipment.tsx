@@ -124,9 +124,9 @@ export default function SchoolEquipment({ groupId }: Props) {
       supabase.from("school_rates").select("*").eq("group_id", groupId).order("valid_from", { ascending: false }),
       supabase.from("equipment_maintenance").select("equipment_id, due_at, completed_at").eq("group_id", groupId).is("completed_at", null),
     ]);
-    setEquipment(((eqRes.data as any[]) || []) as Equipment[]);
-    setAssignments(((asRes.data as any[]) || []) as Assignment[]);
-    setRates(((rateRes.data as any[]) || []) as Rate[]);
+    setEquipment((eqRes.data || []) as Equipment[]);
+    setAssignments((asRes.data || []) as Assignment[]);
+    setRates((rateRes.data || []) as Rate[]);
     setMaintenance(maintenanceRes.data || []);
     setMaintenanceError(!!maintenanceRes.error);
     const { data: running } = await supabase.from("marketplace_listings").select("id, school_equipment_id")
@@ -225,7 +225,7 @@ export default function SchoolEquipment({ groupId }: Props) {
         : [payload];
     const { error } = editing
       ? await supabase.from("school_equipment").update(payload).eq("id", editing.id)
-      : await supabase.from("school_equipment").insert(rows as any);
+      : await supabase.from("school_equipment").insert(rows);
     setSaving(false);
     if (error) {
       toast({ title: t("school.equipment.saveFailed"), description: error.message, variant: "destructive" });
@@ -280,7 +280,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       assigned_on: assignFrom,
       due_on: assignDue || null,
       note: assignNote.trim() || null,
-    } as any);
+    });
     if (!error) {
       await supabase.from("school_equipment").update({ status: "assigned" }).eq("id", assignTarget.id);
     }
@@ -319,7 +319,7 @@ export default function SchoolEquipment({ groupId }: Props) {
         label: t(`school.equipment.rates.${r.key}`),
         amount: r.amount,
         unit: r.unit,
-      })) as any
+      }))
     );
     setSaving(false);
     if (error) {

@@ -137,7 +137,7 @@ export function usePushNotifications() {
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as any).standalone === true;
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isIos && !standalone) return { ok: false, reason: "ios_install_required" };
 
     setLoading(true);

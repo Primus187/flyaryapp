@@ -39,8 +39,8 @@ export function useWingStats(userId: string | undefined) {
         supabase.from("flights").select("glider, duration_minutes").eq("user_id", userId),
       ]);
       if (cancelled) return;
-      const gliders = (glidersRes.data || []) as any[];
-      const flights = (flightsRes.data || []) as any[];
+      const gliders = (glidersRes.data || []);
+      const flights = (flightsRes.data || []);
 
       const result: WingStat[] = gliders.map((g) => {
         const name = `${g.manufacturer} ${g.model}`.trim().toLowerCase();

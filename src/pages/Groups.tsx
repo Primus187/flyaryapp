@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { Enums } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export default function Groups() {
 
   const handleCreate = async () => {
     if (!user || !newName.trim()) return;
-    const { data, error } = await supabase.from("groups").insert({ name: newName.trim(), description: newDesc.trim() || null, created_by: user.id, group_type: newType as any }).select("id").single();
+    const { data, error } = await supabase.from("groups").insert({ name: newName.trim(), description: newDesc.trim() || null, created_by: user.id, group_type: newType as Enums<"group_type"> }).select("id").single();
     if (error) { toast({ title: t("common.error"), description: /Only Flyary admins/.test(error.message) ? t("groups.schoolOnlyAdmin") : error.message, variant: "destructive" }); return; }
     await supabase.from("group_members").insert({ group_id: data.id, user_id: user.id, role: "admin" });
     toast({ title: t("groups.groupCreated") }); setNewName(""); setNewDesc(""); setNewType("pilot_group"); setCreateOpen(false); fetchGroups();

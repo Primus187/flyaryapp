@@ -43,7 +43,7 @@ export function usePilotGoals() {
 
     const stats = statsData?.[0] || { total_flights: 0, total_minutes: 0, total_altitude: 0, total_distance: 0 };
 
-    const mapped: PilotGoal[] = (rawGoals as any[]).map((g) => {
+    const mapped: PilotGoal[] = rawGoals.map((g) => {
       let currentValue = 0;
       switch (g.goal_type) {
         case "flights":

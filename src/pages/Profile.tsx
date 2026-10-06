@@ -94,33 +94,33 @@ export default function Profile() {
       if (data) {
         setForm({ pilot_name: data.pilot_name || "", glider_info: data.glider_info || "", bio: data.bio || "", avatar_url: data.avatar_url || "", emergency_contact_name: data.emergency_contact_name || "", emergency_contact_phone: data.emergency_contact_phone || "", blood_type: data.blood_type || "", allergies: data.allergies || "", medical_notes: data.medical_notes || "", shv_number: data.shv_number || "", exam_theory_date: data.exam_theory_date || "", exam_practical_date: data.exam_practical_date || "", flight_school: data.flight_school || "" });
         if (data.avatar_url) resolveAvatarUrl(data.avatar_url);
-        setHealthConsent((data as any).health_data_consent_at || null);
-        if ((data as any).cover_photo_url) {
-          setCoverPhotoUrl((data as any).cover_photo_url);
-          resolveSignedUrl((data as any).cover_photo_url).then(u => u && setCoverSignedUrl(u));
+        setHealthConsent(data.health_data_consent_at || null);
+        if (data.cover_photo_url) {
+          setCoverPhotoUrl(data.cover_photo_url);
+          resolveSignedUrl(data.cover_photo_url).then(u => u && setCoverSignedUrl(u));
         }
-        if ((data as any).xcontest_username) {
-          setXcontestUsername((data as any).xcontest_username);
-          setXcontestHasCredentials(!!(data as any).has_xcontest_password);
+        if (data.xcontest_username) {
+          setXcontestUsername(data.xcontest_username);
+          setXcontestHasCredentials(!!data.has_xcontest_password);
         }
       }
     });
-    supabase.from("pilot_gliders").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
-    supabase.from("pilot_xp").select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
-    supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    supabase.from("pilot_gliders").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as Glider[]); });
+    supabase.from("pilot_xp").select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data); });
+    supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data); });
     // Load profile photos
     supabase.from("profile_photos").select("id, storage_path").eq("user_id", user.id).order("sort_order").then(async ({ data }) => {
       if (data && data.length > 0) {
-        const photos = await Promise.all((data as any[]).map(async (p) => {
+        const photos = await Promise.all(data.map(async (p) => {
           const url = await resolveSignedUrl(p.storage_path);
           return { ...p, signedUrl: url || "" };
         }));
         setProfilePhotos(photos);
       }
     });
-    supabase.from("pilot_gliders").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as any); });
-    supabase.from("pilot_xp").select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data as any); });
-    supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data as any); });
+    supabase.from("pilot_gliders").select("*").eq("user_id", user.id).order("created_at").then(({ data }) => { if (data) setGliders(data as Glider[]); });
+    supabase.from("pilot_xp").select("total_xp, level").eq("user_id", user.id).single().then(({ data }) => { if (data) setXp(data); });
+    supabase.from("pilot_badges").select("badge_key, unlocked_at").eq("user_id", user.id).then(({ data }) => { if (data) setBadges(data); });
     // Load stats for badge progress
     supabase.from("flights").select("duration_minutes, altitude_gain, distance_km, takeoff_location_id").eq("user_id", user.id).then(({ data }) => {
       if (data) {
@@ -158,7 +158,7 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!user) return; setLoading(true);
-    const { error } = await supabase.from("profiles").update({ pilot_name: form.pilot_name, glider_info: form.glider_info, avatar_url: form.avatar_url, bio: form.bio, emergency_contact_name: form.emergency_contact_name, emergency_contact_phone: form.emergency_contact_phone, blood_type: form.blood_type, allergies: form.allergies, medical_notes: form.medical_notes, shv_number: form.shv_number, exam_theory_date: form.exam_theory_date || null, exam_practical_date: form.exam_practical_date || null, flight_school: form.flight_school } as any).eq("user_id", user.id);
+    const { error } = await supabase.from("profiles").update({ pilot_name: form.pilot_name, glider_info: form.glider_info, avatar_url: form.avatar_url, bio: form.bio, emergency_contact_name: form.emergency_contact_name, emergency_contact_phone: form.emergency_contact_phone, blood_type: form.blood_type, allergies: form.allergies, medical_notes: form.medical_notes, shv_number: form.shv_number, exam_theory_date: form.exam_theory_date || null, exam_practical_date: form.exam_practical_date || null, flight_school: form.flight_school }).eq("user_id", user.id);
     if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     else toast({ title: t("profile.profileSaved") });
     setLoading(false);
@@ -182,7 +182,7 @@ export default function Profile() {
     if (uploadError) { toast({ title: t("common.error"), description: uploadError.message, variant: "destructive" }); setUploading(false); return; }
     setForm(f => ({ ...f, avatar_url: path }));
     resolveAvatarUrl(path);
-    await supabase.from("profiles").update({ avatar_url: path } as any).eq("user_id", user.id);
+    await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
     toast({ title: t("profile.photoUploaded") }); setUploading(false);
   };
 
@@ -199,7 +199,7 @@ export default function Profile() {
       setCoverPhotoUrl(path);
       const url = await resolveSignedUrl(path);
       if (url) setCoverSignedUrl(url);
-      await supabase.from("profiles").update({ cover_photo_url: path } as any).eq("user_id", user.id);
+      await supabase.from("profiles").update({ cover_photo_url: path }).eq("user_id", user.id);
       toast({ title: t("profile.coverPhotoUploaded") });
     } catch (err: any) {
       toast({ title: t("common.error"), description: err.message, variant: "destructive" });
@@ -209,7 +209,7 @@ export default function Profile() {
 
   const handleRemoveCover = async () => {
     if (!user) return;
-    await supabase.from("profiles").update({ cover_photo_url: null } as any).eq("user_id", user.id);
+    await supabase.from("profiles").update({ cover_photo_url: null }).eq("user_id", user.id);
     if (coverPhotoUrl) await supabase.storage.from("flight-photos").remove([coverPhotoUrl]);
     setCoverPhotoUrl("");
     setCoverSignedUrl("");
@@ -227,10 +227,10 @@ export default function Profile() {
         const path = `${user.id}/profile_${Date.now()}_${i}.jpg`;
         const { error } = await supabase.storage.from("flight-photos").upload(path, compressed);
         if (error) throw error;
-        const { data } = await supabase.from("profile_photos").insert({ user_id: user.id, storage_path: path, sort_order: profilePhotos.length + i } as any).select().single();
+        const { data } = await supabase.from("profile_photos").insert({ user_id: user.id, storage_path: path, sort_order: profilePhotos.length + i }).select().single();
         if (data) {
           const url = await resolveSignedUrl(path);
-          setProfilePhotos(prev => [...prev, { ...(data as any), signedUrl: url || "" }]);
+          setProfilePhotos(prev => [...prev, { ...data, signedUrl: url || "" }]);
         }
       }
       toast({ title: t("profile.photosAdded") });
@@ -249,12 +249,12 @@ export default function Profile() {
 
   const handleAddGlider = async () => {
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
-    if (newGlider.is_default) await supabase.from("pilot_gliders").update({ is_default: false } as any).eq("user_id", user.id);
+    if (newGlider.is_default) await supabase.from("pilot_gliders").update({ is_default: false }).eq("user_id", user.id);
     const insertData: any = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null, discipline: newGlider.discipline || "paraglider", is_tandem: !!newGlider.is_tandem, ...hangGliderFields(newGlider) };
     const { data, error } = await supabase.from("pilot_gliders").insert(insertData).select().single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-    if (newGlider.is_default) setGliders(prev => [...prev.map(g => ({ ...g, is_default: false })), data as any]);
-    else setGliders(prev => [...prev, data as any]);
+    if (newGlider.is_default) setGliders(prev => [...prev.map(g => ({ ...g, is_default: false })), data as Glider]);
+    else setGliders(prev => [...prev, data as Glider]);
     setNewGlider({ manufacturer: "", model: "", size: "", is_default: false, last_check_date: "", next_check_date: "", reserve_repack_date: "", discipline: "paraglider", is_tandem: false }); setShowAddGlider(false);
     toast({ title: t("profile.gliderAdded") });
   };
@@ -266,7 +266,7 @@ export default function Profile() {
       last_check_date: glider.last_check_date || null, next_check_date: glider.next_check_date || null,
       reserve_repack_date: glider.reserve_repack_date || null,
       discipline: glider.discipline || "paraglider", is_tandem: !!glider.is_tandem, ...hangGliderFields(glider),
-    } as any).eq("id", glider.id);
+    }).eq("id", glider.id);
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setGliders(prev => prev.map(g => g.id === glider.id ? { ...glider } : g));
     setEditingGliderId(null);
@@ -274,7 +274,7 @@ export default function Profile() {
   };
 
   const handleDeleteGlider = async (id: string) => { await supabase.from("pilot_gliders").delete().eq("id", id); setGliders(prev => prev.filter(g => g.id !== id)); toast({ title: t("profile.gliderRemoved") }); };
-  const handleSetDefault = async (id: string) => { if (!user) return; await supabase.from("pilot_gliders").update({ is_default: false } as any).eq("user_id", user.id); await supabase.from("pilot_gliders").update({ is_default: true } as any).eq("id", id); setGliders(prev => prev.map(g => ({ ...g, is_default: g.id === id }))); };
+  const handleSetDefault = async (id: string) => { if (!user) return; await supabase.from("pilot_gliders").update({ is_default: false }).eq("user_id", user.id); await supabase.from("pilot_gliders").update({ is_default: true }).eq("id", id); setGliders(prev => prev.map(g => ({ ...g, is_default: g.id === id }))); };
 
   const isOverdue = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
@@ -688,7 +688,7 @@ export default function Profile() {
             <Button onClick={async () => {
               if (!user) return;
               const now = new Date().toISOString();
-              await supabase.from("profiles").update({ health_data_consent_at: now } as any).eq("user_id", user.id);
+              await supabase.from("profiles").update({ health_data_consent_at: now }).eq("user_id", user.id);
               setHealthConsent(now);
               setShowConsentDialog(false);
               toast({ title: t("profile.consentGranted") });

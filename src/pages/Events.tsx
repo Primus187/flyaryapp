@@ -65,7 +65,7 @@ export default function Events() {
     const fetchEvents = async () => {
       let query = supabase.from("flight_events").select("id, group_id, title, status, event_date, event_type, event_category, meeting_point, max_participants, signup_deadline, groups(name)").order("event_date", { ascending: true });
       if (selectedGroup !== "all") query = query.eq("group_id", selectedGroup);
-      const { data } = await query; if (data) setEvents(data as any);
+      const { data } = await query; if (data) setEvents(data);
       const eventIds = (data || []).map((e: any) => e.id);
       if (eventIds.length > 0) { const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds); if (sups) setSignups(sups); }
     };

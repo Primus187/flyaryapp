@@ -97,18 +97,18 @@ export default function PilotProfile() {
       ]);
 
       if (profileRes.data) {
-        const d = profileRes.data as any;
+        const d = profileRes.data;
         setProfile(d as PilotData);
         setAvatarUrl(await resolveUrl(d.avatar_url));
         setCoverUrl(await resolveUrl(d.cover_photo_url));
       }
 
-      if (xpRes.data) setXp(xpRes.data as any);
+      if (xpRes.data) setXp(xpRes.data);
       if (badgesRes.data) setBadges(badgesRes.data.map(b => ({ badge_key: b.badge_key, unlocked_at: b.unlocked_at || "" })));
       if (glidersRes.data) setGliders(glidersRes.data);
 
-      if (photosRes.data && (photosRes.data as any[]).length > 0) {
-        const photos = await Promise.all((photosRes.data as any[]).map(async (p: any) => ({
+      if (photosRes.data && photosRes.data.length > 0) {
+        const photos = await Promise.all(photosRes.data.map(async (p: any) => ({
           signedUrl: await resolveUrl(p.storage_path),
         })));
         setProfilePhotos(photos);

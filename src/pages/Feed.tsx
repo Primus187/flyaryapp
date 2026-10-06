@@ -175,7 +175,7 @@ export default function Feed() {
     const item = items.find(i => i.data.id === itemId);
     if (!item) return;
 
-    const likes = (item.data as any).likes || [];
+    const likes = item.data.likes || [];
     const existingReaction = likes.find((l: any) => l.user_id === user.id && l.reaction_type === reactionType);
 
     if (existingReaction) {
@@ -183,16 +183,16 @@ export default function Feed() {
       await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id).eq("reaction_type", reactionType);
       setItems(prev => prev.map(i => {
         if (i.data.id !== itemId) return i;
-        const currentLikes = (i.data as any).likes || [];
+        const currentLikes = i.data.likes || [];
         return { ...i, data: { ...i.data, likes: currentLikes.filter((l: any) => !(l.user_id === user.id && l.reaction_type === reactionType)) } } as FeedItem;
       }));
     } else {
       // Remove any existing reaction from this user first, then add new one
       await supabase.from("feed_likes").delete().eq(colName, itemId).eq("user_id", user.id);
-      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id, reaction_type: reactionType } as any);
+      await supabase.from("feed_likes").insert({ [colName]: itemId, user_id: user.id, reaction_type: reactionType });
       setItems(prev => prev.map(i => {
         if (i.data.id !== itemId) return i;
-        const currentLikes = (i.data as any).likes || [];
+        const currentLikes = i.data.likes || [];
         const withoutMine = currentLikes.filter((l: any) => l.user_id !== user.id);
         return { ...i, data: { ...i.data, likes: [...withoutMine, { user_id: user.id, reaction_type: reactionType }] } } as FeedItem;
       }));
@@ -206,14 +206,14 @@ export default function Feed() {
     const colName = itemType === "flight" ? "flight_id" : itemType === "event" ? "event_id" : "achievement_id";
 
     const { data } = await supabase.from("feed_comments")
-      .insert({ [colName]: itemId, user_id: user.id, message } as any)
+      .insert({ [colName]: itemId, user_id: user.id, message })
       .select("id, created_at").single();
 
     if (data) {
       const { data: prof } = await supabase.from("profiles").select("pilot_name").eq("user_id", user.id).single();
       setItems(prev => prev.map(i => {
         if (i.data.id !== itemId) return i;
-        const currentComments = (i.data as any).comments || [];
+        const currentComments = i.data.comments || [];
         return {
           ...i, data: {
             ...i.data, comments: [...currentComments, {
@@ -265,7 +265,7 @@ export default function Feed() {
     if (existing) {
       await supabase.from("bookmarks").delete().eq("id", existing.id);
     } else {
-      await supabase.from("bookmarks").insert({ user_id: user.id, [colName]: itemId } as any);
+      await supabase.from("bookmarks").insert({ user_id: user.id, [colName]: itemId });
     }
 
     // Update local state
@@ -343,7 +343,7 @@ export default function Feed() {
 
       {(() => {
         const visible = tagFilter
-          ? items.filter(i => i.type === "flight" && Array.isArray((i.data as any).tags) && (i.data as any).tags.includes(tagFilter))
+          ? items.filter(i => i.type === "flight" && Array.isArray(i.data.tags) && i.data.tags.includes(tagFilter))
           : items;
         if (visible.length === 0) {
           return (

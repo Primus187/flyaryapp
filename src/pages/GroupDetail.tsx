@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { Enums } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,25 +60,25 @@ export default function GroupDetail() {
     if (!challengeList) { setChallenges([]); return; }
 
     // For each challenge, get goal count, my progress, participant count
-    const enriched = await Promise.all((challengeList as any[]).map(async (c) => {
+    const enriched = await Promise.all(challengeList.map(async (c) => {
       const { data: goals } = await supabase.from("challenge_goals").select("id").eq("challenge_id", c.id);
       const { data: myProg } = await supabase.from("challenge_progress").select("goal_id").eq("challenge_id", c.id).eq("user_id", user!.id);
       const { data: allProg } = await supabase.from("challenge_progress").select("user_id").eq("challenge_id", c.id);
-      const uniqueParticipants = new Set((allProg as any[] || []).map((p: any) => p.user_id));
+      const uniqueParticipants = new Set((allProg || []).map((p: any) => p.user_id));
       return {
         ...c,
-        totalGoals: (goals as any[] || []).length,
-        myCompleted: (myProg as any[] || []).length,
+        totalGoals: (goals || []).length,
+        myCompleted: (myProg || []).length,
         participantCount: uniqueParticipants.size,
       };
     }));
     setChallenges(enriched);
   };
 
-  const handleSave = async () => { if (!isAdmin || !name.trim()) return; setSaving(true); const { error } = await supabase.from("groups").update({ name: name.trim(), description: description.trim() || null, group_type: groupType as any }).eq("id", id); setSaving(false); if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" }); else toast({ title: t("groups.groupUpdated") }); };
+  const handleSave = async () => { if (!isAdmin || !name.trim()) return; setSaving(true); const { error } = await supabase.from("groups").update({ name: name.trim(), description: description.trim() || null, group_type: groupType as Enums<"group_type"> }).eq("id", id); setSaving(false); if (error) toast({ title: t("common.error"), description: error.message, variant: "destructive" }); else toast({ title: t("groups.groupUpdated") }); };
   const handleDelete = async () => { if (!confirm(t("groups.deleteGroup"))) return; await supabase.from("groups").delete().eq("id", id); toast({ title: t("groups.groupDeleted") }); navigate("/groups"); };
   const handleRemoveMember = async (memberId: string) => { if (!confirm(t("groups.removeMember"))) return; await supabase.from("group_members").delete().eq("id", memberId); setMembers(prev => prev.filter(m => m.id !== memberId)); toast({ title: t("groups.memberRemoved") }); };
-  const handleChangeRole = async (memberId: string, newRole: string) => { await supabase.from("group_members").update({ role: newRole as any }).eq("id", memberId); setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m)); toast({ title: t("groups.roleChanged") }); };
+  const handleChangeRole = async (memberId: string, newRole: string) => { await supabase.from("group_members").update({ role: newRole as Enums<"group_role"> }).eq("id", memberId); setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m)); toast({ title: t("groups.roleChanged") }); };
 
   const handleCreateChallenge = async () => {
     if (!newChallenge.title.trim() || !user || !id) return;
@@ -87,7 +88,7 @@ export default function GroupDetail() {
       description: newChallenge.description.trim() || null,
       end_date: newChallenge.end_date || null,
       created_by: user.id,
-    } as any);
+    });
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     setNewChallenge({ title: "", description: "", end_date: "" });
     setShowNewChallenge(false);

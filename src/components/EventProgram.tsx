@@ -39,7 +39,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
       .order("item_date")
       .order("item_time", { nullsFirst: true })
       .order("sort_order");
-    setItems((data as any[]) || []);
+    setItems(data || []);
   };
 
   useEffect(() => { load(); }, [eventId]);
@@ -53,7 +53,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
       title: form.title.trim(),
       location: form.location.trim() || null,
       sort_order: items.length,
-    } as any);
+    });
     if (error) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } else {

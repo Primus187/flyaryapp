@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import LocationMapPicker from "@/components/LocationMapPicker";
@@ -109,12 +110,12 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
       const { data, error } = await supabase.from("locations").insert({
         user_id: user.id,
         name: newLoc.name.trim(),
-        type: newLoc.type as any,
+        type: newLoc.type,
         latitude: newLoc.latitude,
         longitude: newLoc.longitude,
         altitude: newLoc.altitude ? parseInt(newLoc.altitude) : null,
         country_code,
-      }).select("id").single();
+      } as TablesInsert<"locations">).select("id").single();
 
       if (error) throw error;
       toast({ title: t("locations.locationCreated") });

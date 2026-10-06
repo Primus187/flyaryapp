@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getPendingFlights,
@@ -46,7 +47,7 @@ export function useOfflineSync() {
         // (insert committed, reply never arrived) cannot create a duplicate flight.
         const { error } = await supabase
           .from("flights")
-          .insert({ ...flight.flightData, id: flight.id } as any);
+          .insert({ ...flight.flightData, id: flight.id } as TablesInsert<"flights">);
         if (error?.code === "23505") {
           await removeOfflineFlight(flight.id);
           synced++;
@@ -69,7 +70,7 @@ export function useOfflineSync() {
             flight.selectedTrainingIds.map((item_id) => ({
               flight_id: flightId,
               item_id,
-            })) as any
+            }))
           );
         }
 

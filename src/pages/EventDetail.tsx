@@ -158,7 +158,7 @@ export default function EventDetail() {
   const handlePublish = async (selectedPhotoIds: string[], feedDescription: string) => {
     if (!id) return;
     setPublishing(true);
-    await supabase.from("flight_events").update({ published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription || null } as any).eq("id", id);
+    await supabase.from("flight_events").update({ published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription || null }).eq("id", id);
     setEvent((prev: any) => ({ ...prev, published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription }));
     setPublishing(false); setShowPreview(false);
     toast({ title: t("events.publishedToFeed") });
@@ -166,7 +166,7 @@ export default function EventDetail() {
 
   const handleUnpublish = async () => {
     if (!id) return;
-    await supabase.from("flight_events").update({ published_to_feed: false, published_at: null } as any).eq("id", id);
+    await supabase.from("flight_events").update({ published_to_feed: false, published_at: null }).eq("id", id);
     setEvent((prev: any) => ({ ...prev, published_to_feed: false, published_at: null }));
     toast({ title: t("events.unpublishedFromFeed") });
   };

@@ -29,7 +29,7 @@ export default function NotificationsPage() {
 
   const isStandalone =
     typeof window !== "undefined" &&
-    (window.matchMedia?.("(display-mode: standalone)").matches || (navigator as any).standalone === true);
+    (window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true);
 
   useEffect(() => {
     if (!user) return;
@@ -52,8 +52,8 @@ export default function NotificationsPage() {
       setGroups(grps);
       const entries = await Promise.all(
         grps.map(async (g) => {
-          const { data } = await supabase.rpc("get_group_push_status", { _group_id: g.id } as any);
-          return [g.id, ((data as any[]) || []) as PushPerson[]] as const;
+          const { data } = await supabase.rpc("get_group_push_status", { _group_id: g.id });
+          return [g.id, (data || []) as PushPerson[]] as const;
         })
       );
       if (!cancelled) setPeople(Object.fromEntries(entries));
@@ -84,7 +84,7 @@ export default function NotificationsPage() {
       body: { user_id: user.id, title: t("push.testTitle"), body: t("push.testBody"), url: "/" },
     });
     setTesting(false);
-    const res = data as any;
+    const res = data;
     if (!error && res?.sent) {
       toast({ title: t("push.testSent") });
       return;

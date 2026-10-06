@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import { compressImage } from "@/lib/image-compress";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ interface FlightTemplate { id: string; name: string; takeoff_location_id: string
 export default function FlightForm() {
   const { id } = useParams();
   const routerLocation = useLocation();
-  const locationState = routerLocation.state as any;
+  const locationState = routerLocation.state;
   const isEdit = !!id;
   // Opened from Android's share sheet with an .igc file (public/share-target-sw.js).
   const sharedImport = !isEdit ? new URLSearchParams(routerLocation.search).get("shared") : null;
@@ -156,7 +157,7 @@ export default function FlightForm() {
     });
     // Load flight templates
     supabase.from("flight_templates").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
-      if (data) setTemplates(data as any as FlightTemplate[]);
+      if (data) setTemplates(data as FlightTemplate[]);
     });
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
@@ -183,8 +184,8 @@ export default function FlightForm() {
         if (data) {
           // Proof columns of migration 0073 (not in generated types.ts yet)
           const proof = data as unknown as { glider_id?: string | null; discipline?: Discipline | null; is_tandem?: boolean; tandem_kind?: string | null; flight_kind?: string | null; takeoff_at?: string | null; landing_at?: string | null };
-          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: (data as any).group_id || "", is_solo_shv: !!(data as any).is_solo_shv, glider_id: proof.glider_id || "", discipline: proof.discipline || "paraglider", is_tandem: !!proof.is_tandem, tandem_kind: proof.tandem_kind || "", flight_kind: proof.flight_kind || "", takeoff_time: isoToLocalTime(proof.takeoff_at), landing_at: proof.landing_at || "" });
-          if (Array.isArray((data as any).tags)) setTags((data as any).tags);
+          setForm({ date: data.date, takeoff_location_id: data.takeoff_location_id || "", landing_location_id: data.landing_location_id || "", duration_minutes: data.duration_minutes?.toString() || "", altitude_gain: data.altitude_gain?.toString() || "", distance_km: data.distance_km?.toString() || "", thermals: data.thermals || "", wind_speed: data.wind_speed?.toString() || "", wind_direction: data.wind_direction || "", glider: data.glider || "", comments: data.comments || "", group_id: data.group_id || "", is_solo_shv: !!data.is_solo_shv, glider_id: proof.glider_id || "", discipline: proof.discipline || "paraglider", is_tandem: !!proof.is_tandem, tandem_kind: proof.tandem_kind || "", flight_kind: proof.flight_kind || "", takeoff_time: isoToLocalTime(proof.takeoff_at), landing_at: proof.landing_at || "" });
+          if (Array.isArray(data.tags)) setTags(data.tags);
         }
       });
       supabase.from("flight_videos").select("id, youtube_url, storage_path, poster_path").eq("flight_id", id).then(({ data }) => {
@@ -192,13 +193,13 @@ export default function FlightForm() {
         setYoutubeUrls(data.filter((v: any) => v.youtube_url).map((v: any) => v.youtube_url));
         setExistingUploadedVideos(data.filter((v: any) => v.storage_path).map((v: any) => ({ id: v.id, storage_path: v.storage_path, poster_path: v.poster_path })));
       });
-      supabase.from("flight_training_items").select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds((data as any[]).map((d: any) => d.item_id)); });
+      supabase.from("flight_training_items").select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds(data.map((d: any) => d.item_id)); });
     }
     // Load tag suggestions from user's existing flights
     supabase.from("flights").select("tags").eq("user_id", user.id).limit(200).then(({ data }) => {
       if (!data) return;
       const all = new Set<string>();
-      for (const row of data as any[]) {
+      for (const row of data) {
         if (Array.isArray(row.tags)) row.tags.forEach((t: string) => all.add(t));
       }
       setTagSuggestions([...all].sort());
@@ -411,7 +412,7 @@ export default function FlightForm() {
         if (matchingEvent) eventId = matchingEvent.id;
       }
 
-      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null, glider_id: form.glider_id || null, discipline: form.discipline, is_tandem: form.is_tandem, tandem_kind: form.is_tandem && form.tandem_kind ? form.tandem_kind : null, flight_kind: form.flight_kind || null, ...flightTimesForSave(form.date, form.takeoff_time, form.landing_at || null) } as any;
+      const flightData = { user_id: user.id, date: form.date, takeoff_location_id: form.takeoff_location_id || null, landing_location_id: form.landing_location_id || null, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, altitude_gain: form.altitude_gain ? parseInt(form.altitude_gain) : null, distance_km: form.distance_km ? parseFloat(form.distance_km) : null, thermals: form.thermals || null, wind_speed: form.wind_speed ? parseInt(form.wind_speed) : null, wind_direction: form.wind_direction || null, glider: form.glider || null, comments: form.comments || null, group_id: form.group_id || null, is_solo_shv: form.is_solo_shv, event_id: eventId, tags: tags.length > 0 ? tags : null, glider_id: form.glider_id || null, discipline: form.discipline, is_tandem: form.is_tandem, tandem_kind: form.is_tandem && form.tandem_kind ? form.tandem_kind : null, flight_kind: form.flight_kind || null, ...flightTimesForSave(form.date, form.takeoff_time, form.landing_at || null) };
 
       // Offline save when not connected
       if (!navigator.onLine && !isEdit) {
@@ -432,7 +433,7 @@ export default function FlightForm() {
 
       let flightId: string;
       if (isEdit) { const { error } = await supabase.from("flights").update(flightData).eq("id", id); if (error) throw error; flightId = id!; }
-      else { const { data, error } = await supabase.from("flights").insert(flightData).select("id").single(); if (error) throw error; flightId = data.id; }
+      else { const { data, error } = await supabase.from("flights").insert(flightData as TablesInsert<"flights">).select("id").single(); if (error) throw error; flightId = data.id; }
       if (igcFile) {
         try {
           const content = await igcFile.text();
@@ -485,12 +486,12 @@ export default function FlightForm() {
           if (pErr) throw pErr;
           const { error: insErr } = await supabase.from("flight_videos").insert({
             flight_id: flightId,
-            youtube_url: null as any,
+            youtube_url: null,
             storage_path: videoPath,
             poster_path: posterPath,
             duration_seconds: Math.round(pv.durationSec),
             size_bytes: pv.file.size,
-          } as any);
+          });
           if (insErr) throw insErr;
         } catch (vErr: any) {
           console.error("Video upload failed:", vErr);
@@ -499,7 +500,7 @@ export default function FlightForm() {
       }
       // Save training items
       if (isEdit) { await supabase.from("flight_training_items").delete().eq("flight_id", flightId); }
-      if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items").insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id })) as any); }
+      if (selectedTrainingIds.length > 0) { await supabase.from("flight_training_items").insert(selectedTrainingIds.map((item_id) => ({ flight_id: flightId, item_id }))); }
       // Auto-verify challenge goals if IGC data exists
       if (igcData && igcData.points.length > 0) {
         try {
@@ -510,15 +511,15 @@ export default function FlightForm() {
             const groupIds = memberships.map(m => m.group_id);
             const today = new Date().toISOString().split("T")[0];
             const { data: activeChallenges } = await supabase.from("challenges").select("id").in("group_id", groupIds);
-            const filteredChallenges = (activeChallenges as any[] || []);
+            const filteredChallenges = (activeChallenges || []);
             if (filteredChallenges.length > 0) {
               const challengeIds = filteredChallenges.map(c => c.id);
               const { data: goalsData } = await supabase.from("challenge_goals").select("id, challenge_id, latitude, longitude, radius_meters, goal_type").in("challenge_id", challengeIds);
-              const goalsWithCoords = (goalsData as any[] || []).filter(g => g.latitude && g.longitude);
+              const goalsWithCoords = (goalsData || []).filter(g => g.latitude && g.longitude);
               if (goalsWithCoords.length > 0) {
                 // Check already completed
                 const { data: existingProgress } = await supabase.from("challenge_progress").select("goal_id").eq("user_id", user.id);
-                const completedIds = new Set((existingProgress as any[] || []).map(p => p.goal_id));
+                const completedIds = new Set((existingProgress || []).map(p => p.goal_id));
                 const uncompleted = goalsWithCoords.filter(g => !completedIds.has(g.id));
                 if (uncompleted.length > 0) {
                   const reachedIds = verifyChallengeGoals(igcData.points, uncompleted);
@@ -527,7 +528,7 @@ export default function FlightForm() {
                       const goal = uncompleted.find(g => g.id === goalId)!;
                       return { challenge_id: goal.challenge_id, user_id: user.id, goal_id: goalId, flight_id: flightId };
                     });
-                    await supabase.from("challenge_progress").insert(inserts as any);
+                    await supabase.from("challenge_progress").insert(inserts);
 
                     // Create feed achievements for each reached goal
                     for (const goalId of reachedIds) {
@@ -535,7 +536,7 @@ export default function FlightForm() {
                       await supabase.from("feed_achievements").insert({
                         user_id: user.id, challenge_id: goal.challenge_id,
                         goal_id: goalId, achievement_type: "goal_reached",
-                      } as any);
+                      });
                     }
 
                     // Check if any challenge is now fully completed
@@ -544,11 +545,11 @@ export default function FlightForm() {
                       const totalGoals = goalsWithCoords.filter(g => g.challenge_id === cId).length;
                       const { data: allProgress } = await supabase.from("challenge_progress")
                         .select("goal_id").eq("challenge_id", cId).eq("user_id", user.id);
-                      if ((allProgress as any[] || []).length >= totalGoals) {
+                      if ((allProgress || []).length >= totalGoals) {
                         await supabase.from("feed_achievements").insert({
                           user_id: user.id, challenge_id: cId,
                           goal_id: null, achievement_type: "challenge_completed",
-                        } as any);
+                        });
                       }
                     }
 
@@ -566,8 +567,8 @@ export default function FlightForm() {
         const { data: newBadges } = await supabase.from("pilot_badges")
           .select("badge_key, unlocked_at").eq("user_id", user.id)
           .gte("unlocked_at", new Date(Date.now() - 10000).toISOString());
-        if (newBadges && (newBadges as any[]).length > 0) {
-          toast({ title: t("badges.newBadge"), description: (newBadges as any[]).map(b => t(`badges.${b.badge_key}`)).join(", ") });
+        if (newBadges && newBadges.length > 0) {
+          toast({ title: t("badges.newBadge"), description: newBadges.map(b => t(`badges.${b.badge_key}`)).join(", ") });
         }
       } catch (e) { console.error("Badge check failed:", e); }
 
@@ -605,9 +606,9 @@ export default function FlightForm() {
       landing_location_id: form.landing_location_id || null,
       glider: form.glider || null,
       group_id: form.group_id || null,
-    } as any).select().single();
+    }).select().single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-    setTemplates(prev => [data as any as FlightTemplate, ...prev]);
+    setTemplates(prev => [data as FlightTemplate, ...prev]);
     setTemplateName("");
     setShowSaveTemplate(false);
     toast({ title: t("flights.templateSaved") });

@@ -25,9 +25,12 @@ function pickRecorderMime(): { mime: string; ext: string } {
   return { mime: "", ext: "webm" };
 }
 
+/** captureStream is not in the standard typings (Chromium, Firefox as mozCaptureStream). */
+export type CapturableVideo = HTMLVideoElement & { captureStream?: (frameRate?: number) => MediaStream; mozCaptureStream?: () => MediaStream };
+
 export function isVideoCompressionSupported(): boolean {
   if (typeof MediaRecorder === "undefined") return false;
-  const v = document.createElement("video") as any;
+  const v = document.createElement("video") as CapturableVideo;
   return typeof v.captureStream === "function" || typeof v.mozCaptureStream === "function";
 }
 
@@ -39,7 +42,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
   const video = document.createElement("video");
   video.src = url;
   video.muted = true; // ensure autoplay allowed
-  (video as any).playsInline = true;
+  video.playsInline = true;
   video.setAttribute("playsinline", "true");
   video.preload = "auto";
   video.crossOrigin = "anonymous";
@@ -66,7 +69,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
     throw new Error("Video-Dauer unbekannt");
   }
 
-  const anyV = video as any;
+  const anyV = video as CapturableVideo;
   const stream: MediaStream | undefined =
     anyV.captureStream?.(30) || anyV.captureStream?.() || anyV.mozCaptureStream?.();
   if (!stream) {
@@ -79,7 +82,7 @@ async function compressOnce(file: File, videoBitrate: number, opts: CompressOpti
     stream,
     mime
       ? { mimeType: mime, videoBitsPerSecond: videoBitrate, audioBitsPerSecond: 96_000 }
-      : { videoBitsPerSecond: videoBitrate, audioBitsPerSecond: 96_000 } as any
+      : { videoBitsPerSecond: videoBitrate, audioBitsPerSecond: 96_000 }
   );
 
   const chunks: Blob[] = [];
