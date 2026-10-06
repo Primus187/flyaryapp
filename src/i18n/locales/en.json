@@ -1451,7 +1451,7 @@
       "dueSoonCount": "{{count}} due within the next 30 days"
     },
     "gear": {
-      "loading": "Loading equipment check ?",
+      "loading": "Loading equipment check …",
       "signupWarning": "Not yet confirmed: {{items}}. Please arrange your equipment or any loan equipment with the school before the altitude flight. You can still sign up.",
       "loadFailed": "The equipment check could not be loaded. The check status is unknown.",
       "saveFailed": "Equipment check was not saved. Please check your connection and try again.",
