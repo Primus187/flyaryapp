@@ -307,10 +307,10 @@ export default function Settings() {
   return (
     <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="outline" size="icon" className="shrink-0" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold tracking-tight">{t("settings.title")}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("settings.title")}</h1>
       </div>
 
       <Card>

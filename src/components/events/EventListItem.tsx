@@ -43,7 +43,7 @@ export default function EventListItem({
       : "bg-accent text-accent-foreground ";
 
   const meta = [
-    new Date(date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+    new Date(date).toLocaleDateString(locale, { weekday: "short" }),
     category ? t(`events.categories.${category}`, { defaultValue: category }) : null,
     groupName || null,
   ].filter(Boolean).join(" · ");
@@ -56,28 +56,32 @@ export default function EventListItem({
         onClick && !past ? "cursor-pointer active:scale-[0.99] transition-all" : "",
       )}
     >
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between gap-2" onClick={onClick}>
+      <CardContent className="p-3.5">
+        <div className="flex items-start gap-3" onClick={onClick}>
+          <div className="w-10 shrink-0">
+            <p className="text-2xl leading-[26px] stat-value">{String(new Date(date).getDate()).padStart(2, "0")}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{new Date(date).toLocaleDateString(locale, { month: "short" }).replace(".", "")}</p>
+          </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <p className="font-medium text-sm truncate">{title}</p>
-              {status && <Badge className={cn("text-[10px] shrink-0", statusColor)}>{statusLabel}</Badge>}
+            <div className="flex items-center gap-2 mb-1">
+              <p className="truncate text-[15px] font-bold">{title}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{meta}</p>
+            <p className="text-[13px] font-medium text-muted-foreground">{meta}</p>
+            {status && <Badge className={cn("mt-1.5", statusColor)}>{statusLabel}</Badge>}
             {meetingPoint && (
-              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                <MapPin className="h-3 w-3 shrink-0" /> {meetingPoint}
+              <p className="text-[13px] font-medium text-muted-foreground flex items-center gap-1 mt-0.5">
+                <MapPin className="h-3.5 w-3.5 shrink-0" /> {meetingPoint}
               </p>
             )}
             <div className="flex items-center gap-3 mt-0.5">
               {signedUpCount != null && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="text-[13px] font-medium text-muted-foreground flex items-center gap-1">
                   <Users className="h-3 w-3" />
                   {signedUpCount}{maxParticipants ? `/${maxParticipants}` : ""} {t("events.signedUp")}
                 </span>
               )}
               {notesCount != null && notesCount > 0 && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="text-[13px] font-medium text-muted-foreground flex items-center gap-1">
                   <ClipboardCheck className="h-3 w-3" /> {notesCount} {t("school.notes")}
                 </span>
               )}

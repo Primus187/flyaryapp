@@ -89,7 +89,7 @@ export default function WaitingRoom({ access }: { access: AppAccess }) {
       <Card className="w-full max-w-md shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
         <CardContent className="space-y-6 p-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-2xl font-bold tracking-tight">{name ? t("access.welcomeName", { name }) : t("access.welcome")}</h1>
+            <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{name ? t("access.welcomeName", { name }) : t("access.welcome")}</h1>
             {!access.revoked && <p className="text-sm text-muted-foreground">{t("access.intro")}</p>}
           </div>
 

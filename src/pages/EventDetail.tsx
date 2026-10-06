@@ -297,7 +297,7 @@ export default function EventDetail() {
     <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-3">
       {/* Header: title, one compact meta line; admin actions in one menu */}
       <div className="flex items-start gap-1">
-        <Button variant="ghost" size="icon" className="shrink-0 -ml-2" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
+        <Button variant="outline" size="icon" className="shrink-0" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
         <div className="flex-1 min-w-0 pt-1">
           <h1 className="text-xl font-bold tracking-tight leading-tight">{event.title}</h1>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-xs text-muted-foreground">

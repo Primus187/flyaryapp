@@ -357,45 +357,47 @@ export default function Profile() {
 
   return (
     <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
+      <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("profile.title")}</h1>
 
       {/* XP Card */}
-      <Card className="overflow-hidden">
-        <div className="p-4 space-y-3">
+      <Card className="hero-card overflow-hidden border-0">
+        <div className="p-[18px] space-y-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Zap className="h-4 w-4 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-lg bg-white/10 flex items-center justify-center">
+                <Zap className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("leaderboard.level")} {xpLevel}</p>
-                <p className="text-sm font-semibold">{LEVEL_NAMES[xpLevel - 1]}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-hero-muted">{t("leaderboard.level")} {xpLevel}</p>
+                <p className="text-[22px] leading-7 font-extrabold tracking-tight">{LEVEL_NAMES[xpLevel - 1]}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold tabular-nums">{xpTotal.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground">XP</p>
+              <p className="text-[26px] leading-8 stat-value">{xpTotal.toLocaleString()}</p>
+              <p className="text-xs font-semibold text-hero-muted">XP</p>
             </div>
           </div>
           <div className="space-y-1">
-            <Progress value={xpProgress} className="h-2" />
-            <div className="flex justify-between text-[10px] text-muted-foreground tabular-nums">
+            <Progress value={xpProgress} className="h-2 bg-white/15" />
+            <div className="flex justify-between text-xs font-medium text-hero-muted tabular-nums">
               <span>{xpForCurrentLevel.toLocaleString()}</span>
               <span>{xpLevel < 13 ? xpForNextLevel.toLocaleString() : "∞"}</span>
             </div>
           </div>
-          <button
-            onClick={() => navigate("/leaderboard")}
-            className="w-full text-xs text-primary font-medium hover:underline text-center"
-          >
-            {t("leaderboard.viewLeaderboard")} →
-          </button>
-          <button
-            onClick={() => navigate(`/pilot/${user?.id}`)}
-            className="w-full text-xs text-muted-foreground font-medium hover:underline text-center"
-          >
-            {t("pilotProfile.viewPublicProfile")} →
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => navigate("/leaderboard")}
+              className="min-h-11 rounded-lg border border-white/15 bg-white/10 px-2 py-1.5 text-xs leading-tight font-bold"
+            >
+              {t("leaderboard.viewLeaderboard")}
+            </button>
+            <button
+              onClick={() => navigate(`/pilot/${user?.id}`)}
+              className="min-h-11 rounded-lg border border-white/15 bg-white/10 px-2 py-1.5 text-xs leading-tight font-bold"
+            >
+              {t("pilotProfile.viewPublicProfile")}
+            </button>
+          </div>
         </div>
       </Card>
 

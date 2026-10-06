@@ -281,9 +281,9 @@ export default function EventForm() {
   return (
     <div className="px-4 pt-5 pb-8 max-w-lg mx-auto space-y-4">
       <header className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={goBack} aria-label={t("common.back")}><ArrowLeft className="h-5 w-5" /></Button>
+        <Button variant="outline" size="icon" className="shrink-0" onClick={goBack} aria-label={t("common.back")}><ArrowLeft className="h-5 w-5" /></Button>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">{isEdit ? t("events.editEvent") : t("events.createEvent")}</h1>
+          <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{isEdit ? t("events.editEvent") : t("events.createEvent")}</h1>
           <p className="text-xs text-muted-foreground">{t("events.formSubtitle")}</p>
         </div>
       </header>

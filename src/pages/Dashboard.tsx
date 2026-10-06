@@ -262,10 +262,7 @@ export default function Dashboard() {
                     <CardContent className="flex items-start gap-3 p-3.5" onClick={() => navigate(`/events/${e.id}`)}>
                       <DateBlock date={e.event_date} locale={locale} />
                       <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-[15px] font-bold">{e.title}</p>
-                          <Badge variant={statusVariant(e.status)} className="shrink-0">{statusLabel[e.status] || e.status}</Badge>
-                        </div>
+                        <p className="truncate text-[15px] font-bold">{e.title}</p>
                         <p className="truncate text-[13px] font-medium text-muted-foreground">
                           {new Date(e.event_date).toLocaleDateString(locale, { weekday: "short" })}
                           {e.event_category && ` · ${t(`events.categories.${e.event_category}`, { defaultValue: e.event_category })}`}
@@ -274,6 +271,7 @@ export default function Dashboard() {
                         <p className="truncate text-[13px] font-medium text-muted-foreground">
                           {e.meeting_point && `${e.meeting_point} · `}{totalSignedUp}{e.max_participants ? `/${e.max_participants}` : ""} {t("events.signedUp")}
                         </p>
+                        <Badge variant={statusVariant(e.status)}>{statusLabel[e.status] || e.status}</Badge>
                       </div>
                       {e.status !== "cancelled" && (
                         <Button variant={isSignedUp ? "default" : "outline"} size="sm"

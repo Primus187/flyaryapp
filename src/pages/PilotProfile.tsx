@@ -200,7 +200,7 @@ export default function PilotProfile() {
 
       {/* Name, Level, Bio */}
       <div className="px-4 pt-3 pb-5 text-center space-y-1.5">
-        <h1 className="text-xl font-bold tracking-tight">{profile.pilot_name || t("common.unknown")}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{profile.pilot_name || t("common.unknown")}</h1>
         <p className="text-sm text-muted-foreground">
           Lv.{level} · {LEVEL_NAMES[level - 1]}
         </p>

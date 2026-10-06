@@ -13,7 +13,7 @@ export default function LegalTerms() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold tracking-tight">{t("legal.termsTitle")}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("legal.termsTitle")}</h1>
       </div>
 
       <section className="space-y-3 text-sm leading-relaxed text-muted-foreground">

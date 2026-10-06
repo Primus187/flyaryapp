@@ -131,7 +131,7 @@ export default function SchoolDashboard() {
     return (
       <div className="px-5 pt-5 pb-4 max-w-lg mx-auto text-center space-y-3">
         <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto" />
-        <h1 className="text-xl font-bold">{t("school.title")}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("school.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("school.noSchool")}</p>
       </div>
     );
@@ -196,7 +196,7 @@ export default function SchoolDashboard() {
       <div className="flex items-center gap-3">
         <GraduationCap className="h-6 w-6 text-primary" />
         {schoolGroups.length === 1 ? (
-          <h1 className="text-xl font-bold truncate">{schoolGroups[0].name}</h1>
+          <h1 className="text-[22px] leading-7 font-extrabold tracking-tight truncate">{schoolGroups[0].name}</h1>
         ) : (
           <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
             <SelectTrigger className="border-0 shadow-none text-xl font-bold p-0 h-auto">

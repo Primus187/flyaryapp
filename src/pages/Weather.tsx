@@ -13,7 +13,7 @@ export default function Weather() {
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-lg font-bold tracking-tight">{t("more.weather")}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("more.weather")}</h1>
       </div>
       <iframe
         src="https://www.burnair.ch/meteo/map.php"

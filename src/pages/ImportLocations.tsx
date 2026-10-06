@@ -108,7 +108,7 @@ export default function ImportLocations() {
   return (
     <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <button onClick={() => navigate("/profile")} className="flex items-center gap-1 text-sm text-muted-foreground mb-2"><ArrowLeft className="h-4 w-4" /> {t("import.backToProfile")}</button>
-      <h1 className="text-2xl font-bold tracking-tight">{t("import.importLocations")}</h1>
+      <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("import.importLocations")}</h1>
 
       {state === "idle" && (
         <Card>

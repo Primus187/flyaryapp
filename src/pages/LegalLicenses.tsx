@@ -40,7 +40,7 @@ export default function LegalLicenses() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold tracking-tight">{t("legal.licensesTitle")}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("legal.licensesTitle")}</h1>
       </div>
 
       <p className="text-sm text-muted-foreground leading-relaxed">{t("legal.licensesIntro")}</p>

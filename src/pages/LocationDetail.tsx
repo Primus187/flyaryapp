@@ -102,7 +102,7 @@ export default function LocationDetail() {
   return (
     <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-xl font-bold tracking-tight">{siteName(location.name)}</h1>{location.official_site_id && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label={t("locations.official.badge")} />}</div>
+        <div className="flex items-center gap-2"><Button variant="outline" size="icon" className="shrink-0" onClick={() => navigate("/locations")}><ArrowLeft className="h-5 w-5" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{siteName(location.name)}</h1>{location.official_site_id && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label={t("locations.official.badge")} />}</div>
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/locations?edit=${id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDuplicate}><Copy className="h-3.5 w-3.5" /></Button>

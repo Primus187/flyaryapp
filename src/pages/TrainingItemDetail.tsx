@@ -91,7 +91,7 @@ export default function TrainingItemDetail() {
       </Button>
 
       <div>
-        <h1 className="text-xl font-bold">{item.name}</h1>
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{item.name}</h1>
         {item.is_exam_maneuver && (
           <div className="mt-2 space-y-1.5">
             <div className="flex items-center gap-1.5">
