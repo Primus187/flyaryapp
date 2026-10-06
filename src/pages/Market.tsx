@@ -38,8 +38,8 @@ import { getSignedUrls } from "@/lib/signed-url-cache";
 
 const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
   <button type="button" onClick={onClick}
-    className={cn("shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
-      active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground")}>
+    className={cn("shrink-0 h-10 rounded-full border px-3.5 text-[13px] transition-colors",
+      active ? "border-primary bg-accent text-accent-foreground font-bold" : "border-border bg-card text-foreground font-semibold")}>
     {children}
   </button>
 );

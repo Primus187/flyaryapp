@@ -131,10 +131,10 @@ export default function Training() {
             key={level}
             onClick={() => setActiveLevel(level)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+              "h-10 px-3.5 rounded-full border text-[13px] whitespace-nowrap transition-colors",
               activeLevel === level
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                ? "border-primary bg-accent text-accent-foreground font-bold"
+                : "border-border bg-card text-foreground font-semibold"
             )}
           >
             {levelLabels[level]}

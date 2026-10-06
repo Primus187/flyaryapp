@@ -51,8 +51,8 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
           <Card key={label}>
             <CardContent className="p-4 flex flex-col items-center gap-1">
               <Icon className="h-5 w-5 text-primary" />
-              <span className="text-2xl font-bold">{value}</span>
-              <span className="text-[10px] text-muted-foreground text-center">{label}</span>
+              <span className="text-2xl stat-value">{value}</span>
+              <span className="text-[11px] font-semibold text-muted-foreground text-center">{label}</span>
             </CardContent>
           </Card>
         ))}
@@ -71,16 +71,21 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
       )}
 
       {nextEvent && (
-        <Card>
-          <CardContent className="p-4">
-            <p className="eyebrow">{t("school.nextFlightDay")}</p>
-            <p className="font-medium mt-1">{nextEvent.title}</p>
-            <p className="text-sm text-muted-foreground">
-              {new Date(nextEvent.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}
-              {nextSignups !== null ? ` · ${t("school.signupsCount", { count: nextSignups })}` : ""}
-            </p>
-            <Button size="sm" variant="outline" className="mt-2" onClick={() => navigate(`/events/${nextEvent.id}`)}>
-              <Calendar className="h-3.5 w-3.5 mr-1" />
+        <Card className="hero-card border-0">
+          <CardContent className="space-y-3 p-[18px]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 space-y-1">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-hero-muted">{t("school.nextFlightDay")}</p>
+                <p className="text-xl leading-[26px] font-extrabold tracking-tight">{nextEvent.title}</p>
+                <p className="text-[13px] font-medium text-hero-muted">
+                  {new Date(nextEvent.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}
+                  {nextSignups !== null ? ` · ${t("school.signupsCount", { count: nextSignups })}` : ""}
+                </p>
+              </div>
+              {nextSignups !== null && <p className="shrink-0 text-[30px] leading-9 stat-value">{nextSignups}</p>}
+            </div>
+            <Button className="w-full bg-white/10 text-hero-foreground hover:bg-white/15" onClick={() => navigate(`/events/${nextEvent.id}`)}>
+              <Calendar className="h-4 w-4" />
               {t("school.openEvent")}
             </Button>
           </CardContent>

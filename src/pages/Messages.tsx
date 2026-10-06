@@ -55,7 +55,7 @@ export default function Messages() {
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
           {filters.map((f) => (
             <button key={f} type="button" onClick={() => setFilter(f)}
-              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${filter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              className={`shrink-0 h-10 rounded-full border px-3.5 text-[13px] transition-colors ${filter === f ? "border-primary bg-accent text-accent-foreground font-bold" : "border-border bg-card text-foreground font-semibold"}`}>
               {t(`chat.filters.${f}`)}
             </button>
           ))}
