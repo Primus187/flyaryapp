@@ -289,9 +289,9 @@ export default function ChallengeDetail() {
       )}
 
       {/* Progress overview */}
-      <div className={`p-4 rounded-xl border ${isComplete ? "bg-warning-soft0/5 border-warning/40" : "bg-card border-border"}`}>
+      <div className={`p-4 rounded-xl border ${isComplete ? "bg-warning-soft border-warning/40" : "bg-card border-border"}`}>
         <div className="flex items-center gap-3 mb-3">
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isComplete ? "bg-warning-soft0/10" : "bg-primary/10"}`}>
+          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isComplete ? "bg-warning-soft" : "bg-primary/10"}`}>
             {isComplete ? <Trophy className="h-5 w-5 text-warning" /> : <Target className="h-5 w-5 text-primary" />}
           </div>
           <div className="flex-1">

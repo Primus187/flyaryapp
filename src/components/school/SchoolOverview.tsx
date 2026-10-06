@@ -18,9 +18,9 @@ interface Props {
 }
 
 const SHV_AMPEL_STYLES: Record<ShvMinimumPerformanceStatus, string> = {
-  ok: "bg-success-soft0/10 text-success-soft-foreground",
-  warning: "bg-warning-soft0/10 text-warning-soft-foreground dark:text-warning",
-  critical: "bg-destructive-soft0/10 text-destructive",
+  ok: "bg-success-soft text-success-soft-foreground",
+  warning: "bg-warning-soft text-warning-soft-foreground",
+  critical: "bg-destructive-soft text-destructive",
 };
 
 export default function SchoolOverview({ groupId, studentCount, nextEvent, openNotesCount, openBilling, nextSignups, licensedCount }: Props) {

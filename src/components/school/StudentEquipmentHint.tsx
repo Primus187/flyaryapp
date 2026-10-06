@@ -22,7 +22,7 @@ export default function StudentEquipmentHint({ groupId, studentUserId }: { group
   if (!result) return <p className="text-xs text-muted-foreground" role="status">{t("school.gear.loading")}</p>;
   if (!result.error && result.missing.length === 0) return null;
   return (
-    <p role="status" className="text-xs text-warning-soft-foreground dark:text-warning flex items-start gap-1.5">
+    <p role="status" className="text-xs text-warning-soft-foreground flex items-start gap-1.5">
       <AlertTriangle className="h-4 w-4 shrink-0" />
       <span>{result.error ? t("school.gear.loadFailed") : t("school.gear.signupWarning", {
         items: result.missing.map((item) => t(`school.gear.items.${item}`)).join(", "),

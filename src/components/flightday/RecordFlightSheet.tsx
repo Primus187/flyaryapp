@@ -107,7 +107,7 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
             {maneuvers.length === 0 && <p className="text-xs text-muted-foreground">{t("flightDay.sheet.noManeuvers")}</p>}
             {maneuvers.map((m) => (
               <div key={m.id} className="flex items-center gap-2">
-                <span className="flex-1 min-w-0 text-sm truncate">{m.name}</span>
+                <span className="flex-1 min-w-0 text-[15px] font-semibold truncate">{m.name}</span>
                 <div className="flex gap-1" role="group" aria-label={m.name}>
                   {MANEUVER_RATINGS.map((r) => (
                     <button
@@ -116,9 +116,9 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
                       aria-pressed={draft.ratings[m.id] === r}
                       onClick={() => setDraft((d) => ({ ...d, ratings: toggleRating(d.ratings, m.id, r) }))}
                       className={cn(
-                        "h-12 min-w-[4.25rem] rounded-md border px-2 text-xs font-medium transition-colors",
+                        "h-12 min-w-[4.25rem] rounded-xl border px-2 text-[13px] font-bold transition-colors",
                         draft.ratings[m.id] === r
-                          ? r === 1 ? "border-destructive/40 bg-destructive-soft0 text-white" : r === 2 ? "border-warning/40 bg-warning-soft0 text-white" : "border-success/40 bg-success text-white"
+                          ? r === 1 ? "border-destructive/40 bg-destructive-soft text-destructive-soft-foreground" : r === 2 ? "border-warning/40 bg-warning-soft text-warning-soft-foreground" : "border-success/40 bg-success-soft text-success-soft-foreground"
                           : "bg-background text-muted-foreground",
                       )}
                     >

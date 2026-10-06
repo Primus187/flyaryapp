@@ -581,14 +581,14 @@ export default function Profile() {
                 </div>
                 <div>
                   <p className="text-muted-foreground uppercase tracking-wider">{t("profile.nextCheck")}</p>
-                  <p className={`font-medium ${checkOverdue ? 'text-destructive' : checkSoon ? 'text-warning-soft-foreground dark:text-warning' : ''}`}>
+                  <p className={`font-medium ${checkOverdue ? 'text-destructive' : checkSoon ? 'text-warning-soft-foreground' : ''}`}>
                     {g.next_check_date ? new Date(g.next_check_date).toLocaleDateString() : '–'}
                     {checkOverdue && <span className="ml-1">⚠️</span>}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground uppercase tracking-wider">{t("profile.reserveRepack")}</p>
-                  <p className={`font-medium ${reserveOverdue ? 'text-destructive' : reserveSoon ? 'text-warning-soft-foreground dark:text-warning' : ''}`}>
+                  <p className={`font-medium ${reserveOverdue ? 'text-destructive' : reserveSoon ? 'text-warning-soft-foreground' : ''}`}>
                     {g.reserve_repack_date ? new Date(g.reserve_repack_date).toLocaleDateString() : '–'}
                     {reserveOverdue && <span className="ml-1">⚠️</span>}
                   </p>
@@ -662,7 +662,7 @@ export default function Profile() {
 
       <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
         {!healthConsent && (
-          <div className="p-3 rounded-lg bg-warning-soft border border-warning/40 text-xs text-warning-soft-foreground dark:text-warning space-y-2">
+          <div className="p-3 rounded-lg bg-warning-soft border border-warning/40 text-xs text-warning-soft-foreground space-y-2">
             <p>{t("profile.healthConsentInfo")}</p>
             <Button size="sm" variant="outline" onClick={() => setShowConsentDialog(true)}>{t("profile.giveConsent")}</Button>
           </div>

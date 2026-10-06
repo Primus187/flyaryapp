@@ -70,7 +70,7 @@ export default function TrainingStatusCard({ userId, defaultDiscipline = "paragl
               ))}
               {allMet(status) && <p className="text-xs text-success-soft-foreground">{t("trainingStatus.allMet")}</p>}
               {status.confirmedWithoutKind > 0 && (
-                <p className="text-xs text-warning-soft-foreground dark:text-warning">{t("trainingStatus.withoutKind", { count: status.confirmedWithoutKind })}</p>
+                <p className="text-xs text-warning-soft-foreground">{t("trainingStatus.withoutKind", { count: status.confirmedWithoutKind })}</p>
               )}
               <p className="text-[11px] text-muted-foreground flex gap-1.5"><Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                 {t("trainingStatus.hint", { source: [...new Set(status.requirements.map((r) => r.source))].join("; ") })}</p>

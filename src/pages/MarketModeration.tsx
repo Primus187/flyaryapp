@@ -119,7 +119,7 @@ export default function MarketModeration() {
               <p className="text-[11px] text-muted-foreground">
                 {bucketsBySize(usage).map(([bucket, bytes]) => `${bucket}: ${formatBytes(bytes)}`).join(" · ")}
               </p>
-              {level.warn && <p className="text-xs text-warning-soft-foreground dark:text-warning">{t("market.storage.warn")}</p>}
+              {level.warn && <p className="text-xs text-warning-soft-foreground">{t("market.storage.warn")}</p>}
             </CardContent>
           </Card>
         );

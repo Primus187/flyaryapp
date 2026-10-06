@@ -171,7 +171,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
   if (participants.length === 0) return null;
 
   return (
-    <section className="space-y-1.5">
+    <section className="space-y-2">
       <h2 className="eyebrow">{t("flightDay.board.title")}</h2>
       <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} onSelect={readOnly ? undefined : landFlight} />
       {participants.map((p) => {
@@ -181,14 +181,14 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
         const isOpen = expanded === p.userId;
         const name = p.name || t("events.pilot");
         return (
-          <div key={p.userId} className={cn("rounded-lg border bg-card", p.pause && "opacity-70")}>
-            <div className="flex items-center gap-2 pl-2 pr-2 py-1.5">
+          <div key={p.userId} className={cn("rounded-card border bg-card", p.pause && "opacity-70")}>
+            <div className="flex items-center gap-2 pl-3 pr-2 py-2">
               <button type="button" className="flex flex-1 min-w-0 items-center gap-2 py-1.5 text-left" aria-expanded={isOpen}
                 onClick={() => setExpanded(isOpen ? null : p.userId)}>
                 <ChevronRight className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-90")} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{name}</span>
-                  <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <span className="block truncate text-base font-bold">{name}</span>
+                  <span className="flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
                     <span className="flex items-center gap-0.5"><Plane className="h-3 w-3" />{countOf(p.userId)}</span>
                     <span className="flex gap-0.5" aria-hidden>
                       {own.filter((f) => f.status !== "aborted").map((f) => (
@@ -201,13 +201,13 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                 </span>
               </button>
               {!readOnly && action === "add" && (
-                <Button size="sm" variant="ghost" className="h-12 shrink-0 px-2 text-xs" disabled={busy === p.userId}
+                <Button size="sm" variant="ghost" className="h-[52px] shrink-0 px-3 text-sm text-link" disabled={busy === p.userId}
                   onClick={() => void startFlight(p.userId)}>
                   {t("flightDay.board.start")}
                 </Button>
               )}
               {!readOnly && (
-                <Button size="sm" className="h-12 min-w-[5.5rem] shrink-0" variant={action === "land" ? "default" : "outline"}
+                <Button size="sm" className="h-[52px] min-w-[6.5rem] shrink-0 rounded-xl text-[15px]" variant={action === "land" ? "default" : "outline"}
                   disabled={busy === p.userId} onClick={() => mainAction(p.userId, name)}>
                   {t(`flightDay.board.${action}`)}
                 </Button>
@@ -215,7 +215,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
             </div>
 
             {isOpen && (
-              <div className="space-y-2 border-t px-3 py-2">
+              <div className="space-y-2 border-t px-3.5 py-3">
                 {own.length === 0 && <p className="text-xs text-muted-foreground">{t("flightDay.board.noFlights")}</p>}
                 {own.map((f) => {
                   const minutes = flightDurationMinutes(f);
@@ -223,17 +223,17 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                   const times = f.started_at && f.landed_at ? `${time(f.started_at)}–${time(f.landed_at)}` : time(f.landed_at || f.started_at);
                   return (
                     <button key={f.id} type="button" disabled={readOnly || f.status === "aborted"}
-                      className="block w-full rounded-md bg-muted/40 px-2 py-1.5 text-left disabled:opacity-70"
+                      className="block w-full rounded-xl bg-background px-3 py-2 text-left disabled:opacity-70"
                       onClick={() => setSheet({ studentId: p.userId,
                         mode: f.status === "in_air" ? { kind: "land", flightId: f.id, number: numbers[f.id] } : { kind: "edit", flightId: f.id, number: numbers[f.id] },
                         initial: draftOf(f.id) })}>
-                      <span className="flex items-center gap-2 text-xs">
-                        <span className="font-medium">{label}</span>
+                      <span className="flex items-center gap-2 text-[13px]">
+                        <span className="font-bold">{label}</span>
                         <span className="text-muted-foreground">{times}{minutes !== null ? ` · ${t("flightDay.board.minutes", { count: minutes })}` : ""}</span>
                         {f.status === "in_air" && <span className="ml-auto text-link">{t("flightDay.board.inAirShort")}</span>}
                       </span>
                       {(notes[f.id]?.feedback || f.start_note) && (
-                        <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-2">{notes[f.id]?.feedback || f.start_note}</span>
+                        <span className="mt-0.5 block text-[13px] text-muted-foreground line-clamp-2">{notes[f.id]?.feedback || f.start_note}</span>
                       )}
                     </button>
                   );
@@ -244,7 +244,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                     {t("flightDay.board.addWithFeedback")}
                   </Button>
                 )}
-                <div className="flex gap-1.5 text-xs text-muted-foreground">
+                <div className="flex gap-1.5 text-[13px] text-muted-foreground">
                   <ArrowRightCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                   <span><span className="font-medium">{t("flightDay.board.lastNextStep")}:</span> {nextSteps[p.userId] || t("flightDay.board.noNextStep")}</span>
                 </div>
@@ -259,7 +259,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
         );
       })}
 
-      {selfLogged > 0 && <p className="text-[11px] text-muted-foreground">{t("flightDay.board.selfLogged", { count: selfLogged })}</p>}
+      {selfLogged > 0 && <p className="text-[13px] font-medium text-muted-foreground">{t("flightDay.board.selfLogged", { count: selfLogged })}</p>}
 
       <RecordFlightSheet
         eventId={eventId}

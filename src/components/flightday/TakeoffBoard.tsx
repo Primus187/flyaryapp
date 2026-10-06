@@ -96,7 +96,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="eyebrow">{t("flightDay.takeoff.title")}</h2>
-        <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+        <span className="flex items-center gap-1 text-[13px] font-medium text-muted-foreground truncate">
           <MapPin className="h-3 w-3 shrink-0" />{siteName(site) || t("flightDay.sites.notSet")}
         </span>
       </div>
@@ -108,10 +108,10 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
         const last = latestFlight(own);
         const name = p.name || t("events.pilot");
         return (
-          <div key={p.userId} className={cn("flex items-center gap-2 rounded-lg border bg-card pl-3 pr-1.5 py-1.5", p.pause && "opacity-70")}>
+          <div key={p.userId} className={cn("flex items-center gap-2 rounded-card border bg-card pl-4 pr-1.5 py-2.5", p.pause && "opacity-70")}>
             <div className="flex-1 min-w-0 py-1">
-              <p className="truncate text-sm font-medium">{name}</p>
-              <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+              <p className="truncate text-base font-bold">{name}</p>
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground truncate">
                 <span className="flex items-center gap-0.5"><Plane className="h-3 w-3" />{counts[p.userId] || 0}</span>
                 {current && <span className="text-link">{t("flightDay.board.inAir", { minutes: airborneMinutes(current, now) ?? 0 })}</span>}
                 {!current && p.pause && <span className="flex items-center gap-0.5 text-warning-soft-foreground"><PauseCircle className="h-3 w-3" />{t(`flightDay.reasons.${p.pause.reason}`)}</span>}
@@ -119,18 +119,18 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
               </p>
             </div>
             {readOnly ? null : action === "start" ? (
-              <Button className="h-12 min-w-[5.5rem]" disabled={busy === p.userId} onClick={() => void start(p.userId, name, !!p.pause)}>
+              <Button className="h-[60px] min-w-[7rem] rounded-2xl text-lg font-extrabold" disabled={busy === p.userId} onClick={() => void start(p.userId, name, !!p.pause)}>
                 {t("flightDay.takeoff.start")}
               </Button>
             ) : (
-              <Button variant="outline" className="h-12 min-w-[5.5rem]" disabled={busy === current!.id}
+              <Button variant="outline" className="h-[60px] min-w-[7rem] rounded-2xl border-destructive/40 text-base text-destructive" disabled={busy === current!.id}
                 onClick={() => setDialog({ kind: "abort", flight: current!, text: current!.start_note || "" })}>
                 {t("flightDay.takeoff.abort")}
               </Button>
             )}
             {!readOnly && <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="flex h-12 w-10 items-center justify-center text-muted-foreground" disabled={!last}
+                <button type="button" className="flex h-[60px] w-10 items-center justify-center text-muted-foreground" disabled={!last}
                   aria-label={t("flightDay.moreFor", { name })}>
                   <MoreVertical className="h-4 w-4" />
                 </button>

@@ -72,8 +72,8 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
   const statusColor = isCancelled
     ? "bg-destructive/20 text-destructive"
     : event.status === "confirmed"
-    ? "bg-success-soft0/20 text-success-soft-foreground"
-    : "bg-warning-soft0/20 text-warning";
+    ? "bg-success-soft text-success-soft-foreground"
+    : "bg-warning-soft text-warning";
 
   const statusLabel = isCancelled
     ? t("events.statusCancelled")

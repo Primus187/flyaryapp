@@ -18,9 +18,9 @@ import MergeLocationDialog from "@/components/MergeLocationDialog";
 const markerIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
 const WIND_MATCH_STYLES: Record<WindMatchStatus, string> = {
-  match: "bg-success-soft0/10 text-success-soft-foreground",
-  borderline: "bg-warning-soft0/10 text-warning-soft-foreground dark:text-warning",
-  unsuitable: "bg-destructive-soft0/10 text-destructive",
+  match: "bg-success-soft text-success-soft-foreground",
+  borderline: "bg-warning-soft text-warning-soft-foreground",
+  unsuitable: "bg-destructive-soft text-destructive",
 };
 
 export default function LocationDetail() {

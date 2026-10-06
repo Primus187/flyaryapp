@@ -44,9 +44,9 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
   const [saving, setSaving] = useState(false);
 
   const statusClasses: Record<StudentStatus, string> = {
-    active: "bg-success-soft0/10 text-success-soft-foreground border border-success/40",
-    paused: "bg-warning-soft0/10 text-warning-soft-foreground border border-warning/40",
-    cancelled: "bg-destructive-soft0/10 text-destructive border border-destructive/40",
+    active: "bg-success-soft text-success-soft-foreground border border-success/40",
+    paused: "bg-warning-soft text-warning-soft-foreground border border-warning/40",
+    cancelled: "bg-destructive-soft text-destructive border border-destructive/40",
   };
 
   const openStatusChange = (student: StudentInfo, nextStatus: StudentStatus) => {

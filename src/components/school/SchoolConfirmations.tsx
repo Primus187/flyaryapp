@@ -137,7 +137,7 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
         ) : (
           <>
             {tab === "submitted" && !anyQualified && (
-              <p className="text-xs text-warning-soft-foreground dark:text-warning flex gap-2"><AlertTriangle className="h-4 w-4 shrink-0" />{t("confirmations.noCertificate")}</p>
+              <p className="text-xs text-warning-soft-foreground flex gap-2"><AlertTriangle className="h-4 w-4 shrink-0" />{t("confirmations.noCertificate")}</p>
             )}
             {groups.map((g) => {
               const ids = g.rows.filter(isBulkConfirmable).map((r) => r.flightId);

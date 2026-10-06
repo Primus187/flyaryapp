@@ -86,7 +86,7 @@ export default function TandemPassengerCard({ flightId, cancelled, locale }: { f
           <p className="text-sm flex items-start gap-2"><Clock className="h-4 w-4 text-warning-soft-foreground shrink-0 mt-0.5" />{t("tandem.pending", { name: passenger.passenger_name })}</p>
         )}
         {changedSince && (
-          <p className="text-xs flex items-start gap-2 text-warning-soft-foreground dark:text-warning"><AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{t("tandem.changedSince")}</p>
+          <p className="text-xs flex items-start gap-2 text-warning-soft-foreground"><AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{t("tandem.changedSince")}</p>
         )}
         <div className="flex gap-2">
           <Input className="h-8 text-sm" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tandem.namePlaceholder")} />

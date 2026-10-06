@@ -332,7 +332,7 @@ export default function MarketListingForm() {
             </Select>
           ))}
           {sellerGroup && shops.some((s) => s.group_id === sellerGroup && !s.ready) && (
-            <p className="rounded-md bg-warning-soft0/10 px-3 py-2 text-xs text-warning-soft-foreground dark:text-warning">{t("market.shop.notReadyForm")}</p>
+            <p className="rounded-md bg-warning-soft px-3 py-2 text-xs text-warning-soft-foreground">{t("market.shop.notReadyForm")}</p>
           )}
           <div className="grid grid-cols-2 gap-2">
             {LISTING_TYPES.map((type) => (

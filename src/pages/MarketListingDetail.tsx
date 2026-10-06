@@ -216,8 +216,8 @@ export default function MarketListingDetail() {
       )}
 
       {fit && (
-        <p className={fit === "fits" ? "rounded-md bg-success-soft0/10 px-3 py-2 text-xs text-success-soft-foreground"
-          : "rounded-md bg-warning-soft0/10 px-3 py-2 text-xs text-warning-soft-foreground dark:text-warning"}>
+        <p className={fit === "fits" ? "rounded-md bg-success-soft px-3 py-2 text-xs text-success-soft-foreground"
+          : "rounded-md bg-warning-soft px-3 py-2 text-xs text-warning-soft-foreground"}>
           {t(fit === "fits" ? "market.radius.weightFits" : "market.radius.weightOutside", { kg: myWeight })}
         </p>
       )}

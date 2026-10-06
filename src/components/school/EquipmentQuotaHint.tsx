@@ -63,7 +63,7 @@ export default function EquipmentQuotaHint({ groupId, eventDate, signups }: Prop
 
   if (error) return (
     <div role="alert" className="space-y-1">
-      <p className="text-xs text-warning-soft-foreground dark:text-warning">{t("school.quota.loadFailed")}</p>
+      <p className="text-xs text-warning-soft-foreground">{t("school.quota.loadFailed")}</p>
       <Button size="sm" variant="outline" onClick={() => setRetry((value) => value + 1)}>{t("school.quota.retry")}</Button>
     </div>
   );
@@ -72,7 +72,7 @@ export default function EquipmentQuotaHint({ groupId, eventDate, signups }: Prop
 
   return (
     <div role="status" className="space-y-1">
-      <p className="text-xs text-warning-soft-foreground dark:text-warning flex items-start gap-1.5">
+      <p className="text-xs text-warning-soft-foreground flex items-start gap-1.5">
         <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
         {t("school.quota.warning", { needed: hint.needed, available: hint.available })}
       </p>

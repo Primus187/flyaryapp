@@ -170,7 +170,7 @@ export default function Training() {
           const pct = categoryProgress(cat.id);
           const locked = isCategoryLocked(cat, progressByCategory);
           return (
-            <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-warning/40 bg-warning-soft0/5")}>
+            <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-warning/40 bg-warning-soft")}>
               <AccordionTrigger className="px-4 py-3 hover:no-underline">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {cat.name === "SHV-Prüfungsmanöver" && <Shield className="h-4 w-4 text-warning shrink-0" />}

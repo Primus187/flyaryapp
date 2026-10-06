@@ -208,7 +208,7 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
     <div className="space-y-3 pt-3">
       <p className="text-xs text-muted-foreground">{t("school.certs.daysExplanation")}</p>
       {warnings.length > 0 && (
-        <Card className="border-warning/40 bg-warning-soft0/5">
+        <Card className="border-warning/40 bg-warning-soft">
           <CardContent className="p-3 space-y-1">
             {warnings.map((w) => (
               <p key={w} className="text-xs text-warning flex items-start gap-1.5">

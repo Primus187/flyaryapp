@@ -115,7 +115,7 @@ function highlight(text: string, term: string) {
   return (
     <>
       {text.slice(0, index)}
-      <mark className="rounded bg-warning-soft px-0.5 text-foreground dark:bg-warning-soft0/40">{text.slice(index, index + term.length)}</mark>
+      <mark className="rounded bg-warning-soft px-0.5 text-foreground">{text.slice(index, index + term.length)}</mark>
       {text.slice(index + term.length)}
     </>
   );

@@ -116,10 +116,10 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
   return (
     <div className="space-y-2">
       <Card>
-        <CardContent className="p-3 flex items-center gap-3">
+        <CardContent className="px-4 py-3.5 flex items-center gap-3">
           <UserCheck className="h-5 w-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">{t("flightDay.presentOf", { present: summary.present, total: summary.total })}</p>
+            <p className="text-lg stat-value">{t("flightDay.presentOf", { present: summary.present, total: summary.total })}</p>
             <p className="text-xs text-muted-foreground">
               {[
                 summary.absent > 0 && t("flightDay.absentCount", { count: summary.absent }),
@@ -144,7 +144,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
           <div
             key={p.userId}
             className={cn(
-              "relative flex min-h-14 items-stretch rounded-lg border bg-card",
+              "relative flex min-h-[60px] items-stretch rounded-2xl border bg-card",
               p.presence === "present" && !p.pause && "border-success/40 bg-success-soft",
               p.pause && "border-warning/40 bg-warning-soft",
               p.presence === "expected" && "border-dashed",
@@ -153,13 +153,13 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
           >
             <button
               type="button"
-              className="flex-1 min-w-0 px-3 py-2 text-left disabled:opacity-50"
+              className="flex-1 min-w-0 px-3.5 py-2 text-left disabled:opacity-50"
               disabled={busy === p.userId || busy === "all"}
               onClick={() => void setPresence(p, nextPresenceOnTap(p.presence))}
               aria-label={`${p.name || t("events.pilot")}: ${t(`flightDay.status.${p.presence}`)}`}
             >
-              <span className="block text-sm font-medium truncate">{p.name || t("events.pilot")}</span>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
+              <span className="block text-[15px] font-bold truncate">{p.name || t("events.pilot")}</span>
+              <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground truncate">
                 {p.pause
                   ? <><PauseCircle className="h-3 w-3 text-warning-soft-foreground shrink-0" />{t(`flightDay.reasons.${p.pause.reason}`)}</>
                   : t(`flightDay.status.${p.presence}`)}

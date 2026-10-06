@@ -103,10 +103,10 @@ export default function FeedAchievementCard({ achievement, onReact, onComment, o
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]" />
           )}
           <div className="relative z-10 space-y-2">
-            <div className={cn("mx-auto h-14 w-14 rounded-2xl flex items-center justify-center", isComplete ? "bg-warning-soft0/30" : "bg-primary/20")}>
+            <div className={cn("mx-auto h-14 w-14 rounded-2xl flex items-center justify-center", isComplete ? "bg-warning-soft" : "bg-primary/20")}>
               {isComplete ? <Trophy className="h-7 w-7 text-warning" /> : <Target className="h-7 w-7 text-primary" />}
             </div>
-            <Badge className={cn("border-0 text-xs font-bold px-3 py-1", isComplete ? "bg-warning-soft0/25 text-warning-soft-foreground dark:text-warning" : "bg-primary/20 text-primary")}>
+            <Badge className={cn("border-0 text-xs font-bold px-3 py-1", isComplete ? "bg-warning-soft text-warning-soft-foreground" : "bg-primary/20 text-primary")}>
               {isComplete ? `🏆 ${t("feed.challengeCompleted")}` : `🎯 ${t("feed.goalReached")}`}
             </Badge>
             <h3 className="text-base font-bold">{achievement.challenge_title}</h3>

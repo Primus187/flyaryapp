@@ -27,7 +27,7 @@ interface MyFlight {
   items: { name: string; rating: 1 | 2 | 3 }[];
 }
 
-const ratingClass = { 1: "bg-destructive-soft0", 2: "bg-warning-soft0", 3: "bg-success" } as const;
+const ratingClass = { 1: "bg-destructive", 2: "bg-warning", 3: "bg-success" } as const;
 
 /** The student's feedback of a flying day: the school's flights with rated maneuvers and feedback,
  *  former coaching slots and the day summary. Everything appears once the day is released (E8). */

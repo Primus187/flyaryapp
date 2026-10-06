@@ -38,7 +38,7 @@ export default function ListingChatCard({ info }: { info: ListingChatInfo }) {
           <Badge variant={available ? "secondary" : "outline"} className="shrink-0 text-[10px]">{t(`market.status.${info.status}`)}</Badge>
         )}
       </button>
-      <p className="flex items-start gap-1.5 rounded-md bg-warning-soft0/10 px-2.5 py-1.5 text-[11px] text-warning-soft-foreground dark:text-warning">
+      <p className="flex items-start gap-1.5 rounded-md bg-warning-soft px-2.5 py-1.5 text-[11px] text-warning-soft-foreground">
         <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-px" /> {t("market.chat.safety")}
       </p>
     </div>

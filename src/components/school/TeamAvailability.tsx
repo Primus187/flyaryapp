@@ -35,9 +35,9 @@ interface Entry {
 }
 
 const STATUS_STYLES: Record<AvailabilityStatus, string> = {
-  available: "bg-success-soft0/15 text-success-soft-foreground border-success/40",
-  unsure: "bg-warning-soft0/15 text-warning-soft-foreground dark:text-warning border-warning/40",
-  unavailable: "bg-destructive-soft0/15 text-destructive border-destructive/40",
+  available: "bg-success-soft text-success-soft-foreground border-success/40",
+  unsure: "bg-warning-soft text-warning-soft-foreground border-warning/40",
+  unavailable: "bg-destructive-soft text-destructive border-destructive/40",
 };
 
 export default function TeamAvailability({ groupId, canManage = true }: Props) {
