@@ -1,0 +1,144 @@
+/* Flyary start page: one flight from the summit down to the landing meadow.
+   Four painted scenes stand behind the content as a fixed stage (stage.js moves their depth layers and the glider).
+   Without JavaScript, or when the visitor asks for reduced motion, the same content shows on plain grounds: everything
+   under `.stage-on` is the moving version, everything else works on its own. */
+:root {
+  --mist: #e9ebf5;
+  --forest: #14262a;
+  --meadow: #2c4a35;
+  --valley: #74a7ec;
+  --ground: #1f3a2f;
+  --dawn: #d1b8af;
+}
+.home { background: var(--mist); }
+.home h2 { font-size: clamp(30px, 4vw, 54px); line-height: 1.06; font-weight: 800; }
+.home h3 { font-size: clamp(21px, 2vw, 26px); line-height: 1.2; font-weight: 800; letter-spacing: -.02em; }
+
+/* ---------- Header: clear over the hero, away while reading down, back when scrolling up ---------- */
+.home .header { position: fixed; inset: 0 0 auto; transition: transform .35s var(--ease), background .35s var(--ease), border-color .35s; }
+.home .header:not(.is-scrolled) { background: transparent; border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.home .header.is-away { transform: translateY(-110%); }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; display: grid; grid-template-rows: auto 1fr; justify-items: center; min-height: min(92vh, 900px); padding: 17vh 16px 13vh; color: #fff; text-align: center; background: var(--dawn) url("/assets/landscape/gipfel-flach-1024.webp") center 30% / cover no-repeat; }
+.hero h1 { display: flex; flex-direction: column-reverse; align-items: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
+.hero-brand, .stage-title b { font-size: min(16.5vw, 300px); line-height: 1; font-weight: 800; }
+.hero-claim, .stage-title small { font-size: clamp(18px, 2.7vw, 44px); font-weight: 600; letter-spacing: -.01em; margin-bottom: .1em; }
+.hero-actions { align-self: end; display: grid; justify-items: center; gap: 16px; }
+.hero-link, .final-link { color: var(--ink); font-weight: 700; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; }
+.hero-link { text-shadow: 0 0 10px #fff, 0 0 10px #fff; }
+@media (min-width: 1100px) { html:not(.stage-on) .hero { background-image: url("/assets/landscape/gipfel-flach-2048.webp"); } }
+html.stage-on .hero { background: none; }
+
+/* ---------- Chapters ---------- */
+.stage, .glider, .gap { display: none; }
+.chapter { position: relative; padding-block: clamp(64px, 9vw, 120px); }
+.chapter-mist { background: var(--mist); }
+.chapter-forest { background: var(--forest); color: #e9f1ec; --focus: #fff; }
+.chapter-meadow { background: var(--meadow); color: #f1f6ec; --focus: #fff; }
+.chapter-valley { background: var(--valley); text-align: center; }
+.chapter-intro { font-size: 18px; line-height: 1.6; color: var(--muted); max-width: 56ch; }
+.chapter-forest .chapter-intro, .chapter-forest .school-steps p, .chapter-forest .chapter-note { color: #b9cbc3; }
+.chapter-note { font-size: 15px; }
+.phone { width: min(270px, 62vw); padding: 6px; border-radius: 34px; background: var(--ink); box-shadow: 0 34px 50px -34px rgba(20, 33, 58, .55); }
+.phone-screen { border-radius: 28px; overflow: hidden; background: #fff; }
+.phone-screen img { width: 100%; }
+.chapter-forest .phone { background: #0a1517; }
+
+/* App: one phone, four views */
+.explorer { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: clamp(32px, 6vw, 90px); align-items: center; }
+.explorer-copy { display: grid; gap: 22px; }
+.explorer-stage { justify-self: center; }
+.preview-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.preview-tab { display: grid; gap: 2px; padding: 14px 18px; border-radius: 16px; border: 1.5px solid rgba(20, 33, 58, .14); background: rgba(255, 255, 255, .45); transition: background .2s, border-color .2s; }
+.preview-tab b { font-size: 17px; font-weight: 800; }
+.preview-tab span { font-size: 14px; color: var(--muted); }
+.preview-tab:hover { background: rgba(255, 255, 255, .8); }
+.preview-tab[aria-selected="true"] { background: #fff; border-color: var(--ink); }
+.preview-panel { display: grid; gap: 12px; align-content: start; }
+.preview-panel + .preview-panel { margin-top: 36px; }
+.enhanced .preview-panel { min-height: 170px; }
+.enhanced .preview-panel + .preview-panel { margin-top: 0; }
+.preview-panel p { color: var(--muted); line-height: 1.6; }
+.panel-points { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font-weight: 600; font-size: 15px; }
+.panel-points li { display: flex; align-items: center; gap: 8px; }
+.panel-points li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.fallback-screen { width: min(240px, 100%); margin-top: 8px; border: 6px solid var(--ink); border-radius: 30px; }
+.enhanced .fallback-screen { display: none; }
+#app:not(.enhanced) .explorer { grid-template-columns: 1fr; }
+#app:not(.enhanced) .explorer-stage { display: none; }
+#preview-image { transition: opacity .25s var(--ease); }
+#preview-image.is-swapping { opacity: 0; }
+
+/* Schools: the three steps are a real sequence, so they are numbered */
+.school { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(32px, 7vw, 100px); align-items: center; }
+.school-visual { justify-self: center; }
+.school-copy { display: grid; gap: 20px; max-width: 520px; }
+.school-copy .button { justify-self: start; }
+.school-steps { list-style: none; padding: 0; display: grid; gap: 16px; counter-reset: step; }
+.school-steps li { counter-increment: step; display: grid; grid-template-columns: 36px 1fr; column-gap: 14px; }
+.school-steps li::before { content: counter(step); grid-row: span 2; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #7fb59b; color: #bfe3d0; font-weight: 800; font-size: 16px; }
+.school-steps h3 { font-size: 20px; align-self: center; }
+.school-steps p { grid-column: 2; font-size: 16px; line-height: 1.55; }
+
+/* Film and questions */
+.more { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 80px); align-items: start; }
+.about, .faq { display: grid; gap: 22px; min-width: 0; }
+.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 16px; background: #0b1623; box-shadow: 0 30px 50px -36px rgba(0, 0, 0, .8); }
+.video-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.video-play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 76px; height: 76px; padding: 0; border: 0; border-radius: 50%; color: #fff; background: var(--accent); transition: transform .3s var(--ease); }
+.video-play .icon { width: 30px; height: 30px; margin-left: 4px; }
+.video-play:hover, .video-play:focus-visible { transform: scale(1.08); }
+.faq-list details { border-bottom: 1.5px solid rgba(255, 255, 255, .26); }
+.faq-list details:first-child { border-top: 1.5px solid rgba(255, 255, 255, .26); }
+.faq-list summary { cursor: pointer; padding: 15px 0; font-weight: 700; font-size: 18px; line-height: 1.3; }
+.faq-list details p { padding-bottom: 18px; color: #d7e3d2; font-size: 16px; line-height: 1.6; }
+.chapter-link { justify-self: start; font-weight: 700; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; }
+
+/* Landing */
+.final { display: grid; gap: 18px; justify-items: center; }
+.final h2 { font-size: clamp(32px, 4.8vw, 66px); max-width: 16ch; }
+.final p { font-weight: 500; color: #1f3558; }
+.final-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px 26px; margin-top: 4px; }
+
+/* Footer on the ground of the landing meadow */
+.home .footer { position: relative; z-index: 2; background: var(--ground); color: #d8e6d6; border-top: 0; --focus: #fff; }
+.home .footer-top p, .home .footer-bottom { color: #b9cdb9; }
+.home .footer-bottom { border-top-color: rgba(255, 255, 255, .16); }
+.home .footer-bottom a:hover { color: #fff; }
+.home .footer .languages a[aria-current="page"] { background: rgba(255, 255, 255, .14); }
+
+/* ---------- The moving version ---------- */
+html.stage-on .home { background: var(--dawn); }
+html.stage-on .stage { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 0; height: 100vh; height: 100lvh; overflow: hidden; background: var(--dawn); }
+html.stage-on .stage, html.stage-on .glider { opacity: 0; transition: opacity .5s; }
+html.stage-ready .stage, html.stage-ready .glider { opacity: 1; }
+.scene { position: absolute; inset: 0; }
+.ly { position: absolute; left: 0; top: 0; max-width: none; height: auto; }
+.groundfill { position: absolute; left: 0; right: 0; top: 0; height: 600vh; }
+.stage-title { position: absolute; left: 0; right: 0; top: 0; height: 0; color: #fff; text-align: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
+.stage-title div { position: absolute; left: 0; right: 0; bottom: 0; display: grid; justify-items: center; }
+html.stage-on .glider { display: block; position: fixed; left: 0; top: 0; z-index: 3; max-width: none; height: auto; pointer-events: none; }
+html.stage-on .hero, html.stage-on .chapter, html.stage-on .gap { z-index: 1; }
+html.stage-on .hero { display: block; height: 112vh; height: 112lvh; min-height: 0; padding: 0; }
+/* The name is painted into the stage; the heading stays for screen readers and search engines. */
+html.stage-on .hero h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+html.stage-on .hero-actions { position: absolute; left: 0; right: 0; top: 68vh; top: 68lvh; }
+html.stage-on .gap { display: block; position: relative; height: 110vh; height: 110lvh; }
+html.stage-on .chapter { display: grid; align-items: center; min-height: 100vh; min-height: 100lvh; padding-block: 24vh 8vh; background: none; }
+html.stage-on .chapter-valley { align-items: start; min-height: 140vh; min-height: 140lvh; padding-block: 15vh 0; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+  .explorer, .school, .more { grid-template-columns: 1fr; }
+  .school-visual { order: 2; }
+}
+@media (max-width: 640px) {
+  .hero-brand, .stage-title b { font-size: 27vw; }
+  .hero-actions .button, .final-actions .button { width: 100%; }
+  .hero-actions { width: calc(100% - 32px); margin-inline: auto; }
+  .preview-tab { padding: 12px 14px; }
+  .preview-tab span { display: none; }
+  .phone { width: min(270px, 52vw); }
+  html.stage-on .chapter { padding-block: 22vh 8vh; }
+}

@@ -1,7 +1,6 @@
 // Progressive enhancement: content, FAQ and navigation work without JavaScript; motion respects the
 // visitor's "reduce motion" setting (the CSS keeps everything visible then).
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
 
 const menuButton = document.querySelector('.menu-toggle');
 const menu = document.querySelector('#mobile-nav');
@@ -25,11 +24,20 @@ if (menuButton && menu) {
   matchMedia('(min-width: 1001px)').addEventListener('change', (e) => { if (e.matches) closeMenu(); });
 }
 
-// Header turns into frosted glass once the page scrolls away from the hero.
+// Header turns into frosted glass once the page scrolls away from the top.
 const header = document.querySelector('.header');
 if (header) {
-  const update = () => header.classList.toggle('is-scrolled', scrollY > 24 || (menu && !menu.hidden));
+  // On the start page it also moves out of the way while reading down and returns when scrolling up.
+  const home = document.body.classList.contains('home');
+  let last = scrollY;
+  const update = () => {
+    const open = menu && !menu.hidden;
+    header.classList.toggle('is-scrolled', scrollY > 24 || open);
+    if (home) header.classList.toggle('is-away', !open && scrollY > 240 && scrollY > last && !header.contains(document.activeElement));
+    last = scrollY;
+  };
   addEventListener('scroll', update, { passive: true });
+  header.addEventListener('focusin', () => header.classList.remove('is-away'));
   menuButton?.addEventListener('click', update);
   update();
 }
@@ -45,21 +53,23 @@ if (tabs.length && panels.length === tabs.length && image) {
     panels[i].setAttribute('role', 'tabpanel');
     panels[i].setAttribute('aria-labelledby', tab.id);
     panels[i].tabIndex = 0;
-    tab.addEventListener('click', (e) => { e.preventDefault(); select(i); });
+    tab.addEventListener('click', (e) => { e.preventDefault(); select(i, true); });
     tab.addEventListener('keydown', (e) => {
       const next = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? (i + 1) % tabs.length
         : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? (i + tabs.length - 1) % tabs.length
           : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
-      if (next !== null) { e.preventDefault(); select(next); tabs[next].focus(); }
+      if (next !== null) { e.preventDefault(); select(next, true); tabs[next].focus(); }
     });
   });
   let swap;
-  function select(index) {
+  function select(index, link = false) {
     tabs.forEach((tab, i) => {
       tab.setAttribute('aria-selected', String(i === index));
       tab.tabIndex = i === index ? 0 : -1;
       panels[i].hidden = i !== index;
     });
+    // Keep the chosen tab in the URL so it can be shared; no history entry per tab.
+    if (link) history.replaceState(null, '', `#${panels[index].id}`);
     const src = tabs[index].dataset.src;
     const alt = tabs[index].dataset.alt;
     if (image.getAttribute('src') === src) return;
@@ -81,13 +91,20 @@ if (tabs.length && panels.length === tabs.length && image) {
 // Keep the section when visitors change language; language choice is in the URL, not a cookie.
 document.querySelectorAll('.languages a').forEach((link) => {
   link.addEventListener('click', () => {
-    if (['#pilots', '#schools', '#app', '#about', '#faq'].includes(location.hash)) link.hash = location.hash;
+    if (['#schools', '#app', '#about', '#faq'].includes(location.hash) || /^#preview-\d$/.test(location.hash)) link.hash = location.hash;
   });
 });
 
 // Pilot sign-up: when the page was opened, so the server can reject bots that submit instantly.
 const started = document.querySelector('#form input[name="started"]');
 if (started) started.value = String(Date.now());
+// A server-side error comes back as #status-…; move focus there so it is announced and in view.
+// (The message is not focusable yet while this script runs, so focus waits for load.)
+const formStatus = document.getElementById(location.hash.slice(1));
+if (formStatus?.classList.contains('form-status')) {
+  formStatus.tabIndex = -1;
+  addEventListener('load', () => formStatus.focus());
+}
 
 // Reveal on scroll, staggered within each group of siblings.
 const reveals = [...document.querySelectorAll('.reveal')];
@@ -111,30 +128,6 @@ if (reveals.length) {
   } else {
     reveals.forEach((el) => el.classList.add('is-visible'));
   }
-}
-
-// Phones tilt gently towards the pointer; cards get a soft light that follows it.
-if (finePointer.matches && !reduceMotion.matches) {
-  document.querySelectorAll('[data-tilt]').forEach((el) => {
-    let frame;
-    el.addEventListener('pointermove', (e) => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const r = el.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-        el.style.setProperty('--ry', `${(x * 10).toFixed(2)}deg`);
-        el.style.setProperty('--rx', `${(-y * 8).toFixed(2)}deg`);
-      });
-    });
-    el.addEventListener('pointerleave', () => { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
-  });
-  document.querySelectorAll('[data-glow]').forEach((el) => {
-    el.addEventListener('pointermove', (e) => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      el.style.setProperty('--my', `${e.clientY - r.top}px`);
-    });
-  });
 }
 
 // The about video shows a large play button on its poster; native controls take over once it plays.

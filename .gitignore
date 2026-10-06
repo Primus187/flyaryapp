@@ -37,3 +37,6 @@ docs/*.docx
 
 # Original video export; the site serves the compressed website/assets/flyary-story.mp4
 website/assets/Flyary Story-Video.mp4
+
+# Original illustration scenes (25 MB); the website uses the WebP layers exported from them.
+website/landscape-work/layers/src/

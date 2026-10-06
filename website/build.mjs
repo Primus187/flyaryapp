@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { content, languages } from './content.mjs';
@@ -19,47 +19,50 @@ const esc = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').re
 const lines = (s) => esc(s).replaceAll('\n', '<br>');
 const icons = {
   arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>', diagonal: '<path d="M6 18 18 6M6 6h12v12"/>',
-  book: '<path d="M12 6v15M3 4c4-1 7 0 9 2 2-2 5-3 9-2v15c-4-1-7 0-9 2-2-2-5-3-9-2Z"/>',
-  mountain: '<path d="m2 20 8-15 4 7 2-4 6 12ZM7 11l3 2 3-2"/>',
-  people: '<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5"/>',
-  pin: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
-  bag: '<path d="M5 7h14l2 14H3ZM9 7V5a3 3 0 0 1 6 0v2"/>',
-  check: '<path d="m5 12 4 4L19 6"/>', down: '<path d="M12 4v16m-6-6 6 6 6-6"/>',
-  upload: '<path d="M12 16V4m-5 5 5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>',
-  image: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
-  chart: '<path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>',
-  calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/>',
-  radio: '<circle cx="12" cy="12" r="2"/><path d="M8.5 8.5a5 5 0 0 0 0 7m7 0a5 5 0 0 0 0-7M5.6 5.6a9 9 0 0 0 0 12.8m12.8 0a9 9 0 0 0 0-12.8"/>',
-  award: '<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/>',
-  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12Z"/>',
-  sparkle: '<path d="M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18M18 6l-2.5 2.5m-7 7L6 18"/>',
+  check: '<path d="m5 12 4 4L19 6"/>',
   play: '<path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5Z" fill="currentColor"/>',
-  scale: '<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0Zm14 0-3 7a3 3 0 0 0 6 0Z"/>',
 };
 const icon = (name, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
-// Every screenshot appears once: hero = logbook + stats, tour = memories, training, school flight, feed,
-// schools section = flight-day cockpit; the about section shows the Flyary story video.
+// App views shown on the start page: four in the explorer, the flight-day cockpit in the schools chapter.
 const screenshots = ['memories.png', 'training.png', 'school-flight.png', 'feed.png'];
 const ids = ['app', 'schools', 'faq'];
-const featureIcons = ['image', 'chart', 'book'];
-const stepIcons = ['calendar', 'radio', 'award'];
 const phone = (inner, cls = '') => `<div class="phone ${cls}"><div class="phone-screen">${inner}</div></div>`;
 const signupPath = (lang) => `/${lang}/testpilot/`;
 
-// Signature element: a flight track that draws itself across the sky, with a glider following it.
-const flightPath = 'M-60 566 C 160 588, 330 528, 520 556 S 760 556, 880 460 S 1010 210, 1150 250 S 1330 170, 1520 50';
-const sky = `<div class="sky" aria-hidden="true">
-  <div class="aurora aurora-1"></div><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div>
-  <svg class="contours" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="currentColor">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<path d="M-100 ${640 - i * 38} C 240 ${560 - i * 44}, 420 ${700 - i * 30}, 720 ${600 - i * 46} S 1180 ${520 - i * 36}, 1560 ${600 - i * 40}"/>`).join('')}</g></svg>
-  <svg class="flight" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="trail" x1="0" x2="1"><stop offset="0" stop-color="#38bdf8" stop-opacity="0"/><stop offset=".35" stop-color="#38bdf8"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs>
-    <path class="flight-path" d="${flightPath}" pathLength="1"/>
-    <g class="glider"><path d="M-14 -3 Q0 -12 14 -3" fill="none" stroke="#e6f6ff" stroke-width="3" stroke-linecap="round"/><path d="M-9 -2 L0 9 M9 -2 L0 9" stroke="#bfe7ff" stroke-width="1"/><circle cy="10" r="2.4" fill="#fff"/></g>
-  </svg>
-  <div class="stars"></div>
-</div>`;
+// Start page: four painted scenes behind the content, each split into depth layers (landscape-work/layers; stage.js moves them).
+// Listed from last to first, because the first scene lies on top. The number is how far a layer travels compared with the nearest one.
+const landscape = join(here, 'landscape-work/layers/web');
+const layerInfo = JSON.parse(await readFile(join(landscape, 'layers.json'), 'utf8'));
+const scenes = [
+  ['tal', [['himmel', .12], ['1-fern', .5], ['2-see', .62], ['3-tannen', .82], ['4-wiese', 1]]],
+  ['huegel', [['himmel', .12], ['1-fern', .45], ['2-weide', .6], ['3-wald', .8], ['4-wiese', 1]]],
+  ['wald', [['himmel', .12], ['1-fern', .4], ['2-mitte', .52], ['3-nah', .7], ['4-vorn', 1]]],
+  ['gipfel', [['himmel', .12], ['1-fern', .36], ['2-grat', .44], ['3-wald', .6], ['4-nebel', 1]]],
+];
+// Visitors who ask for reduced motion get the page without the stage; for them its pictures resolve to a 1-pixel file.
+const stagePicture = (img) => `<picture><source media="(prefers-reduced-motion: reduce)" srcset="/assets/landscape/blank.webp">${img}</picture>`;
+function layer(name, f, eager) {
+  const { crop, widths, ratio } = layerInfo[name];
+  const srcset = widths.map((w) => `/assets/landscape/${name}-${w}.webp ${w}w`).join(', ');
+  // Phones get the 1024 version even on dense screens: the paintings gain nothing from more.
+  return stagePicture(`<img class="ly" data-crop="${crop}" data-f="${f}" src="/assets/landscape/${name}-1024.webp" srcset="${srcset}" sizes="(max-width: 700px) 60vw, 100vw" width="1024" height="${Math.round(1024 * ratio)}" alt=""${eager ? '' : ' loading="lazy"'}>`);
+}
+function stage(c) {
+  const title = `<div class="stage-title"><div><small>${esc(c.claim)}</small><b translate="no">Flyary</b></div></div>`;
+  const html = scenes.map(([scene, layers], i) => {
+    const n = scenes.length - 1 - i;
+    const parts = layers.map(([name, f]) => layer(`${scene}-${name}`, f, n === 0));
+    if (n === 0) parts.splice(2, 0, title); // the name stands behind the snow ridge
+    return `<div class="scene" data-scene="${n}"${n ? ' hidden' : ''}>${parts.join('')}${n < 3 ? '<div class="groundfill"></div>' : ''}</div>`;
+  }).join('\n      ');
+  return `<div class="stage" aria-hidden="true">
+      ${html}
+    </div>
+    ${stagePicture('<img class="glider" src="/assets/landscape/schirm-320.webp" srcset="/assets/landscape/schirm-320.webp 320w, /assets/landscape/schirm.webp 640w" sizes="(max-width: 700px) 96px, 210px" width="640" height="636" alt="" aria-hidden="true">')}`;
+}
 
 /** Head, header and footer shared by the home page and the sign-up pages. `page` is '' (home), 'testpilot/' or 'danke/'. */
-function shell(lang, { page, title, description, indexed = true, bodyClass, main }) {
+function shell(lang, { page, title, description, indexed = true, bodyClass, main, head = '' }) {
   const c = content[lang];
   const home = page === '';
   const anchor = (id) => (home ? `#${id}` : `/${lang}/#${id}`);
@@ -79,7 +82,7 @@ function shell(lang, { page, title, description, indexed = true, bodyClass, main
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
   ${indexed ? '' : '<meta name="robots" content="noindex">'}
-  <meta name="theme-color" content="#06111f">
+  <meta name="theme-color" content="${home ? '#d1b8af' : '#ffffff'}">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="${{ de: 'de_CH', fr: 'fr_CH', en: 'en_GB' }[lang]}">
   <meta property="og:title" content="${esc(title)}">
@@ -89,7 +92,9 @@ function shell(lang, { page, title, description, indexed = true, bodyClass, main
   <meta name="twitter:card" content="summary_large_image">
   ${seo}
   <link rel="icon" href="/assets/flyary-192.png" type="image/png">
+  <link rel="preload" href="/assets/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
+  ${head}
   <script src="/boot.js"></script>
   <script src="/site.js" defer></script>
 </head>
@@ -111,7 +116,7 @@ function shell(lang, { page, title, description, indexed = true, bodyClass, main
   <main id="main">
 ${main}
   </main>
-  <footer class="footer wrap"><div class="footer-top"><div>${logo}<p>${esc(c.footerText)}</p><p class="sample-note">${esc(c.sampleNote)} ${esc(c.screenLanguage)}.</p></div><nav class="languages" aria-label="${esc(c.language)}">${langs}</nav></div><div class="footer-bottom"><span>© ${new Date().getUTCFullYear()} Flyary · ${esc(c.copyright)}</span><nav aria-label="${esc(c.contact)}">${docsLink}<a href="mailto:${email}">${esc(c.contact)}</a><a href="${app}/legal">${esc(c.privacy)}</a><a href="${app}/legal/terms">${esc(c.terms)}</a></nav><a class="back-top" href="#top">${esc(c.top)} ${icon('diagonal')}</a></div></footer>
+  <footer class="footer"><div class="wrap"><div class="footer-top"><div>${logo}<p>${esc(c.footerText)}</p><p class="sample-note">${esc(c.sampleNote)} ${esc(c.screenLanguage)}.</p></div><nav class="languages" aria-label="${esc(c.language)}">${langs}</nav></div><div class="footer-bottom"><span>© ${new Date().getUTCFullYear()} Flyary · ${esc(c.copyright)}</span><nav aria-label="${esc(c.contact)}">${docsLink}<a href="mailto:${email}">${esc(c.contact)}</a><a href="${app}/legal">${esc(c.privacy)}</a><a href="${app}/legal/terms">${esc(c.terms)}</a></nav><a class="back-top" href="#top">${esc(c.top)} ${icon('diagonal')}</a></div></div></footer>
 </body></html>`;
 }
 
@@ -119,78 +124,62 @@ function render(lang) {
   const c = content[lang];
   const schoolMail = `mailto:${email}?subject=${encodeURIComponent(c.emailSubject)}`;
   const signup = signupPath(lang);
-  const arrow = icon('arrow');
-  const marquee = (hidden) => `<ul class="marquee-list"${hidden ? ' aria-hidden="true"' : ''}>${c.highlights.map((h) => `<li>${icon('sparkle')}${esc(h)}</li>`).join('')}</ul>`;
-  const main = `    <section class="hero" aria-labelledby="hero-title">
-      ${sky}
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow eyebrow-pill reveal"><span class="pulse" aria-hidden="true"></span>${esc(c.eyebrow)}</p>
-          <h1 id="hero-title" class="reveal">${esc(c.hero[0])}<br><span class="gradient-text">${esc(c.hero[1])}</span></h1>
-          <p class="hero-intro reveal">${esc(c.intro)}</p>
-          <p class="small-note reveal">${esc(c.phase)}</p>
-          <div class="hero-actions reveal"><a class="button button-primary button-glow" href="${signup}">${esc(c.start)} ${arrow}</a><a class="button button-ghost" href="${schoolMail}">${esc(c.secondary)} ${icon('diagonal')}</a></div>
-          <p class="small-note reveal">${icon('check')}${esc(c.note)}</p>
-        </div>
-        <figure class="hero-stage reveal" data-tilt>
-          <div class="stage-glow" aria-hidden="true"></div>
-          ${phone(`<img src="/assets/stats.png" alt="${esc(c.heroBackAlt)}" width="780" height="1688" fetchpriority="high">`, 'phone-back')}
-          ${phone(`<img src="/assets/logbook.png" alt="${esc(c.heroFrontAlt)}" width="780" height="1688" fetchpriority="high">`, 'phone-front')}
-          <ul class="hero-chips" aria-hidden="true">${c.heroChips.map((chip, i) => `<li class="chip chip-${i}">${icon(['image', 'chart', 'award'][i])}${esc(chip)}</li>`).join('')}</ul>
-          <figcaption>${esc(c.previewCaption)} · ${esc(c.screenLanguage)}</figcaption>
-        </figure>
-      </div>
-      <a class="scroll-hint" href="#app"><span>${esc(c.scrollHint)}</span>${icon('down')}</a>
+  const main = `    ${stage(c)}
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title"><span class="hero-brand" translate="no">Flyary</span> <span class="hero-claim">${esc(c.claim)}</span></h1>
+      <div class="hero-actions" data-fade><a class="button button-primary" href="${signup}">${esc(c.start)}</a><a class="hero-link" href="${schoolMail}">${esc(c.secondary)}</a></div>
     </section>
 
-    <section class="marquee" aria-label="${esc(c.highlightsLabel)}"><div class="marquee-track">${marquee(false)}${marquee(true)}</div></section>
-
-    <section id="app" class="section explorer wrap" aria-labelledby="explorer-title">
-      <div class="section-heading reveal"><p class="eyebrow">${esc(c.productLabel)}</p><h2 id="explorer-title">${esc(c.explorerTitle)}</h2></div>
-      <div class="explorer-grid">
-        <div class="product-explorer">
-          <div class="preview-tabs" aria-label="${esc(c.tabsLabel)}">${c.tabs.map((label, i) => `<a id="tab-${i}" href="#preview-${i}" class="preview-tab reveal" data-index="${i}" data-src="/assets/${screenshots[i]}" data-alt="${esc(c.previewAlt[i])}"><span class="tab-index">0${i + 1}</span><span class="tab-body"><span class="tab-title">${esc(label)}</span><span class="tab-description">${esc(c.tabDescriptions[i])}</span></span>${arrow}</a>`).join('')}</div>
-          <div class="preview-panels">${c.panels.map(([title, text, points], i) => `<article id="preview-${i}" class="preview-panel" data-index="${i}"><h3>${esc(title)}</h3><p>${esc(text)}</p><ul class="panel-points">${points.map((point) => `<li>${icon('check')}${esc(point)}</li>`).join('')}</ul><img class="fallback-screen" src="/assets/${screenshots[i]}" alt="${esc(c.previewAlt[i])}" width="780" height="1688" loading="lazy"></article>`).join('')}</div>
+    <section id="app" class="chapter chapter-mist" data-chap="0" aria-labelledby="explorer-title">
+      <div class="wrap explorer" data-fade>
+        <div class="explorer-copy">
+          <h2 id="explorer-title">${esc(c.explorerTitle)}</h2>
+          <p class="chapter-intro">${esc(c.pilotIntro)}</p>
+          <div class="preview-tabs" aria-label="${esc(c.tabsLabel)}">${c.tabs.map((label, i) => `<a id="tab-${i}" href="#preview-${i}" class="preview-tab" data-index="${i}" data-src="/assets/${screenshots[i]}" data-alt="${esc(c.previewAlt[i])}"><b>${esc(label)}</b><span>${esc(c.tabDescriptions[i])}</span></a>`).join('')}</div>
+          <div class="preview-panels">${c.panels.map(([title, text, points], i) => `<article id="preview-${i}" class="preview-panel" data-index="${i}"><h3>${esc(title)}</h3><p>${esc(text)}</p><ul class="panel-points">${points.map((point) => `<li>${esc(point)}</li>`).join('')}</ul><img class="fallback-screen" src="/assets/${screenshots[i]}" alt="${esc(c.previewAlt[i])}" width="780" height="1688" loading="lazy"></article>`).join('')}</div>
         </div>
-        <figure class="explorer-stage reveal">
-          <div class="stage-glow" aria-hidden="true"></div>
-          ${phone(`<img id="preview-image" src="/assets/${screenshots[0]}" alt="${esc(c.previewAlt[0])}" width="780" height="1688">`, 'phone-explorer')}
-        </figure>
+        <figure class="explorer-stage">${phone(`<img id="preview-image" src="/assets/${screenshots[0]}" alt="${esc(c.previewAlt[0])}" width="780" height="1688" loading="lazy">`)}</figure>
       </div>
     </section>
+    <div class="gap"></div>
 
-    <section id="pilots" class="section wrap pilot-section" aria-labelledby="pilot-title">
-      <div class="section-heading split reveal"><div><p class="eyebrow">${esc(c.pilotLabel)}</p><h2 id="pilot-title">${lines(c.pilotTitle)}</h2></div><p class="section-intro">${esc(c.pilotIntro)}</p></div>
-      <div class="feature-grid">${c.pilotFeatures.map(([title, text, label], i) => `<article class="feature-card reveal" data-glow><span class="feature-icon">${icon(featureIcons[i])}</span><p class="feature-label">${esc(label)}</p><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`).join('')}</div>
-      <a class="text-link reveal" href="${signup}">${esc(c.start)} ${arrow}</a>
-    </section>
-
-    <section id="schools" class="school-section" aria-labelledby="school-title">
-      <div class="school-backdrop" aria-hidden="true"><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div></div>
-      <div class="wrap school-grid">
-        <figure class="school-visual reveal" data-tilt><div class="stage-glow" aria-hidden="true"></div>${phone(`<img src="/assets/cockpit.png" width="780" height="1688" alt="${esc(c.schoolImageAlt)}" loading="lazy">`)}</figure>
+    <section id="schools" class="chapter chapter-forest" data-chap="1" aria-labelledby="school-title">
+      <div class="wrap school" data-fade>
+        <figure class="school-visual">${phone(`<img src="/assets/cockpit.png" width="780" height="1688" alt="${esc(c.schoolImageAlt)}" loading="lazy">`)}</figure>
         <div class="school-copy">
-          <p class="eyebrow reveal">${esc(c.schoolLabel)}</p>
-          <h2 id="school-title" class="reveal">${lines(c.schoolTitle)}</h2>
-          <p class="section-intro reveal">${esc(c.schoolIntro)}</p>
-          <ol class="school-steps">${c.schoolFeatures.map(([title, text], i) => `<li class="reveal"><span class="step-node" aria-hidden="true">${icon(stepIcons[i])}</span><div><p class="step-label">${esc(c.stepLabel)} ${i + 1}</p><h3>${esc(title)}</h3><p>${esc(text)}</p></div></li>`).join('')}</ol>
-          <a class="button button-white reveal" href="${schoolMail}">${esc(c.schoolCta)} ${arrow}</a>
-          <p class="small-note reveal">${esc(c.schoolNote)}</p>
+          <h2 id="school-title">${lines(c.schoolTitle)}</h2>
+          <p class="chapter-intro">${esc(c.schoolIntro)}</p>
+          <ol class="school-steps">${c.schoolFeatures.map(([title, text]) => `<li><h3>${esc(title)}</h3><p>${esc(text)}</p></li>`).join('')}</ol>
+          <a class="button button-primary" href="${schoolMail}">${esc(c.schoolCta)}</a>
+          <p class="chapter-note">${esc(c.schoolNote)}</p>
         </div>
       </div>
-      <div class="wrap school-bottom"><span>${esc(c.schoolBadge)}</span><span>${esc(c.schoolRoles)}</span></div>
     </section>
+    <div class="gap"></div>
 
-    <section id="about" class="section wrap about" aria-labelledby="about-title">
-      <div class="about-heading reveal"><p class="eyebrow">${esc(c.aboutLabel)}</p><h2 id="about-title">${lines(c.aboutTitle)}</h2></div>
-      <figure class="about-video reveal"><div class="stage-glow" aria-hidden="true"></div><div class="video-frame"><video src="/assets/flyary-story.mp4" poster="/assets/video-poster.jpg" width="1920" height="1080" controls preload="none" playsinline aria-label="${esc(c.aboutVideoPlay)}"></video><button class="video-play" type="button" hidden aria-label="${esc(c.aboutVideoPlay)}">${icon('play')}</button></div></figure>
-      <a class="text-link about-link reveal" href="${signup}">${esc(c.start)} ${arrow}</a>
+    <section id="about" class="chapter chapter-meadow" data-chap="2" aria-labelledby="about-title">
+      <div class="wrap more" data-fade>
+        <div class="about">
+          <h2 id="about-title">${lines(c.aboutTitle)}</h2>
+          <div class="video-frame"><video src="/assets/flyary-story.mp4" poster="/assets/video-poster.jpg" width="1920" height="1080" controls preload="none" playsinline aria-label="${esc(c.aboutVideoPlay)}"></video><button class="video-play" type="button" hidden aria-label="${esc(c.aboutVideoPlay)}">${icon('play')}</button></div>
+        </div>
+        <div id="faq" class="faq">
+          <h2>${esc(c.faqTitle)}</h2>
+          <div class="faq-list">${c.faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+          <a class="chapter-link" href="mailto:${email}">${esc(c.contact)}: ${email}</a>
+        </div>
+      </div>
     </section>
+    <div class="gap"></div>
 
-    <section id="faq" class="section wrap faq-section" aria-labelledby="faq-title"><div class="faq-intro reveal"><p class="eyebrow">FAQ</p><h2 id="faq-title">${esc(c.faqTitle)}</h2><a class="text-link" href="mailto:${email}">${esc(c.contact)} ${icon('diagonal')}</a></div><div class="faq-list">${c.faqs.map(([q, a]) => `<details class="reveal"><summary>${esc(q)}<span class="faq-plus" aria-hidden="true"></span></summary><div class="faq-answer"><p>${esc(a)}</p></div></details>`).join('')}</div></section>
-
-    <section class="final-cta" aria-labelledby="final-title"><div class="wrap"><div class="final-card reveal"><div class="final-sheen" aria-hidden="true"></div><div><h2 id="final-title">${lines(c.finalTitle)}</h2><p>${esc(c.finalNote)}</p></div><div class="final-actions"><a class="button button-white" href="${signup}">${esc(c.start)} ${arrow}</a><a class="final-link" href="${schoolMail}">${esc(c.secondary)}</a></div></div></div></section>`;
-  return shell(lang, { page: '', title: c.title, description: c.description, bodyClass: 'home', main });
+    <section class="chapter chapter-valley" data-chap="3" aria-labelledby="final-title">
+      <div class="wrap final" data-fade>
+        <h2 id="final-title">${lines(c.finalTitle)}</h2>
+        <p>${esc(c.finalNote)}</p>
+        <div class="final-actions"><a class="button button-primary" href="${signup}">${esc(c.start)}</a><a class="final-link" href="${schoolMail}">${esc(c.secondary)}</a></div>
+      </div>
+    </section>`;
+  return shell(lang, { page: '', title: c.title, description: c.description, bodyClass: 'home', main, head: '<link rel="stylesheet" href="/home.css">\n  <script src="/stage.js" defer></script>' });
 }
 
 /** Pilot sign-up form. Plain HTML POST (works without JavaScript); errors come back as #status-… anchors. */
@@ -221,7 +210,7 @@ function renderSignup(lang) {
           <div class="field"><label for="f-comment">${esc(s.comment)} ${optional}</label><textarea id="f-comment" name="comment" rows="3" maxlength="1000" placeholder="${esc(s.commentPlaceholder)}"></textarea></div>
           <div class="hp" aria-hidden="true"><label for="f-website">${esc(s.honeypot)}</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
           <label class="consent"><input type="checkbox" name="consent" value="yes" required><span>${esc(s.consent)} <a href="${app}/legal">${esc(s.privacy)}</a></span></label>
-          <button class="button button-primary button-glow" type="submit">${esc(s.submit)} ${icon('arrow')}</button>
+          <button class="button button-primary" type="submit">${esc(s.submit)} ${icon('arrow')}</button>
         </form>
       </div>
     </section>`;
@@ -247,15 +236,17 @@ function renderThanks(lang) {
 await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
-for (const file of ['site.css', 'site.js', 'boot.js']) await cp(join(here, file), join(out, file));
-const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png', 'plus-jakarta-sans-latin-wght-normal.woff2', 'plus-jakarta-sans-license.txt'];
+for (const file of ['site.css', 'home.css', 'site.js', 'stage.js', 'boot.js']) await cp(join(here, file), join(out, file));
+const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'overview.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png', 'plus-jakarta-sans-latin-wght-normal.woff2', 'plus-jakarta-sans-license.txt'];
 const appScreens = {
-  'overview.png': 'mobile/01-home.png', 'logbook.png': 'mobile/06-flightbook.png',
-  'stats.png': 'mobile/12-stats.png', 'training.png': 'mobile/10-training.png',
+  'overview.png': 'mobile/01-home.png', 'training.png': 'mobile/10-training.png',
   'memories.png': 'mobile/59-flight-memories.png', 'school-flight.png': 'mobile/20-flight-notes.png',
   'cockpit.png': 'school-mobile/34-coaching.png', 'feed.png': 'mobile/22-feed.png',
 };
 for (const asset of assets) await cp(appScreens[asset] ? join(here, '../docs/handbook', appScreens[asset]) : join(here, 'assets', asset), join(out, 'assets', asset));
+// The landscape layers ship as exported; the original scenes and the scripts stay in landscape-work.
+await mkdir(join(out, 'assets/landscape'), { recursive: true });
+for (const file of (await readdir(landscape)).filter((f) => f.endsWith('.webp'))) await cp(join(landscape, file), join(out, 'assets/landscape', file));
 for (const lang of Object.keys(languages)) {
   for (const [dir, html] of [['', render(lang)], ['testpilot', renderSignup(lang)], ['danke', renderThanks(lang)]]) {
     await mkdir(join(out, lang, dir), { recursive: true });

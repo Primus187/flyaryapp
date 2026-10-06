@@ -1,0 +1,162 @@
+{
+ "gipfel-himmel": {
+  "crop": 0,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.5
+ },
+ "gipfel-1-fern": {
+  "crop": 380,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.12891
+ },
+ "gipfel-2-grat": {
+  "crop": 380,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.12891
+ },
+ "gipfel-3-wald": {
+  "crop": 380,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.12891
+ },
+ "gipfel-4-nebel": {
+  "crop": 380,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.12891
+ },
+ "wald-himmel": {
+  "crop": 0,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.5
+ },
+ "wald-1-fern": {
+  "crop": 400,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.10938
+ },
+ "wald-2-mitte": {
+  "crop": 400,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.10938
+ },
+ "wald-3-nah": {
+  "crop": 400,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.10938
+ },
+ "wald-4-vorn": {
+  "crop": 400,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.10938
+ },
+ "huegel-himmel": {
+  "crop": 0,
+  "widths": [
+   1024,
+   1365
+  ],
+  "ratio": 1.50037
+ },
+ "huegel-1-fern": {
+  "crop": 360,
+  "widths": [
+   1024,
+   1365
+  ],
+  "ratio": 1.14945
+ },
+ "huegel-2-weide": {
+  "crop": 360,
+  "widths": [
+   1024,
+   1365
+  ],
+  "ratio": 1.14945
+ },
+ "huegel-3-wald": {
+  "crop": 360,
+  "widths": [
+   1024,
+   1365
+  ],
+  "ratio": 1.14945
+ },
+ "huegel-4-wiese": {
+  "crop": 360,
+  "widths": [
+   1024,
+   1365
+  ],
+  "ratio": 1.14945
+ },
+ "tal-himmel": {
+  "crop": 0,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.5
+ },
+ "tal-1-fern": {
+  "crop": 200,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.30469
+ },
+ "tal-2-see": {
+  "crop": 200,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.30469
+ },
+ "tal-3-tannen": {
+  "crop": 200,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.30469
+ },
+ "tal-4-wiese": {
+  "crop": 200,
+  "widths": [
+   1024,
+   2048
+  ],
+  "ratio": 1.30469
+ }
+}

@@ -70,6 +70,10 @@ try {
       assert(await page.locator('.faq-list details').first().getAttribute('open') !== null);
       await page.locator('.faq-list summary').first().click();
       if (width <= 1000) {
+        // The header leaves while reading down and returns on the first scroll up.
+        assert(await page.locator('.header').evaluate((el) => el.classList.contains('is-away')), 'header out of the way after scrolling down');
+        await page.mouse.wheel(0, -300);
+        await page.waitForFunction(() => !document.querySelector('.header').classList.contains('is-away'));
         await page.locator('.menu-toggle').click();
         assert(await page.locator('#mobile-nav').isVisible());
         await page.keyboard.press('Escape');
@@ -138,11 +142,41 @@ try {
     console.log(`PASS ${lang}: pilot sign-up form and thank-you page`);
     await page.goto(`${base}/${lang}/#app`);
     const next = lang === 'de' ? 'fr' : 'de';
+    await page.mouse.wheel(0, -300);
+    await page.waitForFunction(() => !document.querySelector('.header').classList.contains('is-away'));
     await page.locator(`.header .languages a[lang="${next}"]`).click();
     assert.equal(new URL(page.url()).pathname, `/${next}/`);
     assert.equal(new URL(page.url()).hash, '#app');
     assert.deepEqual(errors, []);
     await context.close();
+  }
+  // The moving stage (only without "reduce motion"): layers placed, glider visible throughout, no overflow, no errors.
+  for (const [width, height] of [[1440, 900], [390, 844]]) {
+    const moving = await browser.newContext({ viewport: { width, height } });
+    const stagePage = await moving.newPage();
+    const stageErrors = [];
+    stagePage.on('pageerror', (e) => stageErrors.push(e.message));
+    stagePage.on('requestfailed', (r) => stageErrors.push(`Failed request: ${r.url()}`));
+    await stagePage.goto(`${base}/de/`, { waitUntil: 'networkidle' });
+    assert(await stagePage.locator('html.stage-on.stage-ready').count(), `stage ${width}: running`);
+    assert.equal(await stagePage.locator('h1').count(), 1);
+    const total = await stagePage.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y <= total; y += Math.round(height * 0.6)) {
+      await stagePage.evaluate((v) => scrollTo(0, v), y);
+      await stagePage.waitForTimeout(350);
+      const state = await stagePage.evaluate(() => {
+        const g = document.querySelector('.glider').getBoundingClientRect();
+        const shown = [...document.querySelectorAll('.scene:not([hidden]) .ly')];
+        return { glider: g.width > 40 && g.right > 0 && g.left < innerWidth && g.bottom > 0 && g.top < innerHeight, layers: shown.length, loaded: shown.every((im) => im.complete && im.naturalWidth > 1), overflow: document.documentElement.scrollWidth - innerWidth };
+      });
+      assert(state.glider, `stage ${width} at ${y}: glider on screen`);
+      assert(state.layers >= 5 && state.loaded, `stage ${width} at ${y}: scene pictures loaded`);
+      assert(state.overflow <= 0, `stage ${width} at ${y}: horizontal overflow`);
+    }
+    assert.deepEqual(stageErrors, []);
+    if (width === 1440) await stagePage.screenshot({ path: join(here, '.preview', 'stage-end-1440.png') });
+    await moving.close();
+    console.log(`PASS moving stage / ${width}px: scenes, glider and pictures along the whole page`);
   }
   const nojs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   const page = await nojs.newPage();
