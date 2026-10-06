@@ -11,8 +11,7 @@ import { GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { linksPayload, setLink, suggestLinks, type ImportDay, type ImportLinks } from "@/lib/school-flight-match";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0057 not in generated types.ts yet
-const db = supabase as any;
+const db = supabase;
 const NEW = "__new__";
 
 /** "The school recorded 3 flights on 25 Sep – take them over?" (Flugtag-Cockpit 6.1, decision E3).
@@ -30,7 +29,7 @@ export default function SchoolFlightImportCard() {
   const load = useCallback(async () => {
     if (!user) return;
     const { data } = await db.rpc("my_school_flight_imports");
-    setDays(Array.isArray(data) ? (data as ImportDay[]) : []);
+    setDays(Array.isArray(data) ? (data as unknown as ImportDay[]) : []);
   }, [user]);
   useEffect(() => { void load(); }, [load]);
 

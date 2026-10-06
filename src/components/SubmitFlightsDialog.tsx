@@ -38,8 +38,7 @@ export default function SubmitFlightsDialog({ open, onOpenChange, locale }: { op
             .select("id, flight_no, date, source, takeoff:locations!flights_takeoff_location_id_fkey(name:display_name), landing:locations!flights_landing_location_id_fkey(name:display_name)")
             .eq("user_id", user.id).is("cancelled_at" as never, null).order("flight_no", { ascending: true }).range(from, to) as never),
           fetchAllPages<{ flight_id: string; status: ConfirmationStatus }>((from, to) => supabase
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet (migration 0074)
-            .from("flight_confirmations" as any).select("flight_id, status").eq("student_id", user.id).range(from, to) as never),
+            .from("flight_confirmations").select("flight_id, status").eq("student_id", user.id).range(from, to) as never),
           fetchMySchools(user.id),
         ]);
         const status = new Map(confirmations.map((c) => [c.flight_id, c.status]));

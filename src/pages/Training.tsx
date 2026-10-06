@@ -61,10 +61,9 @@ export default function Training() {
       supabase.from("training_categories").select("*").order("sort_order"),
       supabase.from("training_items").select("*").order("sort_order"),
       supabase.from("training_progress").select("item_id, rating").eq("user_id", user.id),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0059 not in generated types.ts yet
-      (supabase as any).rpc("my_instructor_ratings"),
+      supabase.rpc("my_instructor_ratings"),
     ]).then(([catRes, itemRes, progRes, ratingsRes]) => {
-      if (ratingsRes?.data && typeof ratingsRes.data === "object") setInstructorRatings(ratingsRes.data);
+      if (ratingsRes?.data && typeof ratingsRes.data === "object") setInstructorRatings(ratingsRes.data as unknown as Record<string, { rating: 1 | 2 | 3; date: string }>);
       if (catRes.data) setCategories(catRes.data as any);
       if (itemRes.data) setItems(itemRes.data);
       if (progRes.data) {

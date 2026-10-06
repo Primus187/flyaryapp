@@ -22,8 +22,7 @@ export default function FlightChangeHistory({ flightId, locale }: { flightId: st
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet (migration 0073)
-        .from("flight_changes" as any)
+        .from("flight_changes")
         .select("id, field, old_value, new_value, changed_by, origin, changed_at")
         .eq("flight_id", flightId)
         .order("changed_at", { ascending: false })

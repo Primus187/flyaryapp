@@ -161,8 +161,7 @@ export default function FlightForm() {
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- discipline/is_tandem not in generated types.ts yet (migration 0073)
-    supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default, discipline, is_tandem" as any).eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
+    supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default, discipline, is_tandem").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
       if (data) {
         const own = data as unknown as GliderOption[];
         setGliders(own);

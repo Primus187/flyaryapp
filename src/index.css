@@ -120,10 +120,6 @@
   .stat-value {
     @apply font-extrabold tracking-tight tabular-nums;
   }
-  /* Dark feature card (season summary, next flight day). */
-  .hero-card {
-    @apply rounded-3xl bg-hero text-hero-foreground;
-  }
 }
 
 /* Leaflet fix for z-index */

@@ -150,8 +150,7 @@ function TrainingPanel(context: Context & { level: string | null }) {
   // Instructors' ratings from the flying days (6.3), newest first; shown next to the student's own rating (E6).
   const ratings = useQuery({ queryKey: ["school-student-ratings", context.groupId, context.studentId],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0059 not in generated types.ts yet
-      const { data, error } = await (supabase as any).rpc("school_student_ratings", { _group_id: context.groupId, _student_id: context.studentId });
+      const { data, error } = await supabase.rpc("school_student_ratings", { _group_id: context.groupId, _student_id: context.studentId });
       if (error) throw error;
       return (data || {}) as Record<string, { date: string; rating: 1 | 2 | 3 }[]>;
     } });

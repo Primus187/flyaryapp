@@ -11,8 +11,7 @@ import {
   categoryLabel, proofCsv, proofFileName, swissDate, type SchoolProof,
 } from "../../../supabase/functions/export-flightbook-pdf/school-proof";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0058 not in generated types.ts yet
-const db = supabase as any;
+const db = supabase;
 
 interface Props { groupId: string; studentId: string }
 
@@ -30,7 +29,7 @@ export default function SchoolProofPanel({ groupId, studentId }: Props) {
     queryFn: async () => {
       const { data, error } = await db.rpc("school_student_proof", { _group_id: groupId, _student_id: studentId, _from: from || null, _to: to || null });
       if (error) throw error;
-      return data as SchoolProof;
+      return data as unknown as SchoolProof;
     },
   });
   const proof = query.data;

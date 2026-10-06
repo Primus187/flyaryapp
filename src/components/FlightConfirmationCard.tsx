@@ -30,8 +30,7 @@ export default function FlightConfirmationCard({ flightId, cancelled, preferredG
     if (!user) return;
     const [conf, mine] = await Promise.all([
       supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types.ts yet (migration 0074)
-        .from("flight_confirmations" as any)
+        .from("flight_confirmations")
         .select("flight_id, status, school_name, group_id, instructor_name, reason, submitted_at, decided_at")
         .eq("flight_id", flightId).maybeSingle(),
       fetchMySchools(user.id).catch(() => [] as SchoolOption[]),
