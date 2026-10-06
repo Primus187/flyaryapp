@@ -15,6 +15,7 @@ import OnboardingDialog from "@/components/OnboardingDialog";
 import NextStepCard from "@/components/NextStepCard";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import PushPromptCard from "@/components/PushPromptCard";
+import PilotStatusPrompt from "@/components/PilotStatusPrompt";
 import ChallengeCard from "@/components/ChallengeCard";
 import GoalCard from "@/components/GoalCard";
 import GoalFormDialog from "@/components/GoalFormDialog";
@@ -225,6 +226,8 @@ export default function Dashboard() {
         goalCount={goals.length}
         onAddGoal={() => setGoalDialogOpen(true)}
       />
+
+      <PilotStatusPrompt />
 
       <PushPromptCard />
 

@@ -19,43 +19,20 @@ import { Input } from "@/components/ui/input";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { exportFlightsCsv, exportFlightsXlsx, downloadBlob } from "@/lib/csv-export";
 import { isConfirmedDeleteError } from "@/lib/flight-confirmation";
+import { usePilotStatus } from "@/hooks/use-pilot-status";
+import { statusLabelKeys } from "@/lib/pilot-status";
 
+/** The Ausbildungsstand is kept in the profile (Ausbildung und Brevets); here it is only shown. */
 function TrainingLevelCard() {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [level, setLevel] = useState("grundkurs");
-  // In a school the school sets the level (migration 0080); pilots outside a school set their own.
-  const [bySchool, setBySchool] = useState(false);
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("profiles").select("training_level").eq("user_id", user.id).single().then(({ data }) => {
-      if (data && (data as any).training_level) setLevel((data as any).training_level);
-    });
-    void supabase.rpc("my_level_set_by_school" as never).then(({ data }) => setBySchool(data === true));
-  }, [user]);
-  const handleChange = async (v: string) => {
-    if (!user) return;
-    const { error } = await supabase.from("profiles").update({ training_level: v } as any).eq("user_id", user.id);
-    if (error) { toast({ title: t("common.error"), description: t("settings.trainingLevelBySchool"), variant: "destructive" }); return; }
-    setLevel(v);
-    toast({ title: t("common.saved") });
-  };
-  const levels = [
-    { value: "grundkurs", label: t("training.grundkurs") },
-    { value: "brevetkurs", label: t("training.brevetkurs") },
-    { value: "siku", label: t("training.siku") },
-    { value: "pilot", label: t("training.pilot") },
-  ];
+  const navigate = useNavigate();
+  const { status } = usePilotStatus();
   return (
     <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {t("settings.trainingLevel")}</CardTitle></CardHeader>
-      <CardContent>
-        <Select value={level} onValueChange={handleChange} disabled={bySchool}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>{levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}</SelectContent>
-        </Select>
-        {bySchool && <p className="text-[11px] text-muted-foreground mt-2">{t("settings.trainingLevelBySchool")}</p>}
+      <CardContent className="flex items-center justify-between gap-3">
+        <p className="min-w-0 text-sm font-bold">{status ? statusLabelKeys(status).map((key) => t(key)).join(" · ") : ""}</p>
+        <Button variant="outline" size="sm" className="shrink-0" onClick={() => navigate("/profile")}>{t("pilotStatus.editInProfile")}</Button>
       </CardContent>
     </Card>
   );

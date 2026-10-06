@@ -3918,6 +3918,7 @@ export type Database = {
           glider_info: string | null
           health_data_consent_at: string | null
           id: string
+          licence_goal: string | null
           medical_notes: string | null
           onboarding_seen: string[]
           pilot_name: string | null
@@ -3944,6 +3945,7 @@ export type Database = {
           glider_info?: string | null
           health_data_consent_at?: string | null
           id?: string
+          licence_goal?: string | null
           medical_notes?: string | null
           onboarding_seen?: string[]
           pilot_name?: string | null
@@ -3970,6 +3972,7 @@ export type Database = {
           glider_info?: string | null
           health_data_consent_at?: string | null
           id?: string
+          licence_goal?: string | null
           medical_notes?: string | null
           onboarding_seen?: string[]
           pilot_name?: string | null
@@ -5260,6 +5263,7 @@ export type Database = {
       my_open_passenger_confirmations: { Args: never; Returns: Json }
       my_school_flight_imports: { Args: never; Returns: Json }
       my_school_flights: { Args: { _event_id: string }; Returns: Json }
+      normalize_training_level: { Args: { _level: string }; Returns: string }
       notify_admins_backup: {
         Args: { _body: string; _kind: string }
         Returns: undefined

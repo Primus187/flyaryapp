@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PasswordInput } from "@/components/PasswordInput";
-import { Camera, Plus, Trash2, Star, Shield, Award, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench, Plane } from "lucide-react";
+import { Camera, Plus, Trash2, Star, Shield, Trophy, Zap, RefreshCw, Globe, ImagePlus, X, AlertTriangle, Wrench, Plane } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWingStats } from "@/hooks/use-wing-stats";
 import { DISCIPLINES, type Discipline } from "@/lib/flight-proof";
@@ -521,10 +521,12 @@ export default function Profile() {
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.email")}</Label><Input value={user?.email || ""} disabled /></div>
       </CardContent></Card>
 
-      <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-primary" /> {t("profile.shvInfo")}</CardTitle></CardHeader><CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.shvNumber")}</Label><Input value={form.shv_number} onChange={e => setForm({ ...form, shv_number: e.target.value })} placeholder={t("profile.shvNumberPlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.flightSchool")}</Label><Input value={form.flight_school} onChange={e => setForm({ ...form, flight_school: e.target.value })} placeholder={t("profile.flightSchoolPlaceholder")} /></div></div>
-        <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.examTheoryDate")}</Label><Input type="date" value={form.exam_theory_date} onChange={e => setForm({ ...form, exam_theory_date: e.target.value })} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.examPracticalDate")}</Label><Input type="date" value={form.exam_practical_date} onChange={e => setForm({ ...form, exam_practical_date: e.target.value })} /></div></div>
-      </CardContent></Card>
+      <PilotCredentialsCard locale={i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH"}>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.shvNumber")}</Label><Input value={form.shv_number} onChange={e => setForm({ ...form, shv_number: e.target.value })} placeholder={t("profile.shvNumberPlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.flightSchool")}</Label><Input value={form.flight_school} onChange={e => setForm({ ...form, flight_school: e.target.value })} placeholder={t("profile.flightSchoolPlaceholder")} /></div></div>
+          <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.examTheoryDate")}</Label><Input type="date" value={form.exam_theory_date} onChange={e => setForm({ ...form, exam_theory_date: e.target.value })} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.examPracticalDate")}</Label><Input type="date" value={form.exam_practical_date} onChange={e => setForm({ ...form, exam_practical_date: e.target.value })} /></div></div>
+        </div>
+      </PilotCredentialsCard>
 
       <Card><CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base flex items-center gap-2"><Wrench className="h-4 w-4 text-primary" /> {t("profile.myGliders")}</CardTitle><Button variant="ghost" size="sm" onClick={() => setShowAddGlider(true)}><Plus className="h-4 w-4 mr-1" /> {t("common.add")}</Button></CardHeader><CardContent className="space-y-3">
         {gliders.length === 0 && !showAddGlider && <p className="text-sm text-muted-foreground">{t("profile.noGliders")}</p>}
@@ -657,8 +659,6 @@ export default function Profile() {
           <div className="flex gap-2"><Button size="sm" onClick={handleAddGlider} disabled={!newGlider.manufacturer || !newGlider.model}>{t("common.save")}</Button><Button size="sm" variant="outline" onClick={() => setShowAddGlider(false)}>{t("common.cancel")}</Button></div>
         </div>)}
       </CardContent></Card>
-
-      <PilotCredentialsCard locale={i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH"} />
 
       <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
         {!healthConsent && (

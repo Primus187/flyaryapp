@@ -1,5 +1,37 @@
 # Flyary
 
+## Ausbildungsstand nach SHV, Schritte 1 und 2: Datenmodell, Profil, Einstellungen (2026-10-06)
+
+Ein Benutzer ist Schüler (vor dem Pilotenbrevet) oder Pilot. Bisher lag der Stand an fünf Stellen
+mit zwei Vokabularen (Auswahl in den Einstellungen, Stufe der Flugschule, Prüfungsdaten, Ausweise,
+Filter im Kontrollblatt). Entscheide vom 6. Oktober: Brevets vorerst Pilot und Doppelsitzer
+(Fluglehrer später), Selbstangabe genügt, ein Stand pro Person (nicht je Disziplin).
+
+- **Ein Feld, ein Vokabular** (Migration `0089_training_status_model.sql`): `profiles.training_level`
+  kennt nur noch `ground`, `altitude`, `exam_ready` (Schüler) und `licensed` (Pilot). Alte Werte
+  (`grundkurs`, `brevetkurs`, `siku`, `pilot`) werden beim Schreiben übersetzt, damit auf Handys
+  zwischengespeicherte App-Versionen weiter funktionieren. Neue Profile starten ohne Stand statt mit
+  `grundkurs`; die App fragt auf Start einmal «Schüler oder Pilot?».
+- **Selbstangabe des Pilotenbrevets:** Schüler einer Flugschule dürfen sich selbst auf `licensed`
+  setzen, aber nur in diese Richtung; die übrigen Stufen setzt weiterhin die Schule (0080). Die
+  Selbstangabe wird im Verlauf der Schule protokolliert (`changed_by` = Schüler) und zählt damit
+  für die SHV-Ampel. Wer einen Ausweis in `pilot_licences` einträgt, gilt automatisch als Pilot.
+- **Ziel:** `profiles.licence_goal` (Doppelsitzer Stufe 1, Stufe 3, gewerbsmässige Verlängerung –
+  die Ausweise mit Anforderungsliste).
+- **Profil:** «SHV-Informationen» und «Ausweise und Nachweise» sind eine Karte «Ausbildung und
+  Brevets» (`PilotCredentialsCard`): Stand, «Ich habe das Pilotenbrevet» (Datum und Nummer
+  freiwillig), Brevets, «Ich arbeite hin auf», Kurse und Nachweise, SHV-Nummer und Prüfungsdaten.
+- **Einstellungen:** Die Auswahl Grundkurs/Brevetkurs/SiKu/Pilot ist entfernt; es bleibt die
+  Statuszeile mit Link ins Profil.
+- Logik in `src/lib/pilot-status.ts` (ersetzt später `training-level.ts`), Hook
+  `use-pilot-status.ts`. Tests: `pilot-status.test.ts`, `training-status-model-database.test.ts`.
+
+Abweichung vom ersten Entwurf: Der Stand wird nicht aus `pilot_licences` abgeleitet, sondern bleibt
+am Profil, weil Verlauf, SHV-Ampel, Kanäle und Schulstatistik daran hängen und bestehende Piloten
+sonst ein Ausstellungsdatum nachtragen müssten. Offen: Schritt 3 (Training, Zuordnung der
+Kontrollblatt-Kategorien zu den Phasen), Schritt 4 (Start, Flug erfassen), Schritt 5 (Flugschule,
+Kanäle). `docs/technical` ist noch nicht nachgeführt.
+
 ## Betriebsbereich Schritt 5: Zwei-Faktor-Anmeldung für Admins (2026-09-30)
 
 Plan §8. Entscheid 2026-09-30: nur für Flyary-Admins, nicht für Schulleitungen.
