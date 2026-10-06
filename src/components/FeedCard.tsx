@@ -119,8 +119,27 @@ function UnifiedMediaCarousel({
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selected, setSelected] = useState(0);
   const [mapVisible, setMapVisible] = useState(false);
-  // Videos play in a dialog: a live player inside the carousel swallows the swipe gesture.
+  // Videos play in a fullscreen player: a live player inside the carousel swallows the swipe gesture.
   const [playing, setPlaying] = useState<Extract<MediaSlide, { type: "video" | "uploaded-video" }> | null>(null);
+  // Real fullscreen where the browser offers it (Android, desktop), landscape for YouTube. An iPhone
+  // has no fullscreen for page elements; there the player itself goes fullscreen because it is not
+  // asked to stay inline, and the black overlay fills the screen until then.
+  const playerRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el?.requestFullscreen) return;
+    el.requestFullscreen()
+      .then(() => (el.dataset.landscape ? (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.("landscape") : undefined))
+      .catch(() => { /* not allowed or not supported: the overlay already fills the screen */ });
+  }, []);
+  useEffect(() => {
+    if (!playing) return;
+    // Leaving fullscreen (back gesture, Esc) closes the player.
+    const onChange = () => { if (!document.fullscreenElement) setPlaying(null); };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    };
+  }, [playing]);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
 
@@ -227,14 +246,21 @@ function UnifiedMediaCarousel({
   function renderPlayer() {
     return (
       <Dialog open={!!playing} onOpenChange={(open) => { if (!open) setPlaying(null); }}>
-        <DialogContent className="max-w-3xl w-[calc(100%-1rem)] p-0 bg-black border-0 overflow-hidden">
-          {playing?.type === "video" && (
-            <iframe src={`${playing.embedUrl}${playing.embedUrl.includes("?") ? "&" : "?"}autoplay=1&playsinline=1`} title="YouTube video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
-              className="w-full aspect-video" />
-          )}
-          {playing?.type === "uploaded-video" && (
-            <video src={playing.videoUrl} poster={playing.posterUrl || undefined} controls autoPlay playsInline className="w-full max-h-[85dvh] bg-black" />
+        <DialogContent className="left-0 top-0 h-dvh w-screen max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 bg-black p-0 sm:rounded-none data-[state=open]:slide-in-from-left-0 data-[state=open]:slide-in-from-top-0 data-[state=closed]:slide-out-to-left-0 data-[state=closed]:slide-out-to-top-0 [&>button]:hidden">
+          {playing && (
+            <div ref={playerRef} data-landscape={playing.type === "video" ? "true" : undefined} className="relative flex h-full w-full items-center justify-center bg-black">
+              {playing.type === "video" ? (
+                <iframe src={`${playing.embedUrl}${playing.embedUrl.includes("?") ? "&" : "?"}autoplay=1`} title="YouTube video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture" allowFullScreen
+                  className="h-full w-full" />
+              ) : (
+                <video src={playing.videoUrl} poster={playing.posterUrl || undefined} controls autoPlay className="max-h-full max-w-full bg-black" />
+              )}
+              <button type="button" aria-label="Video schliessen" onClick={() => setPlaying(null)}
+                className="absolute left-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
