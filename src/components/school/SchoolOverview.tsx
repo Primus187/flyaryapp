@@ -71,7 +71,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
       )}
 
       {nextEvent && (
-        <Card className="hero-card border-0">
+        <Card className="rounded-3xl bg-hero text-hero-foreground border-0">
           <CardContent className="space-y-3 p-[18px]">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 space-y-1">

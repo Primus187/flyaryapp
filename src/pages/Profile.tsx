@@ -360,7 +360,7 @@ export default function Profile() {
       <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{t("profile.title")}</h1>
 
       {/* XP Card */}
-      <Card className="hero-card overflow-hidden border-0">
+      <Card className="rounded-3xl bg-hero text-hero-foreground overflow-hidden border-0">
         <div className="p-[18px] space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
