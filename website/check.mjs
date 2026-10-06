@@ -89,7 +89,6 @@ try {
       assert.equal(appLinks, 2);
       const schoolLink = await page.locator('.school-copy a.button').getAttribute('href');
       assert(schoolLink.startsWith('mailto:info@flyary.ch?subject='));
-      assert.equal(await page.locator('.hero-actions a.button-primary').getAttribute('href'), `/${lang}/testpilot/`);
       assert.equal(await page.locator('.final-actions a.button').getAttribute('href'), `/${lang}/testpilot/`);
       assert.equal(await page.locator('#about video[src="/assets/flyary-story.mp4"]').count(), 1);
       assert.equal(await page.locator('#about iframe').count(), 0);
@@ -177,6 +176,34 @@ try {
     if (width === 1440) await stagePage.screenshot({ path: join(here, '.preview', 'stage-end-1440.png') });
     await moving.close();
     console.log(`PASS moving stage / ${width}px: scenes, glider and pictures along the whole page`);
+  }
+  // Touch devices: text and ground are plain page content, the stage behind them only carries the far layers.
+  {
+    const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true });
+    const touchPage = await touch.newPage();
+    const touchErrors = [];
+    touchPage.on('pageerror', (e) => touchErrors.push(e.message));
+    await touchPage.goto(`${base}/de/`, { waitUntil: 'networkidle' });
+    assert(await touchPage.locator('html.touch-on.stage-ready').count(), 'touch: version for touch devices');
+    assert(await touchPage.locator('.stage').isVisible(), 'touch: stage with the far layers');
+    const total = await touchPage.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y <= total; y += 500) {
+      await touchPage.evaluate((v) => scrollTo(0, v), y);
+      await touchPage.waitForTimeout(250);
+      const state = await touchPage.evaluate(() => {
+        const g = document.querySelector('.glider').getBoundingClientRect();
+        const faded = [...document.querySelectorAll('[data-fade]')].filter((el) => getComputedStyle(el).opacity !== '1' || el.style.maskImage).length;
+        const shown = [...document.querySelectorAll('.scene:not([hidden]) .ly')].filter((im) => getComputedStyle(im).display !== 'none');
+        return { layers: shown.length, loaded: shown.every((im) => im.complete && im.naturalWidth > 1), glider: g.height > 25 && g.right > 0 && g.left < innerWidth && g.bottom > 0 && g.top < innerHeight, faded, overflow: document.documentElement.scrollWidth - innerWidth };
+      });
+      assert(state.glider, `touch at ${y}: glider on screen`);
+      assert.equal(state.faded, 0, `touch at ${y}: content fully opaque`);
+      assert(state.layers >= 4 && state.loaded, `touch at ${y}: scene pictures loaded`);
+      assert(state.overflow <= 0, `touch at ${y}: horizontal overflow`);
+    }
+    assert.deepEqual(touchErrors, []);
+    await touch.close();
+    console.log('PASS touch / 390px: far layers on stage, glider throughout, content opaque, no overflow');
   }
   const nojs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   const page = await nojs.newPage();

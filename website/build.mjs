@@ -126,8 +126,9 @@ function render(lang) {
   const signup = signupPath(lang);
   const main = `    ${stage(c)}
     <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-back"></div>
       <h1 id="hero-title"><span class="hero-brand" translate="no">Flyary</span> <span class="hero-claim">${esc(c.claim)}</span></h1>
-      <div class="hero-actions" data-fade><a class="button button-primary" href="${signup}">${esc(c.start)}</a><a class="hero-link" href="${schoolMail}">${esc(c.secondary)}</a></div>
+      <div class="hero-front"></div>
     </section>
 
     <section id="app" class="chapter chapter-mist" data-chap="0" aria-labelledby="explorer-title">
@@ -141,7 +142,7 @@ function render(lang) {
         <figure class="explorer-stage">${phone(`<img id="preview-image" src="/assets/${screenshots[0]}" alt="${esc(c.previewAlt[0])}" width="780" height="1688" loading="lazy">`)}</figure>
       </div>
     </section>
-    <div class="gap"></div>
+    <div class="gap gap-forest"></div>
 
     <section id="schools" class="chapter chapter-forest" data-chap="1" aria-labelledby="school-title">
       <div class="wrap school" data-fade>
@@ -155,7 +156,7 @@ function render(lang) {
         </div>
       </div>
     </section>
-    <div class="gap"></div>
+    <div class="gap gap-hills"></div>
 
     <section id="about" class="chapter chapter-meadow" data-chap="2" aria-labelledby="about-title">
       <div class="wrap more" data-fade>
@@ -170,7 +171,7 @@ function render(lang) {
         </div>
       </div>
     </section>
-    <div class="gap"></div>
+    <div class="gap gap-valley"></div>
 
     <section class="chapter chapter-valley" data-chap="3" aria-labelledby="final-title">
       <div class="wrap final" data-fade>
