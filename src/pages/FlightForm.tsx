@@ -910,7 +910,7 @@ export default function FlightForm() {
           <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Film className="h-4 w-4" /> {t("flights.uploadVideos", { defaultValue: "Video hochladen" })}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             <p className="text-[11px] text-muted-foreground">
-              {t("flights.uploadVideosHint", { defaultValue: `Kurze Clips direkt vom Handy. Max ${MAX_VIDEO_SECONDS}s, max ${Math.round(MAX_VIDEO_BYTES / 1024 / 1024)} MB.` })}
+              {t("flights.uploadVideosHint", { seconds: MAX_VIDEO_SECONDS, megabytes: Math.round(MAX_VIDEO_BYTES / 1024 / 1024) })}
             </p>
             {existingUploadedVideos.length > 0 && (
               <div className="grid grid-cols-3 gap-2">

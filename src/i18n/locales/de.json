@@ -30,6 +30,7 @@
     "more": "Mehr"
   },
   "common": {
+    "deleted": "Gelöscht",
     "saving": "Speichern",
     "pageFailed": "Diese Seite konnte nicht geladen werden",
     "pageFailedHint": "Meist hilft es, die App zu aktualisieren. Deine Daten bleiben erhalten.",
@@ -61,6 +62,25 @@
     "later": "Später"
   },
   "flights": {
+    "addVideos": "Video vom Gerät auswählen",
+    "compressFailed": "Komprimierung fehlgeschlagen. Bitte vorab kürzen oder Qualität reduzieren.",
+    "compressedTooLarge": "Auch nach Komprimierung > 50 MB. Bitte kürzeres oder kleineres Video wählen.",
+    "compressing": "Komprimiere Video…",
+    "compressingHint": "Das kann je nach Länge einen Moment dauern.",
+    "deleteVideoConfirm": "Video wirklich löschen?",
+    "processingVideo": "Verarbeite Video…",
+    "recordVideo": "Mit Kamera aufnehmen",
+    "trimApply": "Zuschneiden",
+    "trimAvailableHint": "Längere Videos können nach der Auswahl auf 60 s zugeschnitten werden.",
+    "trimHint": "Griffe ziehen, max. 60 s",
+    "trimPreview": "Vorschau",
+    "trimSelection": "Auswahl",
+    "trimUnsupported": "Zuschneiden wird in diesem Browser nicht unterstützt. Bitte vorab kürzen.",
+    "trimVideo": "Video zuschneiden",
+    "trimming": "Schneide…",
+    "uploadVideos": "Video hochladen",
+    "uploadVideosHint": "Kurze Clips direkt vom Handy. Max. {{seconds}} s, max. {{megabytes}} MB.",
+    "videoUploadFailed": "Video-Upload fehlgeschlagen",
     "publishNeedsGroup": "Um diesen Flug im Feed zu teilen, ordne ihn beim Bearbeiten einer Gruppe zu.",
     "title": "Flugbuch",
     "searchPlaceholder": "Suche nach Ort, Schirm, Datum...",
@@ -688,7 +708,7 @@
     "typeCol": "Typ",
     "andMore": "und {{count}} weitere"
   },
-  "settings": {"exportXlsx": "Als Excel exportieren", "xlsxExported": "Excel-Datei exportiert", "exportArchive": "Vollständiges Archiv (ZIP)", "archivePhotos": "Fotos ins Archiv aufnehmen (grössere Datei)", "archiveDone": "Archiv erstellt", "archiveDoneDesc": "{{flights}} Flüge und {{igcs}} IGC-Dateien, mit PDF, CSV, Excel und allen Daten.", "archiveFailed": "Archiv nicht erstellt", "archiveStage": {"data":"Daten werden gelesen …","igc":"IGC-Dateien","photos":"Fotos","pdf":"PDF wird erstellt …","zip":"Archiv wird gepackt …"}, "trainingLevelBySchool": "Deinen Ausbildungsstand setzt deine Flugschule.", "followPermission": {"title": "Wer darf mir folgen?", "groups": "Nur Mitglieder meiner Gruppen und Schulen", "everyone": "Alle Flyary-Piloten", "hint": "Wer dir folgt, sieht dein Profil sowie deine veröffentlichten Flüge und Fotos. Wechselst du auf «Nur Mitglieder», werden andere Follower entfernt."},
+  "settings": {"allFlightsDeleted": "Alle Flüge gelöscht", "allLocationsDeleted": "Alle Orte gelöscht", "deleteAllFlights": "Alle Flüge löschen", "deleteAllFlightsWarning": "Alle deine Flüge, Fotos, Videos und IGC-Tracks werden unwiderruflich gelöscht.", "deleteAllLocations": "Alle Orte löschen", "deleteAllLocationsWarning": "Alle deine Start- und Landeplätze werden gelöscht. Bestehende Flüge bleiben erhalten, verlieren aber die Ortsverknüpfung.", "typeDeleteToConfirm": "Tippe DELETE zum Bestätigen.", "exportXlsx": "Als Excel exportieren", "xlsxExported": "Excel-Datei exportiert", "exportArchive": "Vollständiges Archiv (ZIP)", "archivePhotos": "Fotos ins Archiv aufnehmen (grössere Datei)", "archiveDone": "Archiv erstellt", "archiveDoneDesc": "{{flights}} Flüge und {{igcs}} IGC-Dateien, mit PDF, CSV, Excel und allen Daten.", "archiveFailed": "Archiv nicht erstellt", "archiveStage": {"data":"Daten werden gelesen …","igc":"IGC-Dateien","photos":"Fotos","pdf":"PDF wird erstellt …","zip":"Archiv wird gepackt …"}, "trainingLevelBySchool": "Deinen Ausbildungsstand setzt deine Flugschule.", "followPermission": {"title": "Wer darf mir folgen?", "groups": "Nur Mitglieder meiner Gruppen und Schulen", "everyone": "Alle Flyary-Piloten", "hint": "Wer dir folgt, sieht dein Profil sowie deine veröffentlichten Flüge und Fotos. Wechselst du auf «Nur Mitglieder», werden andere Follower entfernt."},
     "title": "Einstellungen",
     "theme": "Design",
     "light": "Hell",

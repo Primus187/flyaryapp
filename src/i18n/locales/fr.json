@@ -30,6 +30,7 @@
     "more": "Plus"
   },
   "common": {
+    "deleted": "Supprimé",
     "saving": "Enregistrement",
     "pageFailed": "Impossible de charger cette page",
     "pageFailedHint": "Mettre à jour l'app aide généralement. Tes données sont conservées.",
@@ -87,6 +88,25 @@
     "allStats": "Toutes les statistiques"
   },
   "flights": {
+    "addVideos": "Choisir une vidéo sur l’appareil",
+    "compressFailed": "La compression a échoué. Raccourcis la vidéo ou réduis sa qualité au préalable.",
+    "compressedTooLarge": "Encore plus de 50 Mo après compression. Choisis une vidéo plus courte ou plus légère.",
+    "compressing": "Compression de la vidéo…",
+    "compressingHint": "Cela peut prendre un moment selon la durée.",
+    "deleteVideoConfirm": "Vraiment supprimer cette vidéo ?",
+    "processingVideo": "Traitement de la vidéo…",
+    "recordVideo": "Filmer avec la caméra",
+    "trimApply": "Découper",
+    "trimAvailableHint": "Les vidéos plus longues peuvent être découpées à 60 s après la sélection.",
+    "trimHint": "Fais glisser les poignées, max. 60 s",
+    "trimPreview": "Aperçu",
+    "trimSelection": "Sélection",
+    "trimUnsupported": "Le découpage n’est pas pris en charge par ce navigateur. Raccourcis la vidéo au préalable.",
+    "trimVideo": "Découper la vidéo",
+    "trimming": "Découpage…",
+    "uploadVideos": "Téléverser une vidéo",
+    "uploadVideosHint": "Courts clips directement depuis ton téléphone. Max. {{seconds}} s, max. {{megabytes}} Mo.",
+    "videoUploadFailed": "Le téléversement de la vidéo a échoué",
     "publishNeedsGroup": "Pour partager ce vol dans le fil, attribuez-le à un groupe en le modifiant.",
     "title": "Carnet de vol",
     "searchPlaceholder": "Rechercher par site, voile, date...",
@@ -714,7 +734,7 @@
     "typeCol": "Type",
     "andMore": "et {{count}} autres"
   },
-  "settings": {"exportXlsx": "Exporter en Excel", "xlsxExported": "Fichier Excel exporté", "exportArchive": "Archive complète (ZIP)", "archivePhotos": "Inclure les photos (fichier plus grand)", "archiveDone": "Archive créée", "archiveDoneDesc": "{{flights}} vols et {{igcs}} fichiers IGC, avec PDF, CSV, Excel et toutes les données.", "archiveFailed": "Archive non créée", "archiveStage": {"data":"Lecture des données …","igc":"Fichiers IGC","photos":"Photos","pdf":"Création du PDF …","zip":"Compression de l’archive …"}, "trainingLevelBySchool": "C’est ton école de vol qui définit ton niveau de formation.", "followPermission": {"title": "Qui peut me suivre ?", "groups": "Seulement les membres de mes groupes et écoles", "everyone": "Tous les pilotes Flyary", "hint": "Tes abonnés voient ton profil ainsi que tes vols et photos publiés. En passant à « seulement les membres », les autres abonnés sont retirés."},
+  "settings": {"allFlightsDeleted": "Tous les vols ont été supprimés", "allLocationsDeleted": "Tous les sites ont été supprimés", "deleteAllFlights": "Supprimer tous les vols", "deleteAllFlightsWarning": "Tous tes vols, photos, vidéos et traces IGC seront supprimés définitivement.", "deleteAllLocations": "Supprimer tous les sites", "deleteAllLocationsWarning": "Tous tes décollages et atterrissages seront supprimés. Les vols existants restent, mais perdent leur lien avec un site.", "typeDeleteToConfirm": "Saisis DELETE pour confirmer.", "exportXlsx": "Exporter en Excel", "xlsxExported": "Fichier Excel exporté", "exportArchive": "Archive complète (ZIP)", "archivePhotos": "Inclure les photos (fichier plus grand)", "archiveDone": "Archive créée", "archiveDoneDesc": "{{flights}} vols et {{igcs}} fichiers IGC, avec PDF, CSV, Excel et toutes les données.", "archiveFailed": "Archive non créée", "archiveStage": {"data":"Lecture des données …","igc":"Fichiers IGC","photos":"Photos","pdf":"Création du PDF …","zip":"Compression de l’archive …"}, "trainingLevelBySchool": "C’est ton école de vol qui définit ton niveau de formation.", "followPermission": {"title": "Qui peut me suivre ?", "groups": "Seulement les membres de mes groupes et écoles", "everyone": "Tous les pilotes Flyary", "hint": "Tes abonnés voient ton profil ainsi que tes vols et photos publiés. En passant à « seulement les membres », les autres abonnés sont retirés."},
     "title": "Paramètres",
     "theme": "Thème",
     "light": "Clair",

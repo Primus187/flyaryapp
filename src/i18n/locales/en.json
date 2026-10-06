@@ -30,6 +30,7 @@
     "more": "More"
   },
   "common": {
+    "deleted": "Deleted",
     "saving": "Saving",
     "pageFailed": "This page could not be loaded",
     "pageFailedHint": "Updating the app usually helps. Your data is kept.",
@@ -87,6 +88,25 @@
     "allStats": "All statistics"
   },
   "flights": {
+    "addVideos": "Choose a video from the device",
+    "compressFailed": "Compression failed. Please shorten the video or reduce its quality first.",
+    "compressedTooLarge": "Still over 50 MB after compression. Please choose a shorter or smaller video.",
+    "compressing": "Compressing video…",
+    "compressingHint": "This can take a moment, depending on the length.",
+    "deleteVideoConfirm": "Really delete this video?",
+    "processingVideo": "Processing video…",
+    "recordVideo": "Record with the camera",
+    "trimApply": "Trim",
+    "trimAvailableHint": "Longer videos can be trimmed to 60 s after you choose them.",
+    "trimHint": "Drag the handles, max. 60 s",
+    "trimPreview": "Preview",
+    "trimSelection": "Selection",
+    "trimUnsupported": "Trimming is not supported in this browser. Please shorten the video first.",
+    "trimVideo": "Trim video",
+    "trimming": "Trimming…",
+    "uploadVideos": "Upload video",
+    "uploadVideosHint": "Short clips straight from your phone. Max. {{seconds}} s, max. {{megabytes}} MB.",
+    "videoUploadFailed": "Video upload failed",
     "publishNeedsGroup": "To share this flight in the feed, assign it to a group when editing it.",
     "title": "Logbook",
     "searchPlaceholder": "Search by site, glider, date...",
@@ -714,7 +734,7 @@
     "typeCol": "Type",
     "andMore": "and {{count}} more"
   },
-  "settings": {"exportXlsx": "Export as Excel", "xlsxExported": "Excel file exported", "exportArchive": "Complete archive (ZIP)", "archivePhotos": "Include photos (larger file)", "archiveDone": "Archive created", "archiveDoneDesc": "{{flights}} flights and {{igcs}} IGC files, with PDF, CSV, Excel and all data.", "archiveFailed": "Archive not created", "archiveStage": {"data":"Reading data …","igc":"IGC files","photos":"Photos","pdf":"Creating PDF …","zip":"Packing archive …"}, "trainingLevelBySchool": "Your flight school sets your training level.", "followPermission": {"title": "Who may follow me?", "groups": "Only members of my groups and schools", "everyone": "All Flyary pilots", "hint": "Followers see your profile and your published flights and photos. Switching to “only members” removes other followers."},
+  "settings": {"allFlightsDeleted": "All flights deleted", "allLocationsDeleted": "All sites deleted", "deleteAllFlights": "Delete all flights", "deleteAllFlightsWarning": "All your flights, photos, videos and IGC tracks will be deleted for good.", "deleteAllLocations": "Delete all sites", "deleteAllLocationsWarning": "All your take-off and landing sites will be deleted. Existing flights stay, but lose their link to a site.", "typeDeleteToConfirm": "Type DELETE to confirm.", "exportXlsx": "Export as Excel", "xlsxExported": "Excel file exported", "exportArchive": "Complete archive (ZIP)", "archivePhotos": "Include photos (larger file)", "archiveDone": "Archive created", "archiveDoneDesc": "{{flights}} flights and {{igcs}} IGC files, with PDF, CSV, Excel and all data.", "archiveFailed": "Archive not created", "archiveStage": {"data":"Reading data …","igc":"IGC files","photos":"Photos","pdf":"Creating PDF …","zip":"Packing archive …"}, "trainingLevelBySchool": "Your flight school sets your training level.", "followPermission": {"title": "Who may follow me?", "groups": "Only members of my groups and schools", "everyone": "All Flyary pilots", "hint": "Followers see your profile and your published flights and photos. Switching to “only members” removes other followers."},
     "title": "Settings",
     "theme": "Theme",
     "light": "Light",
