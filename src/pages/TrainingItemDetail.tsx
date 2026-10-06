@@ -68,9 +68,9 @@ export default function TrainingItemDetail() {
 
   if (!item) {
     return (
-      <div className="px-4 pt-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/training")}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> {t("common.back")}
+      <div className="px-5 pt-5">
+        <Button variant="outline" size="icon" onClick={() => navigate("/training")} aria-label={t("common.back")}>
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <p className="mt-4 text-muted-foreground">{t("common.error")}</p>
       </div>
@@ -85,9 +85,9 @@ export default function TrainingItemDetail() {
   ];
 
   return (
-    <div className="px-4 pt-6 pb-24 max-w-lg mx-auto space-y-5">
-      <Button variant="ghost" size="sm" onClick={() => navigate("/training")} className="-ml-2">
-        <ArrowLeft className="h-4 w-4 mr-1" /> {t("common.back")}
+    <div className="px-5 pt-5 pb-24 max-w-lg mx-auto space-y-4">
+      <Button variant="outline" size="icon" onClick={() => navigate("/training")} aria-label={t("common.back")}>
+        <ArrowLeft className="h-5 w-5" />
       </Button>
 
       <div>

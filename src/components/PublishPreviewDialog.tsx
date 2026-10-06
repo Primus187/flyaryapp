@@ -136,12 +136,12 @@ export default function PublishPreviewDialog({
               </div>
 
               {/* Flight stats */}
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                {flight.glider && <span className="font-medium text-foreground">🪂 {flight.glider}</span>}
-                {flight.duration_minutes && <span>⏱ {formatDuration(flight.duration_minutes)}</span>}
-                {flight.altitude_gain && <span>↑ {flight.altitude_gain}m</span>}
-                {flight.distance_km && <span>↔ {Number(flight.distance_km).toFixed(1)}km</span>}
+              <div className="grid grid-cols-3 gap-2 rounded-lg bg-background px-3 py-2.5">
+                {flight.duration_minutes && <div><p className="text-[15px] stat-value">{formatDuration(flight.duration_minutes)}</p><p className="text-[11px] font-semibold text-muted-foreground">{t("dashboard.flightTime")}</p></div>}
+                {flight.altitude_gain && <div><p className="text-[15px] stat-value">{flight.altitude_gain} m</p><p className="text-[11px] font-semibold text-muted-foreground">{t("stats.altitudeGain")}</p></div>}
+                {flight.distance_km && <div><p className="text-[15px] stat-value">{Number(flight.distance_km).toFixed(1)} km</p><p className="text-[11px] font-semibold text-muted-foreground">{t("stats.distance")}</p></div>}
               </div>
+              {flight.glider && <p className="truncate text-[13px] font-medium text-muted-foreground">{flight.glider}</p>}
 
               {/* Comment preview */}
               {feedComment.trim() && (

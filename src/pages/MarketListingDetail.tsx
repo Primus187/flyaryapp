@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle, Flag, ImageOff, Info, MapPin, MessageCircle, School, Share2, Star, Truck } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Flag, ImageOff, Info, MapPin, MessageCircle, School, Share2, Star, Truck } from "lucide-react";
 import ReportListingDialog from "@/components/market/ReportListingDialog";
 import OwnerListingActions from "@/components/market/OwnerListingActions";
 import ReviewDialog from "@/components/market/ReviewDialog";
@@ -140,55 +140,59 @@ export default function MarketListingDetail() {
 
   return (
     <PageContainer>
-      <PageHeader title={t("market.title")} back
-        action={<>
-          {!canManage && user && (
-            <FavoriteButton userId={user.id} listingId={listing.id} active={favorite} onChange={setFavorite} className="bg-transparent shadow-none" />
-          )}
-          {!canManage && (
-            <Button size="icon" variant="ghost" aria-label={t("market.report.title")} onClick={() => setReportOpen(true)}><Flag className="h-4 w-4" /></Button>
-          )}
-          <Button size="icon" variant="ghost" aria-label={t("market.detail.share")} onClick={() => void share()}><Share2 className="h-4 w-4" /></Button>
-        </>} />
+      {/* Photos run edge to edge; the page actions sit on top of them. */}
+      <div className="relative -mx-5 -mt-5">
+        {photos.length > 0 ? (
+          <Carousel>
+            <CarouselContent>
+              {photos.map((p) => (
+                <CarouselItem key={p.id}>
+                  <div className="aspect-[4/3] bg-muted">
+                    {urls[p.id] && <img src={urls[p.id]} alt="" className="h-full w-full object-contain" />}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {photos.length > 1 && <><CarouselPrevious className="left-3 top-[58%]" /><CarouselNext className="right-3 top-[58%]" /></>}
+          </Carousel>
+        ) : (
+          <div className="flex aspect-[4/3] items-center justify-center bg-muted"><ImageOff className="h-8 w-8 text-muted-foreground" /></div>
+        )}
+        <div className="absolute inset-x-4 top-4 flex items-center justify-between">
+          <Button size="icon" variant="outline" className="shadow-sm" aria-label={t("common.back")} onClick={() => navigate(-1)}><ChevronLeft className="h-5 w-5" /></Button>
+          <div className="flex gap-2">
+            {!canManage && user && (
+              <FavoriteButton userId={user.id} listingId={listing.id} active={favorite} onChange={setFavorite} className="h-11 w-11 rounded-lg border bg-card shadow-sm" />
+            )}
+            {!canManage && (
+              <Button size="icon" variant="outline" className="shadow-sm" aria-label={t("market.report.title")} onClick={() => setReportOpen(true)}><Flag className="h-5 w-5" /></Button>
+            )}
+            <Button size="icon" variant="outline" className="shadow-sm" aria-label={t("market.detail.share")} onClick={() => void share()}><Share2 className="h-5 w-5" /></Button>
+          </div>
+        </div>
+      </div>
       {!canManage && <ReportListingDialog listingId={listing.id} open={reportOpen} onOpenChange={setReportOpen} />}
       {listing.status === "removed" && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        <p className="rounded-2xl bg-destructive-soft px-3.5 py-3 text-sm font-semibold text-destructive-soft-foreground">
           {t("market.moderation.hiddenNotice")}{listing.removed_reason ? `: ${listing.removed_reason}` : ""}
         </p>
       )}
 
-      {photos.length > 0 ? (
-        <Carousel className="-mx-4">
-          <CarouselContent>
-            {photos.map((p) => (
-              <CarouselItem key={p.id}>
-                <div className="aspect-[4/3] bg-muted">
-                  {urls[p.id] && <img src={urls[p.id]} alt="" className="h-full w-full object-contain" />}
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          {photos.length > 1 && <><CarouselPrevious className="left-2" /><CarouselNext className="right-2" /></>}
-        </Carousel>
-      ) : (
-        <div className="-mx-4 flex aspect-[4/3] items-center justify-center bg-muted"><ImageOff className="h-8 w-8 text-muted-foreground" /></div>
-      )}
-
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <div className="flex flex-wrap gap-1.5">
           {listing.listing_type === "wanted" && <Badge>{t("market.browse.wantedBadge")}</Badge>}
           {status !== "active" && <Badge variant="secondary">{t(`market.status.${status}`)}</Badge>}
           {listing.seller_group_id && <Badge variant="outline">{t("market.browse.school")}</Badge>}
         </div>
-        <h1 className="text-xl font-bold leading-tight">{listing.title}</h1>
-        <p className="text-2xl font-semibold">
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{listing.title}</h1>
+        <p className="text-[26px] leading-8 stat-value">
           {listingPriceLabel(listing, t)}
-          {shopProfile?.vat_registered && listing.price_cents ? <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t("market.shop.inclVat")}</span> : null}
+          {shopProfile?.vat_registered && listing.price_cents ? <span className="ml-2 text-[13px] font-semibold tracking-normal text-muted-foreground">{t("market.shop.inclVat")}</span> : null}
         </p>
         {listing.seller_group_id && listing.quantity > 1 && (
-          <p className="text-xs text-muted-foreground">{t("market.detail.quantity", { count: listing.quantity })}</p>
+          <p className="text-[13px] font-medium text-muted-foreground">{t("market.detail.quantity", { count: listing.quantity })}</p>
         )}
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] font-medium text-muted-foreground">
           {place.trim() && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{place}</span>}
           <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5" />{t(`market.delivery.${listing.delivery}`)}</span>
           {listing.bumped_at && <span>{ageLabel(listing.bumped_at, i18n.language)}</span>}
@@ -198,15 +202,15 @@ export default function MarketListingDetail() {
       {canManage ? (
         <OwnerListingActions listing={listing} onChanged={() => setReloadKey((k) => k + 1)} />
       ) : (status === "active" || status === "reserved") && (
-        <Button className="w-full gap-2" disabled={contacting} onClick={() => void contact()}>
+        <Button size="lg" className="w-full gap-2" disabled={contacting} onClick={() => void contact()}>
           <MessageCircle className="h-4 w-4" /> {t("market.chat.contact")}
         </Button>
       )}
 
       {reviewState && (
-        <Card className="border-warning/40"><CardContent className="flex items-center gap-3 p-3">
+        <Card className="border-warning/40 bg-warning-soft text-warning-soft-foreground"><CardContent className="flex items-center gap-3 px-3.5 py-3">
           <Star className="h-5 w-5 shrink-0 fill-warning text-warning" />
-          <p className="flex-1 text-sm">{t(`market.reviews.prompt_${reviewState}`)}</p>
+          <p className="flex-1 text-sm font-semibold">{t(`market.reviews.prompt_${reviewState}`)}</p>
           <Button size="sm" onClick={() => setReviewing(true)}>{t("market.reviews.rate")}</Button>
         </CardContent></Card>
       )}
@@ -216,55 +220,55 @@ export default function MarketListingDetail() {
       )}
 
       {fit && (
-        <p className={fit === "fits" ? "rounded-md bg-success-soft px-3 py-2 text-xs text-success-soft-foreground"
-          : "rounded-md bg-warning-soft px-3 py-2 text-xs text-warning-soft-foreground"}>
+        <p className={fit === "fits" ? "rounded-2xl bg-success-soft px-3.5 py-3 text-sm font-semibold text-success-soft-foreground"
+          : "rounded-2xl bg-warning-soft px-3.5 py-3 text-sm font-semibold text-warning-soft-foreground"}>
           {t(fit === "fits" ? "market.radius.weightFits" : "market.radius.weightOutside", { kg: myWeight })}
         </p>
       )}
       {hints.length > 0 && (
-        <Card><CardContent className="space-y-1.5 p-3">
+        <Card><CardContent className="space-y-2.5 px-4 py-3.5">
           {hints.map((h) => (
-            <p key={h.code} className="flex items-start gap-2 text-xs">
+            <p key={h.code} className="flex items-start gap-2.5 text-sm font-medium">
               {h.severity === "warning"
-                ? <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
-                : <Info className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-soft-foreground" />
+                : <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
               {t(`market.safety.${h.code}`, { months: h.months })}
             </p>
           ))}
         </CardContent></Card>
       )}
 
-      <Card><CardContent className="p-3">
-        <p className="mb-2 text-sm font-medium">{t("market.detail.details")}</p>
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+      <Card><CardContent className="p-4">
+        <p className="mb-1 text-base font-bold">{t("market.detail.details")}</p>
+        <dl className="divide-y text-sm">
           {details.map(([label, value]) => (
-            <div key={label} className="contents">
-              <dt className="text-muted-foreground">{label}</dt><dd className="text-right">{value}</dd>
+            <div key={label} className="flex justify-between gap-3 py-2">
+              <dt className="font-medium text-muted-foreground">{label}</dt><dd className="text-right font-bold">{value}</dd>
             </div>
           ))}
         </dl>
       </CardContent></Card>
 
       {listing.description.trim() && (
-        <Card><CardContent className="p-3">
-          <p className="mb-1.5 text-sm font-medium">{t("market.form.description")}</p>
+        <Card><CardContent className="p-4">
+          <p className="mb-1.5 text-base font-bold">{t("market.form.description")}</p>
           <p className="whitespace-pre-wrap text-sm">{listing.description}</p>
         </CardContent></Card>
       )}
 
       {seller && (
-        <Card><CardContent className="flex items-center gap-3 p-3">
-          <Avatar className="h-11 w-11">
+        <Card><CardContent className="flex items-center gap-3 px-4 py-3.5">
+          <Avatar className="h-12 w-12">
             {avatar && <AvatarImage src={avatar} />}
             <AvatarFallback>{seller.seller_kind === "school" ? <School className="h-5 w-5" /> : (seller.name ?? "?").slice(0, 1)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground">{t("market.detail.seller")}</p>
-            <button type="button" className="block truncate text-sm font-medium text-left"
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t("market.detail.seller")}</p>
+            <button type="button" className="block truncate text-base font-bold text-left"
               onClick={() => seller.seller_kind === "person" && navigate(`/pilot/${seller.seller_id}`)}>
               {seller.name ?? "–"}
             </button>
-            <p className="truncate text-[11px] text-muted-foreground">
+            <p className="truncate text-[13px] font-medium text-muted-foreground">
               {[
                 seller.seller_kind === "school" ? t("market.browse.school") : null,
                 seller.member_since ? t("market.detail.memberSince", { date: monthFormat.format(new Date(seller.member_since)) }) : null,
@@ -272,11 +276,11 @@ export default function MarketListingDetail() {
               ].filter(Boolean).join(" · ")}
             </p>
             {seller.rating_count > 0 ? (
-              <button type="button" className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground" onClick={() => setReviewsOpen(true)}>
+              <button type="button" className="mt-1 flex items-center gap-1.5 text-[13px] font-semibold text-foreground" onClick={() => setReviewsOpen(true)}>
                 <Stars value={Number(seller.rating_avg)} />{ratingSummary(seller.rating_avg, seller.rating_count, i18n.language)}
               </button>
             ) : (
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{t("market.reviews.noneYet")}</p>
+              <p className="mt-0.5 text-[13px] font-medium text-muted-foreground">{t("market.reviews.noneYet")}</p>
             )}
           </div>
         </CardContent></Card>
@@ -286,8 +290,8 @@ export default function MarketListingDetail() {
       )}
 
       {shopProfile && (
-        <Card><CardContent className="space-y-1 p-3 text-xs">
-          <p className="mb-1 text-sm font-medium">{t("market.shop.sellerDetails")}</p>
+        <Card><CardContent className="space-y-1 p-4 text-sm font-medium">
+          <p className="mb-1 text-base font-bold">{t("market.shop.sellerDetails")}</p>
           <p>{shopProfile.legal_name}</p>
           <p>{shopProfile.street}, {shopProfile.postal_code} {shopProfile.locality}</p>
           {shopProfile.uid_number && <p>{t("market.shop.fields.uid_number")}: {shopProfile.uid_number}{shopProfile.vat_registered ? " MWST" : ""}</p>}

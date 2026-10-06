@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import { useSchoolGroups } from "@/hooks/use-school-access";
@@ -44,7 +45,7 @@ function Retry({ onRetry }: { onRetry: () => void }) {
 }
 function Empty() { const { t } = useTranslation(); return <p className="text-sm text-muted-foreground py-4">{t("dossier.empty")}</p>; }
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="rounded-2xl border bg-card p-4 space-y-3"><h2 className="font-semibold">{title}</h2>{children}</section>;
+  return <section className="rounded-card border bg-card p-4 space-y-3"><h2 className="text-base font-bold">{title}</h2>{children}</section>;
 }
 function useFormat() {
   const { i18n } = useTranslation();
@@ -69,10 +70,23 @@ function Dossier({ groupId, studentId, schoolName }: Context & { schoolName: str
   const [section, setSection] = useState<Tab>("overview");
   const overview = useDossierSection({ groupId, studentId }, "overview");
   const context = { groupId, studentId };
-  return <PageContainer className="space-y-5">
-    <PageHeader back="/school/students" title={overview.data?.name || t("dossier.title")} subtitle={`${schoolName} · ${t("dossier.title")}`} />
+  const name = overview.data?.name || t("dossier.title");
+  const initials = name.split(" ").map(part => part[0]).join("").slice(0, 2).toUpperCase();
+  return <PageContainer className="space-y-4">
+    <header className="-mx-5 -mt-5 space-y-3.5 bg-hero px-5 pb-[18px] pt-3.5 text-hero-foreground">
+      <div className="flex items-center gap-3">
+        <Button asChild variant="outline" size="icon" className="shrink-0 border-white/15 bg-white/10 text-hero-foreground hover:bg-white/15 hover:text-hero-foreground"><Link to="/school/students" aria-label={t("common.back")}><ChevronLeft className="h-5 w-5" /></Link></Button>
+        <p className="truncate text-xs font-bold uppercase tracking-[0.12em] text-hero-muted">{schoolName} · {t("dossier.title")}</p>
+      </div>
+      <div className="flex items-center gap-3.5">
+        <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-[20px] bg-white/10 text-xl font-extrabold">{initials}</div>
+        <div className="min-w-0 space-y-1.5">
+          <h1 className="truncate text-2xl leading-7 font-extrabold tracking-tight">{name}</h1>
+          {overview.data && <div className="flex flex-wrap gap-1.5"><Badge className="bg-white text-hero">{t(`school.studentStatus.${overview.data.status.status}`)}</Badge><Badge className="bg-white/15 text-hero-foreground">{overview.data.level ? t(`dossier.levels.${overview.data.level}`, { defaultValue: overview.data.level }) : t("dossier.noLevel")}</Badge><Badge className="bg-white/15 text-hero-foreground">{overview.data.flightCount} {t("school.flights")}</Badge></div>}
+        </div>
+      </div>
+    </header>
     {overview.isPending ? <p role="status">{t("common.loading")}</p> : overview.isError ? <Retry onRetry={() => void overview.refetch()} /> : <>
-      <div className="flex flex-wrap gap-2"><Badge>{t(`school.studentStatus.${overview.data.status.status}`)}</Badge><Badge variant="secondary">{overview.data.level ? t(`dossier.levels.${overview.data.level}`, { defaultValue: overview.data.level }) : t("dossier.noLevel")}</Badge><Badge variant="outline">{overview.data.flightCount} {t("school.flights")}</Badge></div>
       <Tabs value={section} onValueChange={value => setSection(value as Tab)}>
         <div className="overflow-x-auto pb-2"><TabsList aria-label={t("dossier.title")} className="w-max">{tabs.map(key => <TabsTrigger key={key} value={key}>{t(`dossier.sections.${key}`)}</TabsTrigger>)}</TabsList></div>
         <TabsContent value="overview"><OverviewPanel {...context} data={overview.data} /></TabsContent>
@@ -106,7 +120,7 @@ function OverviewPanel({ data, groupId, studentId }: Context & { data: Overview 
     finally { setSaving(false); }
   };
   return <div className="space-y-4">
-    {data.nextStep && <Panel title={t("dossier.nextStep")}><p className="whitespace-pre-wrap break-words">{data.nextStep.note}</p><Link className="text-primary text-sm underline" to={`/events/${data.nextStep.eventId}#coaching`}>{date(data.nextStep.date)} · {t("dossier.openDay")}</Link></Panel>}
+    {data.nextStep && <section className="space-y-2 rounded-card border border-primary/30 bg-accent p-4"><h2 className="text-xs font-bold uppercase tracking-[0.12em] text-accent-foreground">{t("dossier.nextStep")}</h2><p className="whitespace-pre-wrap break-words text-[15px] font-semibold">{data.nextStep.note}</p><Link className="block py-1 text-[13px] font-bold text-accent-foreground" to={`/events/${data.nextStep.eventId}#coaching`}>{date(data.nextStep.date)} · {t("dossier.openDay")}</Link></section>}
     <Panel title={t("dossier.sections.training")}>
       <label className="block text-sm" htmlFor="dossier-level">{t("dossier.level")}</label>
       <div className="flex gap-2"><select id="dossier-level" className="min-w-0 flex-1 rounded-md border bg-background p-2 text-sm" value={level} onChange={e => setLevel(e.target.value)} disabled={saving}>
