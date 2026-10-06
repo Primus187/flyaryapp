@@ -1,5 +1,22 @@
 # Flyary
 
+## Ausbildungsstand nach SHV, Schritt 3: Training (2026-10-06)
+
+- **Kontrollblatt nach Stufe** (Migration `0090_training_category_stages.sql`): Jede Kategorie
+  gehört zu einer Stufe (Grundausbildung: Übungshang, Groundhandling, Starttechnik; Höhenflüge:
+  Landeeinteilung, Flugpraxis, Theorie (SHV); Prüfungsreif: SHV-Prüfungsmanöver; Pilot:
+  Sicherheitstraining / SIV). Bisher war das Feld bei allen Kategorien leer, die Filter-Chips
+  filterten nichts.
+- **Trainingsseite:** Abschnitte pro Stufe statt Filter-Chips. Der Abschnitt der eigenen Stufe ist
+  offen und markiert, die übrigen sind eingeklappt und zeigen ihren Fortschritt; die eigenen Sterne
+  bleiben, nichts gilt automatisch als erfüllt. Ohne zugeordnete Kategorien (Migration noch nicht
+  eingespielt) bleibt die Liste flach wie bisher.
+- **Statuskarte** (`TrainingStatusCard`, auch im Dossier-Reiter «Nachweis»): öffnet auf dem Brevet,
+  auf das die Person hinarbeitet (Schüler: Pilot; Pilot: gewähltes Ziel). Ein erlangtes Brevet
+  erscheint als «Erlangt am …» statt als Anforderungsliste.
+- **Dossier:** Der Stufenfilter im Reiter «Ausbildung» nutzt dieselben vier Stufen.
+- `src/lib/training-level.ts` ist entfernt; die Logik liegt in `src/lib/pilot-status.ts`.
+
 ## Ausbildungsstand nach SHV, Schritte 1 und 2: Datenmodell, Profil, Einstellungen (2026-10-06)
 
 Ein Benutzer ist Schüler (vor dem Pilotenbrevet) oder Pilot. Bisher lag der Stand an fünf Stellen

@@ -119,3 +119,22 @@ describe("training status model", () => {
     await db.exec(`UPDATE profiles SET licence_goal = NULL WHERE user_id = '${pilot}'`);
   });
 });
+
+// Migration 0090: every Kontrollblatt category belongs to one stage.
+describe("training category stages", () => {
+  it("assigns the categories to the stages and translates older words", async () => {
+    await db.exec(`RESET ROLE;
+      CREATE TABLE training_categories(name text PRIMARY KEY, training_level text);
+      INSERT INTO training_categories VALUES ('Übungshang', NULL), ('Groundhandling', NULL), ('Starttechnik', NULL),
+        ('Landeeinteilung', NULL), ('Flugpraxis', NULL), ('Theorie (SHV)', NULL), ('SHV-Prüfungsmanöver', NULL),
+        ('Sicherheitstraining / SIV', NULL), ('Eigene Kategorie', NULL), ('Alter Kurs', 'brevetkurs'), ('Gemischt', 'ground,altitude');`);
+    await db.exec(readFileSync(new URL("../../drizzle/migrations/0090_training_category_stages.sql", import.meta.url), "utf8"));
+    const rows = (await db.query<{ name: string; training_level: string | null }>("SELECT name, training_level FROM training_categories")).rows;
+    expect(Object.fromEntries(rows.map((r) => [r.name, r.training_level]))).toEqual({
+      "Übungshang": "ground", "Groundhandling": "ground", "Starttechnik": "ground",
+      "Landeeinteilung": "altitude", "Flugpraxis": "altitude", "Theorie (SHV)": "altitude",
+      "SHV-Prüfungsmanöver": "exam_ready", "Sicherheitstraining / SIV": "licensed",
+      "Eigene Kategorie": null, "Alter Kurs": "altitude", "Gemischt": "ground,altitude",
+    });
+  });
+});

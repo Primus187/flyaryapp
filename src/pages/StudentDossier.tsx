@@ -9,7 +9,7 @@ import { useSchoolGroups } from "@/hooks/use-school-access";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { dossierSections, examPercent, fetchDossier, type DossierSection, type Overview } from "@/lib/student-dossier";
-import { matchesTrainingFilter, trainingFilter, type TrainingFilter } from "@/lib/training-level";
+import { TRAINING_LEVELS, categoryInLevel, normalizeTrainingLevel, type TrainingLevel } from "@/lib/pilot-status";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -153,12 +153,12 @@ function TrainingPanel(context: Context & { level: string | null }) {
       if (error) throw error;
       return (data || {}) as Record<string, { date: string; rating: 1 | 2 | 3 }[]>;
     } });
-  const [filter, setFilter] = useState<TrainingFilter>(() => trainingFilter(context.level));
+  const [filter, setFilter] = useState<TrainingLevel | "all">(() => { const level = normalizeTrainingLevel(context.level); return level && level !== "licensed" ? level : "all"; });
   if (query.isPending) return <p role="status">{t("common.loading")}</p>;
   if (query.isError) return <Retry onRetry={() => void query.refetch()} />;
-  const rows = query.data.rows.filter(row => matchesTrainingFilter(row.training_level, filter));
+  const rows = query.data.rows.filter(row => categoryInLevel(row.training_level, filter));
   return <div className="space-y-4"><p className="text-xs text-muted-foreground">{t("dossier.trainingHint")}</p>
-    <select aria-label={t("dossier.level")} className="rounded-md border bg-background p-2" value={filter} onChange={e => setFilter(e.target.value as TrainingFilter)}>{(["all", "grundkurs", "brevetkurs", "siku"] as const).map(value => <option key={value} value={value}>{t(`dossier.levels.${value}`)}</option>)}</select>
+    <select aria-label={t("dossier.level")} className="rounded-md border bg-background p-2" value={filter} onChange={e => setFilter(e.target.value as TrainingLevel | "all")}>{(["all", ...TRAINING_LEVELS] as const).map(value => <option key={value} value={value}>{t(`dossier.levels.${value}`)}</option>)}</select>
     {!rows.length && <Empty />}
     {[...new Set(rows.map(row => row.category))].map(category => <Panel key={category} title={category}>{rows.filter(row => row.category === category).map(row => <div key={row.id} className="border-t pt-3 first:border-0 first:pt-0"><div className="flex items-start justify-between gap-2"><p className="text-sm font-medium">{row.name}{row.is_exam_maneuver && <Badge variant="outline" className="ml-2">SHV</Badge>}</p><span className="text-sm shrink-0">{t("dossier.ownRating", { rating: row.rating })}</span></div>{ratings.data?.[row.id]?.length ? <p className="text-xs text-muted-foreground mt-1">{t("dossier.instructorRatings")}: {[...ratings.data[row.id]].reverse().map(h => `${t(`flightDay.sheet.ratings.${h.rating}`)} (${date(h.date)})`).join(" → ")}</p> : null}{row.notes && <p className="text-sm whitespace-pre-wrap break-words text-muted-foreground mt-1">{row.notes}</p>}</div>)}</Panel>)}
   </div>;

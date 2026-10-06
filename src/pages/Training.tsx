@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Star, Shield, ExternalLink, FileText, Lock } from "lucide-react";
+import { Star, Shield, ExternalLink, FileText, Lock, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 import PageContainer from "@/components/layout/PageContainer";
 import PageHeader from "@/components/layout/PageHeader";
 import { isCategoryLocked, prerequisiteName } from "@/lib/training-categories";
-import { trainingFilter, matchesTrainingFilter } from "@/lib/training-level";
+import { TRAINING_LEVELS, categoryLevels, kontrollblattLevel, type TrainingLevel } from "@/lib/pilot-status";
+import { usePilotStatus } from "@/hooks/use-pilot-status";
 import { useToast } from "@/hooks/use-toast";
 import TrainingStatusCard from "@/components/TrainingStatusCard";
 
@@ -35,8 +36,8 @@ interface Progress {
   rating: number;
 }
 
-const LEVELS = ["grundkurs", "brevetkurs", "siku", "all"] as const;
-type Level = typeof LEVELS[number];
+/** Categories without a stage form their own part of the Kontrollblatt. */
+type Part = TrainingLevel | "general";
 
 export default function Training() {
   const { t, i18n } = useTranslation();
@@ -50,8 +51,9 @@ export default function Training() {
   // Latest released rating of the instructors per maneuver (Flugtag-Cockpit 6.3); never overwrites the own stars.
   const [instructorRatings, setInstructorRatings] = useState<Record<string, { rating: 1 | 2 | 3; date: string }>>({});
   const [loading, setLoading] = useState(true);
-  const [activeLevel, setActiveLevel] = useState<Level>("all");
-  const [userLevel, setUserLevel] = useState<string>("grundkurs");
+  const { status, loading: statusLoading } = usePilotStatus();
+  // Parts opened or closed by hand; without an entry the part of the own stage is open.
+  const [partOpen, setPartOpen] = useState<Partial<Record<Part, boolean>>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -59,10 +61,9 @@ export default function Training() {
       supabase.from("training_categories").select("*").order("sort_order"),
       supabase.from("training_items").select("*").order("sort_order"),
       supabase.from("training_progress").select("item_id, rating").eq("user_id", user.id),
-      supabase.from("profiles").select("training_level").eq("user_id", user.id).single(),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration 0059 not in generated types.ts yet
       (supabase as any).rpc("my_instructor_ratings"),
-    ]).then(([catRes, itemRes, progRes, profileRes, ratingsRes]) => {
+    ]).then(([catRes, itemRes, progRes, ratingsRes]) => {
       if (ratingsRes?.data && typeof ratingsRes.data === "object") setInstructorRatings(ratingsRes.data);
       if (catRes.data) setCategories(catRes.data as any);
       if (itemRes.data) setItems(itemRes.data);
@@ -70,11 +71,6 @@ export default function Training() {
         const map = new Map<string, number>();
         progRes.data.forEach((p) => map.set(p.item_id, p.rating));
         setProgress(map);
-      }
-      if (profileRes.data) {
-        const lvl = (profileRes.data as any).training_level || "grundkurs";
-        setUserLevel(lvl);
-        setActiveLevel(trainingFilter(lvl));
       }
       setLoading(false);
     });
@@ -104,18 +100,21 @@ export default function Training() {
 
   const progressByCategory = Object.fromEntries(categories.map((c) => [c.id, categoryProgress(c.id)]));
 
-  const filteredCategories = activeLevel === "all"
-    ? categories
-    : categories.filter((c) => matchesTrainingFilter(c.training_level, activeLevel));
-
-  const levelLabels: Record<Level, string> = {
-    grundkurs: t("training.grundkurs"),
-    brevetkurs: t("training.brevetkurs"),
-    siku: t("training.siku"),
-    all: t("common.all"),
+  // The Kontrollblatt in parts by stage (migration 0090). A category of several stages is listed in its first.
+  const partOf = (c: Category): Part => categoryLevels(c.training_level)[0] ?? "general";
+  const parts = ([...TRAINING_LEVELS, "general"] as Part[])
+    .map((part) => ({ part, categories: categories.filter((c) => partOf(c) === part) }))
+    .filter((p) => p.categories.length > 0);
+  const staged = parts.some((p) => p.part !== "general");
+  const ownPart = kontrollblattLevel(status);
+  const isOpen = (part: Part) => partOpen[part] ?? (!staged || ownPart === null || part === ownPart || part === "general");
+  const partProgress = (cats: Category[]) => {
+    const partItems = items.filter((i) => cats.some((c) => c.id === i.category_id));
+    if (partItems.length === 0) return 0;
+    return Math.round((partItems.reduce((sum, i) => sum + (progress.get(i.id) || 0), 0) / (partItems.length * 3)) * 100);
   };
 
-  if (loading) {
+  if (loading || statusLoading) {
     return <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
   }
 
@@ -123,24 +122,6 @@ export default function Training() {
     <PageContainer className="pb-24">
       <PageHeader title={t("training.title")} />
       {user && <TrainingStatusCard userId={user.id} />}
-
-      {/* Level filter tabs */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {LEVELS.map((level) => (
-          <button
-            key={level}
-            onClick={() => setActiveLevel(level)}
-            className={cn(
-              "h-10 px-3.5 rounded-full border text-[13px] whitespace-nowrap transition-colors",
-              activeLevel === level
-                ? "border-primary bg-accent text-accent-foreground font-bold"
-                : "border-border bg-card text-foreground font-semibold"
-            )}
-          >
-            {levelLabels[level]}
-          </button>
-        ))}
-      </div>
 
       {/* SHV Resources Card */}
       <div className="border rounded-xl bg-card p-4 space-y-3">
@@ -165,8 +146,20 @@ export default function Training() {
         </div>
       </div>
 
+      {parts.map(({ part, categories: partCategories }) => (
+        <section key={part} className="space-y-2">
+          {staged && (
+            <button type="button" aria-expanded={isOpen(part)} onClick={() => setPartOpen((prev) => ({ ...prev, [part]: !isOpen(part) }))}
+              className="flex min-h-11 w-full items-center gap-2 text-left">
+              <span className="eyebrow">{part === "general" ? t("training.general") : t(`pilotStatus.level.${part}`)}</span>
+              {part === ownPart && <Badge className="shrink-0">{t("training.yourStage")}</Badge>}
+              <span className="ml-auto text-xs font-semibold text-muted-foreground">{partProgress(partCategories)}%</span>
+              <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen(part) && "rotate-180")} />
+            </button>
+          )}
+          {isOpen(part) && (
       <Accordion type="multiple" className="space-y-2">
-        {filteredCategories.map((cat) => {
+        {partCategories.map((cat) => {
           const pct = categoryProgress(cat.id);
           const locked = isCategoryLocked(cat, progressByCategory);
           return (
@@ -175,9 +168,6 @@ export default function Training() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {cat.name === "SHV-Prüfungsmanöver" && <Shield className="h-4 w-4 text-warning shrink-0" />}
                   <span className="font-semibold text-sm truncate">{cat.name}</span>
-                  {cat.training_level && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{levelLabels[cat.training_level as Level] || cat.training_level}</Badge>
-                  )}
                   {locked && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 gap-1 border-muted-foreground/40 text-muted-foreground">
                       <Lock className="h-2.5 w-2.5" />
@@ -227,6 +217,9 @@ export default function Training() {
           );
         })}
       </Accordion>
+          )}
+        </section>
+      ))}
     </PageContainer>
   );
 }

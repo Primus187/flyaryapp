@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { availableGoals, holdsTandemLicence, normalizeTrainingLevel, pilotStatus, statusLabelKeys } from "./pilot-status";
+import {
+  availableGoals, categoryInLevel, categoryLevels, holdsTandemLicence, kontrollblattLevel, licenceHeld,
+  normalizeTrainingLevel, pilotStatus, statusLabelKeys,
+} from "./pilot-status";
 
 const licence = (level: string) => ({ discipline: "paraglider", level, issued_at: "2025-06-01" });
 
@@ -62,5 +65,45 @@ describe("holdsTandemLicence", () => {
   it("is true for any tandem stage", () => {
     expect(holdsTandemLicence([licence("pilot")])).toBe(false);
     expect(holdsTandemLicence([licence("pilot"), licence("biplace_1")])).toBe(true);
+  });
+});
+
+describe("Kontrollblatt stages", () => {
+  it("matches categories by stage, also with lists and the older words", () => {
+    expect(categoryLevels("grundkurs,brevetkurs")).toEqual(["ground", "altitude"]);
+    expect(categoryInLevel("grundkurs,brevetkurs", "altitude")).toBe(true);
+    expect(categoryInLevel("siku", "ground")).toBe(false);
+    expect(categoryInLevel("siku", "licensed")).toBe(true);
+    expect(categoryInLevel(null, "ground")).toBe(true);
+    expect(categoryInLevel("exam_ready", "all")).toBe(true);
+  });
+
+  it("opens the stage of a student and the pilot part for a pilot", () => {
+    expect(kontrollblattLevel(pilotStatus({ trainingLevel: "altitude" }))).toBe("altitude");
+    expect(kontrollblattLevel(pilotStatus({ trainingLevel: null, schoolStudent: true }))).toBe("ground");
+    expect(kontrollblattLevel(pilotStatus({ trainingLevel: "licensed" }))).toBe("licensed");
+    expect(kontrollblattLevel(pilotStatus({ trainingLevel: null }))).toBeNull();
+    expect(kontrollblattLevel(null)).toBeNull();
+  });
+});
+
+describe("licenceHeld", () => {
+  it("knows the pilot licence from the status, with the date if a licence is recorded", () => {
+    expect(licenceHeld(pilotStatus({ trainingLevel: "altitude" }), "pilot")).toEqual({ held: false, issuedAt: null });
+    expect(licenceHeld(pilotStatus({ trainingLevel: "licensed" }), "pilot")).toEqual({ held: true, issuedAt: null });
+    expect(licenceHeld(pilotStatus({ trainingLevel: "licensed", licences: [licence("pilot")] }), "pilot")).toEqual({ held: true, issuedAt: "2025-06-01" });
+  });
+
+  it("prefers the date of the chosen discipline", () => {
+    const status = pilotStatus({ trainingLevel: "licensed", licences: [licence("pilot"), { discipline: "hangglider", level: "pilot", issued_at: "2020-01-01" }] });
+    expect(licenceHeld(status, "pilot", "hangglider").issuedAt).toBe("2020-01-01");
+    expect(licenceHeld(status, "pilot", "paraglider").issuedAt).toBe("2025-06-01");
+  });
+
+  it("counts a higher tandem stage for stage 1, never a renewal", () => {
+    const status = pilotStatus({ trainingLevel: "licensed", licences: [licence("pilot"), licence("biplace_2")] });
+    expect(licenceHeld(status, "biplace_1")).toEqual({ held: true, issuedAt: null });
+    expect(licenceHeld(status, "biplace_3").held).toBe(false);
+    expect(licenceHeld(pilotStatus({ trainingLevel: "licensed", licences: [licence("biplace_3")] }), "biplace_3_renewal").held).toBe(false);
   });
 });
