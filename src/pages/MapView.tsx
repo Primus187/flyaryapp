@@ -29,11 +29,12 @@ const landingIcon = new L.Icon({
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
+  // Without animation, like FlightDetailMap: an animation ending on a removed map throws.
   useEffect(() => {
     if (points.length > 1) {
-      map.fitBounds(L.latLngBounds(points.map(([lat, lng]) => [lat, lng])), { padding: [30, 30] });
+      map.fitBounds(L.latLngBounds(points.map(([lat, lng]) => [lat, lng])), { padding: [30, 30], animate: false });
     } else if (points.length === 1) {
-      map.setView(points[0], 13);
+      map.setView(points[0], 13, { animate: false });
     }
   }, [map, points]);
   return null;

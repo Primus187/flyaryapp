@@ -29,11 +29,14 @@ interface Props {
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
+  // Without animation: the map is rebuilt when the track arrives (key below) and removed when the
+  // page is left. A zoom animation still running then ends on a removed map and throws
+  // "Cannot read properties of undefined (reading '_leaflet_pos')" (error log, Android).
   useEffect(() => {
     if (points.length > 1) {
-      map.fitBounds(L.latLngBounds(points), { padding: [30, 30] });
+      map.fitBounds(L.latLngBounds(points), { padding: [30, 30], animate: false });
     } else if (points.length === 1) {
-      map.setView(points[0], 13);
+      map.setView(points[0], 13, { animate: false });
     }
   }, [map, points]);
   return null;
