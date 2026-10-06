@@ -189,15 +189,14 @@ function renderSignup(lang) {
   const choices = (name, type, entries, required) => `<div class="choice-row">${Object.entries(entries).map(([value, label], i) => `<label class="choice"><input type="${type}" name="${name}" value="${value}"${required && i === 0 ? ' required' : ''}><span>${esc(label)}</span></label>`).join('')}</div>`;
   const statuses = Object.entries(s.errors).map(([key, text]) => `<p id="status-${key}" class="form-status" role="alert">${esc(text)}${key === 'error' ? ` <a href="mailto:${email}">${esc(email)}</a>` : ''}</p>`).join('');
   const main = `    <section class="signup" aria-labelledby="signup-title">
-      <div class="school-backdrop" aria-hidden="true"><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div></div>
+      <div class="page-band page-band-summit" aria-hidden="true"></div>
       <div class="wrap signup-grid">
         <div class="signup-copy">
-          <p class="eyebrow reveal">${esc(s.label)}</p>
-          <h1 id="signup-title" class="reveal">${esc(s.heading[0])}<br><span class="gradient-text">${esc(s.heading[1])}</span></h1>
-          <p class="section-intro reveal">${esc(s.intro)}</p>
-          <ul class="signup-points">${s.points.map((p) => `<li class="reveal">${icon('check')}${esc(p)}</li>`).join('')}</ul>
+          <h1 id="signup-title">${esc(s.heading[0])}<br>${esc(s.heading[1])}</h1>
+          <p class="section-intro">${esc(s.intro)}</p>
+          <ul class="signup-points">${s.points.map((p) => `<li>${icon('check')}${esc(p)}</li>`).join('')}</ul>
         </div>
-        <form id="form" class="signup-card reveal" method="post" action="${waitlistEndpoint}" accept-charset="utf-8">
+        <form id="form" class="signup-card" method="post" action="${waitlistEndpoint}" accept-charset="utf-8">
           <h2>${esc(s.formTitle)}</h2>
           ${statuses}
           <input type="hidden" name="lang" value="${lang}">
@@ -219,15 +218,13 @@ function renderSignup(lang) {
 
 function renderThanks(lang) {
   const c = content[lang], t = c.thanks;
-  const main = `    <section class="signup thanks" aria-labelledby="thanks-title">
-      <div class="school-backdrop" aria-hidden="true"><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div></div>
+  const main = `    <section class="thanks" aria-labelledby="thanks-title">
       <div class="wrap thanks-inner">
-        <span class="thanks-icon reveal" aria-hidden="true">${icon('check')}</span>
-        <p class="eyebrow reveal">${esc(t.label)}</p>
-        <h1 id="thanks-title" class="reveal">${esc(t.heading[0])}<br><span class="gradient-text">${esc(t.heading[1])}</span></h1>
-        <p class="section-intro reveal">${esc(t.text)}</p>
-        <a class="button button-white reveal" href="/${lang}/">${esc(t.back)} ${icon('arrow')}</a>
+        <h1 id="thanks-title">${esc(t.heading[0])}<br>${esc(t.heading[1])}</h1>
+        <p>${esc(t.text)}</p>
+        <a class="button button-primary" href="/${lang}/">${esc(t.back)}</a>
       </div>
+      <img class="thanks-glider" src="/assets/landscape/schirm-320.webp" width="640" height="636" alt="">
     </section>`;
   return shell(lang, { page: 'danke/', title: t.title, description: c.description, indexed: false, bodyClass: 'signup-page', main });
 }

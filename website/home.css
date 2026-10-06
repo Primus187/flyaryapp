@@ -2,14 +2,6 @@
    Four painted scenes stand behind the content as a fixed stage (stage.js moves their depth layers and the glider).
    Without JavaScript, or when the visitor asks for reduced motion, the same content shows on plain grounds: everything
    under `.stage-on` is the moving version, everything else works on its own. */
-:root {
-  --mist: #e9ebf5;
-  --forest: #14262a;
-  --meadow: #2c4a35;
-  --valley: #74a7ec;
-  --ground: #1f3a2f;
-  --dawn: #d1b8af;
-}
 .home { background: var(--mist); }
 .home h2 { font-size: clamp(30px, 4vw, 54px); line-height: 1.06; font-weight: 800; }
 .home h3 { font-size: clamp(21px, 2vw, 26px); line-height: 1.2; font-weight: 800; letter-spacing: -.02em; }
@@ -82,7 +74,9 @@ html.stage-on .hero { background: none; }
 .school-steps p { grid-column: 2; font-size: 16px; line-height: 1.55; }
 
 /* Film and questions */
-.more { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 80px); align-items: start; }
+.more { display: grid; gap: clamp(48px, 7vw, 90px); justify-items: center; }
+.about, .faq { width: min(880px, 100%); }
+.about { text-align: center; }
 .about, .faq { display: grid; gap: 22px; min-width: 0; }
 .video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 16px; background: #0b1623; box-shadow: 0 30px 50px -36px rgba(0, 0, 0, .8); }
 .video-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
@@ -101,24 +95,24 @@ html.stage-on .hero { background: none; }
 .final p { font-weight: 500; color: #1f3558; }
 .final-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px 26px; margin-top: 4px; }
 
-/* Footer on the ground of the landing meadow */
-.home .footer { position: relative; z-index: 2; background: var(--ground); color: #d8e6d6; border-top: 0; --focus: #fff; }
-.home .footer-top p, .home .footer-bottom { color: #b9cdb9; }
-.home .footer-bottom { border-top-color: rgba(255, 255, 255, .16); }
-.home .footer-bottom a:hover { color: #fff; }
-.home .footer .languages a[aria-current="page"] { background: rgba(255, 255, 255, .14); }
+/* The footer lies in front of the stage */
+.home .footer { position: relative; z-index: 2; }
 
 /* ---------- The moving version ---------- */
 html.stage-on .home { background: var(--dawn); }
 html.stage-on .stage { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 0; height: 100vh; height: 100lvh; overflow: hidden; background: var(--dawn); }
 html.stage-on .stage, html.stage-on .glider { opacity: 0; transition: opacity .5s; }
 html.stage-ready .stage, html.stage-ready .glider { opacity: 1; }
-.scene { position: absolute; inset: 0; }
-.ly { position: absolute; left: 0; top: 0; max-width: none; height: auto; }
+.scene { position: absolute; left: 0; right: 0; top: 0; height: 100%; will-change: transform; }
+/* A scene that will slide away is taller than the window and fades out along its lower edge. At rest that edge lies
+   below the window; the mask never changes, the scene is only moved. */
+.scene:not([data-scene="3"]) { height: 150%; -webkit-mask-image: linear-gradient(#000 70%, transparent 97%); mask-image: linear-gradient(#000 70%, transparent 97%); }
+.ly { position: absolute; left: 0; top: 0; max-width: none; height: auto; will-change: transform; }
 .groundfill { position: absolute; left: 0; right: 0; top: 0; height: 600vh; }
 .stage-title { position: absolute; left: 0; right: 0; top: 0; height: 0; color: #fff; text-align: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
 .stage-title div { position: absolute; left: 0; right: 0; bottom: 0; display: grid; justify-items: center; }
-html.stage-on .glider { display: block; position: fixed; left: 0; top: 0; z-index: 3; max-width: none; height: auto; pointer-events: none; }
+html.stage-on .glider { display: block; position: fixed; left: 0; top: 0; z-index: 3; max-width: none; height: auto; pointer-events: none; will-change: transform; }
+html.stage-on [data-fade] { will-change: opacity; }
 html.stage-on .hero, html.stage-on .chapter, html.stage-on .gap { z-index: 1; }
 html.stage-on .hero { display: block; height: 112vh; height: 112lvh; min-height: 0; padding: 0; }
 /* The name is painted into the stage; the heading stays for screen readers and search engines. */
@@ -130,7 +124,7 @@ html.stage-on .chapter-valley { align-items: start; min-height: 140vh; min-heigh
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1000px) {
-  .explorer, .school, .more { grid-template-columns: 1fr; }
+  .explorer, .school { grid-template-columns: 1fr; }
   .school-visual { order: 2; }
 }
 @media (max-width: 640px) {

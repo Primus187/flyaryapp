@@ -1,4 +1,6 @@
-.docs-hub { padding-block: 70px 90px; }
+.docs-hub-page { background: var(--mist); }
+.docs-hub { padding-block: 16px 90px; }
+.docs-label { font-size: 14px; font-weight: 700; color: var(--muted); }
 .docs-intro { max-width: 780px; }
 .docs-intro h1 { font-size: clamp(36px, 4vw, 60px); line-height: 1.08; letter-spacing: -2px; margin: 22px 0; }
 .docs-intro > p:last-child { font-size: 18px; line-height: 1.8; color: var(--muted); max-width: 690px; }
@@ -15,9 +17,9 @@
 #search-results small { display: block; margin-bottom: 7px; color: var(--muted); }
 #search-results p { margin-top: 8px; font-size: 13px; line-height: 1.7; color: var(--muted); }
 .docs-categories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 42px; margin-top: 60px; }
-.docs-categories section { border-top: 2px solid var(--blue); padding-top: 24px; }
+.docs-categories section { border-top: 2px solid var(--ink); padding-top: 24px; }
 .docs-categories h2 { font-size: 29px; letter-spacing: -1px; margin-block: 20px 16px; }
-.docs-categories section > p:not(.eyebrow) { font-size: 15px; color: var(--muted); line-height: 1.8; }
+.docs-categories section > p:not(.docs-label) { font-size: 15px; color: var(--muted); line-height: 1.8; }
 .docs-categories .text-link { margin-top: 20px; color: var(--blue); }
 .doc-download { display: block; font-size: 13px; text-decoration: underline; text-underline-offset: 4px; padding-block: 12px; }
 .docs-layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 64px; align-items: start; padding-block: 40px 80px; }
@@ -25,7 +27,7 @@
 .docs-sidebar summary { font-size: 13px; font-weight: 700; cursor: pointer; padding-block: 12px; }
 .docs-sidebar ul { padding: 0; margin: 12px 0; list-style: none; }
 .docs-sidebar li a { display: block; font-size: 12px; line-height: 1.65; padding: 9px 12px; border-left: 2px solid transparent; color: var(--muted); overflow-wrap: anywhere; }
-.docs-sidebar a[aria-current] { border-color: var(--blue); background: #edf6fb; color: var(--ink); font-weight: 600; }
+.docs-sidebar a[aria-current] { border-color: var(--accent); background: var(--mist); color: var(--ink); font-weight: 600; }
 .docs-sidebar a:hover { color: var(--blue); }
 .doc-main { min-width: 0; }
 .breadcrumbs { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); line-height: 1.7; margin: 10px 0 35px; }
@@ -47,19 +49,19 @@
 .doc-article code { font-family: Consolas, monospace; font-size: .88em; background: #edf2f6; padding: 2px 5px; border-radius: 3px; }
 .doc-article pre { padding: 20px; background: #142b3c; color: #eef6fc; overflow-x: auto; border-radius: 8px; font-size: 14px; line-height: 1.7; }
 .doc-article pre code { background: none; padding: 0; font-size: inherit; }
-.doc-article blockquote { margin: 25px 0; padding: 15px 22px; border-left: 3px solid var(--blue); background: #edf6fb; }
+.doc-article blockquote { margin: 25px 0; padding: 15px 22px; border-left: 3px solid var(--accent); background: var(--mist); }
 .doc-article hr { border: 0; border-top: 1px solid var(--line); margin-block: 35px; }
 .doc-table { overflow-x: auto; margin-block: 25px; border: 1px solid var(--line); border-radius: 6px; }
 .doc-table table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.65; }
 .doc-table th, .doc-table td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); min-width: 135px; }
-.doc-table th { background: #edf4f8; font-weight: 600; }
+.doc-table th { background: var(--mist); font-weight: 600; }
 .doc-table tr:last-child td { border-bottom: none; }
 .doc-table td { overflow-wrap: anywhere; }
 .doc-figure { display: block; margin: 32px 0; }
 .doc-figure > a { display: block; width: fit-content; max-width: 100%; }
 .doc-figure img { width: 310px; border: 1px solid var(--line); border-radius: 12px; background: #f4f7fa; }
 .doc-figure > span { display: block; font-size: 12px; color: var(--muted); margin-top: 10px; }
-.on-this-page { margin-bottom: 30px; padding: 15px 20px; background: #f4f7fa; border-radius: 6px; font-size: 13px; }
+.on-this-page { margin-bottom: 30px; padding: 15px 20px; background: var(--mist); border-radius: 6px; font-size: 13px; }
 .on-this-page summary { cursor: pointer; font-weight: 600; }
 .source-reference { text-decoration: underline dotted #98a9b6; text-underline-offset: 3px; }
 .chapter-index ol { list-style: none; padding: 0; }
@@ -68,7 +70,8 @@
 .doc-pagination { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border-top: 1px solid var(--line); margin-top: 55px; padding-top: 25px; }
 .doc-pagination a { font-size: 14px; line-height: 1.7; color: var(--blue); overflow-wrap: anywhere; }
 .doc-pagination a span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
-.docs-footer { display: flex; gap: 30px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.docs-footer { padding: 32px 0; font-size: 14px; }
+.docs-footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 30px; }
 @media (max-width: 1000px) {
   .docs-layout { grid-template-columns: 205px minmax(0, 1fr); gap: 32px; }
   .docs-categories { gap: 25px; }
@@ -96,10 +99,9 @@
   .doc-article h2 { font-size: 25px; }
   .doc-article h3 { font-size: 20px; }
   .doc-pagination { gap: 20px; }
-  .docs-footer { gap: 20px; flex-wrap: wrap; }
 }
 @media print {
-  .docs-sidebar, .breadcrumbs, .doc-tools, .on-this-page, .doc-pagination, .docs-footer, .docs-search { display: none; }
+  .docs-sidebar, .breadcrumbs, .doc-tools, .on-this-page, .doc-pagination, .docs-footer, .docs-search, .page-band { display: none; }
   .docs-layout { display: block; padding: 0; }
   .doc-title h1 { font-size: 28px; }
   .doc-article { font-size: 11pt; }

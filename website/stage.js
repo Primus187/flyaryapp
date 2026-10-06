@@ -1,6 +1,8 @@
 // The moving start page: a fixed stage of four painted scenes behind the content, and a paraglider that flies through all
 // of them. Before each chapter the nearest layer of the scene (clouds, firs, meadow) rises and becomes the ground the text
-// sits on; when the chapter leaves, the scene lifts off and the next one appears beneath it.
+// sits on; when the chapter leaves, the scene slides away upwards and the next one, already waiting beneath it, appears.
+// Everything that changes while scrolling is a transform or an opacity, so the browser only has to move finished pictures:
+// nothing is repainted, decoded or switched on in the middle of a change of scene.
 // boot.js switches the page to this version (`stage-on`); this file confirms it with `stage-ready`.
 (function () {
   const root = document.documentElement, stage = document.querySelector('.stage'), glider = document.querySelector('.glider');
@@ -31,9 +33,9 @@
   const chapters = [...document.querySelectorAll('[data-chap]')];
   const fades = chapters.map((c) => c.querySelector('[data-fade]')), heroFade = document.querySelector('.hero [data-fade]');
   const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
-  const ease = (t) => t * t * (3 - 2 * t), soft = (t) => t * t * t * (t * (6 * t - 15) + 10);
+  const ease = (t) => t * t * (3 - 2 * t);
   const place = (el, x, y, extra = '') => { el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)${extra}`; };
-  let W, vh, cw, s, footH = 0, T = [], B = [], keys = [], cur = 0, target = 0, running = false, gw = 120, gh = 120, face = 1;
+  let W, vh, cw, s, footH = 0, T = [], B = [], fadeTop = [], keys = [], cur = 0, target = 0, running = false, gw = 120, gh = 120, face = 1;
 
   function measure() {
     W = stage.clientWidth; vh = stage.clientHeight;
@@ -42,7 +44,7 @@
       for (const l of sc.layers) l.el.style.width = `${cw}px`;
       if (sc.ground) sc.ground.style.background = `linear-gradient(rgba(${sc.c.rgb},0) 0, rgb(${sc.c.rgb}) ${((sc.c.ground[1] - sc.c.ground[0]) * s).toFixed(0)}px)`;
     }
-    chapters.forEach((c, i) => { const r = c.getBoundingClientRect(); T[i] = r.top + scrollY; B[i] = T[i] + r.height; });
+    chapters.forEach((c, i) => { const r = c.getBoundingClientRect(); T[i] = r.top + scrollY; B[i] = T[i] + r.height; fadeTop[i] = fades[i].getBoundingClientRect().top - r.top; });
     footH = Math.min(footer ? footer.offsetHeight : 0, vh * .4);   // the valley scene ends above the footer
     gw = Math.max(96, Math.min(210, W * .14)); gh = gw * 636 / 640;
     glider.style.width = `${gw}px`;
@@ -57,20 +59,25 @@
   }
 
   function render(y) {
-    const rise = [], q = [], ql = [];
+    const rise = [], q = [], ql = [], near = [];
     for (let i = 0; i < 3; i++) {
+      near[i] = T[i] - y < 2.2 * vh;   // its chapter is about one screen away
       rise[i] = ease(clamp((1.0 * vh - (T[i] - y)) / (.6 * vh)));
       ql[i] = clamp((.72 * vh - (B[i] - y)) / (1.05 * vh));   // one scene gives way to the next over about one window height
-      q[i] = soft(ql[i]);
+      q[i] = ease(ql[i]);
     }
     const pan = ease(clamp((y - (T[3] - .15 * vh)) / Math.max(1, B[3] - T[3] - .85 * vh)));
     const x0 = (W - cw) / 2;
     let meadow = 0;
     scenes.forEach((sc, i) => {
-      const c = sc.c, visible = (i === 0 || ql[i - 1] > 0) && (i === 3 || ql[i] < 1);
-      sc.el.hidden = !visible;
-      // Fetch the next scene's pictures before it is needed (hidden pictures are not loaded on their own).
-      if (!sc.loaded && (visible || i === 0 || rise[i - 1] > 0)) { sc.loaded = true; for (const l of sc.layers) l.el.loading = 'eager'; }
+      // A scene is switched on long before it is seen: as soon as the chapter above it comes near, it lies finished
+      // beneath the scene in front. Its pictures are fetched and decoded one chapter earlier still.
+      const c = sc.c, visible = (i === 0 || near[i - 1]) && (i === 3 || ql[i] < 1);
+      if (sc.el.hidden === visible) sc.el.hidden = !visible;
+      if (!sc.loaded && (i < 2 || near[i - 2])) {
+        sc.loaded = true;
+        for (const l of sc.layers) { l.el.loading = 'eager'; l.el.decode?.().catch(() => {}); }
+      }
       if (!visible) return;
       const base = c.anchor * vh - c.anchorRow * s;
       const D = i < 3 ? c.coverRow * s + base - c.target * vh : Math.max(0, c.panRow * s + base - (vh - footH));
@@ -83,21 +90,20 @@
       if (sc.ground) place(sc.ground, 0, coverY + c.ground[0] * s);
       if (i === 3) meadow = coverY;
       if (i === 0) { place(title, 0, base + TITLE_ROW * s - D * .3 * t); title.style.opacity = (1 - clamp(rise[0] * 2.4)).toFixed(3); }
-      // The leaving scene lifts off upwards behind a wide soft edge, instead of fading as a whole.
-      const gone = i < 3 ? q[i] : 0, edge = (1 - gone) * 145;
-      const mask = gone ? `linear-gradient(to bottom, #000 ${(edge - 45).toFixed(1)}%, transparent ${edge.toFixed(1)}%)` : '';
-      sc.el.style.webkitMaskImage = mask; sc.el.style.maskImage = mask;
-      sc.el.style.transform = gone ? `translate3d(0,${(-gone * .18 * vh).toFixed(1)}px,0)` : '';
+      // The leaving scene slides away upwards. Its lower edge is soft (a fixed mask in home.css, below the window while
+      // the scene is at rest), so the next scene appears through a haze instead of along a line.
+      place(sc.el, 0, i < 3 ? -q[i] * 1.5 * vh : 0);
     });
 
-    // Content appears once its ground has risen, leaves early in the change of scene, and dissolves before it scrolls
-    // up into the strip of scenery, which belongs to the landscape and the glider.
+    // Content appears once its ground has risen and leaves early in the change of scene. It dissolves before it
+    // scrolls up into the strip of scenery, which belongs to the landscape and the glider (only the small gradient
+    // of the mask changes; the text itself is not painted again).
     if (heroFade) heroFade.style.opacity = (1 - clamp(rise[0] * 2.4)).toFixed(3);
     for (let i = 0; i < 3; i++) {
       fades[i].style.opacity = (clamp((rise[i] - .5) / .35) * (1 - clamp((ql[i] - .12) / .4))).toFixed(3);
-      const cut = .18 * vh - fades[i].getBoundingClientRect().top;
-      const m = cut > -.1 * vh ? `linear-gradient(to bottom, transparent ${cut.toFixed(0)}px, #000 ${(cut + .09 * vh).toFixed(0)}px)` : '';
-      fades[i].style.webkitMaskImage = m; fades[i].style.maskImage = m;
+      const cut = Math.round(.18 * vh - (T[i] + fadeTop[i] - scrollY));
+      const mask = cut > -.1 * vh ? `linear-gradient(to bottom, transparent ${cut}px, #000 ${cut + Math.round(.09 * vh)}px)` : '';
+      if (fades[i].mask !== mask) { fades[i].mask = mask; fades[i].style.webkitMaskImage = mask; fades[i].style.maskImage = mask; }
     }
     fades[3].style.opacity = clamp((ql[2] - .6) / .35).toFixed(3);
 

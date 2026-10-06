@@ -106,30 +106,6 @@ if (formStatus?.classList.contains('form-status')) {
   addEventListener('load', () => formStatus.focus());
 }
 
-// Reveal on scroll, staggered within each group of siblings.
-const reveals = [...document.querySelectorAll('.reveal')];
-if (reveals.length) {
-  const groups = new Map();
-  for (const el of reveals) {
-    const list = groups.get(el.parentElement) || [];
-    el.style.setProperty('--d', `${Math.min(list.length, 6) * 0.08}s`);
-    list.push(el);
-    groups.set(el.parentElement, list);
-  }
-  if ('IntersectionObserver' in window && !reduceMotion.matches) {
-    const io = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add('is-visible');
-        io.unobserve(entry.target);
-      }
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    reveals.forEach((el) => io.observe(el));
-  } else {
-    reveals.forEach((el) => el.classList.add('is-visible'));
-  }
-}
-
 // The about video shows a large play button on its poster; native controls take over once it plays.
 document.querySelectorAll('.video-frame').forEach((frame) => {
   const video = frame.querySelector('video');
