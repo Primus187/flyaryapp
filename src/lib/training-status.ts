@@ -57,3 +57,9 @@ export function valueText(r: RequirementResult): string {
 export function allMet(status: TrainingStatus | null | undefined): boolean {
   return !!status && status.requirements.length > 0 && status.requirements.every((r) => r.met);
 }
+
+/** For a compact card: how many requirements are met and the first one still open. */
+export function requirementSummary(status: TrainingStatus | null | undefined): { met: number; total: number; next: RequirementResult | null } {
+  const requirements = status?.requirements ?? [];
+  return { met: requirements.filter((r) => r.met).length, total: requirements.length, next: requirements.find((r) => !r.met) ?? null };
+}

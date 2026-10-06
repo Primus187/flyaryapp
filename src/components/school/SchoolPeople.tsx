@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { selfDeclaredPilots } from "@/lib/pilot-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,8 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
   const navigate = useNavigate();
   const { toast } = useToast();
   const [people, setPeople] = useState<PersonRow[]>([]);
+  // Members who declared the pilot licence themselves (migration 0089).
+  const [selfDeclared, setSelfDeclared] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<GroupFunction | "all">("all");
@@ -77,10 +80,12 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
 
   const load = async () => {
     setLoading(true);
-    const [{ data: members }, { data: funcs }] = await Promise.all([
+    const [{ data: members }, { data: funcs }, { data: history }] = await Promise.all([
       supabase.from("group_members").select("user_id, role").eq("group_id", groupId),
       supabase.from("group_member_functions").select("user_id, function").eq("group_id", groupId),
+      supabase.from("training_level_history").select("user_id, training_level, changed_by, changed_at").eq("group_id", groupId).eq("training_level", "licensed"),
     ]);
+    setSelfDeclared(selfDeclaredPilots(history || []));
     const memberList = members || [];
     const userIds = memberList.map((m) => m.user_id);
     let profileMap: Record<string, { pilot_name: string | null; training_level: string | null }> = {};
@@ -295,6 +300,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
                 {p.trainingLevel && (
                   <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/40 text-primary">
                     {t(`school.levels.${p.trainingLevel}`, { defaultValue: p.trainingLevel })}
+                    {p.trainingLevel === "licensed" && selfDeclared.has(p.userId) && ` · ${t("school.people.selfDeclared")}`}
                   </Badge>
                 )}
                 {p.functions.length === 0 && !p.trainingLevel && (

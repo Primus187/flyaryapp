@@ -16,6 +16,7 @@ import NextStepCard from "@/components/NextStepCard";
 import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import PushPromptCard from "@/components/PushPromptCard";
 import PilotStatusPrompt from "@/components/PilotStatusPrompt";
+import LicenceProgressCard from "@/components/LicenceProgressCard";
 import ChallengeCard from "@/components/ChallengeCard";
 import GoalCard from "@/components/GoalCard";
 import GoalFormDialog from "@/components/GoalFormDialog";
@@ -292,6 +293,8 @@ export default function Dashboard() {
           </div>
         </section>
       )}
+
+      <LicenceProgressCard />
 
       {/* Season card */}
       {(() => {

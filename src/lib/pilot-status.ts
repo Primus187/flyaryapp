@@ -107,3 +107,33 @@ export function licenceHeld(status: Pick<PilotStatus, "kind" | "licences"> | nul
   if (licence === "biplace_3") return { held: rows.some((l) => l.level === "biplace_3"), issuedAt: issued("biplace_3") };
   return { held: false, issuedAt: null };
 }
+
+/**
+ * Flight form: the supervised SHV solo flight exists only before the pilot licence. A flight that
+ * already carries the mark keeps the field.
+ */
+export function showsSoloField(status: Pick<PilotStatus, "kind"> | null | undefined, marked: boolean): boolean {
+  return marked || status?.kind === "student" || status?.kind === "unknown";
+}
+
+/**
+ * Flight form: tandem fields for holders of a tandem licence, pilots working towards one (every goal
+ * is a tandem licence), owners of a tandem glider, and flights already marked as tandem.
+ */
+export function showsTandemField(status: Pick<PilotStatus, "licences" | "goal"> | null | undefined, flight: { marked: boolean; tandemGlider: boolean }): boolean {
+  return flight.marked || flight.tandemGlider || (!!status && (holdsTandemLicence(status.licences) || status.goal !== null));
+}
+
+/**
+ * School: members whose pilot licence is self-declared, i.e. whose latest "licensed" entry in the
+ * level history was made by themselves (migration 0089) and not by the school.
+ */
+export function selfDeclaredPilots(history: { user_id: string; training_level: string; changed_by: string; changed_at: string }[]): Set<string> {
+  const latest = new Map<string, { changed_by: string; changed_at: string }>();
+  for (const entry of history) {
+    if (normalizeTrainingLevel(entry.training_level) !== "licensed") continue;
+    const known = latest.get(entry.user_id);
+    if (!known || entry.changed_at > known.changed_at) latest.set(entry.user_id, entry);
+  }
+  return new Set([...latest].filter(([userId, entry]) => entry.changed_by === userId).map(([userId]) => userId));
+}

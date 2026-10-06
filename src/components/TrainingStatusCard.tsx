@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { DISCIPLINES } from "@/lib/flight-proof";
 import { LICENCES, allMet, progress, requirementLabelKey, valueText, type TrainingStatus } from "@/lib/training-status";
-import { licenceHeld, pilotStatus, type HeldLicence } from "@/lib/pilot-status";
+import { licenceHeld } from "@/lib/pilot-status";
+import { usePersonPilotStatus } from "@/hooks/use-pilot-status";
 
 /**
  * Training status against the SHV directives (migration 0075), for the pilot or the school staff.
@@ -25,17 +26,7 @@ export default function TrainingStatusCard({ userId, defaultDiscipline = "paragl
   const [pickedDiscipline, setPickedDiscipline] = useState<string | null>(null);
   const [pickedLicence, setPickedLicence] = useState<string | null>(null);
 
-  const person = useQuery({
-    queryKey: ["pilot-status", userId],
-    queryFn: async () => {
-      const [profile, licences] = await Promise.all([
-        supabase.from("profiles").select("training_level, licence_goal").eq("user_id", userId).maybeSingle(),
-        supabase.from("pilot_licences").select("discipline, level, issued_at").eq("user_id", userId).order("issued_at"),
-      ]);
-      if (profile.error) throw profile.error;
-      return pilotStatus({ trainingLevel: profile.data?.training_level, goal: profile.data?.licence_goal, licences: (licences.data ?? []) as HeldLicence[], schoolStudent: true });
-    },
-  });
+  const person = usePersonPilotStatus(userId);
   const discipline = pickedDiscipline ?? person.data?.licences[0]?.discipline ?? defaultDiscipline;
   const licence = pickedLicence ?? person.data?.target ?? defaultLicence;
   const held = licenceHeld(person.data, licence, discipline);

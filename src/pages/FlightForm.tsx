@@ -32,6 +32,8 @@ import SchoolFlightImportCard from "@/components/SchoolFlightImportCard";
 import { cn } from "@/lib/utils";
 import { isYoutubeUrl } from "@/lib/youtube";
 import { TANDEM_KINDS } from "@/lib/tandem";
+import { usePilotStatus } from "@/hooks/use-pilot-status";
+import { showsSoloField, showsTandemField } from "@/lib/pilot-status";
 import { DISCIPLINES, FLIGHT_KINDS, findGliderByLabel, flightTimesForSave, gliderLabel, igcFlightTimes, isoToLocalTime, type Discipline } from "@/lib/flight-proof";
 
 const DRAFT_KEY = "flyary.flightDraft";
@@ -64,6 +66,8 @@ export default function FlightForm() {
   // Per imported track: whether takeoff/landing were already looked up (each at most once).
   const siteDetectRef = useRef<{ data: IGCData | null; takeoff: boolean; landing: boolean }>({ data: null, takeoff: false, landing: false });
   const [gliders, setGliders] = useState<GliderOption[]>([]);
+  // The Ausbildungsstand decides which proof fields make sense (migration 0089).
+  const { status: ownStatus } = usePilotStatus();
   const [igcData, setIgcData] = useState<IGCData | null>(null);
   const [igcFile, setIgcFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
@@ -626,6 +630,9 @@ export default function FlightForm() {
     { value: "Turbulent", label: t("flights.thermalTurbulent") },
   ];
 
+  const showSolo = showsSoloField(ownStatus, form.is_solo_shv);
+  const showTandem = showsTandemField(ownStatus, { marked: form.is_tandem, tandemGlider: gliders.some((g) => g.is_tandem) });
+
   return (
     <PageContainer>
       <PageHeader title={isEdit ? t("flights.editFlight") : t("flights.newFlight")} back />
@@ -746,7 +753,7 @@ export default function FlightForm() {
                 }}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3 items-end">
+            <div className={showSolo ? "grid grid-cols-2 gap-3 items-end" : undefined}>
               <div className="space-y-1.5"><Label className="text-xs">{t("flightProof.flightKind")}</Label>
                 <Select value={form.flight_kind || "__none__"} onValueChange={(v) => setForm({ ...form, flight_kind: v === "__none__" ? "" : v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -756,6 +763,7 @@ export default function FlightForm() {
                   </SelectContent>
                 </Select>
               </div>
+              {showSolo && (
               <div className="flex items-center gap-3 pb-2">
                 <Checkbox
                   id="solo-shv"
@@ -764,6 +772,7 @@ export default function FlightForm() {
                 />
                 <Label htmlFor="solo-shv" className="text-xs cursor-pointer">{t("flights.soloShv")}</Label>
               </div>
+              )}
             </div>
            </CardContent>
         </Card>
@@ -795,11 +804,13 @@ export default function FlightForm() {
                 </Select>
               </div>
             </div>
+            {showTandem && (
             <div className="flex items-center gap-3">
               <Checkbox id="tandem" checked={form.is_tandem} onCheckedChange={(checked) => setForm({ ...form, is_tandem: !!checked })} />
               <Label htmlFor="tandem" className="text-xs cursor-pointer">{t("flightProof.tandem")}</Label>
             </div>
-            {form.is_tandem && (
+            )}
+            {showTandem && form.is_tandem && (
               <div className="space-y-1.5"><Label className="text-xs">{t("tandem.kindLabel")}</Label>
                 <Select value={form.tandem_kind || "__none__"} onValueChange={(v) => setForm({ ...form, tandem_kind: v === "__none__" ? "" : v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>

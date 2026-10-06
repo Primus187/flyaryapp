@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allMet, progress, requirementLabelKey, valueText, type RequirementResult } from "./training-status";
+import { allMet, progress, requirementLabelKey, requirementSummary, valueText, type RequirementResult } from "./training-status";
 
 const req = (rule: RequirementResult["rule"], value: number | null, threshold: number, met = false): RequirementResult =>
   ({ rule, value, threshold, met, source: "SHV", params: {} });
@@ -31,5 +31,12 @@ describe("training status display", () => {
     expect(allMet({ ...base, requirements: [req("confirmed_altitude_flights", 50, 50, true), req("confirmed_solo_flights", 0, 1)] })).toBe(false);
     expect(allMet({ ...base, requirements: [] })).toBe(false);
     expect(allMet(null)).toBe(false);
+  });
+
+  it("summarises met requirements and the first open one", () => {
+    const base = { discipline: "paraglider", licence: "pilot", confirmedWithoutKind: 0, confirmedPractice: 0, licenceIssuedAt: null };
+    const open = req("distinct_takeoff_sites", 3, 5);
+    expect(requirementSummary({ ...base, requirements: [req("confirmed_altitude_flights", 50, 50, true), open, req("confirmed_solo_flights", 0, 1)] })).toEqual({ met: 1, total: 3, next: open });
+    expect(requirementSummary(null)).toEqual({ met: 0, total: 0, next: null });
   });
 });

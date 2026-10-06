@@ -1,5 +1,29 @@
 # Flyary
 
+## Ausbildungsstand nach SHV, Schritt 5: Flugschule und Kanäle (2026-10-06)
+
+- **Eine Bezeichnung pro Stufe:** Personenliste, Dossier und Kanäle nennen die Schülerstufen jetzt
+  wie die Pilotenseite (Grundausbildung, Höhenflüge, Prüfungsreif; bisher z. B. «Grundstufe»,
+  «Grundkurs», «Höhenflugstufe»). In der Flugschule heisst der vierte Wert weiterhin «Brevetiert».
+- **Personen:** Bei selbst angegebenem Pilotenbrevet steht «Brevetiert · selbst angegeben»
+  (`selfDeclaredPilots`: letzter `licensed`-Eintrag im Verlauf stammt von der Person selbst).
+- **Dossier:** Der Kopf zeigt zusätzlich Doppelsitzer-Brevets und das Ziel des Schülers
+  (`usePersonPilotStatus`, dieselbe Quelle wie die Statuskarte).
+- Termine («Erforderliches Niveau», Freitext) sind unverändert. Der Fluglehrer als weiteres Brevet
+  folgt später.
+
+## Ausbildungsstand nach SHV, Schritt 4: Start und Flug erfassen (2026-10-06)
+
+- **Start:** Karte `LicenceProgressCard` zwischen Terminen und Saison: Stand, «Ziel: …», Anteil der
+  erfüllten Anforderungen und die nächste offene Anforderung (aus `training_status`). Schüler sehen
+  den Weg zum Pilotenbrevet, Piloten ihr gewähltes Ziel, Piloten ohne Ziel nichts. Tippen öffnet
+  das Training.
+- **Flug erfassen:** «SHV Soloflug» erscheint nur vor dem Pilotenbrevet, die Tandem-Felder nur mit
+  Doppelsitzer-Brevet, Doppelsitzer-Ziel oder einem Tandemschirm. Ein Flug, der die Angabe schon
+  trägt, behält das Feld (`showsSoloField`, `showsTandemField` in `src/lib/pilot-status.ts`).
+- Abweichung vom Plan: Die Karte zeigt den Fortschritt zum Brevet, nicht «was bis zur nächsten
+  Stufe fehlt» – für die Stufen gibt es keine hinterlegten Anforderungen, die Schule setzt sie.
+
 ## Ausbildungsstand nach SHV, Schritt 3: Training (2026-10-06)
 
 - **Kontrollblatt nach Stufe** (Migration `0090_training_category_stages.sql`): Jede Kategorie

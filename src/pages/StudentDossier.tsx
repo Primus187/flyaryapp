@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import StudentEquipmentCheck from "@/components/school/StudentEquipmentCheck";
 import SchoolProofPanel from "@/components/school/SchoolProofPanel";
 import TrainingStatusCard from "@/components/TrainingStatusCard";
+import { usePersonPilotStatus } from "@/hooks/use-pilot-status";
 
 // The training proof (6.2) has its own RPC, so it is not one of the dossier RPC sections.
 const tabs = [...dossierSections, "proof"] as const;
@@ -69,6 +70,7 @@ function Dossier({ groupId, studentId, schoolName }: Context & { schoolName: str
   const { t } = useTranslation();
   const [section, setSection] = useState<Tab>("overview");
   const overview = useDossierSection({ groupId, studentId }, "overview");
+  const pilot = usePersonPilotStatus(studentId);
   const context = { groupId, studentId };
   const name = overview.data?.name || t("dossier.title");
   const initials = name.split(" ").map(part => part[0]).join("").slice(0, 2).toUpperCase();
@@ -82,7 +84,7 @@ function Dossier({ groupId, studentId, schoolName }: Context & { schoolName: str
         <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-[20px] bg-white/10 text-xl font-extrabold">{initials}</div>
         <div className="min-w-0 space-y-1.5">
           <h1 className="truncate text-2xl leading-7 font-extrabold tracking-tight">{name}</h1>
-          {overview.data && <div className="flex flex-wrap gap-1.5"><Badge className="bg-white text-hero">{t(`school.studentStatus.${overview.data.status.status}`)}</Badge><Badge className="bg-white/15 text-hero-foreground">{overview.data.level ? t(`dossier.levels.${overview.data.level}`, { defaultValue: overview.data.level }) : t("dossier.noLevel")}</Badge><Badge className="bg-white/15 text-hero-foreground">{overview.data.flightCount} {t("school.flights")}</Badge></div>}
+          {overview.data && <div className="flex flex-wrap gap-1.5"><Badge className="bg-white text-hero">{t(`school.studentStatus.${overview.data.status.status}`)}</Badge><Badge className="bg-white/15 text-hero-foreground">{overview.data.level ? t(`dossier.levels.${overview.data.level}`, { defaultValue: overview.data.level }) : t("dossier.noLevel")}</Badge>{pilot.data?.licences.filter(l => l.level !== "pilot").map(l => <Badge key={`${l.discipline}-${l.level}`} className="bg-white/15 text-hero-foreground">{t(`trainingStatus.licence.${l.level}`)}</Badge>)}{pilot.data?.goal && <Badge className="bg-white/15 text-hero-foreground">{t("pilotStatus.goalTitle", { licence: t(`trainingStatus.licence.${pilot.data.goal}`) })}</Badge>}<Badge className="bg-white/15 text-hero-foreground">{overview.data.flightCount} {t("school.flights")}</Badge></div>}
         </div>
       </div>
     </header>

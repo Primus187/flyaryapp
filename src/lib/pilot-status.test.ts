@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   availableGoals, categoryInLevel, categoryLevels, holdsTandemLicence, kontrollblattLevel, licenceHeld,
-  normalizeTrainingLevel, pilotStatus, statusLabelKeys,
+  normalizeTrainingLevel, pilotStatus, selfDeclaredPilots, showsSoloField, showsTandemField, statusLabelKeys,
 } from "./pilot-status";
 
 const licence = (level: string) => ({ discipline: "paraglider", level, issued_at: "2025-06-01" });
@@ -105,5 +105,38 @@ describe("licenceHeld", () => {
     expect(licenceHeld(status, "biplace_1")).toEqual({ held: true, issuedAt: null });
     expect(licenceHeld(status, "biplace_3").held).toBe(false);
     expect(licenceHeld(pilotStatus({ trainingLevel: "licensed", licences: [licence("biplace_3")] }), "biplace_3_renewal").held).toBe(false);
+  });
+});
+
+describe("flight form fields", () => {
+  it("offers the SHV solo flight only before the pilot licence", () => {
+    expect(showsSoloField(pilotStatus({ trainingLevel: "altitude" }), false)).toBe(true);
+    expect(showsSoloField(pilotStatus({ trainingLevel: null }), false)).toBe(true);
+    expect(showsSoloField(pilotStatus({ trainingLevel: "licensed" }), false)).toBe(false);
+    expect(showsSoloField(pilotStatus({ trainingLevel: "licensed" }), true)).toBe(true);
+    expect(showsSoloField(null, false)).toBe(false);
+  });
+
+  it("offers tandem fields with a tandem licence, goal or glider", () => {
+    const none = { marked: false, tandemGlider: false };
+    expect(showsTandemField(pilotStatus({ trainingLevel: "licensed" }), none)).toBe(false);
+    expect(showsTandemField(pilotStatus({ trainingLevel: "licensed", goal: "biplace_1" }), none)).toBe(true);
+    expect(showsTandemField(pilotStatus({ trainingLevel: "licensed", licences: [licence("biplace_1")] }), none)).toBe(true);
+    expect(showsTandemField(pilotStatus({ trainingLevel: "ground" }), none)).toBe(false);
+    expect(showsTandemField(pilotStatus({ trainingLevel: "ground" }), { marked: false, tandemGlider: true })).toBe(true);
+    expect(showsTandemField(null, { marked: true, tandemGlider: false })).toBe(true);
+  });
+});
+
+describe("selfDeclaredPilots", () => {
+  it("marks members whose latest licensed entry is their own", () => {
+    const entry = (user_id: string, changed_by: string, changed_at: string, training_level = "licensed") => ({ user_id, changed_by, changed_at, training_level });
+    const result = selfDeclaredPilots([
+      entry("sam", "sam", "2026-10-01T10:00:00Z"),
+      entry("kim", "kim", "2026-09-01T10:00:00Z"), entry("kim", "teacher", "2026-10-02T10:00:00Z"),
+      entry("lea", "teacher", "2026-08-01T10:00:00Z"),
+      entry("noa", "noa", "2026-08-01T10:00:00Z", "altitude"),
+    ]);
+    expect([...result]).toEqual(["sam"]);
   });
 });
