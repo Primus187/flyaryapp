@@ -1,5 +1,25 @@
 # Flyary
 
+## Vor dem Pilottest: Prüfung, Korrekturen, Aufräumen (2026-10-06)
+
+Prüfung nach einem Tag mit vielen Änderungen (Design, Ausbildungsstand, Flugtag). Befund: keine
+defekten Funktionen; offen vor dem Start mit echten Schülern sind Demodaten entfernen, Backup und
+ein Durchgang auf dem Handy – siehe [Prüfliste](docs/pilottest-pruefliste.md).
+
+- **Karten:** Der Ausschnitt wird ohne Animation gesetzt (`FlightDetailMap`, `MapView`). Eine
+  Zoom-Animation, die auf einer bereits entfernten Karte endete, warf dreimal seit dem
+  27. September «Cannot read properties of undefined (reading '_leaflet_pos')».
+- **Feed:** Videos öffnen im Vollbild statt in einem kleinen Fenster (Fullscreen API, YouTube im
+  Querformat; auf dem iPhone übernimmt der Player das Vollbild selbst).
+- **Aufgeräumt:** 12 Dateien, die die App nicht mehr lädt (unbenutzte Standard-Bausteine,
+  `pages/Index`, `fetch-all-pages` samt Test), 176 Übersetzungstexte ohne Verwendung in allen drei
+  Sprachen, 8 überholte Typ-Umgehungen, die Stilklasse `.hero-card`, der Branch `design-system`.
+- **Ergänzt:** drei Texte, die ohne Rückfallwert fehlten und als Schlüssel angezeigt wurden
+  (`common.saving`, `events.copyTelegramText`, `events.telegramCopied`).
+- Nicht angefasst: weitere 27 Texte, die nur über einen deutschen Rückfallwert im Code erscheinen
+  (Video schneiden und hochladen, «Alle Flüge löschen»), rund 30 unbenutzte Exporte und die
+  bestehenden Lint-Meldungen zu ungenauen Typen.
+
 ## Flugtag: Start-Ansage und Abschluss vor dem Termintag (2026-10-06)
 
 - **Start-Ansage:** Geht ein Schüler in die Luft, hören alle Geräte mit geöffnetem Flugtag ein
