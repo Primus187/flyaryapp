@@ -11,6 +11,8 @@ interface Props {
   eventId: string;
   eventDate: string;
   profiles: Record<string, string>;
+  /** Flights are recorded for the day: closing is then possible before the day of the event too. */
+  hasFlights?: boolean;
   /** Called after closing or reopening, so the views reload. */
   onChanged: () => void;
   /** Reports whether the day is closed, so the views turn read-only. */
@@ -18,7 +20,7 @@ interface Props {
 }
 
 /** "Close the day" for the day's instructors, or who closed it and "Reopen" (5.1). */
-export default function DayCloseBar({ eventId, eventDate, profiles, onChanged, onClosedChange }: Props) {
+export default function DayCloseBar({ eventId, eventDate, profiles, hasFlights = false, onChanged, onClosedChange }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [closed, setClosed] = useState<{ at: string; by: string | null } | null>(null);
@@ -45,7 +47,8 @@ export default function DayCloseBar({ eventId, eventDate, profiles, onChanged, o
     onChanged();
   };
 
-  // Closing becomes possible from the day of the event on (local calendar day, not its start time).
+  // Closing becomes possible from the day of the event on (local calendar day, not its start time),
+  // or earlier once flights are recorded: a day with flights is never left without a way to close it.
   const eventDay = new Date(eventDate);
   eventDay.setHours(0, 0, 0, 0);
   const started = eventDay.getTime() <= Date.now();
@@ -63,7 +66,7 @@ export default function DayCloseBar({ eventId, eventDate, profiles, onChanged, o
     );
   }
 
-  if (!started) return null;
+  if (!started && !hasFlights) return null;
   return (
     <>
       <Button variant="outline" className="h-12 w-full gap-2" onClick={() => setWizardOpen(true)}>

@@ -89,6 +89,12 @@ it("offers closing only once the day has begun", async () => {
   expect(screen.queryByRole("button", { name: "flightDay.close.open" })).not.toBeInTheDocument();
 });
 
+it("offers closing before the day once flights are recorded", async () => {
+  render(<DayCloseBar eventId="ev" eventDate="2099-01-01T08:00:00Z" profiles={profiles} hasFlights onChanged={vi.fn()} />);
+  await waitFor(() => expect(from).toHaveBeenCalledWith("flight_events"));
+  expect(screen.getByRole("button", { name: "flightDay.close.open" })).toBeInTheDocument();
+});
+
 it("reports whether the day is closed and offers closing all day long on the event day", async () => {
   const onClosedChange = vi.fn();
   const later = new Date(); later.setHours(23, 0, 0, 0);

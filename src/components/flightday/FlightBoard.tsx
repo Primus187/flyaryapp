@@ -15,6 +15,7 @@ import {
 } from "@/lib/school-flights";
 import RecordFlightSheet, { type FlightDraft, type SheetMode } from "./RecordFlightSheet";
 import InAirBar from "./InAirBar";
+import TakeoffAnnouncer from "./TakeoffAnnouncer";
 import DaySummaryEditor, { type DaySummary } from "./DaySummaryEditor";
 
 interface BoardFlight extends SchoolFlight { start_note: string | null }
@@ -32,13 +33,15 @@ interface Props {
   canWriteSummary?: boolean;
   /** The day is closed: show everything, change nothing (5.1). */
   readOnly?: boolean;
+  /** Reports how many flights the day has (closing before the day needs at least one). */
+  onFlightCount?: (count: number) => void;
 }
 
 const emptyDraft: FlightDraft = { feedback: "", internal: "", ratings: {} };
 
 /** Instructor view of a flying day: one row per student with the day's flights and one main
  *  action (land / + flight / +1 on the practice slope). Flugtag-Cockpit 4.3. */
-export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0, canWriteSummary = false, readOnly = false }: Props) {
+export default function FlightBoard({ eventId, eventCategory, signups, profiles, settingsVersion = 0, canWriteSummary = false, readOnly = false, onFlightCount }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [flights, setFlights] = useState<BoardFlight[]>([]);
@@ -50,6 +53,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
   const [summaries, setSummaries] = useState<Record<string, DaySummary>>({});
   const [selfLogged, setSelfLogged] = useState(0);
   const [loadError, setLoadError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ studentId: string; mode: SheetMode; initial: FlightDraft } | null>(null);
@@ -69,6 +73,8 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
     setLoadError(false);
     const rows = (flightsRes.data || []) as BoardFlight[];
     setFlights(rows);
+    setLoaded(true);
+    onFlightCount?.(rows.length);
     setPauses((pausesRes.data || []) as DayPause[]);
     setHint((eventRes.data?.landing_hint_minutes ?? null) as LandingHintMinutes);
     const ids = rows.map((f) => f.id);
@@ -172,7 +178,10 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
 
   return (
     <section className="space-y-2">
-      <h2 className="eyebrow">{t("flightDay.board.title")}</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="eyebrow">{t("flightDay.board.title")}</h2>
+        <TakeoffAnnouncer flights={flights} names={profiles} ready={loaded} />
+      </div>
       <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} onSelect={readOnly ? undefined : landFlight} />
       {participants.map((p) => {
         const own = byStudent[p.userId] || [];

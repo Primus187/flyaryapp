@@ -15,6 +15,7 @@ import {
   type LandingHintMinutes, type SchoolFlight,
 } from "@/lib/school-flights";
 import InAirBar from "./InAirBar";
+import TakeoffAnnouncer from "./TakeoffAnnouncer";
 import { useSiteName } from "@/lib/official-sites-store";
 
 interface TakeoffFlight extends SchoolFlight { start_note: string | null }
@@ -27,11 +28,13 @@ interface Props {
   settingsVersion?: number;
   /** The day is closed: show everything, change nothing (5.1). */
   readOnly?: boolean;
+  /** Reports how many flights the day has (closing before the day needs at least one). */
+  onFlightCount?: (count: number) => void;
 }
 
 /** Take-off view for launch helpers (and instructors working the take-off): "Start" per student,
  *  aborted launches with a reason and a start note; no feedback, no dossier. Flugtag-Cockpit 4.4. */
-export default function TakeoffBoard({ eventId, signups, profiles, settingsVersion = 0, readOnly = false }: Props) {
+export default function TakeoffBoard({ eventId, signups, profiles, settingsVersion = 0, readOnly = false, onFlightCount }: Props) {
   const { t } = useTranslation();
   const siteName = useSiteName();
   const { toast } = useToast();
@@ -40,6 +43,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
   const [site, setSite] = useState<string | null>(null);
   const [hint, setHint] = useState<LandingHintMinutes>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [dialog, setDialog] = useState<{ kind: "abort" | "note"; flight: TakeoffFlight; text: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -49,6 +53,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
       supabase.from("flight_events").select("default_takeoff_location_id, landing_hint_minutes").eq("id", eventId).maybeSingle(),
     ]);
     setFlights((flightsRes.data || []) as TakeoffFlight[]);
+    if (!flightsRes.error) { setLoaded(true); onFlightCount?.((flightsRes.data || []).length); }
     setPauses((pausesRes.data || []) as DayPause[]);
     const day = eventRes.data;
     setHint((day?.landing_hint_minutes ?? null) as LandingHintMinutes);
@@ -96,9 +101,10 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="eyebrow">{t("flightDay.takeoff.title")}</h2>
-        <span className="flex items-center gap-1 text-[13px] font-medium text-muted-foreground truncate">
+        <span className="ml-auto flex min-w-0 items-center gap-1 text-[13px] font-medium text-muted-foreground truncate">
           <MapPin className="h-3 w-3 shrink-0" />{siteName(site) || t("flightDay.sites.notSet")}
         </span>
+        <TakeoffAnnouncer flights={flights} names={profiles} ready={loaded} />
       </div>
       <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} />
       {participants.map((p) => {

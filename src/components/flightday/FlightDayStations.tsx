@@ -33,6 +33,8 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
   const [station, setStation] = useState<Station>(storedStation);
   const [settingsVersion, setSettingsVersion] = useState(0);
   const [closed, setClosed] = useState(false);
+  // Closing before the day of the event is offered once flights are recorded.
+  const [flightCount, setFlightCount] = useState(0);
 
   if (role === "helper") return <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} />;
 
@@ -43,7 +45,7 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
 
   return (
     <div className="space-y-3">
-      <DayCloseBar eventId={eventId} eventDate={eventDate} profiles={profiles} onClosedChange={setClosed}
+      <DayCloseBar eventId={eventId} eventDate={eventDate} profiles={profiles} hasFlights={flightCount > 0} onClosedChange={setClosed}
         onChanged={() => { setSettingsVersion((v) => v + 1); onDayChanged?.(); }} />
       <DaySitesCard eventId={eventId} readOnly={closed} onChanged={() => setSettingsVersion((v) => v + 1)} />
       <div className="grid grid-cols-2 gap-1 rounded-lg bg-secondary p-1" role="radiogroup" aria-label={t("flightDay.view.label")}>
@@ -55,8 +57,8 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
         ))}
       </div>
       {station === "landing"
-        ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} canWriteSummary={canWriteSummary} readOnly={closed} />
-        : <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} settingsVersion={settingsVersion} readOnly={closed} />}
+        ? <FlightBoard eventId={eventId} eventCategory={eventCategory} signups={signups} profiles={profiles} settingsVersion={settingsVersion} canWriteSummary={canWriteSummary} readOnly={closed} onFlightCount={setFlightCount} />
+        : <TakeoffBoard eventId={eventId} signups={signups} profiles={profiles} settingsVersion={settingsVersion} readOnly={closed} onFlightCount={setFlightCount} />}
     </div>
   );
 }

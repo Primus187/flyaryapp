@@ -1,5 +1,20 @@
 # Flyary
 
+## Flugtag: Start-Ansage und Abschluss vor dem Termintag (2026-10-06)
+
+- **Start-Ansage:** Geht ein Schüler in die Luft, hören alle Geräte mit geöffnetem Flugtag ein
+  Signal (zwei aufsteigende Töne) und die Ansage «Sandra gestartet» (Vorname, in der App-Sprache;
+  Web Audio und Sprachausgabe des Browsers). Auch das Gerät, auf dem der Start erfasst wurde, sagt
+  ihn an – als Bestätigung für den Starthelfer. Ein Lautsprecher-Knopf neben «Flüge» bzw. «Startplatz» schaltet die Ansage pro
+  Gerät ein und aus (Standard: ein). Komponente `TakeoffAnnouncer`, Logik und Test in
+  `src/lib/takeoff-announcer.ts`; ausgelöst durch das Neuladen von `useFlightDayLive`.
+- **Grenzen:** Ton gibt es nur, solange die App im Vordergrund offen ist und nach dem ersten
+  Antippen der Seite (Browser-Regel). Bei gesperrtem Bildschirm oder stumm geschaltetem Gerät kommt
+  nichts an; die Stimme hängt vom Gerät ab.
+- **Abschluss:** «Tag abschliessen» erscheint neu auch vor dem Kalendertag des Termins, sobald
+  Flüge erfasst sind. Ohne Flüge bleibt der Knopf bis zum Termintag verborgen. Der Server prüfte
+  das Datum schon bisher nicht.
+
 ## Ausbildungsstand nach SHV, Schritt 5: Flugschule und Kanäle (2026-10-06)
 
 - **Eine Bezeichnung pro Stufe:** Personenliste, Dossier und Kanäle nennen die Schülerstufen jetzt
