@@ -64,7 +64,7 @@ export default function GroupDetail() {
       const { data: goals } = await supabase.from("challenge_goals").select("id").eq("challenge_id", c.id);
       const { data: myProg } = await supabase.from("challenge_progress").select("goal_id").eq("challenge_id", c.id).eq("user_id", user!.id);
       const { data: allProg } = await supabase.from("challenge_progress").select("user_id").eq("challenge_id", c.id);
-      const uniqueParticipants = new Set((allProg || []).map((p: any) => p.user_id));
+      const uniqueParticipants = new Set((allProg || []).map((p) => p.user_id));
       return {
         ...c,
         totalGoals: (goals || []).length,

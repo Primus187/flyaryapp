@@ -46,7 +46,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
       if (userIds.length > 0) {
         const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
         const map: Record<string, string> = {};
-        (profs || []).forEach((p: any) => { map[p.user_id] = p.pilot_name || "Pilot"; });
+        (profs || []).forEach((p) => { map[p.user_id] = p.pilot_name || "Pilot"; });
         setNames(map);
       }
     } else {

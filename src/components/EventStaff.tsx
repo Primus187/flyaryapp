@@ -60,7 +60,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
     if (rows.length > 0) {
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", [...new Set(rows.map((r) => r.user_id))]);
       const map: Record<string, string> = {};
-      (profs || []).forEach((p: any) => { map[p.user_id] = p.pilot_name || "Pilot"; });
+      (profs || []).forEach((p) => { map[p.user_id] = p.pilot_name || "Pilot"; });
       setNames(map);
     }
   };
@@ -85,7 +85,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
       });
       setOptions(ids.map((id) => ({
         user_id: id,
-        name: (profs || []).find((p: any) => p.user_id === id)?.pilot_name || "Pilot",
+        name: (profs || []).find((p) => p.user_id === id)?.pilot_name || "Pilot",
         functions: funcMap[id] || [],
       })));
     };

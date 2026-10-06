@@ -44,7 +44,7 @@ export async function validateVideo(file: File): Promise<VideoValidation> {
       return { ok: false, error: `Video zu lang (max ${MAX_VIDEO_SECONDS}s, dieses: ${Math.round(durationSec)}s)` };
     }
     return { ok: true, durationSec };
-  } catch (err: any) {
+  } catch (err) {
     return { ok: false, error: err.message || "Video konnte nicht analysiert werden" };
   }
 }
@@ -90,7 +90,7 @@ export function extractPoster(file: File, atSeconds = 0.1): Promise<Blob> {
           "image/jpeg",
           0.82
         );
-      } catch (err: any) {
+      } catch (err) {
         cleanup();
         reject(err);
       }

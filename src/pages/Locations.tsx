@@ -186,7 +186,7 @@ export default function Locations() {
     { key: "both", icon: Combine, label: t("locations.both"), color: "text-primary" },
   ] as const;
 
-  const renderLocationCard = (loc: any) => {
+  const renderLocationCard = (loc) => {
     const stats = flightStats[loc.id];
     return (
       <Card key={loc.id} className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>

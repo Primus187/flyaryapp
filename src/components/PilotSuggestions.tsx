@@ -48,7 +48,7 @@ export default function PilotSuggestions() {
         .from("follows")
         .select("following_id")
         .eq("follower_id", user.id);
-      const followedIds = new Set((follows || []).map((f: any) => f.following_id));
+      const followedIds = new Set((follows || []).map((f) => f.following_id));
 
       // Count shared groups per pilot, exclude self & already-followed
       const counts: Record<string, number> = {};

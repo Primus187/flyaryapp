@@ -61,7 +61,7 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
       .eq("flight_id", flightId)
       .order("updated_at", { ascending: false });
 
-    const list = data || [];
+    const list: CoachNote[] = data || [];
     if (list.length > 0) {
       const coachIds = [...new Set(list.map((n) => n.coach_id))];
       const { data: profs } = await supabase
@@ -69,13 +69,13 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
         .select("user_id, pilot_name")
         .in("user_id", coachIds);
       const nameMap = Object.fromEntries((profs || []).map((p) => [p.user_id, p.pilot_name]));
-      list.forEach((n: any) => { n.coach_name = nameMap[n.coach_id] || ""; });
+      list.forEach((n) => { n.coach_name = nameMap[n.coach_id] || ""; });
     }
     setNotes(list);
 
     // Pre-fill draft with current coach's existing note
     if (coachOk) {
-      const own = list.find((n: any) => n.coach_id === user.id);
+      const own = list.find((n) => n.coach_id === user.id);
       if (own) {
         setDraft(own.note);
         setDraftVisible(own.visible_to_student);

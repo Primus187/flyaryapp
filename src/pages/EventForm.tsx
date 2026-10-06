@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,16 +87,16 @@ export default function EventForm() {
       const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, group_type)").eq("user_id", user.id);
       if (data) {
         const eligible = data.filter((m: any) => m.role === "admin" || m.groups?.group_type === "pilot_group");
-        const availableGroups = eligible.map((m: any) => m.groups).filter(Boolean);
+        const availableGroups = eligible.map((m) => m.groups).filter(Boolean);
         setGroups(availableGroups);
-        if (!isEdit && schoolGroupId && availableGroups.some((group: any) => group.id === schoolGroupId)) {
+        if (!isEdit && schoolGroupId && availableGroups.some((group) => group.id === schoolGroupId)) {
           setForm(previous => ({ ...previous, group_id: schoolGroupId }));
         }
       }
     };
     fetchGroups();
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
-      if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
+      if (data) setTrainingItems(data.map((item) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
   }, [user, isEdit, schoolGroupId]);
 
@@ -104,20 +105,20 @@ export default function EventForm() {
     if (!form.group_id) { setMembers([]); return; }
     const load = async () => {
       const { data: gm } = await supabase.from("group_members").select("user_id").eq("group_id", form.group_id);
-      const ids = (gm || []).map((m: any) => m.user_id);
+      const ids = (gm || []).map((m) => m.user_id);
       if (ids.length === 0) { setMembers([]); return; }
       const [{ data: profs }, { data: funcs }] = await Promise.all([
         supabase.from("profiles").select("user_id, pilot_name").in("user_id", ids),
         supabase.from("group_member_functions").select("user_id, function").eq("group_id", form.group_id),
       ]);
       const funcMap: Record<string, string[]> = {};
-      (funcs || []).forEach((f: any) => {
+      (funcs || []).forEach((f) => {
         if (!funcMap[f.user_id]) funcMap[f.user_id] = [];
         funcMap[f.user_id].push(f.function);
       });
       const opts: MemberOption[] = ids.map(uid => ({
         user_id: uid,
-        name: (profs || []).find((p: any) => p.user_id === uid)?.pilot_name || "Pilot",
+        name: (profs || []).find((p) => p.user_id === uid)?.pilot_name || "Pilot",
         functions: funcMap[uid] || [],
       }));
       const rank = (o: MemberOption) => (o.functions.includes("instructor") || o.functions.includes("school_lead") ? 0 : o.functions.includes("launch_helper") ? 1 : 2);
@@ -151,13 +152,13 @@ export default function EventForm() {
 
       // Load briefing tasks
       const { data: tasks } = await supabase.from("event_briefing_tasks").select("*").eq("event_id", loadId).order("sort_order");
-      if (tasks) setBriefingTasks(tasks.map((t: any) => ({
+      if (tasks) setBriefingTasks(tasks.map((t) => ({
         id: duplicateId ? undefined : t.id, label: t.label, task_type: t.task_type,
         assigned_user_id: duplicateId ? "" : t.assigned_user_id || "", sort_order: t.sort_order,
       })));
 
       const { data: maneuvers } = await supabase.from("event_maneuvers").select("training_item_id").eq("event_id", loadId);
-      if (maneuvers) setSelectedManeuverIds(maneuvers.map((m: any) => m.training_item_id));
+      if (maneuvers) setSelectedManeuverIds(maneuvers.map((m) => m.training_item_id));
     };
     loadEvent();
   }, [isEdit, id, duplicateId, suggestedDate]);
@@ -193,7 +194,7 @@ export default function EventForm() {
     setLoading(true);
     const meetingPoint = isHeight ? serializeMeetingRows(meetingRows) : form.meeting_point;
     const eventDate = new Date(`${form.event_date}T${form.event_time || "09:00"}`).toISOString();
-    const payload: any = {
+    const payload = {
       group_id: form.group_id, title: form.title, description: form.description || null,
       status: form.status, event_date: eventDate,
       // Deadline day is inclusive: sign-ups stay open until the end of that local day.
@@ -213,12 +214,12 @@ export default function EventForm() {
     let eventId: string;
     if (isEdit) {
       const { created_by, ...updatePayload } = payload;
-      const { error } = await supabase.from("flight_events").update(updatePayload).eq("id", id);
+      const { error } = await supabase.from("flight_events").update(updatePayload as TablesUpdate<"flight_events">).eq("id", id);
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
       if (!id) { setLoading(false); return; }
       eventId = id;
     } else {
-      const { data, error } = await supabase.from("flight_events").insert(payload).select("id");
+      const { data, error } = await supabase.from("flight_events").insert(payload as TablesInsert<"flight_events">).select("id");
       if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); setLoading(false); return; }
       eventId = data[0].id;
     }

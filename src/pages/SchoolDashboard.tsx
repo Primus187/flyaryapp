@@ -12,7 +12,7 @@ import RoleModeSwitcher from "@/components/RoleModeSwitcher";
 import { useRoleMode } from "@/contexts/RoleModeContext";
 import { canOpenSchoolSection } from "@/lib/school-sections";
 import TeamHome from "@/components/school/TeamHome";
-import { GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock, Store, BadgeCheck } from "lucide-react";
+import { type LucideIcon, GraduationCap, CalendarDays, MessageCircle, Users, ClipboardList, Package, Coins, Receipt, BarChart3, ShieldAlert, CalendarClock, Store, BadgeCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { type StudentStatus } from "@/lib/student-status";
@@ -36,7 +36,7 @@ const SchoolConfirmations = lazy(() => import("@/components/school/SchoolConfirm
 
 type Section = "days" | "confirmations" | "communication" | "people" | "students" | "safety" | "availability" | "equipment" | "shop" | "credits" | "billing" | "stats";
 
-const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: any; labelKey: string }[] }[] = [
+const SECTION_GROUPS: { titleKey: string; items: { key: Section; icon: LucideIcon; labelKey: string }[] }[] = [
   {
     titleKey: "school.hub.operations",
     items: [

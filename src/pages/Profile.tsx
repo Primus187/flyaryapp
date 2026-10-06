@@ -146,9 +146,10 @@ export default function Profile() {
         schema: 'public',
         table: 'pilot_xp',
         filter: `user_id=eq.${user.id}`,
-      }, (payload: any) => {
+      }, (payload) => {
         if (payload.new) {
-          setXp({ total_xp: payload.new.total_xp, level: payload.new.level });
+          const next = payload.new as { total_xp: number; level: number };
+          setXp({ total_xp: next.total_xp, level: next.level });
         }
       })
       .subscribe();
@@ -201,7 +202,7 @@ export default function Profile() {
       if (url) setCoverSignedUrl(url);
       await supabase.from("profiles").update({ cover_photo_url: path }).eq("user_id", user.id);
       toast({ title: t("profile.coverPhotoUploaded") });
-    } catch (err: any) {
+    } catch (err) {
       toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     }
     setUploading(false);
@@ -234,7 +235,7 @@ export default function Profile() {
         }
       }
       toast({ title: t("profile.photosAdded") });
-    } catch (err: any) {
+    } catch (err) {
       toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     }
     setUploading(false);
@@ -250,7 +251,7 @@ export default function Profile() {
   const handleAddGlider = async () => {
     if (!user || !newGlider.manufacturer || !newGlider.model) return;
     if (newGlider.is_default) await supabase.from("pilot_gliders").update({ is_default: false }).eq("user_id", user.id);
-    const insertData: any = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null, discipline: newGlider.discipline || "paraglider", is_tandem: !!newGlider.is_tandem, ...hangGliderFields(newGlider) };
+    const insertData = { user_id: user.id, manufacturer: newGlider.manufacturer, model: newGlider.model, size: newGlider.size || null, is_default: newGlider.is_default, last_check_date: newGlider.last_check_date || null, next_check_date: newGlider.next_check_date || null, reserve_repack_date: newGlider.reserve_repack_date || null, discipline: newGlider.discipline || "paraglider", is_tandem: !!newGlider.is_tandem, ...hangGliderFields(newGlider) };
     const { data, error } = await supabase.from("pilot_gliders").insert(insertData).select().single();
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     if (newGlider.is_default) setGliders(prev => [...prev.map(g => ({ ...g, is_default: false })), data as Glider]);
@@ -297,7 +298,7 @@ export default function Profile() {
       if (!res.ok) throw new Error(t("profile.exportFailed"));
       const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `flugbuch.pdf`; a.click(); URL.revokeObjectURL(url);
       toast({ title: t("profile.pdfExported") });
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+    } catch (e) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     finally { setExporting(false); }
   };
 
@@ -339,7 +340,7 @@ export default function Profile() {
       }
       if (!res.ok) throw new Error(data?.error || t("profile.xcontestError"));
       toast({ title: t("profile.xcontestSyncDone", { count: data.imported }) });
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: t("profile.xcontestError"), description: e.message, variant: "destructive" });
     } finally {
       setXcontestSyncing(false);

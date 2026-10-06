@@ -161,7 +161,7 @@ export default function VideoTrimDialog({ file, open, onClose, onTrimmed }: Prop
       const out = new File([blob], `${baseName}-trim.${ext}`, { type: blob.type });
       setRecording(false);
       onTrimmed(out);
-    } catch (err: any) {
+    } catch (err) {
       setRecording(false);
       setError(err.message || "Trim fehlgeschlagen");
     }

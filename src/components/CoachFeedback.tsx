@@ -56,7 +56,7 @@ export default function CoachFeedback({ flightId, flightUserId, groupId }: Coach
         .eq("flight_id", flightId);
 
       if (trainingData && trainingData.length > 0) {
-        const mapped: TrainingItemFeedback[] = trainingData.map((d: any) => ({
+        const mapped: TrainingItemFeedback[] = trainingData.map((d) => ({
           flight_id: d.flight_id,
           item_id: d.item_id,
           item_name: d.training_items?.name || "",

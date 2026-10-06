@@ -76,7 +76,7 @@ export default function ImportFlights() {
         flightsInserted += batch.length; done += batch.length; setProgress(Math.round((done / total) * 100));
       }
       setResult({ flights: flightsInserted, locations: newLocations.length }); setState("done");
-    } catch (err: any) { toast({ title: t("import.importFailed"), description: err.message, variant: "destructive" }); setState("preview"); }
+    } catch (err) { toast({ title: t("import.importFailed"), description: err.message, variant: "destructive" }); setState("preview"); }
   };
 
   return (

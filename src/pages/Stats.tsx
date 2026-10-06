@@ -69,7 +69,10 @@ export default function Stats() {
       .eq("user_id", user.id)
       .order("date", { ascending: true })
       .then(({ data }) => {
-        if (data) setFlights(data.map((f: any) => ({ ...f, takeoff_name: f.locations?.name || null, takeoff_key: f.locations?.official_site_id || f.takeoff_location_id || null })));
+        if (data) setFlights(data.map((f) => {
+          const site = f.locations as unknown as { name: string; official_site_id: string | null } | null;
+          return { ...f, takeoff_name: site?.name || null, takeoff_key: site?.official_site_id || f.takeoff_location_id || null };
+        }));
       });
   }, [user]);
 

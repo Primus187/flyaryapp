@@ -96,7 +96,7 @@ export default function ImportLocations() {
       setResultInserted(inserted);
       setResultUpdated(updated);
       setState("done");
-    } catch (err: any) {
+    } catch (err) {
       toast({ title: t("import.importFailed"), description: err.message, variant: "destructive" });
       setState("preview");
     }

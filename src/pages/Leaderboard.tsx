@@ -49,7 +49,7 @@ export default function Leaderboard() {
     if (!user) return;
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) {
-        const g = data.map((d: any) => ({ id: d.groups.id, name: d.groups.name }));
+        const g = data.map((d) => ({ id: d.groups.id, name: d.groups.name }));
         setGroups(g);
       }
     });
@@ -83,7 +83,7 @@ export default function Leaderboard() {
 
       const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
-      const leaderboard: LeaderboardEntry[] = (xpData || []).map((xp: any) => {
+      const leaderboard: LeaderboardEntry[] = (xpData || []).map((xp) => {
         const profile = profileMap.get(xp.user_id);
         return {
           user_id: xp.user_id,

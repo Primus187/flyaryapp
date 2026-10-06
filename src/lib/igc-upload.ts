@@ -57,5 +57,5 @@ export async function uploadIgcTrack({
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
 
-  return data as { track?: any; storagePath?: string };
+  return data as { track?: unknown; storagePath?: string };
 }

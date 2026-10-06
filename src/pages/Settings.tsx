@@ -104,7 +104,7 @@ export default function Settings() {
     if (!user) return;
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
       if (data) {
-        const g = data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name }));
+        const g = data.map((gm) => ({ id: gm.groups.id, name: gm.groups.name }));
         setGroups(g);
         setSelectedGroupIds(g.map((x: GroupOption) => x.id));
       }
@@ -137,7 +137,7 @@ export default function Settings() {
       a.href = blobUrl; a.download = `flugbuch.pdf`; a.click(); URL.revokeObjectURL(blobUrl);
       toast({ title: t("profile.pdfExported") });
       setExportDialogOpen(false);
-    } catch (e: any) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
+    } catch (e) { toast({ title: t("common.error"), description: e.message, variant: "destructive" }); }
     finally { setExporting(false); }
   };
 
@@ -188,7 +188,7 @@ export default function Settings() {
       const { rows, blob } = await exportFlightsCsv(user.id);
       downloadBlob(blob, `flyary-flights-${new Date().toISOString().slice(0, 10)}.csv`);
       toast({ title: t("settings.csvExported"), description: `${rows} ${t("settings.csvRows")}` });
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     } finally {
       setExportingCsv(false);
@@ -201,7 +201,7 @@ export default function Settings() {
       await deleteOwnAccount(t("profile.notLoggedIn"));
       toast({ title: t("settings.accountDeleted") });
       navigate("/auth", { replace: true });
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
       setDeleting(false);
     }
@@ -242,7 +242,7 @@ export default function Settings() {
       toast({ title: t("settings.allFlightsDeleted", "Alle Flüge gelöscht") });
       setDeleteFlightsOpen(false);
       setDeleteFlightsConfirm("");
-    } catch (e: any) {
+    } catch (e) {
       // Nothing was deleted: confirmed training flights stay (migration 0074), the whole delete is refused.
       toast({ title: t("common.error"), description: isConfirmedDeleteError(e) ? t("confirmations.deleteAllRefused") : e.message, variant: "destructive" });
     } finally {
@@ -262,7 +262,7 @@ export default function Settings() {
       toast({ title: t("settings.allLocationsDeleted", "Alle Orte gelöscht") });
       setDeleteLocationsOpen(false);
       setDeleteLocationsConfirm("");
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     } finally {
       setDeletingLocations(false);

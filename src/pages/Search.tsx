@@ -41,7 +41,7 @@ export default function SearchPage() {
         supabase.from("locations").select("id, name, type, altitude").eq("user_id", user.id).order("name"),
         supabase.from("flight_events").select("id, title, event_date, event_type, group_id"),
       ]);
-      if (flightsRes.data) setFlights(flightsRes.data.map((f: any) => ({ ...f, takeoff_name: f.locations?.name || null, landing_name: f.land?.name || null })));
+      if (flightsRes.data) setFlights(flightsRes.data.map((f) => ({ ...f, takeoff_name: (f.locations as unknown as { name: string } | null)?.name || null, landing_name: (f.land as unknown as { name: string } | null)?.name || null })));
       if (locsRes.data) setLocations(locsRes.data);
       if (eventsRes.data) setEvents(eventsRes.data);
 

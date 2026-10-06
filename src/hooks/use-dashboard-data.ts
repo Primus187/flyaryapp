@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient, QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSignedUrl, getSignedUrls } from "@/lib/signed-url-cache";
 import i18n from "@/i18n";
@@ -82,7 +83,7 @@ interface DashboardData {
   overdueGliders: GliderWarning[];
 }
 
-function parseStatsRow(row: any): DashboardStats & { totalAltitude: number; totalDistance: number } {
+function parseStatsRow(row: Record<string, unknown> | null | undefined): DashboardStats & { totalAltitude: number; totalDistance: number } {
   return {
     totalFlights: Number(row?.total_flights || 0),
     totalMinutes: Number(row?.total_minutes || 0),
@@ -135,10 +136,11 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   const profile: DashboardProfile = { pilot_name: prof?.pilot_name || "", avatar_url: prof?.avatar_url || "" };
 
   // Recent flights
-  const recentFlights: RecentFlight[] = (recentRes.data || []).map((f: any) => ({
+  const recentFlights: RecentFlight[] = (recentRes.data || []).map((f) => ({
     ...f,
-    takeoff_location: f.locations,
-    landing_location: f.land,
+    // display_name is a computed field (migration 0065) the generated types do not know.
+    takeoff_location: f.locations as unknown as RecentFlight["takeoff_location"],
+    landing_location: f.land as unknown as RecentFlight["landing_location"],
   }));
 
   // Glider warnings
@@ -159,9 +161,10 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   const memberships = membershipsRes.data;
   const groupIds = memberships?.map(m => m.group_id) || [];
   const groupNames: Record<string, string> = {};
-  memberships?.forEach((m: any) => { groupNames[m.group_id] = m.groups?.name || ""; });
+  memberships?.forEach((m) => { groupNames[m.group_id] = m.groups?.name || ""; });
 
-  const batch2Promises: PromiseLike<any>[] = [
+  type Rows<T> = PromiseLike<{ data: T[] | null }>;
+  const batch2Promises: [PromiseLike<string | null>, Rows<{ flight_id: string; storage_path: string }>, Rows<Omit<UpcomingEvent, "group_name"> & { group_id: string }>, Rows<Tables<"challenges">>] = [
     // 0: avatar signed URL
     prof?.avatar_url ? getSignedUrl("flight-photos", prof.avatar_url) : Promise.resolve(""),
     // 1: flight photos
@@ -187,7 +190,7 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   // Process flight photos
   if (photosRes.data && photosRes.data.length > 0) {
     const firstPhotos: Record<string, string> = {};
-    photosRes.data.forEach((p: any) => { if (!firstPhotos[p.flight_id]) firstPhotos[p.flight_id] = p.storage_path; });
+    photosRes.data.forEach((p) => { if (!firstPhotos[p.flight_id]) firstPhotos[p.flight_id] = p.storage_path; });
     const signedMap = await getSignedUrls("flight-photos", Object.values(firstPhotos));
     recentFlights.forEach(f => {
       const p = firstPhotos[f.id];
@@ -199,12 +202,12 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
   let events: UpcomingEvent[] = [];
   let signups: SignupRow[] = [];
   const hiddenIds = new Set(((hiddenRes.data as unknown as { event_id: string }[] | null) || []).map((h) => h.event_id));
-  const visibleEvents = (eventsRes.data || []).filter((e: any) => !hiddenIds.has(e.id)).slice(0, 3);
+  const visibleEvents = (eventsRes.data || []).filter((e) => !hiddenIds.has(e.id)).slice(0, 3);
   if (visibleEvents.length > 0) {
-    const eventIds = visibleEvents.map((e: any) => e.id);
+    const eventIds = visibleEvents.map((e) => e.id);
     const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds);
     if (sups) signups = sups;
-    events = visibleEvents.map((e: any) => ({ ...e, group_name: groupNames[e.group_id] || "" }));
+    events = visibleEvents.map((e) => ({ ...e, group_name: groupNames[e.group_id] || "" }));
   }
 
   // Process challenges
@@ -222,13 +225,13 @@ async function fetchDashboardData(userId: string, onProgress?: (pct: number) => 
       ]);
 
       const goalsByChallenge: Record<string, number> = {};
-      (goalsRes.data || []).forEach((g: any) => { goalsByChallenge[g.challenge_id] = (goalsByChallenge[g.challenge_id] || 0) + 1; });
+      (goalsRes.data || []).forEach((g) => { goalsByChallenge[g.challenge_id] = (goalsByChallenge[g.challenge_id] || 0) + 1; });
 
       const myCompletedByChallenge: Record<string, number> = {};
-      (myProgressRes.data || []).forEach((p: any) => { myCompletedByChallenge[p.challenge_id] = (myCompletedByChallenge[p.challenge_id] || 0) + 1; });
+      (myProgressRes.data || []).forEach((p) => { myCompletedByChallenge[p.challenge_id] = (myCompletedByChallenge[p.challenge_id] || 0) + 1; });
 
       const participantsByChallenge: Record<string, Set<string>> = {};
-      (allProgressRes.data || []).forEach((p: any) => {
+      (allProgressRes.data || []).forEach((p) => {
         if (!participantsByChallenge[p.challenge_id]) participantsByChallenge[p.challenge_id] = new Set();
         participantsByChallenge[p.challenge_id].add(p.user_id);
       });
@@ -279,7 +282,7 @@ export function useDashboardData() {
   const toggleSignup = async (eventId: string) => {
     if (!user) return;
     const existing = signups.find(s => s.event_id === eventId && s.user_id === user.id);
-    let error: any = null;
+    let error = null;
     if (existing) {
       const newVal = !existing.signed_up;
       ({ error } = await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", eventId).eq("user_id", user.id));

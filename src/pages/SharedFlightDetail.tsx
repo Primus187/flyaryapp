@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
-import { MapPin, Clock, TrendingUp, Route, Wind, Mountain } from "lucide-react";
+import { MapPin, Clock, TrendingUp, Route, Wind, Mountain, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,7 @@ interface SharedFlightData {
   landing: { name: string; latitude: number; longitude: number } | null;
   photos: { id: string; url: string }[];
   videos: { id: string; youtube_url: string }[];
-  track_data: { points: any[] } | null;
+  track_data: { points?: { lat: number; lng: number; altitude?: number; time?: string }[] } | null;
   pilot_name: string;
   avatar_url: string;
 }
@@ -144,11 +144,11 @@ export default function SharedFlightDetail() {
   const trackPoints3D = useMemo(() => {
     const raw = data?.track_data?.points;
     if (!raw || !Array.isArray(raw)) return [];
-    return raw.map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
+    return raw.map((p) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
   }, [data]);
 
   const trackPoints2D = useMemo(() => {
-    return data?.track_data?.points?.map((p: any) => [p.lat, p.lng] as [number, number]) || [];
+    return data?.track_data?.points?.map((p) => [p.lat, p.lng] as [number, number]) || [];
   }, [data]);
 
   useEffect(() => {
@@ -212,7 +212,7 @@ export default function SharedFlightDetail() {
     data.altitude_gain != null && { icon: TrendingUp, label: "Höhenmeter", value: `${data.altitude_gain} m` },
     data.distance_km != null && { icon: Route, label: "Distanz", value: `${Number(data.distance_km).toFixed(1)} km` },
     data.wind_speed != null && { icon: Wind, label: "Wind", value: `${data.wind_speed} km/h ${data.wind_direction || ""}` },
-  ].filter(Boolean) as { icon: any; label: string; value: string }[];
+  ].filter(Boolean) as { icon: LucideIcon; label: string; value: string }[];
 
   return (
     <div className="min-h-screen bg-background">

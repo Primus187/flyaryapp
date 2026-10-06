@@ -108,7 +108,7 @@ export default function PilotProfile() {
       if (glidersRes.data) setGliders(glidersRes.data);
 
       if (photosRes.data && photosRes.data.length > 0) {
-        const photos = await Promise.all(photosRes.data.map(async (p: any) => ({
+        const photos = await Promise.all(photosRes.data.map(async (p) => ({
           signedUrl: await resolveUrl(p.storage_path),
         })));
         setProfilePhotos(photos);

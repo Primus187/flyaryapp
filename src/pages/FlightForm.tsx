@@ -153,14 +153,14 @@ export default function FlightForm() {
     if (!user) return;
     reloadLocations();
     supabase.from("training_items").select("id, name, category_id, training_categories(name)").order("sort_order").then(({ data }) => {
-      if (data) setTrainingItems(data.map((item: any) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
+      if (data) setTrainingItems(data.map((item) => ({ id: item.id, name: item.name, category_name: item.training_categories?.name || "" })));
     });
     // Load flight templates
     supabase.from("flight_templates").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
       if (data) setTemplates(data as FlightTemplate[]);
     });
     supabase.from("group_members").select("group_id, groups(id, name)").eq("user_id", user.id).then(({ data }) => {
-      if (data) setGroups(data.map((gm: any) => ({ id: gm.groups.id, name: gm.groups.name })));
+      if (data) setGroups(data.map((gm) => ({ id: gm.groups.id, name: gm.groups.name })));
     });
     supabase.from("pilot_gliders").select("id, manufacturer, model, size, is_default, discipline, is_tandem").eq("user_id", user.id).order("is_default", { ascending: false }).then(({ data }) => {
       if (data) {
@@ -190,10 +190,10 @@ export default function FlightForm() {
       });
       supabase.from("flight_videos").select("id, youtube_url, storage_path, poster_path").eq("flight_id", id).then(({ data }) => {
         if (!data) return;
-        setYoutubeUrls(data.filter((v: any) => v.youtube_url).map((v: any) => v.youtube_url));
-        setExistingUploadedVideos(data.filter((v: any) => v.storage_path).map((v: any) => ({ id: v.id, storage_path: v.storage_path, poster_path: v.poster_path })));
+        setYoutubeUrls(data.filter((v) => v.youtube_url).map((v) => v.youtube_url));
+        setExistingUploadedVideos(data.filter((v) => v.storage_path).map((v) => ({ id: v.id, storage_path: v.storage_path, poster_path: v.poster_path })));
       });
-      supabase.from("flight_training_items").select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds(data.map((d: any) => d.item_id)); });
+      supabase.from("flight_training_items").select("item_id").eq("flight_id", id).then(({ data }) => { if (data) setSelectedTrainingIds(data.map((d) => d.item_id)); });
     }
     // Load tag suggestions from user's existing flights
     supabase.from("flights").select("tags").eq("user_id", user.id).limit(200).then(({ data }) => {
@@ -260,7 +260,7 @@ export default function FlightForm() {
           ? ({ fai_triangle: "FAI ▲", flat_triangle: "Flach ▲", free_3tp: "3-TP", free: "Frei" } as Record<string, string>)[parsed.xcOptimization.shape]
           : null;
         toast({ title: t("flights.igcImported"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}${shapeLabel ? ` · ${shapeLabel} ${parsed.xcDistanceKm} km` : ""}` });
-      } catch (err: any) { toast({ title: t("flights.igcError"), description: err.message || t("flights.igcReadError"), variant: "destructive" }); setIgcFile(null); }
+      } catch (err) { toast({ title: t("flights.igcError"), description: err.message || t("flights.igcReadError"), variant: "destructive" }); setIgcFile(null); }
     };
     reader.readAsText(file);
   };
@@ -303,7 +303,7 @@ export default function FlightForm() {
               return false;
             }
             workingFile = compressed;
-          } catch (err: any) {
+          } catch (err) {
             toast({
               title: file.name,
               description: err?.message || t("flights.compressFailed", { defaultValue: "Komprimierung fehlgeschlagen. Bitte vorab kürzen oder Qualität reduzieren." }),
@@ -333,7 +333,7 @@ export default function FlightForm() {
       const previewUrl = URL.createObjectURL(poster);
       setPendingVideos((prev) => [...prev, { file: workingFile, poster, durationSec: validation.durationSec!, previewUrl }]);
       return true;
-    } catch (err: any) {
+    } catch (err) {
       toast({ title: t("common.error"), description: err.message || "Vorschaubild fehlgeschlagen", variant: "destructive" });
       return false;
     }
@@ -443,11 +443,11 @@ export default function FlightForm() {
             fileContent: content,
             igcData,
           });
-        } catch (igcErr: any) { console.error("IGC upload failed:", igcErr); toast({ title: t("flights.igcUploadFailed"), description: t("flights.igcUploadFailedDesc"), variant: "destructive" }); }
+        } catch (igcErr) { console.error("IGC upload failed:", igcErr); toast({ title: t("flights.igcUploadFailed"), description: t("flights.igcUploadFailedDesc"), variant: "destructive" }); }
       }
       for (const photo of photoFiles) {
         try { const upload = await compressImage(photo, 1600, 1600, 0.8); const path = `${user.id}/${flightId}/${Date.now()}-${upload.name}`; const { error: photoErr } = await supabase.storage.from("flight-photos").upload(path, upload); if (photoErr) throw photoErr; const { error: insertErr } = await supabase.from("flight_photos").insert({ flight_id: flightId, storage_path: path }); if (insertErr) throw insertErr; }
-        catch (photoErr: any) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
+        catch (photoErr) { console.error("Photo upload failed:", photoErr); toast({ title: t("flights.photoUploadFailed"), description: photo.name, variant: "destructive" }); }
       }
       // Save YouTube videos: only delete YouTube rows on edit (uploaded videos are managed separately).
       if (isEdit) {
@@ -493,7 +493,7 @@ export default function FlightForm() {
             size_bytes: pv.file.size,
           });
           if (insErr) throw insErr;
-        } catch (vErr: any) {
+        } catch (vErr) {
           console.error("Video upload failed:", vErr);
           toast({ title: t("flights.videoUploadFailed", { defaultValue: "Video-Upload fehlgeschlagen" }), description: `${pv.file.name}: ${vErr?.message || vErr}`, variant: "destructive" });
         }
@@ -575,7 +575,7 @@ export default function FlightForm() {
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       void queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
       toast({ title: isEdit ? t("flights.flightUpdated") : t("flights.flightSaved") }); navigate(`/flights/${flightId}`);
-    } catch (err: any) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
+    } catch (err) { toast({ title: t("common.error"), description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
   };
 

@@ -40,7 +40,7 @@ export default function Groups() {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [members, setMembers] = useState<Record<string, MemberRow[]>>({});
 
-  const fetchGroups = async () => { if (!user) return; const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, description, created_by, group_type)").eq("user_id", user.id); if (data) setGroups(data.map((m: any) => ({ ...m.groups, role: m.role }))); setLoading(false); };
+  const fetchGroups = async () => { if (!user) return; const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, description, created_by, group_type)").eq("user_id", user.id); if (data) setGroups(data.map((m) => ({ ...m.groups, role: m.role }))); setLoading(false); };
   useEffect(() => { fetchGroups(); }, [user]);
 
   useEffect(() => {

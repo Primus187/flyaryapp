@@ -16,7 +16,7 @@ interface BuildArgs {
   briefingTasks: BriefingTaskLike[];
   maneuverNames?: string[];
   locale: string;
-  t: (key: string, opts?: any) => string;
+  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 export function buildEventMessage({ event, profiles, briefingTasks, maneuverNames = [], locale, t }: BuildArgs): string {

@@ -193,7 +193,7 @@ export default function Feed() {
       setItems(prev => prev.map(i => {
         if (i.data.id !== itemId) return i;
         const currentLikes = i.data.likes || [];
-        const withoutMine = currentLikes.filter((l: any) => l.user_id !== user.id);
+        const withoutMine = currentLikes.filter((l) => l.user_id !== user.id);
         return { ...i, data: { ...i.data, likes: [...withoutMine, { user_id: user.id, reaction_type: reactionType }] } } as FeedItem;
       }));
     }

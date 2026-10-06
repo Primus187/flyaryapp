@@ -159,7 +159,7 @@ export default function EventDetail() {
     if (!id) return;
     setPublishing(true);
     await supabase.from("flight_events").update({ published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription || null }).eq("id", id);
-    setEvent((prev: any) => ({ ...prev, published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription }));
+    setEvent((prev) => ({ ...prev, published_to_feed: true, published_at: new Date().toISOString(), feed_description: feedDescription }));
     setPublishing(false); setShowPreview(false);
     toast({ title: t("events.publishedToFeed") });
   };
@@ -167,7 +167,7 @@ export default function EventDetail() {
   const handleUnpublish = async () => {
     if (!id) return;
     await supabase.from("flight_events").update({ published_to_feed: false, published_at: null }).eq("id", id);
-    setEvent((prev: any) => ({ ...prev, published_to_feed: false, published_at: null }));
+    setEvent((prev) => ({ ...prev, published_to_feed: false, published_at: null }));
     toast({ title: t("events.unpublishedFromFeed") });
   };
 
@@ -180,7 +180,7 @@ export default function EventDetail() {
   const toggleSignup = async () => {
     if (!user || !id) return;
     const existing = signups.find(s => s.user_id === user.id);
-    let error: any = null;
+    let error = null;
     if (existing) {
       const newVal = !existing.signed_up;
       ({ error } = await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", id).eq("user_id", user.id));
@@ -195,7 +195,7 @@ export default function EventDetail() {
     await refetchSignups();
   };
 
-  const toggleSchoolConfirm = async (signup: any) => {
+  const toggleSchoolConfirm = async (signup) => {
     if (!id) return;
     // RPC: RLS only lets people update their own signup, so the direct UPDATE was silently ignored.
     const { error } = await supabase.rpc("set_signup_confirmed", { _event_id: id, _student_id: signup.user_id, _confirmed: !signup.confirmed_by_school });
@@ -257,7 +257,7 @@ export default function EventDetail() {
     // RPC: school staff (not only admins) may change the status, and a refusal is reported.
     const { error } = await supabase.rpc("set_event_status", { _event_id: id, _status: next });
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
-    setEvent((prev: any) => ({ ...prev, status: next }));
+    setEvent((prev) => ({ ...prev, status: next }));
     toast({ title: t("events.statusChanged") });
   };
   const facts = [
@@ -276,7 +276,7 @@ export default function EventDetail() {
   ];
   const statusBadge = <Badge className={`${statusColor} text-[10px] px-1.5 py-0 gap-0.5`}>{statusLabel}{canChangeStatus && <ChevronDown className="h-3 w-3" />}</Badge>;
 
-  const participantRow = (s: any) => (
+  const participantRow = (s) => (
     <div key={s.user_id} className="flex items-center gap-2 py-2">
       <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
       <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>

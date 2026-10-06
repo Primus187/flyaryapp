@@ -76,7 +76,7 @@ export function useOfflineSync() {
 
         await removeOfflineFlight(flight.id);
         synced++;
-      } catch (err: any) {
+      } catch (err) {
         console.error("Offline sync failed for flight:", flight.id, err);
         await updateOfflineFlightStatus(flight.id, "failed", err.message);
       }

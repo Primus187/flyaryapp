@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import type { TablesInsert } from "@/integrations/supabase/types";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,7 +61,7 @@ export default function FlightDetail() {
   const trackPoints3D = useMemo(() => {
     const raw = track?.track_data?.points;
     if (!raw || !Array.isArray(raw)) return [];
-    return raw.map((p: any) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
+    return raw.map((p) => ({ lat: p.lat, lng: p.lng, altitude: p.altitude || 0, time: p.time || "" }));
   }, [track]);
 
   const loadPhotos = async () => {
@@ -93,7 +93,7 @@ export default function FlightDetail() {
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
     supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
     supabase.from("flight_training_items").select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
-      if (data) setTrainedManeuvers(data.map((d: any) => d.training_items?.name).filter(Boolean));
+      if (data) setTrainedManeuvers(data.map((d) => d.training_items?.name).filter(Boolean));
     });
     // Load pilot profile
     if (user) {
@@ -170,12 +170,12 @@ export default function FlightDetail() {
       if (trainedManeuvers.length > 0) {
         const { data: items } = await supabase.from("flight_training_items").select("item_id").eq("flight_id", id);
         if (items && items.length > 0) {
-          await supabase.from("flight_training_items").insert(items.map((i: any) => ({ flight_id: data.id, item_id: i.item_id })));
+          await supabase.from("flight_training_items").insert(items.map((i) => ({ flight_id: data.id, item_id: i.item_id })));
         }
       }
       toast({ title: t("flights.flightDuplicated") });
       navigate(`/flights/${data.id}`);
-    } catch (err: any) {
+    } catch (err) {
       toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     }
   };
@@ -192,7 +192,7 @@ export default function FlightDetail() {
       });
       setTrack(newTrack);
       toast({ title: t("flights.igcUploaded"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
-    } catch (err: any) { toast({ title: t("flights.igcUploadFailed"), description: err.message, variant: "destructive" }); }
+    } catch (err) { toast({ title: t("flights.igcUploadFailed"), description: err.message, variant: "destructive" }); }
     finally { setUploading(false); if (igcInputRef.current) igcInputRef.current.value = ""; }
   };
 
@@ -210,7 +210,7 @@ export default function FlightDetail() {
       }
       toast({ title: t("flights.photoAdded") });
       loadPhotos();
-    } catch (err: any) { toast({ title: t("flights.photoUploadFailed"), description: err.message, variant: "destructive" }); }
+    } catch (err) { toast({ title: t("flights.photoUploadFailed"), description: err.message, variant: "destructive" }); }
     finally { setUploadingPhoto(false); if (photoInputRef.current) photoInputRef.current.value = ""; }
   };
 
@@ -273,7 +273,7 @@ export default function FlightDetail() {
                 await navigator.clipboard.writeText(url);
                 toast({ title: "Link kopiert!" });
               }
-            } catch (e: any) {
+            } catch (e) {
               if (e?.name !== "AbortError") {
                 const token = flight.share_token;
                 if (token) {
@@ -322,7 +322,7 @@ export default function FlightDetail() {
           />
         </Suspense>
       ) : (
-        <FlightDetailMap takeoff={flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? (track.track_data.points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
+        <FlightDetailMap takeoff={flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? (track.track_data.points || []).map((p) => [p.lat, p.lng] as [number, number]) : []} />
       )}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 rounded-card border bg-card p-4">
         {(() => {
@@ -566,12 +566,12 @@ export default function FlightDetail() {
         groupName={groupName || ""}
         photos={photos.map(p => ({ id: p.id, url: photoUrls[p.id] || "" })).filter(p => p.url)}
         videoUrls={videos.filter(v => v.youtube_url).map(v => v.youtube_url)}
-        trackPoints={track?.track_data ? (track.track_data.points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []}
+        trackPoints={track?.track_data ? (track.track_data.points || []).map((p) => [p.lat, p.lng] as [number, number]) : []}
         loading={publishLoading}
         onPublish={async (selectedPhotoIds, feedComment) => {
           setPublishLoading(true);
           try {
-            const publishUpdate: any = {
+            const publishUpdate: TablesUpdate<"flights"> = {
               published_to_feed: true,
               published_at: new Date().toISOString(),
               feed_photo_ids: selectedPhotoIds,
@@ -584,7 +584,7 @@ export default function FlightDetail() {
             setPublishedToFeed(true);
             setShowPublishPreview(false);
             toast({ title: t("flights.publishedToFeed") });
-          } catch (err: any) {
+          } catch (err) {
             toast({ title: t("common.error"), description: err.message, variant: "destructive" });
           } finally {
             setPublishLoading(false);

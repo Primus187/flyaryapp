@@ -70,15 +70,15 @@ export default function SchoolBilling({ groupId }: Props) {
       supabase.from("school_rates").select("rate_key, amount").eq("group_id", groupId),
     ]);
 
-    const memberIds = (membersRes.data || []).map((m: any) => m.user_id);
+    const memberIds = (membersRes.data || []).map((m) => m.user_id);
     let names: { user_id: string; name: string }[] = [];
     if (memberIds.length > 0) {
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", memberIds);
-      names = (profs || []).map((p: any) => ({ user_id: p.user_id, name: p.pilot_name || "—" })).sort((a, b) => a.name.localeCompare(b.name));
+      names = (profs || []).map((p) => ({ user_id: p.user_id, name: p.pilot_name || "—" })).sort((a, b) => a.name.localeCompare(b.name));
     }
 
     const rateMap: Record<string, number> = {};
-    (ratesRes.data || []).forEach((r: any) => { rateMap[r.rate_key] = Number(r.amount) || 0; });
+    (ratesRes.data || []).forEach((r) => { rateMap[r.rate_key] = Number(r.amount) || 0; });
 
     setItems((itemsRes.data || []) as Item[]);
     setPeople(names);

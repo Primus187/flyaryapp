@@ -91,7 +91,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
     let profileMap: Record<string, { pilot_name: string | null; training_level: string | null }> = {};
     if (userIds.length > 0) {
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name, training_level").in("user_id", userIds);
-      (profs || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      (profs || []).forEach((p) => { profileMap[p.user_id] = p; });
     }
     const funcMap: Record<string, GroupFunction[]> = {};
     (funcs || []).forEach((f) => {
@@ -169,7 +169,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
       toast({ title: t("school.people.saved") });
       setEditing(null);
       await load();
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     } finally {
       setSaving(false);

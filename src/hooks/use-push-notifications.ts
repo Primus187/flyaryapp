@@ -158,7 +158,7 @@ export function usePushNotifications() {
       if (!result.ok) return result;
       setIsSubscribed(true);
       return { ok: true };
-    } catch (e: any) {
+    } catch (e) {
       console.error("Push subscribe error:", e);
       return { ok: false, reason: "failed", message: e?.message };
     } finally {

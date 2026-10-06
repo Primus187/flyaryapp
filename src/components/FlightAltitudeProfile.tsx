@@ -49,7 +49,7 @@ export default function FlightAltitudeProfile({ points, onHoverIndex, animIndex 
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
-          onMouseMove={(e: any) => {
+          onMouseMove={(e) => {
             if (e?.activePayload?.[0]?.payload?.idx != null) {
               onHoverIndex?.(e.activePayload[0].payload.idx);
             }

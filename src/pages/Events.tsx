@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { TFunction } from "i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,7 +51,7 @@ export default function Events() {
     const fetchGroups = async () => {
       const { data: members } = await supabase.from("group_members").select("group_id, role, groups(id, name, group_type)").eq("user_id", user.id);
       if (members) {
-        const g = members.map((m: any) => m.groups).filter(Boolean); setGroups(g);
+        const g = members.map((m) => m.groups).filter(Boolean); setGroups(g);
         const adminMap: Record<string, boolean> = {}; const canCreateMap: Record<string, boolean> = {};
         members.forEach((m: any) => { if (m.groups) { adminMap[m.groups.id] = m.role === "admin"; canCreateMap[m.groups.id] = m.role === "admin" || m.groups.group_type === "pilot_group"; } });
         setIsAdmin(adminMap); setCanCreate(canCreateMap);
@@ -66,7 +67,7 @@ export default function Events() {
       let query = supabase.from("flight_events").select("id, group_id, title, status, event_date, event_type, event_category, meeting_point, max_participants, signup_deadline, groups(name)").order("event_date", { ascending: true });
       if (selectedGroup !== "all") query = query.eq("group_id", selectedGroup);
       const { data } = await query; if (data) setEvents(data);
-      const eventIds = (data || []).map((e: any) => e.id);
+      const eventIds = (data || []).map((e) => e.id);
       if (eventIds.length > 0) { const { data: sups } = await supabase.from("event_signups").select("event_id, user_id, signed_up").in("event_id", eventIds); if (sups) setSignups(sups); }
     };
     fetchEvents();
@@ -75,7 +76,7 @@ export default function Events() {
   const toggleSignup = async (eventId: string) => {
     if (!user) return;
     const existing = signups.find(s => s.event_id === eventId && s.user_id === user.id);
-    let error: any = null;
+    let error = null;
     if (existing) {
       const newVal = !existing.signed_up;
       ({ error } = await supabase.from("event_signups").update({ signed_up: newVal, updated_at: new Date().toISOString() }).eq("event_id", eventId).eq("user_id", user.id));
@@ -155,7 +156,7 @@ export default function Events() {
 }
 
 function EventCard({ event, signups, userId, onToggle, onNavigate, t, locale, past }: {
-  event: EventRow; signups: SignupRow[]; userId: string; onToggle: (id: string) => void; onNavigate: () => void; t: any; locale: string; past?: boolean;
+  event: EventRow; signups: SignupRow[]; userId: string; onToggle: (id: string) => void; onNavigate: () => void; t: TFunction; locale: string; past?: boolean;
 }) {
   const mySignup = signups.find(s => s.event_id === event.id && s.user_id === userId);
   const isSignedUp = mySignup?.signed_up ?? false;

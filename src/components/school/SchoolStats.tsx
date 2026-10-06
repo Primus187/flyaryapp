@@ -77,7 +77,7 @@ export default function SchoolStats({ groupId }: Props) {
       const nameMap: Record<string, string> = {};
       if (userIds.length > 0) {
         const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", userIds);
-        (profs || []).forEach((p: any) => { nameMap[p.user_id] = p.pilot_name || "—"; });
+        (profs || []).forEach((p) => { nameMap[p.user_id] = p.pilot_name || "—"; });
       }
 
       // Erfolgsquote/Ausbildungsdauer sind bewusst nicht auf das Jahresfilter eingeschränkt:

@@ -28,7 +28,7 @@ export function usePilotStreak(userId: string | undefined) {
 
       if (cancelled) return;
       const weeks = new Set<string>();
-      (data || []).forEach((f: any) => weeks.add(weekKey(new Date(f.date))));
+      (data || []).forEach((f) => weeks.add(weekKey(new Date(f.date))));
 
       // Count consecutive weeks back from current week (skip current week if empty,
       // start from last week instead so streak isn't broken mid-week)

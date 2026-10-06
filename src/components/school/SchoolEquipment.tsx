@@ -139,7 +139,7 @@ export default function SchoolEquipment({ groupId }: Props) {
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name").in("user_id", ids);
       setMembers(
         (profs || [])
-          .map((p: any) => ({ userId: p.user_id, name: p.pilot_name || "—" }))
+          .map((p) => ({ userId: p.user_id, name: p.pilot_name || "—" }))
           .sort((a, b) => a.name.localeCompare(b.name))
       );
     } else {
@@ -202,7 +202,7 @@ export default function SchoolEquipment({ groupId }: Props) {
   const saveEquipment = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
-    const payload: any = {
+    const payload = {
       group_id: groupId,
       name: form.name.trim(),
       equipment_type: form.equipment_type,
@@ -334,7 +334,7 @@ export default function SchoolEquipment({ groupId }: Props) {
     const value = parseFloat(amount.replace(",", "."));
     if (Number.isNaN(value)) return;
     const existing = rates.find((r) => r.rate_key === key);
-    const payload: any = {
+    const payload = {
       group_id: groupId,
       rate_key: key,
       label: t(`school.equipment.rates.${key}`),

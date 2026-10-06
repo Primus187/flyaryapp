@@ -123,7 +123,7 @@ export default function LocationCombobox({ locations, value, onChange, filterTyp
       onLocationCreated();
       setDialogOpen(false);
       setNewLoc({ name: "", type: filterType === "takeoff" ? "takeoff" : "landing", latitude: 0, longitude: 0, altitude: "" });
-    } catch (err: any) {
+    } catch (err) {
       toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     } finally {
       setCreating(false);

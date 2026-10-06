@@ -41,7 +41,7 @@ interface Props {
   groupMembers?: { user_id: string; pilot_name: string }[];
 }
 
-function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
+function relativeTime(dateStr: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return t("feed.justNow");

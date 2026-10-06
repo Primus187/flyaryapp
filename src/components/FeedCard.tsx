@@ -54,7 +54,7 @@ interface FeedCardProps {
   groupMembers?: { user_id: string; pilot_name: string }[];
 }
 
-function relativeTime(dateStr: string, t: (key: string, opts?: any) => string): string {
+function relativeTime(dateStr: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return t("feed.justNow");
@@ -84,7 +84,7 @@ function useTrackPoints(flightId: string, hasTrack: boolean) {
           const raw = data.track_data as unknown[] | { points?: unknown[] };
           const arr = Array.isArray(raw) ? raw : (raw.points ? raw.points : null);
           if (arr && Array.isArray(arr)) {
-            setTrackPoints(arr.slice(0, 500).map((p: any) =>
+            setTrackPoints((arr as ([number, number] | { lat: number; lng: number })[]).slice(0, 500).map((p) =>
               (Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]) as [number, number]
             ));
           }
