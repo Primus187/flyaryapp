@@ -105,7 +105,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
           )}
           <div className="space-y-1">
             {dayItems.map((item) => (
-              <Card key={item.id} className="border-0 shadow-sm">
+              <Card key={item.id}>
                 <CardContent className="p-2.5 flex items-center gap-2.5">
                   <span className="text-xs font-mono text-primary w-11 shrink-0">
                     {item.item_time ? item.item_time.slice(0, 5) : "–"}
@@ -127,7 +127,7 @@ export default function EventProgram({ eventId, eventDate, endDate, canManage }:
       ))}
 
       {canManage && showAdd && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-3 space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <Input

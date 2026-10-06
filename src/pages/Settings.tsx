@@ -48,7 +48,7 @@ function TrainingLevelCard() {
     { value: "pilot", label: t("training.pilot") },
   ];
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {t("settings.trainingLevel")}</CardTitle></CardHeader>
       <CardContent>
         <Select value={level} onValueChange={handleChange} disabled={bySchool}>
@@ -80,7 +80,7 @@ function FollowPermissionCard() {
     toast(error ? { title: t("common.error"), description: error.message, variant: "destructive" } : { title: t("common.saved") });
   };
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4" /> {t("settings.followPermission.title")}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
         <Select value={value} onValueChange={(v) => { void handleChange(v); }}>
@@ -313,7 +313,7 @@ export default function Settings() {
         <h1 className="text-xl font-bold tracking-tight">{t("settings.title")}</h1>
       </div>
 
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.theme")}</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-2">
@@ -328,7 +328,7 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.language")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {languages.map(({ value, label, flag }) => (
@@ -346,7 +346,7 @@ export default function Settings() {
       <FollowPermissionCard />
 
       {pushSupported && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Bell className="h-4 w-4" /> {t("settings.pushNotifications")}</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -357,7 +357,7 @@ export default function Settings() {
         </Card>
       )}
 
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.exportImport")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => groups.length > 0 ? setExportDialogOpen(true) : handleExportPdf()} disabled={exporting}>
@@ -380,7 +380,7 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">{t("settings.dataImport")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           <Button variant="outline" className="w-full gap-2 justify-start" onClick={() => navigate("/import")}>

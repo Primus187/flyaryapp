@@ -31,7 +31,7 @@ export default function AdminSecurity() {
     <PageContainer className="space-y-4">
       <PageHeader title={t("ops.nav.security")} subtitle={t("adminMfa.securitySubtitle")} back="/admin" />
       {factors === null ? <LoadingState header={false} /> : (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="divide-y p-0">
             {factors.map((f) => (
               <div key={f.id} className="flex items-center gap-3 px-4 py-3 text-sm">
@@ -50,7 +50,7 @@ export default function AdminSecurity() {
       )}
       <p className="text-xs text-muted-foreground">{t("adminMfa.backupHint")}</p>
       {adding ? (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="space-y-3 p-4">
             <p className="text-sm font-semibold">{t("adminMfa.addTitle")}</p>
             <EnrollTotp onDone={() => { setAdding(false); void load(); }} />

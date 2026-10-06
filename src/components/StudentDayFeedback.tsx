@@ -71,7 +71,7 @@ export default function StudentDayFeedback({ eventId }: Props) {
         {t("events.yourFeedback")}
       </h2>
       {flights.map((f) => (
-        <Card key={f.id} className="border-0 shadow-sm">
+        <Card key={f.id}>
           <CardContent className="p-3 space-y-1.5">
             <p className="flex items-center gap-2 text-sm font-medium">
               <Plane className="h-3.5 w-3.5 text-primary" />{t("flightDay.board.flightN", { number: f.number })}
@@ -93,7 +93,7 @@ export default function StudentDayFeedback({ eventId }: Props) {
         </Card>
       ))}
       {notes.length > 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-3 space-y-2">
             {notes.map((n, i) => (
               <div key={i} className="flex gap-2 items-start">

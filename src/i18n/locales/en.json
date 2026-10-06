@@ -87,7 +87,11 @@
     "maintenanceWarning": "Maintenance overdue!",
     "streakSuffix": "w",
     "season": "Season",
-    "allTime": "All time"
+    "allTime": "All time",
+    "goalRemaining_one": "{{count}} flight to go to your goal",
+    "goalRemaining_other": "{{count}} flights to go to your goal",
+    "goalReached": "Season goal reached",
+    "allStats": "All statistics"
   },
   "flights": {
     "publishNeedsGroup": "To share this flight in the feed, assign it to a group when editing it.",

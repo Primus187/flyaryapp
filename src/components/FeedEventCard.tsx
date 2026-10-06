@@ -86,7 +86,7 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
   };
 
   return (
-    <Card className="border-0 shadow-sm overflow-hidden">
+    <Card className="overflow-hidden">
       <div className="flex items-center gap-3 p-3 pb-2">
         <button onClick={() => navigate(`/pilot/${event.created_by}`)} className="shrink-0">
           <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">

@@ -72,7 +72,7 @@ export default function AccountsPanel() {
       ) : visible.map((row) => {
         const status = accountStatus(row);
         return (
-          <Card key={row.user_id} className="border-0 shadow-sm">
+          <Card key={row.user_id}>
             <CardContent className="space-y-1.5 p-4 text-sm">
               <div className="min-w-0">
                 <p className="font-medium">{row.name}</p>

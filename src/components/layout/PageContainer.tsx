@@ -8,7 +8,7 @@ interface PageContainerProps {
 /** Einheitlicher Seitenrahmen: gleiche Breite, gleiche Abstände auf allen Seiten. */
 export default function PageContainer({ children, className }: PageContainerProps) {
   return (
-    <div className={cn("px-4 pt-6 pb-4 max-w-lg mx-auto space-y-5", className)}>
+    <div className={cn("px-5 pt-5 pb-6 max-w-lg mx-auto space-y-4", className)}>
       {children}
     </div>
   );

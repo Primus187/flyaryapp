@@ -107,7 +107,7 @@ export default function Groups() {
       ) : (
         <div className="space-y-2">
           {groups.map(g => (
-            <Card key={g.id} className="border-0 shadow-sm">
+            <Card key={g.id}>
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/groups/${g.id}`)}>

@@ -214,7 +214,7 @@ export default function Stats() {
           { label: t("stats.distance"), value: `${kpis.totalDist.toFixed(1)} km` },
           { label: t("stats.altitudeGain"), value: `${kpis.totalAlt.toLocaleString()} m` },
         ].map(({ label, value }) => (
-          <Card key={label} className="border-0 shadow-sm">
+          <Card key={label}>
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">{label}</p>
               <p className="text-lg font-semibold tabular-nums">{value}</p>
@@ -224,7 +224,7 @@ export default function Stats() {
       </div>
 
       {kpis.topTakeoff && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-3 flex justify-between">
             <div><p className="text-xs text-muted-foreground">{t("stats.topTakeoff")}</p><p className="text-sm font-medium">{kpis.topTakeoff[0]}</p></div>
             <p className="text-sm font-semibold tabular-nums self-end">{kpis.topTakeoff[1]}×</p>
@@ -232,7 +232,7 @@ export default function Stats() {
         </Card>
       )}
       {kpis.topGlider && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-3 flex justify-between">
             <div><p className="text-xs text-muted-foreground">{t("stats.topGlider")}</p><p className="text-sm font-medium">{kpis.topGlider[0]}</p></div>
             <p className="text-sm font-semibold tabular-nums self-end">{kpis.topGlider[1]}×</p>

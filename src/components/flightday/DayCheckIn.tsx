@@ -115,7 +115,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
 
   return (
     <div className="space-y-2">
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="p-3 flex items-center gap-3">
           <UserCheck className="h-5 w-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">

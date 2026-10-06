@@ -51,7 +51,7 @@ export default function EventListItem({
   return (
     <Card
       className={cn(
-        "border-0 shadow-sm transition-colors",
+        "transition-colors",
         past ? "opacity-60" : "hover:bg-accent/50",
         onClick && !past ? "cursor-pointer active:scale-[0.99] transition-all" : "",
       )}

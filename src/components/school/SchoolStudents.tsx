@@ -138,7 +138,7 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
         return (
           <Card
             key={s.userId}
-            className="border-0 shadow-sm hover:bg-muted/30 active:scale-[0.99] transition-all"
+            className="hover:bg-muted/30 active:scale-[0.99] transition-all"
           >
             <CardContent className="p-3 flex items-center gap-3">
               <button type="button" disabled={!groupId} onClick={() => navigate(`/school/students/${groupId}/${s.userId}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">

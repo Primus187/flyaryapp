@@ -265,7 +265,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
       {filtered.map((p) => (
         <Card
           key={p.userId}
-          className="border-0 shadow-sm cursor-pointer hover:bg-muted/30 active:scale-[0.99] transition-all"
+          className="cursor-pointer hover:bg-muted/30 active:scale-[0.99] transition-all"
           onClick={() => navigate(`/pilot/${p.userId}`)}
         >
           <CardContent className="p-3 flex items-center gap-3">

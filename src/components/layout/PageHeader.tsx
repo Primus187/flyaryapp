@@ -18,20 +18,20 @@ export default function PageHeader({ title, subtitle, back, action, className }:
   const navigate = useNavigate();
 
   return (
-    <header className={cn("flex items-start gap-2", className)}>
+    <header className={cn("flex items-center gap-3", className)}>
       {back && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="h-9 w-9 -ml-2 shrink-0 rounded-full"
+          className="shrink-0"
           onClick={() => (typeof back === "string" ? navigate(back) : navigate(-1))}
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
       )}
       <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-bold tracking-tight truncate">{title}</h1>
-        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-tight truncate">{title}</h1>
+        {subtitle && <p className="text-[13px] font-medium text-muted-foreground">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0 flex items-center gap-2">{action}</div>}
     </header>

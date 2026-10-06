@@ -1,67 +1,104 @@
+@import "@fontsource-variable/plus-jakarta-sans";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Flyary design system. Light is a cool, quiet ground with a deep navy ink;
+ * dark is a night blue rather than black, so cards separate without shadows.
+ * `secondary` and `accent` follow the shadcn meaning (neutral surface, hover
+ * surface). Status colours have their own tokens: success, warning, destructive,
+ * each with a `-soft` surface for pills and notices.
+ */
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 210 44% 96%;
+    --foreground: 211 58% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 211 58% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
-    --primary: 199 89% 38%;
+    --popover-foreground: 211 58% 14%;
+    --primary: 198 88% 32%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 152 44% 45%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 14% 93%;
-    --muted-foreground: 215 14% 46%;
-    --accent: 36 90% 55%;
-    --accent-foreground: 215 25% 15%;
-    --destructive: 0 72% 51%;
+    --secondary: 210 35% 92%;
+    --secondary-foreground: 211 58% 14%;
+    --muted: 210 35% 92%;
+    --muted-foreground: 211 17% 41%;
+    --accent: 199 69% 94%;
+    --accent-foreground: 198 86% 27%;
+    --destructive: 3 71% 41%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 199 89% 38%;
-    --radius: 0.75rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 199 89% 38%;
+    --destructive-soft: 0 75% 94%;
+    --destructive-soft-foreground: 0 66% 33%;
+    --success: 156 67% 37%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 153 48% 91%;
+    --success-soft-foreground: 160 67% 24%;
+    --warning: 37 91% 55%;
+    --warning-foreground: 211 58% 14%;
+    --warning-soft: 40 90% 92%;
+    --warning-soft-foreground: 36 100% 18%;
+    --hero: 211 58% 14%;
+    --hero-foreground: 0 0% 100%;
+    --hero-muted: 209 29% 74%;
+    --link: 198 88% 32%;
+    --border: 210 33% 91%;
+    --input: 210 33% 91%;
+    --ring: 198 88% 32%;
+    --radius: 0.875rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 211 58% 14%;
+    --sidebar-primary: 198 88% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 14% 93%;
-    --sidebar-accent-foreground: 215 25% 15%;
-    --sidebar-border: 214 20% 88%;
-    --sidebar-ring: 199 89% 38%;
+    --sidebar-accent: 210 35% 92%;
+    --sidebar-accent-foreground: 211 58% 14%;
+    --sidebar-border: 210 33% 91%;
+    --sidebar-ring: 198 88% 32%;
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 93%;
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 93%;
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 93%;
-    --primary: 199 80% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 152 50% 45%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 36 85% 55%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 45%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 199 80% 50%;
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 93%;
-    --sidebar-primary: 199 80% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 0 0% 93%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 199 80% 50%;
+    --background: 211 51% 9%;
+    --foreground: 210 44% 96%;
+    --card: 213 49% 15%;
+    --card-foreground: 210 44% 96%;
+    --popover: 213 49% 15%;
+    --popover-foreground: 210 44% 96%;
+    --primary: 197 79% 56%;
+    --primary-foreground: 201 77% 10%;
+    --secondary: 210 44% 25%;
+    --secondary-foreground: 210 44% 96%;
+    --muted: 212 46% 19%;
+    --muted-foreground: 211 27% 70%;
+    --accent: 203 64% 20%;
+    --accent-foreground: 198 86% 86%;
+    --destructive: 3 75% 60%;
+    --destructive-foreground: 4 75% 9%;
+    --destructive-soft: 0 49% 15%;
+    --destructive-soft-foreground: 4 80% 80%;
+    --success: 156 64% 54%;
+    --success-foreground: 158 73% 9%;
+    --success-soft: 160 55% 13%;
+    --success-soft-foreground: 153 61% 69%;
+    --warning: 37 91% 55%;
+    --warning-foreground: 211 58% 14%;
+    --warning-soft: 39 66% 14%;
+    --warning-soft-foreground: 41 89% 76%;
+    --hero: 203 64% 20%;
+    --hero-foreground: 0 0% 100%;
+    --hero-muted: 198 86% 86%;
+    --link: 197 86% 73%;
+    --border: 210 44% 25%;
+    --input: 210 44% 25%;
+    --ring: 197 79% 56%;
+    --sidebar-background: 213 49% 15%;
+    --sidebar-foreground: 210 44% 96%;
+    --sidebar-primary: 197 79% 56%;
+    --sidebar-primary-foreground: 201 77% 10%;
+    --sidebar-accent: 212 46% 19%;
+    --sidebar-accent-foreground: 210 44% 96%;
+    --sidebar-border: 210 44% 25%;
+    --sidebar-ring: 197 79% 56%;
   }
 }
 
@@ -70,7 +107,22 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Small caps label above a section or a page title. */
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground;
+  }
+  /* Big figure with a small unit behind it, e.g. "13:55 h". */
+  .stat-value {
+    @apply font-extrabold tracking-tight tabular-nums;
+  }
+  /* Dark feature card (season summary, next flight day). */
+  .hero-card {
+    @apply rounded-3xl bg-hero text-hero-foreground;
   }
 }
 

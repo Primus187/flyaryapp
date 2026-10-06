@@ -101,7 +101,7 @@ export default function AdminSites() {
                 const suggestion = suggestions.get(site.id);
                 const draft = drafts[site.id] ?? site.name_override ?? "";
                 return (
-                  <Card key={site.id} className="border-0 shadow-sm">
+                  <Card key={site.id}>
                     <CardContent className="p-3 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 text-sm">

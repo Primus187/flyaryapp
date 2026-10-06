@@ -252,7 +252,7 @@ export default function PilotProfile() {
 
       {/* XP Progress */}
       <div className="px-4 mb-4">
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">{totalXp.toLocaleString()} XP</span>
@@ -267,7 +267,7 @@ export default function PilotProfile() {
 
       {/* Top Badges */}
       <div className="px-4 mb-4">
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <Trophy className="h-4 w-4 text-amber-500" /> {t("pilotProfile.topBadges")}
@@ -295,7 +295,7 @@ export default function PilotProfile() {
       {/* Photo Gallery */}
       {profilePhotos.length > 0 && (
         <div className="px-4 mb-4">
-          <Card className="border-0 shadow-sm">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">{t("pilotProfile.photos")}</CardTitle>
             </CardHeader>
@@ -315,7 +315,7 @@ export default function PilotProfile() {
       {/* Glider Info */}
       {defaultGlider && (
         <div className="px-4 mb-4">
-          <Card className="border-0 shadow-sm">
+          <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t("pilotProfile.glider")}</p>
               <p className="text-sm font-medium">
@@ -330,7 +330,7 @@ export default function PilotProfile() {
       {/* Flight school (the SHV number is private to the pilot, see migration 0018) */}
       {profile.flight_school && (
         <div className="px-4 mb-4">
-          <Card className="border-0 shadow-sm">
+          <Card>
             <CardContent className="p-4 space-y-2">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("pilotProfile.flightSchool")}</p>

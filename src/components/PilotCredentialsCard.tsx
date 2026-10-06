@@ -77,7 +77,7 @@ export default function PilotCredentialsCard({ locale }: { locale: string }) {
   const date = (d: string) => new Date(`${d}T00:00:00`).toLocaleDateString(locale);
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-primary" />{t("credentials.title")}</CardTitle>
         <p className="text-xs text-muted-foreground">{t("credentials.hint")}</p></CardHeader>
       <CardContent className="space-y-4">

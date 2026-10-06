@@ -119,14 +119,14 @@ export default function GroupDetail() {
         </TabsList>
 
         <TabsContent value="info" className="space-y-4 mt-4">
-          <Card className="border-0 shadow-sm"><CardContent className="p-4 space-y-3">
+          <Card><CardContent className="p-4 space-y-3">
             <div className="space-y-1.5"><Label className="text-xs">{t("groups.name")}</Label><Input value={name} onChange={e => setName(e.target.value)} disabled={!isAdmin} /></div>
             <div className="space-y-1.5"><Label className="text-xs">{t("groups.description")}</Label><Input value={description} onChange={e => setDescription(e.target.value)} disabled={!isAdmin} placeholder={t("common.optional")} /></div>
             <div className="space-y-1.5"><Label className="text-xs">{t("groups.groupType")}</Label><Select value={groupType} onValueChange={setGroupType} disabled={!isAdmin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pilot_group">{t("groups.pilotGroup")}</SelectItem><SelectItem value="school">{t("groups.school")}</SelectItem></SelectContent></Select></div>
             {isAdmin && <Button className="w-full gap-2" onClick={handleSave} disabled={saving}><Save className="h-4 w-4" /> {saving ? "..." : t("common.save")}</Button>}
           </CardContent></Card>
-          {isAdmin && (<Card className="border-0 shadow-sm"><CardContent className="p-4"><Label className="text-xs">{t("groups.inviteCode")}</Label><p className="text-[11px] text-muted-foreground mt-0.5 mb-1.5">{t("groups.shareCode")}</p>{id && <InviteCodeControls groupId={id} />}</CardContent></Card>)}
-          <Card className="border-0 shadow-sm"><CardContent className="p-4"><div className="flex items-center gap-2 mb-3"><Users className="h-4 w-4 text-muted-foreground" /><p className="text-sm font-medium">{t("groups.members")} ({members.length})</p></div><div className="space-y-2">{members.map(m => (<div key={m.id} className="flex items-center justify-between gap-2"><div className="flex items-center gap-2 min-w-0"><span className="text-sm truncate">{m.profiles?.pilot_name || t("common.unknown")}</span><Badge variant="secondary" className="text-[10px] shrink-0">{m.role === "admin" ? t("groups.admin") : t("groups.member")}</Badge></div>{isAdmin && m.user_id !== user?.id && (<div className="flex gap-1 shrink-0"><Select value={m.role} onValueChange={v => handleChangeRole(m.id, v)}><SelectTrigger className="h-7 text-xs w-24"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">{t("groups.admin")}</SelectItem><SelectItem value="member">{t("groups.member")}</SelectItem></SelectContent></Select><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveMember(m.id)}><UserMinus className="h-3.5 w-3.5 text-destructive" /></Button></div>)}</div>))}</div></CardContent></Card>
+          {isAdmin && (<Card><CardContent className="p-4"><Label className="text-xs">{t("groups.inviteCode")}</Label><p className="text-[11px] text-muted-foreground mt-0.5 mb-1.5">{t("groups.shareCode")}</p>{id && <InviteCodeControls groupId={id} />}</CardContent></Card>)}
+          <Card><CardContent className="p-4"><div className="flex items-center gap-2 mb-3"><Users className="h-4 w-4 text-muted-foreground" /><p className="text-sm font-medium">{t("groups.members")} ({members.length})</p></div><div className="space-y-2">{members.map(m => (<div key={m.id} className="flex items-center justify-between gap-2"><div className="flex items-center gap-2 min-w-0"><span className="text-sm truncate">{m.profiles?.pilot_name || t("common.unknown")}</span><Badge variant="secondary" className="text-[10px] shrink-0">{m.role === "admin" ? t("groups.admin") : t("groups.member")}</Badge></div>{isAdmin && m.user_id !== user?.id && (<div className="flex gap-1 shrink-0"><Select value={m.role} onValueChange={v => handleChangeRole(m.id, v)}><SelectTrigger className="h-7 text-xs w-24"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">{t("groups.admin")}</SelectItem><SelectItem value="member">{t("groups.member")}</SelectItem></SelectContent></Select><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveMember(m.id)}><UserMinus className="h-3.5 w-3.5 text-destructive" /></Button></div>)}</div>))}</div></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="challenges" className="space-y-3 mt-4">
@@ -137,7 +137,7 @@ export default function GroupDetail() {
           )}
 
           {showNewChallenge && (
-            <Card className="border-0 shadow-sm">
+            <Card>
               <CardContent className="p-4 space-y-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">{t("challenges.challengeTitle")}</Label>

@@ -111,7 +111,7 @@ export default function ImportLocations() {
       <h1 className="text-2xl font-bold tracking-tight">{t("import.importLocations")}</h1>
 
       {state === "idle" && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="pt-6 space-y-4 text-center">
             <MapPin className="h-12 w-12 mx-auto text-muted-foreground" />
             <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("import.selectCsv") }} />
@@ -123,7 +123,7 @@ export default function ImportLocations() {
 
       {state === "preview" && (
         <>
-          <Card className="border-0 shadow-sm">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">{t("import.preview")}</CardTitle>
             </CardHeader>
@@ -168,7 +168,7 @@ export default function ImportLocations() {
       )}
 
       {state === "importing" && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="pt-6 space-y-3 text-center">
             <p className="text-sm font-medium">{t("import.importing")}…</p>
             <Progress value={progress} className="h-2" />
@@ -178,7 +178,7 @@ export default function ImportLocations() {
       )}
 
       {state === "done" && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="pt-6 space-y-4 text-center">
             <CheckCircle2 className="h-12 w-12 mx-auto text-green-600" />
             <div className="text-sm font-medium space-y-1">

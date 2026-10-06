@@ -137,7 +137,7 @@ export default function SearchPage() {
           </h2>
           <div className="space-y-1.5">
             {filteredFlights.map(f => (
-              <Card key={f.id} className="border-0 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/flights/${f.id}`)}>
+              <Card key={f.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/flights/${f.id}`)}>
                 <CardContent className="p-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -159,7 +159,7 @@ export default function SearchPage() {
           </h2>
           <div className="space-y-1.5">
             {filteredLocations.map(l => (
-              <Card key={l.id} className="border-0 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/locations/${l.id}`)}>
+              <Card key={l.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/locations/${l.id}`)}>
                 <CardContent className="p-3 flex justify-between items-center">
                   <div>
                     <p className="text-sm font-medium">{siteName(l.name)}</p>
@@ -179,7 +179,7 @@ export default function SearchPage() {
           </h2>
           <div className="space-y-1.5">
             {filteredEvents.map(e => (
-              <Card key={e.id} className="border-0 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/events/${e.id}`)}>
+              <Card key={e.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/events/${e.id}`)}>
                 <CardContent className="p-3">
                   <p className="text-sm font-medium">{e.title}</p>
                   <p className="text-xs text-muted-foreground">{new Date(e.event_date).toLocaleDateString(locale)}{e.event_type ? ` · ${e.event_type}` : ""}</p>
@@ -197,7 +197,7 @@ export default function SearchPage() {
           </h2>
           <div className="space-y-1.5">
             {filteredPilots.map(p => (
-              <Card key={p.user_id} className="border-0 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/pilot/${p.user_id}`)}>
+              <Card key={p.user_id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate(`/pilot/${p.user_id}`)}>
                 <CardContent className="p-3">
                   <p className="text-sm font-medium">{p.pilot_name}</p>
                 </CardContent>

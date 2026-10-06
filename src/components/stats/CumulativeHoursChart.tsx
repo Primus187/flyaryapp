@@ -11,7 +11,7 @@ export default function CumulativeHoursChart({ title, data, tooltipLabel }: Cumu
   return (
     <div>
       <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{title}</h2>
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="p-3">
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>

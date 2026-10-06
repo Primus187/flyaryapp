@@ -117,7 +117,7 @@ export default function FlightCoachNote({ flightId, flightUserId, groupId }: Pro
   if (!isCoach && (!isStudent || visibleToStudent.length === 0)) return null;
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm flex items-center gap-2">
           <ClipboardEdit className="h-4 w-4 text-primary" />

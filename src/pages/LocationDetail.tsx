@@ -120,14 +120,14 @@ export default function LocationDetail() {
         </Button>
       )}
       <div className="grid grid-cols-2 gap-2">
-        <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><MapPin className="h-3 w-3" /> {t("locations.typeLabel")}</div><p className={`text-sm font-medium ${typeColor(location.type)}`}>{typeLabel(location.type)}</p></CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Mountain className="h-3 w-3" /> {t("locations.altitudeLabel")}</div><p className="text-sm font-medium">{location.altitude ? `${location.altitude} m` : "—"}</p></CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Navigation className="h-3 w-3" /> {t("locations.coordinates")}</div><p className="text-sm font-medium">{hasCoords ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : t("locations.notSet")}</p></CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Plane className="h-3 w-3" /> {t("dashboard.flights")}</div><p className="text-sm font-medium">{flights.length}</p></CardContent></Card>
+        <Card><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><MapPin className="h-3 w-3" /> {t("locations.typeLabel")}</div><p className={`text-sm font-medium ${typeColor(location.type)}`}>{typeLabel(location.type)}</p></CardContent></Card>
+        <Card><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Mountain className="h-3 w-3" /> {t("locations.altitudeLabel")}</div><p className="text-sm font-medium">{location.altitude ? `${location.altitude} m` : "—"}</p></CardContent></Card>
+        <Card><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Navigation className="h-3 w-3" /> {t("locations.coordinates")}</div><p className="text-sm font-medium">{hasCoords ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : t("locations.notSet")}</p></CardContent></Card>
+        <Card><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><Plane className="h-3 w-3" /> {t("dashboard.flights")}</div><p className="text-sm font-medium">{flights.length}</p></CardContent></Card>
       </div>
-      {location.description && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><FileText className="h-3 w-3" /> {t("locations.descriptionLabel")}</div><p className="text-sm">{location.description}</p></CardContent></Card>)}
+      {location.description && (<Card><CardContent className="p-3"><div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><FileText className="h-3 w-3" /> {t("locations.descriptionLabel")}</div><p className="text-sm">{location.description}</p></CardContent></Card>)}
       {wind && (
-        <Card className={`border-0 shadow-sm ${WIND_MATCH_STYLES[wind.status]}`}>
+        <Card className={`${WIND_MATCH_STYLES[wind.status]}`}>
           <CardContent className="p-3 flex items-center gap-3">
             <Wind className="h-5 w-5 shrink-0" />
             <div>
@@ -141,7 +141,7 @@ export default function LocationDetail() {
       {hasCoords && (
         <div>
           <h2 className="text-sm font-semibold text-muted-foreground mb-2">{t("locations.weather")}</h2>
-          <Card className="border-0 shadow-sm overflow-hidden">
+          <Card className="overflow-hidden">
             <CardContent className="p-0">
               <iframe
                 src={`https://embed.windy.com/embed2.html?lat=${location.latitude}&lon=${location.longitude}&detailLat=${location.latitude}&detailLon=${location.longitude}&width=400&height=300&zoom=10&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=12&pressure=&type=map&location=coordinates&detail=true&metricWind=km%2Fh&metricTemp=%C2%B0C&ra498darRange=-1`}
@@ -183,7 +183,7 @@ export default function LocationDetail() {
         const hasInsight = (longest && (longest.distance_km || 0) > 0) || (longestDur && (longestDur.duration_minutes || 0) > 0);
         if (!hasInsight) return null;
         return (
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-primary/5 via-card to-card">
+          <Card className="bg-gradient-to-br from-primary/5 via-card to-card">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 <Trophy className="h-3 w-3" /> {t("locations.insights", "Highlights")}
@@ -214,7 +214,7 @@ export default function LocationDetail() {
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground mb-2">{t("locations.flightsAtLocation")}</h2>
         {flights.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">{t("locations.noFlightsHere")}</p> : (
-          <div className="space-y-2">{flights.map((f) => (<Card key={f.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/flights/${f.id}`)}><CardContent className="p-3 flex items-center justify-between"><div><p className="text-sm font-medium">{new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" })}</p><p className="text-xs text-muted-foreground">{getCounterLocation(f)}{f.duration_minutes && <span> · {formatDuration(f.duration_minutes)}</span>}{f.glider && <span> · {f.glider}</span>}</p></div><ArrowLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" /></CardContent></Card>))}</div>
+          <div className="space-y-2">{flights.map((f) => (<Card key={f.id} className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/flights/${f.id}`)}><CardContent className="p-3 flex items-center justify-between"><div><p className="text-sm font-medium">{new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" })}</p><p className="text-xs text-muted-foreground">{getCounterLocation(f)}{f.duration_minutes && <span> · {formatDuration(f.duration_minutes)}</span>}{f.glider && <span> · {f.glider}</span>}</p></div><ArrowLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" /></CardContent></Card>))}</div>
         )}
       </div>
       <MergeLocationDialog location={location} open={mergeOpen} onOpenChange={setMergeOpen} onMerged={(keptId) => navigate(`/locations/${keptId}`)} />

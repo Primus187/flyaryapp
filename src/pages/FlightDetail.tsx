@@ -296,7 +296,7 @@ export default function FlightDetail() {
         </CardContent></Card>
       )}
       {(flight.takeoff || flight.landing) && (
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
       )}
       {/* Map with 3D toggle */}
       {track?.track_data && (track.track_data as any).points?.length > 1 && (
@@ -343,11 +343,11 @@ export default function FlightDetail() {
             );
           }
           return items.map(({ label, value }) => (
-            <Card key={label} className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p><p className="text-sm font-medium mt-0.5">{value}</p></CardContent></Card>
+            <Card key={label}><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p><p className="text-sm font-medium mt-0.5">{value}</p></CardContent></Card>
           ));
         })()}
       </div>
-      {flight.comments && (<Card className="border-0 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
+      {flight.comments && (<Card><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
       {Array.isArray((flight as any).tags) && (flight as any).tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {((flight as any).tags as string[]).map((tag) => (
@@ -362,7 +362,7 @@ export default function FlightDetail() {
           ))}
         </div>
       )}
-      {groupName && (<Card className="border-0 shadow-sm"><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
+      {groupName && (<Card><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
       {id && user && flight.user_id === user.id && (
         <FlightConfirmationCard flightId={id} cancelled={!!flight.cancelled_at} preferredGroupId={flight.group_id} locale={locale} />
       )}
@@ -371,7 +371,7 @@ export default function FlightDetail() {
       )}
       {id && <FlightChangeHistory flightId={id} locale={locale} />}
       {trainedManeuvers.length > 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
           <CardContent className="pt-0">
             <div className="flex flex-wrap gap-1.5">
@@ -385,7 +385,7 @@ export default function FlightDetail() {
       {/* Coach/Instructor Feedback */}
       <CoachFeedback flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
       <FlightCoachNote flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-sm">{t("flights.photos")}</CardTitle>
           <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}>
@@ -421,7 +421,7 @@ export default function FlightDetail() {
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent shadow-none [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1">{lightboxUrl && <img src={lightboxUrl} alt="" className="w-full h-auto max-h-[90vh] object-contain rounded-lg" />}</DialogContent>
       </Dialog>
       {videos.length > 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader>
           <CardContent className="pt-0 space-y-3">
             {videos.map((v) => {

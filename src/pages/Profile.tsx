@@ -360,7 +360,7 @@ export default function Profile() {
       <h1 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
 
       {/* XP Card */}
-      <Card className="border-0 shadow-sm overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -400,7 +400,7 @@ export default function Profile() {
       </Card>
 
       {/* Badges / Achievements */}
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Trophy className="h-4 w-4 text-amber-500" /> {t("badges.title")}
@@ -422,7 +422,7 @@ export default function Profile() {
       </Card>
 
       {/* Cover Photo */}
-      <Card className="border-0 shadow-sm overflow-hidden">
+      <Card className="overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <ImagePlus className="h-4 w-4 text-primary" /> {t("profile.coverPhoto")}
@@ -463,7 +463,7 @@ export default function Profile() {
       </Card>
 
       {/* Profile Photos Gallery */}
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-base">{t("profile.photoGallery")}</CardTitle>
           <button
@@ -503,7 +503,7 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
+      <Card><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-col items-center gap-4">
           <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
             <Avatar className="h-24 w-24 border-[3px] border-background">
@@ -519,12 +519,12 @@ export default function Profile() {
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.email")}</Label><Input value={user?.email || ""} disabled /></div>
       </CardContent></Card>
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-primary" /> {t("profile.shvInfo")}</CardTitle></CardHeader><CardContent className="space-y-3">
+      <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-primary" /> {t("profile.shvInfo")}</CardTitle></CardHeader><CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.shvNumber")}</Label><Input value={form.shv_number} onChange={e => setForm({ ...form, shv_number: e.target.value })} placeholder={t("profile.shvNumberPlaceholder")} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.flightSchool")}</Label><Input value={form.flight_school} onChange={e => setForm({ ...form, flight_school: e.target.value })} placeholder={t("profile.flightSchoolPlaceholder")} /></div></div>
         <div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><Label className="text-xs">{t("profile.examTheoryDate")}</Label><Input type="date" value={form.exam_theory_date} onChange={e => setForm({ ...form, exam_theory_date: e.target.value })} /></div><div className="space-y-1.5"><Label className="text-xs">{t("profile.examPracticalDate")}</Label><Input type="date" value={form.exam_practical_date} onChange={e => setForm({ ...form, exam_practical_date: e.target.value })} /></div></div>
       </CardContent></Card>
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base flex items-center gap-2"><Wrench className="h-4 w-4 text-primary" /> {t("profile.myGliders")}</CardTitle><Button variant="ghost" size="sm" onClick={() => setShowAddGlider(true)}><Plus className="h-4 w-4 mr-1" /> {t("common.add")}</Button></CardHeader><CardContent className="space-y-3">
+      <Card><CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base flex items-center gap-2"><Wrench className="h-4 w-4 text-primary" /> {t("profile.myGliders")}</CardTitle><Button variant="ghost" size="sm" onClick={() => setShowAddGlider(true)}><Plus className="h-4 w-4 mr-1" /> {t("common.add")}</Button></CardHeader><CardContent className="space-y-3">
         {gliders.length === 0 && !showAddGlider && <p className="text-sm text-muted-foreground">{t("profile.noGliders")}</p>}
         {gliders.map(g => {
           const checkOverdue = isOverdue(g.next_check_date);
@@ -658,7 +658,7 @@ export default function Profile() {
 
       <PilotCredentialsCard locale={i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH"} />
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
+      <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
         {!healthConsent && (
           <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 space-y-2">
             <p>{t("profile.healthConsentInfo")}</p>
@@ -695,7 +695,7 @@ export default function Profile() {
         </DialogContent>
       </Dialog>
 
-      <Card className="border-0 shadow-sm"><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> {t("profile.xcontestTitle")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.xcontestWarning")}</p></CardHeader><CardContent className="space-y-3">
+      <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> {t("profile.xcontestTitle")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.xcontestWarning")}</p></CardHeader><CardContent className="space-y-3">
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestUsername")}</Label><Input value={xcontestUsername} onChange={e => setXcontestUsername(e.target.value)} placeholder={t("profile.xcontestUsernamePlaceholder")} /></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("profile.xcontestPassword")}</Label><PasswordInput value={xcontestPassword} onChange={e => setXcontestPassword(e.target.value)} placeholder={xcontestHasCredentials ? "••••••••" : t("profile.xcontestPasswordPlaceholder")} /></div>
         <div className="flex gap-2">

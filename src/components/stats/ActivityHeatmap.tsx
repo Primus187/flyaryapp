@@ -42,7 +42,7 @@ export default function ActivityHeatmap({ title, year, days }: ActivityHeatmapPr
   return (
     <div>
       <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{title}</h2>
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="p-3">
           <div className="overflow-x-auto">
             <div className="flex gap-[2px]" style={{ minWidth: weeks.length * 12 }}>

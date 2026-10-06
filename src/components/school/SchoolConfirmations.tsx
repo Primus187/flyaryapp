@@ -143,7 +143,7 @@ export default function SchoolConfirmations({ groupId }: { groupId: string }) {
               const ids = g.rows.filter(isBulkConfirmable).map((r) => r.flightId);
               const allOn = ids.length > 0 && ids.every((id) => selected.has(id));
               return (
-                <Card key={g.studentId} className="border-0 shadow-sm">
+                <Card key={g.studentId}>
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold">{g.studentName} <span className="font-normal text-muted-foreground">· {g.rows.length}</span></p>

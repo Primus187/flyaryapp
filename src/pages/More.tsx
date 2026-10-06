@@ -132,10 +132,10 @@ export default function More() {
                 key={path}
                 type="button"
                 onClick={() => navigate(path)}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.97] transition-all"
+                className="flex min-h-[84px] flex-col items-center justify-center gap-2 px-2 py-3.5 rounded-[18px] bg-card border hover:bg-accent active:scale-[0.97] transition-all"
               >
                 <Icon className="h-6 w-6 text-primary" />
-                <span className="text-xs font-medium text-foreground text-center leading-tight">{t(labelKey)}</span>
+                <span className="text-[13px] font-bold text-foreground text-center leading-tight">{t(labelKey)}</span>
               </button>
             ))}
           </div>

@@ -126,7 +126,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
         const isMine = cp.driver_user_id === user?.id;
         const amRider = cpRiders.some((r) => r.user_id === user?.id);
         return (
-          <Card key={cp.id} className="border-0 shadow-sm">
+          <Card key={cp.id}>
             <CardContent className="p-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-medium truncate">{names[cp.driver_user_id] || "Pilot"}</p>
@@ -172,7 +172,7 @@ export default function EventCarpools({ eventId, isSignedUp }: Props) {
       })}
 
       {showAdd && !myCarpool && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-3 space-y-2">
             <div className="grid grid-cols-3 gap-2">
               <Input type="number" min={1} max={8} value={form.seats} onChange={(e) => setForm({ ...form, seats: e.target.value })} placeholder={t("events.carpool.seats")} className="h-8 text-xs" />

@@ -115,7 +115,7 @@ export default function CoachFeedback({ flightId, flightUserId, groupId }: Coach
   if (!isCoach && !hasFeedback) return null;
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <GraduationCap className="h-4 w-4 text-primary" />

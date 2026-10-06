@@ -48,7 +48,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
 
       <div className="grid grid-cols-3 gap-3">
         {kpis.map(({ icon: Icon, label, value }) => (
-          <Card key={label} className="border-0 shadow-sm">
+          <Card key={label}>
             <CardContent className="p-4 flex flex-col items-center gap-1">
               <Icon className="h-5 w-5 text-primary" />
               <span className="text-2xl font-bold">{value}</span>
@@ -59,7 +59,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
       </div>
 
       {shvStatus && (
-        <Card className={`border-0 shadow-sm ${SHV_AMPEL_STYLES[shvStatus.status]}`}>
+        <Card className={`${SHV_AMPEL_STYLES[shvStatus.status]}`}>
           <CardContent className="p-4 flex items-center gap-3">
             <Gauge className="h-5 w-5 shrink-0" />
             <div>
@@ -71,7 +71,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
       )}
 
       {nextEvent && (
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground uppercase font-semibold">{t("school.nextFlightDay")}</p>
             <p className="font-medium mt-1">{nextEvent.title}</p>

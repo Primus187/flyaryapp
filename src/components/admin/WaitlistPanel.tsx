@@ -94,7 +94,7 @@ export default function WaitlistPanel() {
       {rows === null ? <LoadingState header={false} /> : rows.length === 0 ? (
         <EmptyState icon={UserPlus} title={t("adminWaitlist.empty")} description={t("adminWaitlist.emptyHint")} />
       ) : rows.map((row) => (
-        <Card key={row.id} className="border-0 shadow-sm">
+        <Card key={row.id}>
           <CardContent className="space-y-1.5 p-4 text-sm">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">

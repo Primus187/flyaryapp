@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plane, Plus, Filter, Loader2, Trash2, BadgeCheck } from "lucide-react";
+import { Search, Plane, Plus, Loader2, Trash2, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/layout/EmptyState";
 import FlightThumbnailMap from "@/components/FlightThumbnailMap";
@@ -28,7 +28,7 @@ type QuickFilter = "all" | "season" | "track";
 
 function FlightsSkeleton() {
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between"><Skeleton className="h-8 w-28" /><Skeleton className="h-9 w-20 rounded-md" /></div>
       <Skeleton className="h-10 w-full rounded-md" />
       <div className="flex gap-2"><Skeleton className="h-7 w-20 rounded-full" /><Skeleton className="h-7 w-24 rounded-full" /><Skeleton className="h-7 w-20 rounded-full" /></div>
@@ -40,7 +40,7 @@ function FlightsSkeleton() {
 function SwipeableFlightCard({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
   const { offset, onTouchStart, onTouchMove, onTouchEnd } = useSwipeAction({ onSwipeLeft: onDelete });
   return (
-    <div className="relative overflow-hidden rounded-lg">
+    <div className="relative overflow-hidden">
       <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-destructive text-destructive-foreground px-4">
         <Trash2 className="h-5 w-5" />
       </div>
@@ -137,13 +137,13 @@ export default function Flights() {
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m}m`; };
 
 
-  const chipBase = "px-3 py-1 rounded-full text-xs font-medium border transition-colors active:scale-95 whitespace-nowrap flex items-center gap-1.5";
-  const chipActive = "bg-primary text-primary-foreground border-primary";
-  const chipIdle = "bg-card text-foreground border-border/60 hover:bg-muted/50";
+  const chipBase = "h-10 px-3.5 rounded-full text-[13px] border transition-colors active:scale-95 whitespace-nowrap flex items-center gap-1.5";
+  const chipActive = "bg-accent text-accent-foreground border-primary font-bold";
+  const chipIdle = "bg-card text-foreground border-border font-semibold hover:bg-accent";
 
   return (
     <div
-      className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4 relative"
+      className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4 relative"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -157,7 +157,7 @@ export default function Flights() {
       <PageHeader
         title={t("flights.title")}
         action={
-          <Button size="sm" onClick={() => navigate("/flights/new")}>
+          <Button onClick={() => navigate("/flights/new")}>
             <Plus className="h-4 w-4 mr-1" />
             {t("dashboard.newFlight")}
           </Button>
@@ -167,7 +167,7 @@ export default function Flights() {
       <SchoolFlightImportCard />
       <PassengerRequestsCard locale={locale} />
       {inSchool && (
-        <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setSubmitOpen(true)}>
+        <Button variant="outline" className="h-12 w-full justify-start gap-2.5 border-primary/30 bg-accent text-accent-foreground hover:bg-accent" onClick={() => setSubmitOpen(true)}>
           <BadgeCheck className="h-4 w-4" />{t("confirmations.submitTitle")}
         </Button>
       )}
@@ -175,12 +175,12 @@ export default function Flights() {
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("flights.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-muted-foreground" />
+          <Input placeholder={t("flights.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-card" />
         </div>
         {groups.length > 0 && (
           <Select value={groupFilter} onValueChange={setGroupFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] bg-card">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -193,9 +193,8 @@ export default function Flights() {
       </div>
 
       {/* Quick filter chips */}
-      <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto -mx-5 px-5 pb-1 no-scrollbar">
         <button type="button" onClick={() => setQuickFilter("all")} className={cn(chipBase, quickFilter === "all" ? chipActive : chipIdle)}>
-          <Filter className="h-3 w-3" />
           {t("flights.filterAll", "Alle")}
           <span className="opacity-70 tabular-nums">{counts.all}</span>
         </button>
@@ -227,50 +226,46 @@ export default function Flights() {
         <div className="space-y-4">
           {grouped.map(([monthKey, items]) => (
             <section key={monthKey} className="space-y-2">
-              <div className="sticky top-0 z-10 -mx-4 px-4 py-1.5 bg-gradient-to-b from-background via-background/95 to-background/80 backdrop-blur-sm">
+              <div className="sticky top-0 z-10 -mx-5 px-5 py-2 bg-background">
                 <div className="flex items-baseline justify-between">
-                  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <h2 className="eyebrow">
                     {formatMonth(monthKey)}
                   </h2>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                  <span className="text-xs font-semibold text-muted-foreground tabular-nums">
                     {items.length} {items.length === 1 ? t("flights.flightSingular", "Flug") : t("flights.flightPlural", "Flüge")}
                   </span>
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="overflow-hidden rounded-card border bg-card divide-y">
                 {items.map((f) => {
                   const thumbPoints = f.thumbnail?.length >= 2 ? f.thumbnail : null;
+                  const date = new Date(f.date);
+                  const figures = [
+                    f.duration_minutes && formatDuration(f.duration_minutes),
+                    f.altitude_gain && `${f.altitude_gain} m`,
+                    f.distance_km && `${Number(f.distance_km).toFixed(1)} km`,
+                  ].filter(Boolean).join(" · ");
                   return (
                     <SwipeableFlightCard key={f.id} onDelete={() => handleDeleteFlight(f.id)}>
-                    <Card className="border-0 shadow-sm cursor-pointer active:scale-[0.98] transition-transform" onClick={() => navigate(`/flights/${f.id}`)}>
-                      <CardContent className="p-3">
-                        <div className="flex gap-3">
-                          {thumbPoints && (
-                            <FlightThumbnailMap points={thumbPoints} size={64} className="shrink-0 rounded-xl" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start gap-2">
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5">
-                                  <p className="font-medium text-sm truncate">{siteName(f.takeoff_location?.name) || t("common.unknown")}</p>
-                                  {f.has_track && !thumbPoints && <span className="text-[9px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">IGC</span>}
-                                </div>
-                                {f.landing_location?.name && <p className="text-xs text-muted-foreground truncate">→ {siteName(f.landing_location.name)}</p>}
-                              </div>
-                              <span className="text-xs text-muted-foreground shrink-0">
-                                {new Date(f.date).toLocaleDateString(locale, { day: "2-digit", month: "short" })}
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
-                              {f.duration_minutes && <span>⏱ {formatDuration(f.duration_minutes)}</span>}
-                              {f.altitude_gain && <span>↑ {f.altitude_gain}m</span>}
-                              {f.distance_km && <span>↔ {Number(f.distance_km).toFixed(1)}km</span>}
-                              {f.glider && <span className="truncate max-w-[120px]">🪂 {f.glider}</span>}
-                            </div>
-                          </div>
+                      <div className="flex cursor-pointer items-center gap-3.5 bg-card px-4 py-3 transition-colors active:bg-accent" onClick={() => navigate(`/flights/${f.id}`)}>
+                        <div className="w-9 shrink-0">
+                          <p className="text-2xl leading-[26px] font-extrabold tracking-tight tabular-nums">{String(date.getDate()).padStart(2, "0")}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{date.toLocaleDateString(locale, { month: "short" }).replace(".", "")}</p>
                         </div>
-                      </CardContent>
-                    </Card>
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-[15px] font-bold">
+                              {siteName(f.takeoff_location?.name) || t("common.unknown")}{f.landing_location?.name && ` → ${siteName(f.landing_location.name)}`}
+                            </p>
+                            {f.has_track && !thumbPoints && <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-accent-foreground">IGC</span>}
+                          </div>
+                          {figures && <p className="text-[13px] font-semibold tabular-nums">{figures}</p>}
+                          {f.glider && <p className="truncate text-xs font-medium text-muted-foreground">{f.glider}</p>}
+                        </div>
+                        {thumbPoints && (
+                          <FlightThumbnailMap points={thumbPoints} size={56} className="shrink-0 rounded-xl" />
+                        )}
+                      </div>
                     </SwipeableFlightCard>
                   );
                 })}

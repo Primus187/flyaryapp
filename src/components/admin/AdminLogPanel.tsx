@@ -21,7 +21,7 @@ export default function AdminLogPanel() {
   if (entries === null) return <LoadingState header={false} />;
   if (entries.length === 0) return <EmptyState icon={ScrollText} title={t("adminAccess.logEmpty")} />;
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardContent className="divide-y p-0">
         {entries.map((e) => {
           const reason = e.detail.reason ?? null;

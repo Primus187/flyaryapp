@@ -415,7 +415,7 @@ export default function EventDetail() {
             <StudentEquipmentHint key={`${event.group_id}:${user.id}`} groupId={event.group_id} studentUserId={user.id} />
           )}
           {facts.length > 0 && (
-            <Card className="border-0 shadow-sm"><CardContent className="p-0 divide-y">
+            <Card><CardContent className="p-0 divide-y">
               {facts.map((d) => (
                 <div key={d.label} className="flex items-start gap-3 px-3 py-2.5">
                   <d.icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -428,7 +428,7 @@ export default function EventDetail() {
           <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
           {!isStaff && <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={false} />}
           {event.departure_info && (
-            <Card className="border-0 shadow-sm"><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
+            <Card><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
           )}
           <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
           {event.flight_prep_notes && (
@@ -471,11 +471,11 @@ export default function EventDetail() {
           </div>}
           {visibleConfirmed.length === 0
             ? activeListReady && <p className="text-sm text-muted-foreground">{t("events.noSignups")}</p>
-            : <Card className="border-0 shadow-sm"><CardContent className="px-3 py-1 divide-y">{visibleConfirmed.map(participantRow)}</CardContent></Card>}
+            : <Card><CardContent className="px-3 py-1 divide-y">{visibleConfirmed.map(participantRow)}</CardContent></Card>}
           {visibleWaitlist.length > 0 && (
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
-              <Card className="border-0 shadow-sm"><CardContent className="px-3 py-1 divide-y">{visibleWaitlist.map(s => (
+              <Card><CardContent className="px-3 py-1 divide-y">{visibleWaitlist.map(s => (
                 <div key={s.user_id} className="flex items-center gap-2 py-2">
                   <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>
                   <span className="text-sm">{profiles[s.user_id] || t("events.pilot")}</span>

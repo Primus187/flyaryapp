@@ -73,7 +73,7 @@ export default function DaySitesCard({ eventId, onChanged, readOnly = false }: {
   const label = (id: string) => (id ? siteName(names[id] || own.find((o) => o.id === id)?.name) || "?" : t("flightDay.sites.notSet"));
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardContent className="p-3 space-y-2">
         <div className="flex items-start gap-2">
           <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />

@@ -11,7 +11,7 @@ export default function MessagesButton() {
   const { t } = useTranslation();
   const unread = totalUnread(useChatInbox().data || []);
   return (
-    <Button size="icon" variant="ghost" className="relative h-9 w-9 rounded-full" onClick={() => navigate("/messages")}
+    <Button size="icon" variant="outline" className="relative" onClick={() => navigate("/messages")}
       aria-label={unread ? t("chat.messagesUnread", { count: unread }) : t("chat.messages")}>
       <MessageCircle className="h-5 w-5" />
       {unread > 0 && <UnreadDot count={unread} />}
@@ -21,7 +21,7 @@ export default function MessagesButton() {
 
 export function UnreadDot({ count, className = "" }: { count: number; className?: string }) {
   return (
-    <span className={`absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] rounded-full bg-destructive px-1 text-[10px] font-semibold leading-[1.1rem] text-destructive-foreground text-center ${className}`}>
+    <span className={`absolute -top-1.5 -right-1.5 min-w-[1.15rem] h-[1.15rem] rounded-full bg-warning px-1 text-[11px] font-extrabold leading-[1.15rem] text-warning-foreground text-center ring-2 ring-background ${className}`}>
       {formatUnread(count)}
     </span>
   );

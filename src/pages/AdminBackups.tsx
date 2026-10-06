@@ -45,7 +45,7 @@ export default function AdminBackups() {
       {runs === null ? <LoadingState header={false} /> : runs.length === 0 ? (
         <EmptyState icon={HardDrive} title={t("ops.backups.empty")} description={t("ops.backups.emptyHint")} />
       ) : runs.map((run) => (
-        <Card key={run.id} className="border-0 shadow-sm">
+        <Card key={run.id}>
           <CardContent className="space-y-1 p-4 text-sm">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={run.ok ? "secondary" : "destructive"}>{t(run.ok ? "ops.backups.ok" : "ops.backups.failed")}</Badge>

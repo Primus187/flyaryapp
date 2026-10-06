@@ -167,7 +167,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
   return (
     <div className="space-y-2">
       <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.staff.title")}</h2>
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="p-3 space-y-2">
           {showCertWarning && (
             <p className="text-xs text-amber-500 flex items-start gap-1.5">

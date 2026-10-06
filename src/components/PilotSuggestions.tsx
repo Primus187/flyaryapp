@@ -99,7 +99,7 @@ export default function PilotSuggestions() {
   if (loading || suggestions.length === 0) return null;
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardContent className="p-4">
         <h3 className="text-sm font-semibold mb-3">{t("feed.suggestedPilots")}</h3>
         <div className="space-y-3">

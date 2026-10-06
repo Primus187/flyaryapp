@@ -104,7 +104,7 @@ export default function AdminMfaGate({ onVerified }: { onVerified: () => void })
   return (
     <PageContainer className="space-y-4">
       <PageHeader title={t("ops.title")} subtitle={t("adminMfa.subtitle")} back="/more" />
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="space-y-4 p-5">
           <p className="flex items-center gap-2 text-sm font-semibold">
             {step === "enroll" ? <ShieldCheck className="h-5 w-5 text-primary" /> : <KeyRound className="h-5 w-5 text-primary" />}

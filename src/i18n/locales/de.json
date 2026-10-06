@@ -982,7 +982,11 @@
     "maintenanceWarning": "Wartung überfällig!",
     "streakSuffix": "w",
     "season": "Saison",
-    "allTime": "Total"
+    "allTime": "Total",
+    "goalRemaining_one": "Noch {{count}} Flug bis zu deinem Ziel",
+    "goalRemaining_other": "Noch {{count}} Flüge bis zu deinem Ziel",
+    "goalReached": "Saisonziel erreicht",
+    "allStats": "Alle Statistiken"
   },
   "more": {
     "updateApp": "App aktualisieren",

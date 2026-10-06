@@ -70,7 +70,7 @@ export default function FlightConfirmationCard({ flightId, cancelled, preferredG
   const date = (iso: string | null) => iso ? new Date(iso).toLocaleDateString(locale) : "";
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardContent className="p-3 space-y-2">
         <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("confirmations.title")}</p>
         {status === "confirmed" && (

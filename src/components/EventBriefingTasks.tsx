@@ -30,7 +30,7 @@ export default function EventBriefingTasks({ tasks, profiles, maneuverNames }: P
           </h2>
           <div className="space-y-1.5">
             {tasks.sort((a, b) => a.sort_order - b.sort_order).map((task) => (
-              <Card key={task.id} className="border-0 shadow-sm">
+              <Card key={task.id}>
                 <CardContent className="p-2.5 flex items-center gap-2">
                   <ClipboardList className="h-4 w-4 text-primary shrink-0" />
                   <span className="text-sm flex-1">{task.label}</span>

@@ -188,7 +188,7 @@ export default function Locations() {
   const renderLocationCard = (loc: any) => {
     const stats = flightStats[loc.id];
     return (
-      <Card key={loc.id} className="border-0 shadow-sm cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
+      <Card key={loc.id} className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>
         <CardContent className="p-3 flex items-center justify-between">
           <div>
             <p className="font-medium text-sm flex items-center gap-1.5">

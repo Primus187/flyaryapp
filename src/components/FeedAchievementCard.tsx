@@ -76,7 +76,7 @@ export default function FeedAchievementCard({ achievement, onReact, onComment, o
   };
 
   return (
-    <Card className="border-0 shadow-sm overflow-hidden">
+    <Card className="overflow-hidden">
       <div className="flex items-center gap-3 p-3 pb-2">
         <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-orange-400 cursor-pointer" onClick={() => navigate(`/pilot/${achievement.user_id}`)}>
           <Avatar className="h-8 w-8 border-2 border-background">

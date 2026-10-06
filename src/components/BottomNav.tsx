@@ -37,20 +37,20 @@ export default function BottomNav() {
       { path: "/messages", icon: MessageCircle, label: t("chat.messages") },
       { path: "/more", icon: LayoutGrid, label: t("nav.more") },
     ];
-    return <nav aria-label={t("journeys.schoolNavigation")} className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur-xl safe-area-bottom">
-      <div className="flex h-16 max-w-lg mx-auto">{schoolTabs.map(({ path, icon: Icon, label }) => {
+    return <nav aria-label={t("journeys.schoolNavigation")} className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card safe-area-bottom">
+      <div className="flex h-[76px] max-w-lg mx-auto">{schoolTabs.map(({ path, icon: Icon, label }) => {
         const active = location.pathname === path || ((path === "/school/students" || path === "/messages") && location.pathname.startsWith(`${path}/`));
         return <button key={path} type="button" onClick={() => handleNav(path)} aria-current={active ? "page" : undefined}
-          className={cn("flex-1 min-w-0 px-1 flex flex-col items-center justify-center gap-1", active ? "text-primary" : "text-muted-foreground")}>
-          <span className="relative"><Icon className="h-5 w-5" />{path === "/messages" && unread > 0 && <UnreadDot count={unread} className="-top-1.5 -right-2.5" />}</span><span className="text-[11px] text-center leading-tight">{label}</span>
+          className={cn("flex-1 min-w-0 px-1 flex flex-col items-center justify-center gap-1", active ? "text-link font-bold" : "text-muted-foreground font-semibold")}>
+          <span className="relative"><Icon className="h-6 w-6" />{path === "/messages" && unread > 0 && <UnreadDot count={unread} className="-top-1.5 -right-2.5" />}</span><span className="text-[11px] text-center leading-tight">{label}</span>
         </button>;
       })}</div>
     </nav>;
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom">
-      <div className="relative flex items-end justify-around h-16 max-w-lg mx-auto px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card safe-area-bottom">
+      <div className="flex items-center justify-around h-[76px] max-w-lg mx-auto px-2">
         {/* Left tabs */}
         {tabs.slice(0, 2).map((tab) => {
           const isActive = tab.path === "/" ? location.pathname === "/" : location.pathname.startsWith(tab.path);
@@ -61,12 +61,12 @@ export default function BottomNav() {
               type="button"
               onClick={() => handleNav(tab.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors active:scale-95",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors active:scale-95",
+                isActive ? "text-link" : "text-muted-foreground"
               )}
             >
-              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.7} />
-              <span className={cn("text-[10px] leading-none", isActive ? "font-semibold" : "font-medium")}>
+              <Icon className="h-6 w-6" strokeWidth={isActive ? 2.1 : 1.8} />
+              <span className={cn("text-[11px] leading-none", isActive ? "font-bold" : "font-semibold")}>
                 {tab.label}
               </span>
             </button>
@@ -79,7 +79,7 @@ export default function BottomNav() {
             type="button"
             onClick={() => handleNav("/flights/new")}
             aria-label={t("dashboard.firstFlight")}
-            className="-mt-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center active:scale-95 transition-transform ring-4 ring-background"
+            className="h-[52px] w-14 rounded-[18px] bg-primary text-primary-foreground flex items-center justify-center active:scale-95 transition-transform"
           >
             <Plus className="h-6 w-6" strokeWidth={2.5} />
           </button>
@@ -95,12 +95,12 @@ export default function BottomNav() {
               type="button"
               onClick={() => handleNav(tab.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors active:scale-95",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors active:scale-95",
+                isActive ? "text-link" : "text-muted-foreground"
               )}
             >
-              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.7} />
-              <span className={cn("text-[10px] leading-none", isActive ? "font-semibold" : "font-medium")}>
+              <Icon className="h-6 w-6" strokeWidth={isActive ? 2.1 : 1.8} />
+              <span className={cn("text-[11px] leading-none", isActive ? "font-bold" : "font-semibold")}>
                 {tab.label}
               </span>
             </button>

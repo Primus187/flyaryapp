@@ -21,7 +21,7 @@ export default function RoleModeSwitcher({ className }: { className?: string }) 
     <div
       role="group"
       aria-label={t("roleMode.label")}
-      className={cn("flex items-center gap-1 p-1 rounded-full bg-muted/60 border border-border/50", className)}
+      className={cn("flex items-center gap-1 p-1 rounded-lg bg-secondary", className)}
     >
       {options.map(({ key, label, icon: Icon }) => {
         const active = mode === key;
@@ -32,8 +32,8 @@ export default function RoleModeSwitcher({ className }: { className?: string }) 
             aria-pressed={active}
             onClick={() => { setMode(key); navigate(key === "school" ? "/school" : "/"); }}
             className={cn(
-              "flex items-center justify-center gap-1.5 flex-1 h-9 px-3 rounded-full text-xs font-semibold transition-colors active:scale-[0.98]",
-              active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground",
+              "flex items-center justify-center gap-1.5 flex-1 h-10 px-3 rounded-[10px] text-sm transition-colors active:scale-[0.98]",
+              active ? "bg-card text-foreground font-bold" : "text-muted-foreground font-semibold",
             )}
           >
             <Icon className="h-4 w-4" />

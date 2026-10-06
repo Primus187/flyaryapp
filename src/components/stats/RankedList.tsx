@@ -12,7 +12,7 @@ export default function RankedList({ title, items }: RankedListProps) {
   return (
     <div>
       <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{title}</h2>
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="p-3 space-y-2">
           {items.map((item, i) => (
             <div key={item.name} className="flex items-center gap-2">

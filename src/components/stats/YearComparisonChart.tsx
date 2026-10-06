@@ -18,7 +18,7 @@ export default function YearComparisonChart({ title, data, currentLabel, previou
   return (
     <div>
       <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{title}</h2>
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent className="p-3">
           <ChartContainer config={config} className="h-[180px] w-full">
             <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>

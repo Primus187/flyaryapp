@@ -42,7 +42,7 @@ export default function FlightChangeHistory({ flightId, locale }: { flightId: st
   }, [open, changes, flightId]);
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card>
       <CardContent className="p-0">
         <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
           className="w-full flex items-center justify-between gap-2 p-3 text-left">

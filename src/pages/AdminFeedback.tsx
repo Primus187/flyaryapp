@@ -76,7 +76,7 @@ export default function AdminFeedback() {
         const reply = replyMailto(row, i18n.language);
         const note = notes[row.id] ?? row.admin_note ?? "";
         return (
-          <Card key={row.id} className="border-0 shadow-sm">
+          <Card key={row.id}>
             <CardContent className="space-y-2 p-4 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={row.kind === "problem" ? "destructive" : "secondary"} className="text-[10px]">{t(`feedback.kind.${row.kind}`)}</Badge>

@@ -87,7 +87,11 @@
     "maintenanceWarning": "Maintenance en retard !",
     "streakSuffix": "s",
     "season": "Saison",
-    "allTime": "Total"
+    "allTime": "Total",
+    "goalRemaining_one": "Encore {{count}} vol avant ton objectif",
+    "goalRemaining_other": "Encore {{count}} vols avant ton objectif",
+    "goalReached": "Objectif de la saison atteint",
+    "allStats": "Toutes les statistiques"
   },
   "flights": {
     "publishNeedsGroup": "Pour partager ce vol dans le fil, attribuez-le à un groupe en le modifiant.",

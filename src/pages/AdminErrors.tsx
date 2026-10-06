@@ -55,7 +55,7 @@ export default function AdminErrors() {
       {rows === null ? <LoadingState header={false} /> : rows.length === 0 ? (
         <EmptyState icon={CheckCircle2} title={t("adminErrors.empty")} description={t("adminErrors.emptyHint")} />
       ) : rows.map((row) => (
-        <Card key={row.id} className="border-0 shadow-sm">
+        <Card key={row.id}>
           <CardContent className="space-y-2 p-4">
             <button type="button" className="w-full space-y-1 text-left" onClick={() => setOpen(open === row.id ? null : row.id)}>
               <div className="flex flex-wrap items-center gap-2">

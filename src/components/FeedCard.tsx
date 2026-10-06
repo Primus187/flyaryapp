@@ -349,7 +349,7 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
 
   return (
     <>
-      <Card className="border-0 shadow-sm overflow-hidden">
+      <Card className="overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 p-3 pb-2">
           <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/pilot/${flight.user_id}`); }}>

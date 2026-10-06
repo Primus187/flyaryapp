@@ -17,14 +17,14 @@ interface EmptyStateProps {
 /** Einheitlicher Leerzustand mit einer klaren Handlung. */
 export default function EmptyState({ icon: Icon, title, description, actionLabel, onAction }: EmptyStateProps) {
   return (
-    <Card className="border-dashed border-border/60 bg-card/50">
+    <Card className="border-dashed bg-card">
       <CardContent className="p-6 flex flex-col items-center text-center gap-2">
         {Icon && (
-          <span className="rounded-full bg-primary/10 p-2.5">
+          <span className="rounded-2xl bg-accent p-2.5">
             <Icon className="h-5 w-5 text-primary" />
           </span>
         )}
-        <p className="text-sm font-medium">{title}</p>
+        <p className="text-[15px] font-bold">{title}</p>
         {description && <p className="text-xs text-muted-foreground max-w-xs">{description}</p>}
         {actionLabel && onAction && (
           <Button size="sm" variant="outline" className="mt-1" onClick={onAction}>
