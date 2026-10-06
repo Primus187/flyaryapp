@@ -6,8 +6,6 @@
 export const DISCIPLINES = ["paraglider", "hangglider"] as const;
 export type Discipline = (typeof DISCIPLINES)[number];
 export const FLIGHT_KINDS = ["practice_slope", "altitude"] as const;
-export type FlightKind = (typeof FLIGHT_KINDS)[number];
-export type FlightSource = "manual" | "flightbook" | "xcontest" | "school";
 
 export interface GliderLike {
   id: string;

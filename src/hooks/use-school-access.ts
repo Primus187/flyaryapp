@@ -28,9 +28,3 @@ export function useSchoolGroups() {
   return useQuery({ queryKey: ["school-groups", user?.id], enabled: !!user,
     queryFn: () => fetchSchoolGroups(user!.id), staleTime: 60_000 });
 }
-
-/** Shared account-scoped lookup; permissions are still enforced by database RLS. */
-export function useSchoolAccess() {
-  const query = useSchoolGroups();
-  return { hasSchoolAccess: !!query.data?.length, loading: query.isPending || query.isFetching, error: query.isError };
-}

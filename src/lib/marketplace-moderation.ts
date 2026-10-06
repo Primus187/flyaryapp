@@ -24,9 +24,6 @@ export interface QueueItem {
   seller_banned: boolean;
 }
 
-/** Ban durations offered to admins; null = until lifted. */
-export const BAN_DAYS = [7, 30, null] as const;
-
 export const banUntil = (days: number | null, now: Date = new Date()): string | null =>
   days === null ? null : new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
 

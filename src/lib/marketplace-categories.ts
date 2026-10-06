@@ -75,7 +75,6 @@ export const CATEGORY_SPECS: Readonly<Record<ListingCategory, CategorySpec>> = {
   other: { category: "other", usesModel: false, usesSize: false, flightGear: false, attributes: [] },
 };
 
-export const categorySpec = (category: ListingCategory): CategorySpec => CATEGORY_SPECS[category];
 export const isListingCategory = (value: string): value is ListingCategory =>
   (LISTING_CATEGORIES as readonly string[]).includes(value);
 

@@ -1,7 +1,6 @@
 /** Flightbook replacement, step 4b: tandem flights and passenger confirmation (migration 0076). */
 
 export const TANDEM_KINDS = ["instruction", "practice", "passenger"] as const;
-export type TandemKind = (typeof TANDEM_KINDS)[number];
 
 /** The page a passenger opens to confirm the flight without an account. */
 export function passengerLink(origin: string, token: string): string {

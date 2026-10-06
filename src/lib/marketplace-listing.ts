@@ -7,11 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ListingStatus, MarketplaceListing } from "./marketplace";
 import { CATEGORY_SPECS } from "./marketplace-categories";
 
-export const LISTING_RUNTIME_DAYS = 60;
 export const BUMP_INTERVAL_DAYS = 7;
-export const MAX_ACTIVE_PRIVATE = 10;
-export const MAX_ACTIVE_SCHOOL = 50;
-export const MAX_PUBLISH_PER_DAY = 5;
 /** "Läuft bald ab" from this many days before the end. */
 export const EXPIRY_WARNING_DAYS = 7;
 

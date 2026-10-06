@@ -7,8 +7,6 @@ import type { Json } from "@/integrations/supabase/types";
 import { EMPTY_FILTERS, filtersFromParams, filtersToParams, toRpcFilters, type SearchFilters } from "./marketplace-search";
 import { geocodeSwissPostalCode, type LatLng } from "./geo-ch";
 
-export const MAX_SAVED_SEARCHES = 5;
-
 export interface SavedSearch {
   id: string;
   name: string;

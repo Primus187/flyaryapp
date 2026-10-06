@@ -80,8 +80,6 @@ export function buildEventMessage({ event, profiles, briefingTasks, maneuverName
   return lines.join("\n").trim();
 }
 
-export const DEFAULT_BRIEFING_LABELS = ["meteo", "flight_area", "day_topic"] as const;
-
 export const DEFAULT_FLIGHT_PREP_DE = `1. DABS anschauen! https://www.skybriefing.com/dabs
 2. Wetter -> von der Grosswetterlage zu lokalen 'Delikatessen'
 3. Nowcasting für unseren Flugtag: Müssen wir etwas im Auge behalten? Offensichtliche Gefahren?

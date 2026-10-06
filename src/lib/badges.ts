@@ -66,7 +66,3 @@ export const BADGES: BadgeDefinition[] = [
   { key: "year_round_2025", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
   { key: "year_round_2026", category: "seasonal", tier: "gold", threshold: 12, thresholdUnit: "mo", icon: "Calendar" },
 ];
-
-export function getBadgeDefinition(key: string): BadgeDefinition | undefined {
-  return BADGES.find(b => b.key === key);
-}

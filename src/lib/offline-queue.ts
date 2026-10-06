@@ -83,7 +83,3 @@ export async function updateOfflineFlightStatus(
     tx.onerror = () => reject(tx.error);
   });
 }
-
-export function getPendingCount(): Promise<number> {
-  return getPendingFlights().then(f => f.length);
-}
