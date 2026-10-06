@@ -1,7 +1,7 @@
+FLUGSCHULE VORALPEN · SCHÜLERDOSSIER
+
+AB
 Alex Beispiel
-
-Flugschule Voralpen · Schülerdossier
-
 Aktiv
 Höhenflüge
 24 Flüge
@@ -16,9 +16,10 @@ Nachweis
 Kontrollblatt des Schülers mit erfasstem Lernstand. Die Sterne sind keine formelle Prüfungsfreigabe.
 
 Alle Stufen
-Grundkurs
-Brevetkurs
-Sicherheitstraining
+Grundausbildung
+Höhenflüge
+Prüfungsreif
+Brevetiert
 Landung
 
 LandeeinteilungSHV

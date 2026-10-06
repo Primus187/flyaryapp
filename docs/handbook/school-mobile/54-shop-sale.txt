@@ -1,4 +1,3 @@
-Marktplatz
 Flugschule
 Schulschirm Alpha 26
 
@@ -46,7 +45,7 @@ Beschreibung
 
 Gepflegter Beispielschirm für Schulung und Freizeit. Prüfprotokoll bei Besichtigung vorhanden. Fiktives Angebot für das Handbuch.
 
-Anbieter
+ANBIETER
 
 Flugschule Voralpen
 

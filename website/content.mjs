@@ -56,7 +56,7 @@ export const content = {
       ],
       [
         "Sieh, wie du wächst.",
-        "Saisonziele, Statistik und dein Ausbildungsstand. Als Schüler siehst du, was bis zum Brevet noch fehlt, danach, wohin es weitergeht.",
+        "Dein Ausbildungsstand von der Grundausbildung bis zum Pilotenbrevet, das Kontrollblatt passend zu deiner Stufe und persönliche Saisonziele. Als Pilot kannst du weitere Brevets und Ausbildungsziele festhalten.",
         [
           "Saisonziele",
           "Statistik",
@@ -65,7 +65,7 @@ export const content = {
       ],
       [
         "Deine Schule schreibt mit.",
-        "Schulflüge landen bestätigt in deinem Tagebuch, samt Rückmeldung deiner Fluglehrerin. Kein Papier, das verloren geht.",
+        "Übernimm freigegebene Schulflüge in dein Tagebuch und behalte die Rückmeldung deiner Fluglehrerin beim Flug.",
         [
           "Bestätigte Schulflüge",
           "Rückmeldungen",
@@ -106,7 +106,7 @@ export const content = {
       ],
       [
         "Deins, ein Leben lang",
-        "Bestehende Flugbücher importieren, jederzeit als PDF oder CSV exportieren. Dein Tagebuch gehört dir, auch wenn du die Schule wechselst.",
+        "Bestehende Flugbücher importieren, als PDF, CSV oder Excel exportieren und Flugdaten samt IGC-Dateien als ZIP sichern. Dein Tagebuch gehört dir, auch wenn du die Schule wechselst.",
         "IMPORT · EXPORT"
       ]
     ],
@@ -120,7 +120,7 @@ export const content = {
       ],
       [
         "Am Start- und Landeplatz",
-        "Check-in, Starts, Landungen und Rückmeldungen im Flugtag-Cockpit."
+        "Check-in, Starts mit optionaler Start-Ansage, Landungen und Rückmeldungen im Flugtag-Cockpit."
       ],
       [
         "Nach der Landung",
@@ -163,7 +163,7 @@ export const content = {
       ],
       [
         "Gehören meine Daten mir?",
-        "Ja. Flüge sind nicht automatisch öffentlich, alles ist exportierbar, die Daten liegen in der Schweiz."
+        "Ja. Du bestimmst, welche Flüge du veröffentlichst. PDF, CSV, Excel und ein ZIP-Archiv mit IGC-Dateien stehen für den Export bereit; Fotos kannst du im Archiv ergänzen. Die Daten liegen in der Schweiz."
       ],
       [
         "Was kostet Flyary?",
@@ -202,7 +202,7 @@ export const content = {
       "Marktplatz",
       "Tandem mit Passagierbestätigung",
       "Bestehende Flugbücher importieren",
-      "PDF- & CSV-Export",
+      "PDF, CSV, Excel & ZIP",
       "Gleitschirm & Delta"
     ],
     "highlightsLabel": "Funktionen von Flyary",
@@ -315,7 +315,7 @@ export const content = {
       ],
       [
         "Voyez comment vous progressez.",
-        "Objectifs de saison, statistiques et niveau de formation. En formation, vous voyez ce qui manque jusqu’au brevet, ensuite où aller plus loin.",
+        "Votre niveau, de la formation de base au brevet de pilote, une fiche de contrôle adaptée à votre étape et vos objectifs de saison. Après le brevet, gardez vos autres brevets et objectifs de formation au même endroit.",
         [
           "Objectifs de saison",
           "Statistiques",
@@ -324,7 +324,7 @@ export const content = {
       ],
       [
         "Votre école écrit avec vous.",
-        "Les vols d’école arrivent confirmés dans votre journal, avec le retour de votre monitrice. Plus de papier qui se perd.",
+        "Reprenez les vols d’école validés dans votre journal et gardez les retours de votre monitrice avec le vol.",
         [
           "Vols d’école confirmés",
           "Retours",
@@ -365,7 +365,7 @@ export const content = {
       ],
       [
         "À vous, pour la vie",
-        "Importez vos carnets de vol existants, exportez à tout moment en PDF ou CSV. Votre journal vous appartient, même si vous changez d’école.",
+        "Importez vos carnets existants, exportez en PDF, CSV ou Excel et sauvegardez vos données de vol avec les fichiers IGC dans une archive ZIP. Votre journal vous appartient, même si vous changez d’école.",
         "IMPORT · EXPORT"
       ]
     ],
@@ -379,7 +379,7 @@ export const content = {
       ],
       [
         "Au décollage et à l’atterrissage",
-        "Présences, décollages, atterrissages et retours dans le cockpit de la journée."
+        "Présences, décollages avec annonce vocale en option, atterrissages et retours dans le cockpit de la journée."
       ],
       [
         "Après l’atterrissage",
@@ -422,7 +422,7 @@ export const content = {
       ],
       [
         "Mes données m’appartiennent-elles ?",
-        "Oui. Les vols ne sont pas publics automatiquement, tout peut être exporté et les données sont hébergées en Suisse."
+        "Oui. Vous choisissez les vols à publier. Exportez en PDF, CSV ou Excel, ou créez une archive ZIP avec les fichiers IGC et, en option, les photos. Les données sont hébergées en Suisse."
       ],
       [
         "Combien coûte Flyary ?",
@@ -461,7 +461,7 @@ export const content = {
       "Marché",
       "Biplace avec confirmation du passager",
       "Importer vos carnets existants",
-      "Export PDF et CSV",
+      "PDF, CSV, Excel et ZIP",
       "Parapente et delta"
     ],
     "highlightsLabel": "Fonctions de Flyary",
@@ -574,7 +574,7 @@ export const content = {
       ],
       [
         "See how you grow.",
-        "Season goals, statistics and your training status. As a student you see what’s still missing for your licence, afterwards where to go next.",
+        "Your training stage from ground training to your pilot licence, a training sheet that follows your stage, and personal season goals. As a pilot, record further licences and training goals.",
         [
           "Season goals",
           "Statistics",
@@ -583,7 +583,7 @@ export const content = {
       ],
       [
         "Your school writes along.",
-        "School flights arrive confirmed in your diary, together with your instructor’s feedback. No paper to lose.",
+        "Add released school flights to your diary and keep your instructor’s feedback with them.",
         [
           "Confirmed school flights",
           "Feedback",
@@ -624,7 +624,7 @@ export const content = {
       ],
       [
         "Yours, for life",
-        "Import existing logbooks, export as PDF or CSV at any time. Your diary belongs to you, even if you change schools.",
+        "Import existing logbooks, export as PDF, CSV or Excel, and save flight data with IGC files in a ZIP archive. Your diary belongs to you, even if you change schools.",
         "IMPORT · EXPORT"
       ]
     ],
@@ -638,7 +638,7 @@ export const content = {
       ],
       [
         "At take-off and landing",
-        "Check-ins, take-offs, landings and feedback in the flying-day cockpit."
+        "Check-ins, take-offs with optional spoken announcements, landings and feedback in the flying-day cockpit."
       ],
       [
         "After landing",
@@ -681,7 +681,7 @@ export const content = {
       ],
       [
         "Does my data belong to me?",
-        "Yes. Flights are not public automatically, everything can be exported, and the data is stored in Switzerland."
+        "Yes. You choose which flights to publish. Export as PDF, CSV or Excel, or save a ZIP archive with IGC files and optional photos. The data is stored in Switzerland."
       ],
       [
         "How much does Flyary cost?",
@@ -720,7 +720,7 @@ export const content = {
       "Marketplace",
       "Tandem with passenger confirmation",
       "Import existing logbooks",
-      "PDF & CSV export",
+      "PDF, CSV, Excel & ZIP",
       "Paraglider & hang glider"
     ],
     "highlightsLabel": "Flyary features",

@@ -108,6 +108,6 @@ export async function checkDocumentation(browser, base, here) {
       assert(await plain.locator('.doc-article').isVisible());
       assert(await plain.locator('.docs-sidebar details').getAttribute('open') !== null);
     } finally { await nojs.close(); }
-    console.log(`PASS documentation: ${parsed.length} pages, all local links/anchors/images, search in 3 languages, 2 Word downloads, responsive readers, chapter navigation and no-JavaScript access.`);
+    console.log(`PASS documentation: ${parsed.length} pages, all local links/anchors/images, search in 3 languages, responsive readers, chapter navigation and no-JavaScript access.`);
   } finally { await context.close(); }
 }

@@ -2,13 +2,13 @@
 
 Dein Flugbuch. Dein Fortschritt. Deine nächsten Flüge.
 
-Benutzerhandbuch für Pilotinnen und Piloten · Version 1.5 · 28. September 2026
+Benutzerhandbuch für Pilotinnen und Piloten · Version 1.6 · 6. Oktober 2026
 
 Dieses Handbuch begleitet dich vom ersten Login bis zur laufenden Pflege deines Flugbuchs. Es beschreibt die Pilotensicht der App. Die Administration einer Flugschule und interne Schülerdossiers sind nicht Gegenstand dieses Handbuchs.
 
 Die Abbildungen zeigen die tatsächliche Flyary-Oberfläche im hellen Design bei einer Smartphone-Bildschirmgrösse von 390 × 844 Pixeln. Namen, Flüge, Termine und Werte sind fiktive Beispieldaten. Ein Bild zeigt jeweils einen einzelnen mobilen Bildschirmausschnitt. Für Inhalte weiter unten scrollst du in der App. Browserrahmen und Betriebssystem-Statusleiste können auf deinem Gerät anders aussehen.
 
-**Neu in Version 1.5:** Kapitel 05 erklärt das Teilen einer IGC-Datei aus Android und die automatische Platzzuordnung. Kapitel 12 beschreibt offizielle Plätze, persönliche Namen, Verknüpfen und Zusammenführen doppelter Orte. Kapitel 11 ergänzt Hinweise zu Terminbildern. Die bestehenden Abbildungen stammen vom 24./25. September; die neuen Bedienelemente sind als Textanleitungen beschrieben und darin noch nicht sichtbar.
+**Neu in Version 1.6:** Aktualisierte mobile Oberfläche und neu aufgenommene Bildschirmansichten. Kapitel 03 erklärt den Ausbildungsfortschritt auf Home, Kapitel 14 das Kontrollblatt nach Ausbildungsstufen und Kapitel 16 Ausbildung, Brevets und weitere Ausbildungsziele im Profil. Kapitel 18 beschreibt PDF, CSV, Excel und das ZIP-Archiv. Anmeldung und Ersteinrichtung sind an die aktuelle Pilotphase angepasst.
 
 ## 01 · So verwendest du dieses Handbuch
 
@@ -33,9 +33,9 @@ Die Abbildungen zeigen die tatsächliche Flyary-Oberfläche im hellen Design bei
 | Ich suche Rückmeldungen und Bewertungen meiner Fluglehrer. | 11 und 14 |
 | Ich benötige einen Ausbildungsnachweis der Schule. | 18 |
 
-**Neu in Version 1.4.** Beschrieben sind die freigegebenen Rückmeldungen aus dem Flugtag-Cockpit, Fluglehrerbewertungen im Training und die Übernahme von Schulflügen ins persönliche Flugbuch. Kapitel 18 erklärt den Unterschied zwischen deinem Flugbuchexport und dem Ausbildungsnachweis der Schule. Die bestehenden Abbildungen wurden beibehalten; die neuen Funktionen sind als Textanleitungen ergänzt und in den bisherigen Bildern noch nicht zu sehen.
+**Neu in Version 1.4.** Beschrieben sind die freigegebenen Rückmeldungen aus dem Flugtag-Cockpit, Fluglehrerbewertungen im Training und die Übernahme von Schulflügen ins persönliche Flugbuch. Kapitel 18 erklärt den Unterschied zwischen deinem Flugbuchexport und dem Ausbildungsnachweis der Schule. Die Abbildungen wurden für Version 1.6 neu aufgenommen.
 
-**Seit Version 1.3.** Kapitel 26 erklärt den Marktplatz: Material suchen, Inserate erstellen, Interessierte kontaktieren, Verkäufe abschliessen und bewerten. Die Marktplatzbilder stammen vom 25. September 2026.
+**Seit Version 1.3.** Kapitel 26 erklärt den Marktplatz: Material suchen, Inserate erstellen, Interessierte kontaktieren, Verkäufe abschliessen und bewerten. Auch die Marktplatzansichten wurden neu aufgenommen; die Beispieldaten behalten ihre September-Termine.
 
 **Seit Version 1.2.** Die Terminansicht mit Reitern, der gemeinsame Nachrichteneingang, Gruppenchats und Direktnachrichten sind beschrieben. Hinzu kommen Antworten, Reaktionen, Bearbeiten eigener Nachrichten, Kanalsuche, Benachrichtigungseinstellungen und die manuelle App-Aktualisierung. Alle Bildschirmansichten wurden mit dem aktuellen App-Stand neu aufgenommen.
 
@@ -49,28 +49,23 @@ Die Abbildungen zeigen die tatsächliche Flyary-Oberfläche im hellen Design bei
 
 ## 02 · Konto und erster Einstieg
 
-### Anmelden oder registrieren
+### Anmelden und Zugang erhalten
 
-Öffne Flyary im Browser oder über das App-Symbol auf deinem Smartphone. Für den ersten Einstieg benötigst du eine Internetverbindung. Verwende bei späteren Anmeldungen dieselbe Anmeldemethode und dasselbe Konto, damit du dein bestehendes Flugbuch wiederfindest.
+Flyary verwendet die Anmeldung mit Google. Öffne die App und wähle **Mit Google anmelden**. Verwende bei späteren Besuchen dasselbe Google-Konto, damit du dein bestehendes Flugbuch wiederfindest. Ein separates Flyary-Passwort wird nicht angelegt.
 
-1. Wähle auf der Anmeldeseite die Anmeldung mit E-Mail und Passwort oder die angebotene Google-Anmeldung.
-2. Bei E-Mail-Anmeldung gibst du deine E-Mail-Adresse und dein Passwort ein und bestätigst die Anmeldung.
-3. Ohne bestehendes Konto wechselst du zur Registrierungsoption und erfasst die verlangten Angaben.
-4. Beachte die Rückmeldung nach der Registrierung. Wird eine Bestätigungsmail verlangt, öffne deren Link und melde dich danach an.
-5. Bei vergessenem Passwort wähle **Passwort vergessen**, fordere den Link an und setze das Passwort über die erhaltene E-Mail neu.
+Während der Pilotphase benötigst du eine Einladung. Öffne einen erhaltenen Schul- oder persönlichen Einladungslink möglichst vor der Anmeldung; Flyary führt dich anschliessend zum Beitritt zurück. Ein neues Google-Konto allein schaltet den Zugang nicht frei.
 
-**Ergebnis:** Du erreichst deine persönliche Startseite. Ist das Flugbuch überraschend leer, prüfe zuerst, ob du mit dem richtigen Konto angemeldet bist. Erstelle nicht sofort ein zweites Konto.
+Ohne Einladung gelangst du zum Wartebereich. Dort kannst du dich für die Pilotphase vormerken beziehungsweise eine erhaltene Einladung verwenden. Einen Platz als Testpilot kannst du auch auf der Flyary-Webseite anfragen. Besitzt du bereits einen Zugang, ist keine zweite Registrierung nötig.
 
 ### Die Ersteinrichtung sinnvoll durchführen
 
-Beim ersten Besuch kann ein Begrüssungsdialog erscheinen. Er bietet einen Einstieg über vorhandene Daten sowie die manuelle Einrichtung. Du kannst ihn mit **Später** schliessen und die Funktionen später über **Mehr** öffnen.
+Beim ersten Besuch kann ein Begrüssungsdialog erscheinen. Er unterscheidet zwischen selbstständigem Pilot, Schüler einer Schule und Schulteam. Mit **Später** kannst du ihn schliessen und die Funktionen über **Mehr** öffnen.
 
-Für einen manuellen Start empfiehlt sich diese Reihenfolge:
+- **Schüler:** Profil prüfen, Kontrollblatt ansehen und einen Schultermin auswählen. Deinen Ausbildungsstand pflegt die Schule.
+- **Pilot:** Profil und Schirm ergänzen, Orte anlegen und den ersten Flug erfassen. Vorhandene Flüge kannst du über Excel übernehmen oder XContest im Profil verbinden.
+- **Schulteam:** Die Schule öffnen, Einladungen und Zertifikate prüfen. Die Schulabläufe stehen im Betriebshandbuch.
 
-1. **Profil ausfüllen:** Pilotennamen und bei Bedarf einen Schirm hinterlegen.
-2. **Orte anlegen:** häufig verwendeten Start- und Landeplatz erfassen.
-3. **Ersten Flug erfassen:** mit einem überschaubaren Beispiel beginnen und die gespeicherten Angaben prüfen.
-4. **Gruppe beitreten:** falls du mit einer Fluggruppe oder Flugschule arbeitest, deren Einladung verwenden.
+Ist dein Ausbildungsstand noch unbekannt, fragt Home einmal **Bist du Schüler oder Pilot?**. Wähle den tatsächlich zutreffenden Stand. Weitere Angaben findest du im Profil unter **Ausbildung und Brevets** (Kapitel 16).
 
 ### Verwendung über das App-Symbol
 
@@ -96,7 +91,9 @@ Das **Nachrichtensymbol** oben auf Home und im Feed öffnet deine Chats. Du find
 
 ### Home richtig lesen
 
-Die Startseite setzt sich aus deinen Daten zusammen. Termine erscheinen nur, wenn sie für dich verfügbar sind. Saisonwerte beziehen sich auf das angezeigte Jahr; eine zusätzlich angezeigte Gesamtzahl kann deshalb höher sein. Fehlende Flugzeiten oder Strecken beeinflussen die Summen: Ein Flug mit leerem Zeitfeld trägt keine nachgetragene Schätzung zur Flugzeit bei.
+Die Startseite zeigt deinen Namen mit Profilbild, nächste Termine, Ausbildungsfortschritt und Saisonwerte. Sie setzt sich aus deinen Daten zusammen. Termine erscheinen nur, wenn sie für dich verfügbar sind. Saisonwerte beziehen sich auf das angezeigte Jahr; eine zusätzlich angezeigte Gesamtzahl kann deshalb höher sein. Fehlende Flugzeiten oder Strecken beeinflussen die Summen: Ein Flug mit leerem Zeitfeld trägt keine nachgetragene Schätzung zur Flugzeit bei.
+
+Als Schüler zeigt **Ziel: Pilot** erfüllte Anforderungen und den nächsten offenen Punkt. Die Karte öffnet das Training. Als Pilot erscheint eine Zielkarte, wenn du im Profil ein weiteres Ausbildungsziel gewählt hast; ohne Ziel wird sie ausgeblendet.
 
 Tippe einen Termin oder einen letzten Flug an, um die Details zu öffnen. Über **Ziel hinzufügen** legst du einen angebotenen Zieltyp und einen Zielwert fest. Prüfe die Einheit: Ein Ziel in Stunden ist etwas anderes als eine Anzahl Flüge. Die Fortschrittsanzeige richtet sich nach den erfassten Daten.
 
@@ -127,7 +124,7 @@ Du kannst eine Terminkarte auf Home nach links wischen, um sie dort auszublenden
 
 3. Unter **Ich** erreichst du **Profil**, **Training** und **Statistiken**.
 
-4. Unter **Community** findest du **Suche**, **Rangliste** und **Gruppen**.
+4. Unter **Community** findest du **Nachrichten**, **Marktplatz**, **Suche**, **Rangliste** und **Gruppen**.
 
 5. Scrolle bei Bedarf zu **Einstellungen**, **Mitteilungen** oder **Feedback**. **Mitteilungen** führt zur Einrichtung von Push-Nachrichten.
 :::
@@ -148,8 +145,11 @@ Die Neuerfassung führt durch drei Schritte: **Flug**, **Details** und **Medien*
 | Schirm | Verwendetes Modell; bei mehreren Schirmen den Standard prüfen |
 | Startplatz | Gespeicherter Ort, an dem du gestartet bist |
 | Landeplatz | Gespeicherter Ort, an dem du gelandet bist |
+| Flugart | **Übungshang**, **Höhenflug** oder **Nicht angegeben**; für Ausbildungszählungen bewusst setzen |
 | Gruppe | Bewusste Zuordnung zu einer deiner Gruppen |
-| SHV Soloflug | Kennzeichnung des Eintrags; keine automatische Schulbestätigung |
+| SHV Soloflug | Vor dem Pilotenbrevet angebotene Kennzeichnung; keine automatische Schulbestätigung |
+
+**Ausbildungsabhängige Felder:** **SHV Soloflug** erscheint bei Schülern beziehungsweise noch unbekanntem Stand und bei bereits so markierten Flügen. Tandemfelder werden unter anderem bei Tandembrevet, Tandem-Ausbildungsziel, Tandemschirm oder schon markiertem Tandemflug angeboten. Prüfe vor dem Erfassen deinen Stand im Profil.
 
 **Wenn ein Ort fehlt:** Lege ihn über die angebotene Ortsfunktion oder unter **Mehr → Orte** an. Prüfe Koordinaten und Ortstyp, bevor du ihn wiederverwendest. Wähle keinen nur ungefähr passenden Ort, um das Formular schneller abzuschliessen.
 
@@ -323,6 +323,14 @@ Das Flugbuch ist deine zentrale Übersicht. Die Liste zeigt eigene Flüge chrono
 
 5. Das **Teilen-Symbol** erstellt beziehungsweise verwendet einen Freigabelink. Der **Papierkorb** löscht den Flug nach Rückfrage. Verwende ihn nur für einen tatsächlich zu entfernenden Eintrag.
 :::
+
+### Fluglehrerbestätigung und Änderungshistorie
+
+Die Karte **Bestätigung Fluglehrer** zeigt, ob ein persönlicher Ausbildungsflug nicht eingereicht ist, auf eine Entscheidung wartet, bestätigt oder zur Korrektur zurückgegeben wurde. Wähle die zuständige Schule und **Zur Bestätigung einreichen**. Bei mehreren Flügen kannst du die Einreichung auch im Flugbuch starten. Eine Gruppenzuordnung allein bestätigt den Flug nicht.
+
+Bei einer Rückgabe lies die Begründung, korrigiere den Eintrag und verwende **Erneut einreichen**. Eine offene Einreichung kannst du **Zurückziehen**. Bestätigte Flüge zeigen Schule, Fluglehrer und Datum. Die **Änderungshistorie** macht spätere Änderungen nachvollziehbar; kläre Änderungen an bestätigten Ausbildungsdaten mit der Schule.
+
+Ein bestätigter Ausbildungsflug wird bei einer beabsichtigten Entfernung mit Begründung storniert und bleibt nachvollziehbar. Ein gewöhnliches Löschen ist dafür gesperrt. Auch **Alle Flüge löschen** kann deshalb abgewiesen werden. Die Bestätigung im persönlichen Flugbuch und ein Schulflug im Cockpit sind unterschiedliche Aufzeichnungen.
 
 ### Karten, Track und Höhenprofil lesen
 
@@ -659,14 +667,14 @@ Lädt die Ansicht nicht, kontrolliere die Verbindung und versuche es erneut. Ein
 
 **Weg:** **Mehr → Training**.
 
-Der Trainingsbereich bündelt Lerninhalte und dein Kontrollblatt. Der erste Filter orientiert sich am hinterlegten Ausbildungsstand. Wechsle zu einer anderen angebotenen Stufe oder zur vollständigen Ansicht, wenn du weitere Inhalte suchst.
+Der Trainingsbereich heisst **Kontrollblatt**. Er enthält den Ausbildungsstand mit Anforderungen, SHV-Unterlagen und Lernkategorien. Das Kontrollblatt ist in **Grundausbildung**, **Höhenflüge**, **Prüfungsreif** und **Pilot** gegliedert, soweit Inhalte vorhanden sind. Dein eigener Bereich ist mit **Deine Stufe** markiert und bereits aufgeklappt; andere Bereiche kannst du über ihre Überschrift öffnen. Allgemeine Inhalte erscheinen zusätzlich unter **Allgemein**. Das Öffnen eines Bereichs ändert deinen Ausbildungsstand nicht.
 
 ::: schritte Eine Übung bewerten
-![Eine Übung bewerten](handbook/mobile/10-training.png)
+![Eine Übung bewerten](handbook/mobile/61-kontrollblatt.png)
 
 1. Öffne **Mehr → Training**.
 
-2. Wähle oben deinen Bereich, beispielsweise **Brevetkurs**. Mit **Alle** suchst du über die Stufen hinweg.
+2. Prüfe **Deine Stufe**. Tippe bei Bedarf auf eine andere Stufenüberschrift, um deren Kategorien aufzuklappen. So kannst du auch Inhalte ausserhalb deiner aktuellen Stufe ansehen.
 
 3. Tippe auf eine Kategorie, etwa **Startvorbereitung und Start**, um ihre Übungen aufzuklappen.
 
@@ -687,6 +695,8 @@ Die Sterne zeigen den erfassten Stand auf einer Skala bis drei. Beim erneuten An
 Ein SHV-Hinweis kennzeichnet ein entsprechend markiertes Prüfungsmanöver. Er bestätigt keine bestandene Prüfung. Ein Hinweis auf eine Voraussetzung zeigt, dass eine andere Kategorie noch nicht vollständig abgeschlossen ist. Besprich den nächsten Ausbildungsschritt mit deiner betreuenden Person.
 
 **Hilfreiche Lernnotiz:** «Landeeinteilung heute zweimal geübt. Gegenanflug früher beginnen; nächste Einheit mit Fluglehrer besprechen.» So verknüpfst du die Selbsteinschätzung mit einer konkreten Aufgabe.
+
+Der Anforderungsbereich öffnet das Pilotenbrevet für Schüler oder das gewählte weitere Ausbildungsziel für Piloten. Du kannst Disziplin und Brevet für die angezeigte Auswertung wechseln. Ein erreichtes Brevet wird als solches angezeigt; die Prozentanzeige allein ist keine Prüfung oder Zulassung.
 
 Die Schule kann den für sie zugänglichen Ausbildungsstand in ihrer Schüleransicht verwenden. Schulinterne Coaching-Notizen und deine persönlichen Lernnotizen sind unterschiedliche Einträge.
 
@@ -791,6 +801,20 @@ Dein Profil enthält persönliche und flugbezogene Angaben. Eigene Profilansicht
 4. Hinterlege Ausbildungs- oder Prüfungsangaben nur, wenn sie zutreffen.
 5. Bestätige Änderungen mit der zugehörigen Speicheraktion und kontrolliere die Anzeige.
 
+### Ausbildung, Brevets und weitere Ziele
+
+::: schritte Deinen Ausbildungsstand im Profil prüfen
+![Ausbildung und Brevets im aktuellen Profil](handbook/mobile/60-pilot-status.png)
+
+1. Öffne **Mehr → Profil** und scrolle zu **Ausbildung und Brevets**.
+2. Prüfe deinen Stand. Schülerstufen sind **Grundausbildung**, **Höhenflüge** und **Prüfungsreif**; nach dem Pilotenbrevet lautet der Stand **Pilot**.
+3. Als Schüler einer Schule liest du die schulisch gesetzte Stufe. Ohne schulische Zuständigkeit kannst du deine Stufe selbst auswählen. Die Auswahl wird unmittelbar gespeichert.
+4. Nach tatsächlich erworbenem Pilotenbrevet verwende **Ich habe das Pilotenbrevet**. Ergänze Disziplin, Ausstellungsdatum und gegebenenfalls Brevetnummer und bestätige **Als Pilot speichern**. Eine Selbstangabe ersetzt keine Schulbestätigung.
+5. Als Pilot kannst du weitere **Brevets** erfassen und unter **Ich arbeite hin auf** ein angebotenes Ziel wählen. Ohne weiteren Ausbildungsweg wähle **Kein Ziel**.
+:::
+
+Die angebotenen Ziele berücksichtigen bereits erfasste Brevets. Dazu gehören Biplace 1, Biplace 3 und bei vorhandenem Biplace 3 dessen Erneuerung. Sicherheitstraining und andere datierte Kursnachweise stehen im gleichen Bereich. Halte die tatsächlichen Daten fest, weil davon zeitbezogene Anforderungen abhängen können. Einstellungen zeigen deinen Stand an und führen mit **Im Profil ändern** hierher.
+
 ### Eigene Schirme hinterlegen
 
 Erfasse Hersteller, Modell und gegebenenfalls Grösse. Markiere bei Bedarf den hauptsächlich verwendeten Schirm als Standard. Diese Angaben erleichtern die Auswahl im Flugformular. Kontrolliere bei einem Schirmwechsel trotzdem jeden neuen Eintrag.
@@ -812,6 +836,12 @@ Prüf- und Packdaten dienen deiner Übersicht. Erfasse sie anhand deiner Unterla
 
 6. Prüfe, ob der Schirm in **Meine Schirme** erscheint, und kontrolliere seine Auswahl beim nächsten neuen Flug.
 :::
+
+### Tandemflüge und Passagierbestätigung
+
+Bei entsprechender Ausbildung, einem Tandemschirm oder einem bereits als Tandem gespeicherten Flug bietet das Flugformular zusätzliche Tandemfelder. Erfasse die tatsächlich verwendete Disziplin und Tandemart. Nach dem Speichern zeigt die Flugansicht den Passagierbereich.
+
+Trage den Namen des Passagiers ein und speichere ihn. Verwende danach den angebotenen Bestätigungslink oder QR-Code. Der Passagier prüft die angegebenen Flugdaten und bestätigt selbst; ein gespeicherter Name allein ist keine Bestätigung. Den Stand liest du anschliessend in der Flugansicht. Nach Änderungen an bereits bestätigten Daten kann ein Hinweis erscheinen. Lege nur echte Flüge und zutreffende Passagierangaben an.
 
 ### Notfall- und Gesundheitsangaben
 
@@ -894,7 +924,7 @@ Neu aus Namen angelegte Orte können zunächst unvollständige Positionsdaten be
 
 3. Wähle unter **Sprache** die gewünschte Sprache. Es ist kein zusätzlicher Speichern-Knopf nötig.
 
-4. Nur wenn du dein Passwort ändern möchtest, trage ein neues Passwort ins separate Feld ein und bestätige **Passwort ändern**.
+4. Prüfe bei **Ausbildungsstand** deine aktuelle Anzeige. **Im Profil ändern** öffnet den Bereich **Ausbildung und Brevets**; die Einstellungen bieten keine eigene Stufenauswahl mehr.
 
 5. Scrolle weiter nach unten, um Export, Import und Kontoaktionen zu erreichen.
 :::
@@ -936,20 +966,20 @@ Eine abgelehnte Browserberechtigung lässt sich nicht immer durch erneutes Antip
 
 1. Öffne **Mehr → Einstellungen** und scrolle zu **Export & Import**.
 
-2. Für eine lesbare Ausgabe tippe **Flugbuch als PDF exportieren**; für tabellarische Weiterverarbeitung **Als CSV exportieren**.
+2. Wähle **Flugbuch als PDF exportieren**, **Als CSV exportieren**, **Als Excel exportieren** oder **Vollständiges Archiv (ZIP)**. Bei Bedarf aktiviere **Fotos ins Archiv aufnehmen (grössere Datei)**.
 
 3. Warte auf die Erstellung und verwende den Download- oder Teilen-Dialog deines Geräts.
 
 4. Öffne die erzeugte Datei und prüfe Datum, Umfang und ein paar Beispielzeilen.
 
-5. Die darunterliegenden Schaltflächen **Flüge importieren** und **Orte importieren** sind andere Vorgänge. Die roten Kontoaktionen benötigst du für den Export nicht.
+5. Unter **Daten importieren** führen **Flüge importieren** und **Orte importieren** zu anderen Vorgängen. Die roten Kontoaktionen benötigst du für den Export nicht.
 :::
 
 ### Flugbuch exportieren
 
-Unter **Einstellungen → Export & Import** stehen PDF- und CSV-Exporte bereit. Wähle das Format und warte auf die Fertigstellung. Wird eine Gruppenauswahl angeboten, kontrolliere sie vor dem Start.
+Unter **Einstellungen → Export & Import** stehen PDF-, CSV- und Excel-Exporte sowie **Vollständiges Archiv (ZIP)** bereit. Wähle das Format und warte auf die Fertigstellung. Wird eine Gruppenauswahl angeboten, kontrolliere sie vor dem Start.
 
-Öffne die exportierte Datei und prüfe Auswahl, Einträge und Lesbarkeit. PDF eignet sich als lesbare Ausgabe, CSV für tabellarische Weiterverarbeitung. Ein Export ist nicht automatisch ein vollständiges Archiv aller Originalfotos, Videos und IGC-Dateien. Bewahre wichtige Originaldateien zusätzlich auf.
+Öffne die exportierte Datei und prüfe Auswahl, Einträge und Lesbarkeit. PDF eignet sich als lesbare Ausgabe, CSV für tabellarische Weiterverarbeitung. Die Einzeldateien PDF, CSV und Excel enthalten keine vollständige Mediensicherung. Das ZIP-Archiv bündelt diese Ausgaben, strukturierte Flugdaten, Änderungsverlauf, Bestätigungen, Brevets und IGC-Dateien. Fotos kommen nur mit aktivierter Fotooption hinzu; hochgeladene Videos sind nicht Bestandteil dieses Archivs. Bewahre Videooriginale separat auf. Lade das Archiv herunter, entpacke es und kontrolliere die enthaltene README sowie Stichproben der Dateien.
 
 ### Ausbildungsnachweis der Schule
 
@@ -959,9 +989,9 @@ Der Nachweis beruht auf den von der Schule erfassten Schulflügen und enthält u
 
 Die Schulflugerfassung beginnt mit dem Flugtag-Cockpit am **25. September 2026**. Frühere eigene Flüge bleiben im persönlichen Flugbuch. Eine Übernahme nach Kapitel 27 erzeugt keinen zusätzlichen Schulflug; Änderungen an deinem persönlichen Eintrag korrigieren nicht den Schulnachweis. Besprich fehlende oder falsche Schulangaben direkt mit der Schule.
 
-### Passwort und Löschfunktionen
+### Anmeldung und Löschfunktionen
 
-Für eine Passwortänderung verwendest du den dafür vorgesehenen Bereich und bestätigst die Änderung. Die Löschfunktionen am Ende der Einstellungen sind davon getrennt. Lies genau, ob du einzelne Datenbestände oder das ganze Konto löschen würdest. Erstelle vor einer beabsichtigten Bereinigung einen geprüften Export; eine Löschung ist kein Schritt zur Behebung eines gewöhnlichen Ladefehlers.
+Die Anmeldung erfolgt mit Google; die App bietet hier keine Flyary-Passwortänderung. Die Löschfunktionen stehen am Ende der Einstellungen. Lies genau, ob du einzelne Datenbestände oder das ganze Konto löschen würdest. Erstelle vor einer beabsichtigten Bereinigung einen geprüften Export; eine Löschung ist kein Schritt zur Behebung eines gewöhnlichen Ladefehlers.
 
 
 
@@ -1025,7 +1055,7 @@ Ein lokaler Entwurf kann bei einem Gerätewechsel fehlen. Arbeite wichtige Eintr
 | Keine Push-Hinweise. | Geräteberechtigung, Testnachricht und die Glockeneinstellung des betreffenden Chatkanals prüfen. |
 | Eine neue Funktion fehlt. | Unter Mehr die Version prüfen und mit Verbindung App aktualisieren wählen. |
 | Ein Kanal fehlt oder ist nicht beschreibbar. | Mitgliedschaft, Empfängerkreis, Archivierung und Hinweis «Hier schreibt nur das Team» prüfen. |
-| Ein Lerninhalt fehlt. | Filter auf alle Stufen stellen und Kategorien öffnen |
+| Ein Lerninhalt fehlt. | Andere Stufen des Kontrollblatts aufklappen und Kategorien öffnen |
 | Leere Wetterkarte. | Verbindung und Verfügbarkeit der externen Ansicht prüfen |
 
 ### Ein Speicherproblem behandeln
@@ -1155,7 +1185,7 @@ Erstelle vor grösseren Importen oder Bereinigungen einen Export und öffne die 
 | Kontrollblatt | Übersicht der Trainingsinhalte und Bewertungen |
 | Freigabelink | Link zu einer ausdrücklich geteilten Flugansicht |
 
-**Dokumentstand:** September 2026. Beschrieben ist der Funktionsstand des zugehörigen Flyary-Repositories. Plattformabhängige Dialoge und externe Dienste können abweichen. Dieses Handbuch erklärt die App-Bedienung; es ist kein Ausbildungsnachweis und ersetzt keine fliegerische Ausbildung.
+**Dokumentstand:** 6. Oktober 2026. Beschrieben ist der Funktionsstand des zugehörigen Flyary-Repositories. Plattformabhängige Dialoge und externe Dienste können abweichen. Dieses Handbuch erklärt die App-Bedienung; es ist kein Ausbildungsnachweis und ersetzt keine fliegerische Ausbildung.
 
 ## 23 · Flugvorlagen für wiederkehrende Flüge
 

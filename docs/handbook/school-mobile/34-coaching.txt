@@ -27,6 +27,8 @@ Noch offen
 
 Antippen = da. Nochmals antippen macht es rückgängig.
 
+Tag abschliessen
+
 Startplatz: nicht gesetzt
 
 Landeplatz: nicht gesetzt

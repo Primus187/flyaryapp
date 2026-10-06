@@ -1,19 +1,26 @@
 /* Flyary website. Night-sky hero with a self-drawing flight track, glass surfaces and scroll reveals.
    Every animation is an enhancement: without JavaScript or with reduced motion everything is visible. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("/assets/plus-jakarta-sans-latin-wght-normal.woff2") format("woff2");
+}
 :root {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #0b1b2b;
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #0f2338;
   background: #fff;
   color-scheme: light;
   interpolate-size: allow-keywords;
-  --ink: #0b1b2b;
-  --muted: #566677;
-  --line: #e2e9ef;
-  --blue: #0784c3;
+  --ink: #0f2338;
+  --muted: #576a7a;
+  --line: #e0e8f0;
+  --blue: #0a6e99;
   --sky: #38bdf8;
   --green: #34d399;
-  --night: #050d1a;
-  --night-2: #0a1a2e;
+  --night: #0b1623;
+  --night-2: #14253a;
   --brand: linear-gradient(120deg, #38bdf8 0%, #0ea5e9 38%, #10b981 100%);
   --radius: 24px;
   --ease: cubic-bezier(.2, .7, .1, 1);

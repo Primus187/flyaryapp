@@ -8,7 +8,6 @@ Fluggerät
 Gleitschirm
 Gleitschirm
 Delta
-Tandem
 Flugzeit (min)
 Höhenmeter
 Strecke (km)

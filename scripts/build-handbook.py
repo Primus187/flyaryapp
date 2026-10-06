@@ -3,6 +3,7 @@ Dependencies: python-docx, Pillow. Optional PDF QA: PyMuPDF.
 Install locally: python -m pip install --target .handbook-tools python-docx Pillow PyMuPDF
 """
 from pathlib import Path
+import argparse
 import sys
 import re
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / '.handbook-tools'))
@@ -15,14 +16,18 @@ from docx.oxml.ns import qn
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--school', action='store_true', help='Build the school handbook')
+parser.add_argument('--output', type=Path, help='Alternative DOCX path, relative to the repository or absolute')
+args = parser.parse_args()
 import subprocess
 subprocess.run(['node', str(ROOT / 'scripts/handbook-screenshots.mjs')], cwd=ROOT, check=True)
-SCHOOL = '--school' in sys.argv
-VERSION = '1.4' if SCHOOL else '1.5'
+SCHOOL = args.school
+VERSION = '1.5' if SCHOOL else '1.6'
 STEM = 'Betriebshandbuch-Flugschulen' if SCHOOL else 'Benutzerhandbuch-Piloten'
 SOURCE = ROOT / f'docs/{STEM}.md'
-DEST = ROOT / f'docs/{STEM}-v{VERSION}.docx'
-NAVY, TEAL, GRAY, PALE = '142C3E', '087FA5', '536575', 'EFF5F8'
+DEST = (ROOT / args.output).resolve() if args.output else ROOT / f'docs/{STEM}-v{VERSION}.docx'
+NAVY, TEAL, GRAY, PALE = '0F2338', '0A6E99', '576A7A', 'F0F5F9'
 doc = Document()
 section = doc.sections[0]
 section.page_width, section.page_height = Cm(21), Cm(29.7)
@@ -90,7 +95,7 @@ header.runs[0].font.size=Pt(8); header.runs[0].font.color.rgb=RGBColor.from_stri
 rule(header,'D7E4EB','4')
 footer=section.footer.paragraphs[0]
 footer.alignment=WD_ALIGN_PARAGRAPH.RIGHT
-footer.add_run(f'Version {VERSION} · September 2026   ·   ')
+footer.add_run(f'Version {VERSION} · 6. Oktober 2026   ·   ')
 field(footer,' PAGE ')
 for r in footer.runs: r.font.size=Pt(8); r.font.color.rgb=RGBColor.from_string(GRAY)
 
@@ -110,7 +115,7 @@ left.vertical_alignment=WD_CELL_VERTICAL_ALIGNMENT.CENTER
 left.paragraphs[0].text='Von der Tagesplanung bis zur\nAusbildung und Abrechnung.' if SCHOOL else 'Vom ersten Einstieg bis zum\nvollständigen Flugbucheintrag.'
 for r in left.paragraphs[0].runs: r.font.size=Pt(15)
 left.add_paragraph('Schritt für Schritt erklärt.\nMit mobilen Bildschirmansichten,\nPraxisbeispielen und Fehlerhilfe.')
-label(f'Version {VERSION} · September 2026',left)
+label(f'Version {VERSION} · 6. Oktober 2026',left)
 right.paragraphs[0].add_run().add_picture(str(ROOT/('docs/handbook/school-mobile/01-overview.png' if SCHOOL else 'docs/handbook/mobile/01-home.png')),width=Cm(5.3))
 
 text=SOURCE.read_text(encoding='utf-8')

@@ -1,8 +1,8 @@
-﻿param([switch]$ExportPdf, [switch]$School)
+﻿param([switch]$ExportPdf, [switch]$School, [string]$DocumentPath)
 $ErrorActionPreference = 'Stop'
 $manualRoot = Split-Path $PSScriptRoot -Parent
-$manualStem = if ($School) { 'Betriebshandbuch-Flugschulen-v1.4' } else { 'Benutzerhandbuch-Piloten-v1.5' }
-$manualDocx = Join-Path $manualRoot "docs/$manualStem.docx"
+$manualStem = if ($School) { 'Betriebshandbuch-Flugschulen-v1.5' } else { 'Benutzerhandbuch-Piloten-v1.6' }
+$manualDocx = if ($DocumentPath) { (Resolve-Path -LiteralPath $DocumentPath).Path } else { Join-Path $manualRoot "docs/$manualStem.docx" }
 $manualPreview = Join-Path $manualRoot $(if ($School) { '.handbook-preview/school' } else { '.handbook-preview' })
 [void](New-Item -ItemType Directory -Path $manualPreview -Force)
 $manualWord = $null
@@ -30,9 +30,9 @@ try {
         $manualPageIndex += @{ page = $manualPage; text = $manualDocument.Range($manualStart, $manualEnd).Text }
         Write-Output "Checked page $manualPage / $($manualPages.Count)"
     }
-    ConvertTo-Json -InputObject $manualPageIndex -Depth 3 | Set-Content -LiteralPath (Join-Path $manualPreview $(if ($School) { 'v1.4-pages.json' } else { 'v1.5-pages.json' })) -Encoding UTF8
+    ConvertTo-Json -InputObject $manualPageIndex -Depth 3 | Set-Content -LiteralPath (Join-Path $manualPreview $(if ($School) { 'v1.5-pages.json' } else { 'v1.6-pages.json' })) -Encoding UTF8
     if ($ExportPdf) {
-        $manualDocument.ExportAsFixedFormat((Join-Path $manualRoot "docs/$manualStem.pdf"), 17)
+        $manualDocument.ExportAsFixedFormat(([IO.Path]::ChangeExtension($manualDocx, '.pdf')), 17)
     }
 } finally {
     if ($manualDocument) { $manualDocument.Close(0); [void][Runtime.InteropServices.Marshal]::ReleaseComObject($manualDocument) }

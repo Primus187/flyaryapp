@@ -1,5 +1,18 @@
 # Flyary-Handbücher erstellen
 
+## Aktuelle Ausgaben vom 6. Oktober 2026
+
+- [Pilotenhandbuch v1.6, korrigierte Vorschau](../Benutzerhandbuch-Piloten-v1.6-korrigiert.docx), [Markdown](../Benutzerhandbuch-Piloten.md): Google-Anmeldung und Pilotphase, neue Home-Ansicht, Ausbildungsstufen, Kontrollblatt, Ausbildung und Brevets im Profil, Fluglehrerbestätigung, Tandem und PDF-/CSV-/Excel-/ZIP-Export.
+- [Schulhandbuch v1.5](../Betriebshandbuch-Flugschulen-v1.5.docx), [Markdown](../Betriebshandbuch-Flugschulen.md): neue Schuloberfläche, Schuleinrichtung, Ausbildungsstufen und selbst deklarierte Brevets, Start-Ansage, vorgezogener Tagesabschluss und neues Kapitel 32 für persönliche Flugbestätigungen.
+
+Alle Bildschirmansichten werden aus dem aktuellen App-Code mit fiktiven Daten neu aufgenommen. Zusätzliche Ansichten zeigen das Kontrollblatt, Ausbildung/Brevets im Profil und die Flugbestätigungen. Die Beispieldaten bleiben auf September fixiert; das Aufnahmedatum steht im Manifest. Word-Generator und Vorschauwerkzeuge verwenden Piloten v1.6 und Schule v1.5. Historische Ausgaben bleiben erhalten.
+
+Abnahme am 6. Oktober 2026: 62 Piloten- und 59 Schulansichten wurden vollständig neu aufgenommen, ohne Laufzeitfehler. `npm run handbook:check` bestätigt den aktuellen Quellstand und die Bildprüfsummen. Die Word-Ausgaben wurden mit aktualisierten Inhaltsverzeichnissen in Word paginiert: Piloten v1.6 mit 89 Seiten, 27 Kapiteln und 59 Abbildungen; Schule v1.5 mit 71 Seiten, 32 Kapiteln und 57 Abbildungen. DOCX-Struktur und Übereinstimmung der lokalen und öffentlichen Markdown-Fassungen sind geprüft. Seitenindizes liegen unter `.handbook-preview/v1.6-pages.json` und `.handbook-preview/school/v1.5-pages.json`.
+
+Die Veröffentlichungsvorschau wurde anschliessend in der App korrigiert: begrenzte Dialogbreite, umbrechende Inhalte, getrennt scrollbarer Inhalt und dauerhaft sichtbare Aktionsbuttons. Ein Kartenbereich wird nur mit Track oder gültigen Ortskoordinaten angezeigt. Die Termin-Vorschau verwendet dasselbe Layout. Zehn lokale Browserfälle prüfen beide Vorschauen in DE/FR/EN, bei 320/390/1280 Pixeln Breite, geringer Höhe, langen Texten, Fotos, Karte und dunkler Darstellung. Die Aufnahme von `21-publish-preview` prüft zusätzlich horizontales Überlaufen und einen leeren Kartenbereich, bevor sie das Handbuchbild speichert.
+
+Die korrigierte Piloten-Ausgabe liegt in `Benutzerhandbuch-Piloten-v1.6-korrigiert.docx`, weil die vorherige Word-Datei beim Erstellen nicht überschrieben werden konnte. Sie wird mit `python scripts/build-handbook.py --output docs/Benutzerhandbuch-Piloten-v1.6-korrigiert.docx` und `./scripts/render-handbook.ps1 -DocumentPath docs/Benutzerhandbuch-Piloten-v1.6-korrigiert.docx` erzeugt und paginiert. Ohne diese optionalen Pfadangaben verwenden die Werkzeuge weiterhin den regulären Versionsdateinamen.
+
 ## Automatische aktuelle Screenshots
 
 Die Bildserien werden seit dem 29. September 2026 neu aus dem aktuellen lokalen App-Code erzeugt. Die Datumsangaben weiter unten dokumentieren die früheren Ausgaben; die fiktiven Beispieldaten behalten bewusst ihre festen September-Termine.
@@ -17,7 +30,7 @@ Beide aktuellen Word-Ausgaben mit `python scripts/build-handbook.py` und `python
 - [Pilotenhandbuch als Markdown](../Benutzerhandbuch-Piloten.md) und [Word v1.5](../Benutzerhandbuch-Piloten-v1.5.docx): Android-IGC-Teilen, automatische Platzwahl, DHV-Katalog, persönliche Namen, Verknüpfen, Zusammenführen und burnair-Link; präzisierte Terminbilder.
 - [Schulhandbuch als Markdown](../Betriebshandbuch-Flugschulen.md) und [Word v1.4](../Betriebshandbuch-Flugschulen-v1.4.docx): Fotoupload, inaktive Schüler für Starthelfer, offizielle Tagesplätze und Namens-/Gebietszählung im Ausbildungsnachweis.
 
-Basis ist Commit `779a010` samt vorhandenem Arbeitsstand. Die bisherigen Word-Ausgaben bleiben erhalten. Die Generatoren und Vorschauwerkzeuge verwenden jetzt Piloten v1.5 und Schule v1.4. Die folgenden Angaben zu früheren Seitenzahlen sind historische Prüfergebnisse und gelten nicht automatisch für die neuen Ausgaben.
+Basis dieser historischen Ausgabe ist Commit `779a010` samt damaligem Arbeitsstand. Die bisherigen Word-Ausgaben bleiben erhalten. Damals verwendeten Generatoren und Vorschauwerkzeuge Piloten v1.5 und Schule v1.4. Die folgenden Angaben zu früheren Seitenzahlen sind historische Prüfergebnisse und gelten nicht automatisch für die aktuellen Ausgaben.
 
 Historischer Hinweis zur damaligen Ausgabe: Die vorhandenen Screenshots vom 24./25. September wurden weiterverwendet. Neue Abläufe sind ausdrücklich als Textanleitungen ergänzt; es wurden für diese Aktualisierung keine neuen App-Screenshots aufgenommen. Wortlaut, Rechte und Abläufe wurden mit Frontend und Migrationen bis 0067 abgeglichen. Die Bilddateien sind keine Abnahme des neuen App-Stands.
 

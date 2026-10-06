@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-30T19:31:01.101Z",
+  "capturedAt": "2026-10-06T18:35:41.910Z",
   "source": "Local Flyary app, fictional fixtures, no live API access",
   "screenshots": [
     {
@@ -768,6 +768,45 @@
         "height": 1688
       },
       "demo": true
+    },
+    {
+      "name": "60-pilot-status",
+      "path": "/profile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "61-kontrollblatt",
+      "path": "/training",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "62-pilot-licences",
+      "path": "/profile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
     }
   ],
   "errors": [],
@@ -776,7 +815,6 @@
     "rpc/my_school_flight_imports",
     "rpc/is_admin_role",
     "rpc/is_ops_admin",
-    "rpc/my_instructor_ratings",
-    "rpc/my_level_set_by_school"
+    "rpc/my_instructor_ratings"
   ]
 }

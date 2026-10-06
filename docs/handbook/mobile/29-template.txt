@@ -6,7 +6,7 @@ Fotos
 Fotos hinzufügen
 Video hochladen
 
-Kurze Clips direkt vom Handy. Max 60s, max 50 MB.
+Kurze Clips direkt vom Handy. Max. 60 s, max. 50 MB.
 
 Video vom Gerät auswählen
 Mit Kamera aufnehmen

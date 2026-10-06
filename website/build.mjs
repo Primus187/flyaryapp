@@ -248,7 +248,7 @@ await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 for (const file of ['site.css', 'site.js', 'boot.js']) await cp(join(here, file), join(out, file));
-const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png'];
+const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'overview.png', 'logbook.png', 'stats.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png', 'plus-jakarta-sans-latin-wght-normal.woff2', 'plus-jakarta-sans-license.txt'];
 const appScreens = {
   'overview.png': 'mobile/01-home.png', 'logbook.png': 'mobile/06-flightbook.png',
   'stats.png': 'mobile/12-stats.png', 'training.png': 'mobile/10-training.png',

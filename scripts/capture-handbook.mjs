@@ -103,6 +103,7 @@ await context.route('**/*', async route=>{
       else if(table==='my_open_passenger_confirmations') result=[];
       else if(table==='my_access') result={has_access:true,waitlisted:false,invited:false};
       else if(table==='my_onboarding') result={show:false,kind:'pilot',school:null};
+      else if(table==='my_level_set_by_school') result=false;
       else {unknown.add("rpc/"+table);result=[];}
     } else {
       result=[...(data[table]||[])];
@@ -120,6 +121,8 @@ await context.route('**/*', async route=>{
   return route.abort();
 });
 const page=await context.newPage();
+// A cold Vite start (including font/dependency compilation) can take longer on OneDrive.
+page.setDefaultNavigationTimeout(120000);
 await page.clock.setFixedTime(new Date('2026-09-24T12:00:00+02:00'));
 const errors=[]; page.on('pageerror',e=>errors.push(e.message));
 const manifest=(extraOnly || selectedScreen) ? JSON.parse(readFileSync(`${out}/manifest.json`,'utf8')).screenshots.filter(s=>selectedScreen ? !selectedScreen.split(',').includes(s.name) : Number(s.name.slice(0,2))<(formsOnly?30:19)) : [];
@@ -138,6 +141,18 @@ async function shot(name,path,action,keepScroll=false) {
   });
   await page.evaluate(()=>document.fonts.ready);
   await page.waitForTimeout(250);
+  if (name === '21-publish-preview') {
+    const problem = await page.getByRole('dialog').evaluate(dialog => {
+      const box = dialog.getBoundingClientRect();
+      if (box.left < 0 || box.right > innerWidth || dialog.scrollWidth > dialog.clientWidth + 1) return 'Dialog exceeds the mobile viewport';
+      for (const element of dialog.querySelectorAll('p, textarea, .overflow-y-auto')) {
+        if (element.scrollWidth > element.clientWidth + 1) return 'Preview content is clipped horizontally';
+      }
+      if (dialog.querySelector('[style*="height: 120px"]') && !dialog.querySelector('.leaflet-container')) return 'Empty map reserves space in the preview';
+      return null;
+    });
+    if (problem) throw new Error(`21-publish-preview: ${problem}`);
+  }
   await page.screenshot({path:`${out}/${name}.png`,fullPage:false,animations:'disabled'});
   manifest.push({name,path,viewport:{width:390,height:844},pixels:{width:780,height:1688},demo:true});
   writeFileSync(`${out}/${name}.txt`,await page.locator('body').innerText());
@@ -173,9 +188,16 @@ try {
   await shot('08-event-detail',`/events/${eid}`);
   await shot('09-locations','/locations');
   await shot('10-training','/training',async()=>{await page.getByRole('button',{name:/Startvorbereitung und Start/}).click();});
+  await shot('61-kontrollblatt','/training',async()=>{await page.getByRole('button',{name:/Startvorbereitung und Start/}).click();await page.getByRole('button',{name:/Höhenflüge.*Deine Stufe/}).evaluate(el=>el.scrollIntoView({block:'start'}));},true);
   await shot('11-training-detail','/training/item3');
   await shot('12-stats','/stats');
   await shot('13-profile','/profile');
+  await shot('60-pilot-status','/profile',async()=>{await page.getByText('Ausbildung und Brevets',{exact:true}).evaluate(el=>el.closest('.bg-card').scrollIntoView({block:'start'}));},true);
+  // The same fictional person after gaining a pilot licence, with a further training goal.
+  profile.training_level='licensed'; profile.licence_goal='biplace_1';
+  data.pilot_licences=[{id:'licence-demo',user_id:uid,discipline:'paraglider',level:'pilot',issued_at:'2026-09-23',licence_number:'123456'}];
+  await shot('62-pilot-licences','/profile',async()=>{await page.getByText('Ausbildung und Brevets',{exact:true}).evaluate(el=>el.closest('.bg-card').scrollIntoView({block:'start'}));},true);
+  profile.training_level='altitude'; profile.licence_goal=null; data.pilot_licences=[];
   await shot('14-settings','/settings');
   await shot('15-export','/settings',async()=>{await page.getByText('Export & Import',{exact:true}).evaluate(el=>el.scrollIntoView({block:'start'}));});
   await shot('16-notifications','/notifications');
@@ -257,5 +279,3 @@ try {
   writeFileSync(`${out}/manifest.json`,JSON.stringify({capturedAt:new Date().toISOString(),source:'Local Flyary app, fictional fixtures, no live API access',screenshots:manifest.sort((a,b)=>a.name.localeCompare(b.name)),errors,unpopulatedTables:[...unknown]},null,2));
   await browser.close();
 }
-
-

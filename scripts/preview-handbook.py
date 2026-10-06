@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 
 school = '--school' in sys.argv
 pages = '--pages' in sys.argv
-version = '1.4' if school else '1.5'
+version = '1.5' if school else '1.6'
 rendered = ROOT / ('.handbook-preview/school' if school else '.handbook-preview')
 source = rendered if pages else ROOT / ('docs/handbook/school-mobile' if school else 'docs/handbook/mobile')
 out = ROOT / ('.handbook-preview/school-review' if school else '.handbook-preview/pilot-review')

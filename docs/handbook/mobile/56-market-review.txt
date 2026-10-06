@@ -1,4 +1,3 @@
-Marktplatz
 Verkauft
 Alpha 26 – abgeschlossener Kauf
 
@@ -8,7 +7,7 @@ CHF 1'450 · Verhandelbar
 Abholung
 vor 3 Stunden
 
-Wie lief der Kauf? Bewerte den Anbieter.
+market.reviews.prompt_of_seller
 
 Bewerten
 
@@ -47,7 +46,7 @@ Gepflegter Beispielschirm für Schulung und Freizeit. Prüfprotokoll bei Besicht
 
 S
 
-Anbieter
+ANBIETER
 
 Sam Muster
 
@@ -58,7 +57,7 @@ Home
 Feed
 Flüge
 Mehr
-Anbieter bewerten
+market.reviews.title_of_seller
 
 Zu «Alpha 26 – abgeschlossener Kauf». Die Bewertung ist für alle angemeldeten Personen sichtbar und lässt sich nicht ändern.
 

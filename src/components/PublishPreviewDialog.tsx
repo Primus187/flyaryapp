@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useId, useState, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -42,11 +42,15 @@ export default function PublishPreviewDialog({
 }: PublishPreviewDialogProps) {
   const { t } = useTranslation();
   const siteName = useSiteName();
+  const descriptionId = useId();
   const [feedComment, setFeedComment] = useState(flight.comments || "");
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>(photos.map(p => p.id));
 
   const initials = pilotName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
   const hasTrack = trackPoints.length > 0;
+  const hasMap = hasTrack || [flight.takeoff, flight.landing].some(
+    location => location && (location.latitude !== 0 || location.longitude !== 0)
+  );
   const selectedPhotos = photos.filter(p => selectedPhotoIds.includes(p.id));
 
   const formatDuration = (min: number) => {
@@ -62,25 +66,25 @@ export default function PublishPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader className="p-4 pb-2">
+      <DialogContent className="flex w-[calc(100%_-_2rem)] max-w-md max-h-[calc(100dvh_-_2rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0">
+        <DialogHeader className="shrink-0 p-4 pr-12 text-left">
           <DialogTitle className="text-base">{t("flights.feedPreview")}</DialogTitle>
         </DialogHeader>
 
-        {/* Preview card */}
-        <div className="px-4">
-          <Card className="border overflow-hidden">
+        <div className="min-h-0 min-w-0 space-y-4 overflow-y-auto overscroll-contain px-4 pb-4">
+          {/* Preview card */}
+          <Card className="min-w-0 overflow-hidden border">
             {/* Header */}
             <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
-              <div className="rounded-[34%]">
+              <div className="shrink-0 rounded-[34%]">
                 <Avatar className="h-11 w-11">
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
                 </Avatar>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{pilotName}</p>
-                <p className="truncate text-[13px] font-medium text-muted-foreground">
+                <p className="text-sm font-semibold [overflow-wrap:anywhere]">{pilotName}</p>
+                <p className="text-xs font-medium leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
                   {groupName && <span>{groupName} · </span>}
                   {flight.takeoff?.name && <><MapPin className="h-3 w-3 inline mr-0.5" />{siteName(flight.takeoff.name)} · </>}
                   {t("feed.justNow")}
@@ -116,7 +120,7 @@ export default function PublishPreviewDialog({
             )}
 
             {/* Mini map */}
-            {(hasTrack || flight.takeoff || flight.landing) && (
+            {hasMap && (
               <Suspense fallback={<div className="h-[120px] bg-muted animate-pulse" />}>
                 <div className="[&_.leaflet-container]:!h-[120px] [&>div]:!h-[120px]" style={{ height: 120, overflow: "hidden" }}>
                   <FlightDetailMap
@@ -136,74 +140,75 @@ export default function PublishPreviewDialog({
               </div>
 
               {/* Flight stats */}
-              <div className="grid grid-cols-3 gap-2 rounded-lg bg-background px-3 py-2.5">
+              <div className="grid grid-cols-3 gap-2 rounded-lg bg-background px-3 py-2.5 [overflow-wrap:anywhere]">
                 {flight.duration_minutes && <div><p className="text-[15px] stat-value">{formatDuration(flight.duration_minutes)}</p><p className="text-[11px] font-semibold text-muted-foreground">{t("dashboard.flightTime")}</p></div>}
                 {flight.altitude_gain && <div><p className="text-[15px] stat-value">{flight.altitude_gain} m</p><p className="text-[11px] font-semibold text-muted-foreground">{t("stats.altitudeGain")}</p></div>}
                 {flight.distance_km && <div><p className="text-[15px] stat-value">{Number(flight.distance_km).toFixed(1)} km</p><p className="text-[11px] font-semibold text-muted-foreground">{t("stats.distance")}</p></div>}
               </div>
-              {flight.glider && <p className="truncate text-[13px] font-medium text-muted-foreground">{flight.glider}</p>}
+              {flight.glider && <p className="text-[13px] font-medium text-muted-foreground [overflow-wrap:anywhere]">{flight.glider}</p>}
 
               {/* Comment preview */}
               {feedComment.trim() && (
-                <p className="text-sm">
+                <p className="whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">
                   <span className="font-semibold mr-1">{pilotName}</span>
                   <span className="text-muted-foreground">{feedComment}</span>
                 </p>
               )}
             </CardContent>
           </Card>
-        </div>
 
-        {/* Edit section */}
-        <div className="px-4 space-y-4 pb-2">
-          {/* Description */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              {t("flights.feedDescription")}
-            </label>
-            <Textarea
-              value={feedComment}
-              onChange={e => setFeedComment(e.target.value)}
-              placeholder={t("flights.feedDescriptionPlaceholder")}
-              className="min-h-[60px] text-sm resize-none"
-              rows={2}
-            />
-          </div>
-
-          {/* Photo selection */}
-          {photos.length > 0 && (
+          {/* Edit section */}
+          <div className="min-w-0 space-y-4">
+            {/* Description */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {t("flights.selectPhotos")} ({selectedPhotoIds.length}/{photos.length})
+              <label htmlFor={descriptionId} className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {t("flights.feedDescription")}
               </label>
-              <div className="grid grid-cols-4 gap-2">
-                {photos.map(p => (
-                  <label key={p.id} className="relative cursor-pointer group">
-                    <img
-                      src={p.url}
-                      alt=""
-                      className={cn(
-                        "rounded-lg aspect-square object-cover transition-all",
-                        selectedPhotoIds.includes(p.id)
-                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                          : "opacity-50 grayscale"
-                      )}
-                    />
-                    <div className="absolute top-1 right-1">
-                      <Checkbox
-                        checked={selectedPhotoIds.includes(p.id)}
-                        onCheckedChange={() => togglePhoto(p.id)}
-                        className="h-4 w-4 bg-background/80 backdrop-blur-sm"
-                      />
-                    </div>
-                  </label>
-                ))}
-              </div>
+              <Textarea
+                id={descriptionId}
+                value={feedComment}
+                onChange={e => setFeedComment(e.target.value)}
+                placeholder={t("flights.feedDescriptionPlaceholder")}
+                className="min-h-[88px] resize-none text-base sm:text-sm"
+                rows={3}
+              />
             </div>
-          )}
+
+            {/* Photo selection */}
+            {photos.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {t("flights.selectPhotos")} ({selectedPhotoIds.length}/{photos.length})
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {photos.map(p => (
+                    <label key={p.id} className="relative cursor-pointer group">
+                      <img
+                        src={p.url}
+                        alt=""
+                        className={cn(
+                          "w-full rounded-lg aspect-square object-cover transition-all",
+                          selectedPhotoIds.includes(p.id)
+                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                            : "opacity-50 grayscale"
+                        )}
+                      />
+                      <div className="absolute top-1 right-1">
+                        <Checkbox
+                          checked={selectedPhotoIds.includes(p.id)}
+                          onCheckedChange={() => togglePhoto(p.id)}
+                          className="h-4 w-4 bg-background/80 backdrop-blur-sm"
+                        />
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <DialogFooter className="p-4 pt-2">
+        <DialogFooter className="shrink-0 gap-2 border-t p-4 sm:space-x-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
             {t("common.cancel")}
           </Button>

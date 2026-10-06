@@ -1,21 +1,21 @@
 # Flyary – Betriebshandbuch für Flugschulen
 
-Version 1.4 · 28. September 2026
+Version 1.5 · 6. Oktober 2026
 
 Für Schulleitung, Fluglehrerinnen und Fluglehrer, Starthelfer sowie die Administration. Dieses Handbuch führt durch die Schulansicht von Flyary: von der Einrichtung über den Flugtag bis zur nachvollziehbaren Ausbildungsdokumentation und Abrechnung.
 
 Die Beispiele begleiten die fiktive Flugschule Voralpen. Robin Beispiel betreut die Ausbildung, Sam Muster unterstützt am Startplatz und Alex Beispiel besucht den Höhenflugkurs. Namen, Beträge, Termine und Nachweise dienen ausschliesslich der Erklärung. Die Screenshots zeigen die echte App im Smartphoneformat. Geldbeträge sind Beispiele in CHF und keine Tarifempfehlung.
 
-Lies beim ersten Einrichten die Kapitel 1 bis 5. Für den täglichen Betrieb sind die Kapitel 6 bis 15 besonders wichtig. Material, Nachweise und Administration folgen in den Kapiteln 16 bis 25. Kapitel 27 und 28 enthalten Arbeitsroutinen und Hilfe bei Problemen. Kapitel 29 und 30 erklären den neuen Schul-Shop und Materialverkauf. Persönliche Flugbuchfunktionen werden ergänzend im Benutzerhandbuch für Pilotinnen und Piloten beschrieben.
+Lies beim ersten Einrichten die Kapitel 1 bis 5. Für den täglichen Betrieb sind die Kapitel 6 bis 15 besonders wichtig. Material, Nachweise und Administration folgen in den Kapiteln 16 bis 25. Kapitel 27 und 28 enthalten Arbeitsroutinen und Hilfe bei Problemen. Kapitel 29 und 30 erklären den Schul-Shop und Materialverkauf; Kapitel 31 die Schulflugübernahme und Kapitel 32 persönliche Flugbestätigungen. Persönliche Flugbuchfunktionen werden ergänzend im Benutzerhandbuch für Pilotinnen und Piloten beschrieben.
 
 
-**Neu in Version 1.3:** Check-in, Start- und Landeplatzerfassung, Manöverbewertungen und Tagesabschluss ersetzen die bisherigen Abläufe in Kapitel 14 und 15. Kapitel 31 erklärt den Ausbildungsnachweis und die Übernahme ins persönliche Flugbuch. Die übrigen bestehenden Screenshots bleiben erhalten; die neuen Abläufe sind als Textanleitungen beschrieben. Die Bilder der abgelösten Anwesenheits- und Coaching-Ansicht wurden aus der Anleitung entfernt.
 
-**Neu in Version 1.4:** Ergänzt sind Fotoupload und Sichtbarkeit (Kapitel 12), der Filter für inaktive Schüler auch bei Starthelfern (Kapitel 14) sowie offizielle Plätze, persönliche Namen und deren Bedeutung für den Ausbildungsnachweis (Kapitel 14 und 31). Die bestehenden Bildschirmansichten vom 24./25. September bleiben zur Orientierung erhalten; die Ergänzungen sind Textanleitungen.
+
+**Neu in Version 1.5:** Neue Oberfläche mit vollständig erneuerten mobilen Bildschirmansichten. Aktualisiert sind Anmeldung und Schuleinrichtung, die Ausbildungsstufen und selbst deklarierte Brevets, die Start-Ansage am Flugtag sowie der vorgezogene Abschluss bereits erfasster Flugtage.
 
 ## 1. Schulansicht öffnen und den Überblick nutzen
 
-Die Schulansicht bündelt die Arbeit für eine bestimmte Flugschule. Melde dich mit deinem persönlichen Flyary-Konto an. Das Konto muss der Schulgruppe angehören und die erforderliche Rolle oder Teamfunktion besitzen. Verwende im Rollenumschalter **Flugschule**, um in den Schulbetrieb zu wechseln. **Pilot** führt zurück zum persönlichen Flugbuch. Der Wechsel der Ansicht verändert deine Berechtigungen nicht.
+Die Schulansicht bündelt die Arbeit für eine bestimmte Flugschule. Melde dich mit deinem persönlichen Google-Konto bei Flyary an. Während der Pilotphase benötigst du einen Einladungszugang. Das Konto muss der Schulgruppe angehören und die erforderliche Rolle oder Teamfunktion besitzen. Verwende im Rollenumschalter **Flugschule**, um in den Schulbetrieb zu wechseln. **Pilot** führt zurück zum persönlichen Flugbuch. Der Wechsel der Ansicht verändert deine Berechtigungen nicht.
 
 Wenn du mehreren Schulen angehörst, wähle vor jeder Bearbeitung die richtige Schule. Der Schulname steht im Kopf der jeweiligen Seite. Das ist besonders bei Materialausgaben, Abrechnungen und Ausbildungsänderungen wichtig: Diese Angaben sollen der richtigen Schule zugeordnet sein.
 
@@ -68,7 +68,7 @@ Ein Zertifikat und eine Teamfunktion sind ebenfalls getrennte Angaben. Ein hinte
 
 ## 3. Die Schule einrichten und Personen einladen
 
-Die Schulverwaltung setzt eine Gruppe vom Typ Flugschule voraus. Besteht diese bereits, arbeite in der vorhandenen Gruppe weiter. Vermeide eine zweite Schulgruppe nur deshalb, weil dein Konto noch keinen Zugang besitzt. Der zuständige Administrator kann deine Mitgliedschaft und Funktion prüfen.
+Neue Flugschulen werden während der Pilotphase durch den Flyary-Betrieb eingerichtet. Die Schulleitung erhält einen Leitungslink und öffnet ihn mit ihrem persönlichen Google-Konto. Dadurch wird der Schulzugang zugeordnet. Besteht deine Schule bereits, verwende deren Einladung und arbeite dort weiter. Bei fehlendem Zugang kläre Mitgliedschaft und Funktion mit der zuständigen Leitung; in der gewöhnlichen Gruppenansicht wird keine neue Flugschule angelegt.
 
 Die Einrichtungskarte auf der Schulstartseite führt zu den grundlegenden Aufgaben: Funktionen verteilen, Ansätze setzen, Material erfassen, Mitteilungen aktivieren und einen ersten Termin erstellen. Bearbeite die Punkte in dieser Reihenfolge, wenn noch keine Daten vorhanden sind. Vor dem ersten Einsatz sollten mindestens Teamzuständigkeiten, verfügbare Ausrüstung und die verwendeten Ansätze geklärt sein.
 
@@ -171,11 +171,17 @@ Das Dossier bündelt Übersicht, Ausbildung, Flüge, Tagesnotizen, Material und 
 ![Ausbildungsreiter mit Kursfilter und Manöverbewertung](handbook/school-mobile/06-training.png)
 
 1. **Ausbildung öffnen.** Wähle den Reiter im Schülerdossier.
-2. **Kursbereich prüfen.** Die Vorauswahl orientiert sich am Ausbildungsstand. Wähle bei Bedarf Grundkurs, Brevetkurs, Sicherheitstraining oder die gesamte Auswahl.
+2. **Stufe prüfen.** Die Vorauswahl orientiert sich am Ausbildungsstand. Wähle bei Bedarf **Grundausbildung**, **Höhenflüge**, **Prüfungsreif**, **Brevetiert** oder **Alle Stufen**. Anders als im persönlichen Kontrollblatt bleibt hier eine Stufenauswahl bestehen.
 3. **Manöver lesen.** Die Liste zeigt die erfassten Bewertungen, Notizen und Kategorien. Im Beispiel ist die Landeeinteilung mit zwei von drei Punkten erfasst.
 4. **Prüfungsbezug beachten.** Markierte Prüfungsmanöver fliessen in die entsprechende Fortschrittsanzeige ein. Die Anzeige dokumentiert Daten und ist kein formelles Prüfungsergebnis.
 5. **Folgemassnahme festlegen.** Besprich offene Punkte am nächsten Flugtag und halte den konkreten nächsten Lernschritt in der Tageszusammenfassung fest (Kapitel 15). Dieser Reiter ist eine Leseansicht.
 :::
+
+### Ausbildungsstufen und selbst deklarierte Brevets
+
+Die Stufen lauten **Grundausbildung**, **Höhenflüge**, **Prüfungsreif** und **Brevetiert**. Das eigene Profil bezeichnet den brevetierten Stand als **Pilot**. Brevets, Disziplin und ein weiteres Ausbildungsziel sind getrennte Angaben: Eine Tandemausbildung macht aus einem Piloten nicht erneut einen Schüler des Pilotenbrevets.
+
+Schüler einer Schule können ihre Ausbildungsstufe nicht frei überschreiben. Sie können ein bereits erworbenes Pilotenbrevet selbst deklarieren; die Schule sieht solche Selbstangaben bei der Person im Bereich **Team** mit dem Hinweis **selbst angegeben**. Kontrolliere die tatsächlichen Nachweise, bevor du den schulischen Ausbildungsstand bestätigst. Ein vorhandener Fortschrittswert oder eine Selbstangabe ersetzt diese Prüfung nicht.
 
 Die Gesamtzahl der Flüge im Dossier bezieht sich auf die mit dieser Schule verknüpften Flüge. Sie ist daher nicht zwingend identisch mit dem gesamten persönlichen Flugbuch des Schülers. Eine vollständige Betreuungsübersicht setzt voraus, dass relevante Flüge der richtigen Schule zugeordnet sind.
 
@@ -392,6 +398,12 @@ Bestehende eigene Orte lassen sich in der Ortsverwaltung mit einem offiziellen P
 
 Ein Startabbruch zählt nicht als Schulflug. Verwende ihn nicht anstelle einer tatsächlich erfolgten Landung. Die Leiste **In der Luft** zeigt laufende Flüge mit der seit dem erfassten Start vergangenen Zeit, längste zuerst.
 
+### Die Start-Ansage verwenden
+
+Der Lautsprecher im Flugtag schaltet **Start-Ansage ein** beziehungsweise **Start-Ansage aus**. Bei einem neu erfassten Start ertönen ein Signal und, soweit der Browser dies unterstützt, der Vorname mit «gestartet». Die Ansage ist sowohl in der Start- als auch in der Landeansicht vorhanden und wird pro Gerät gemerkt.
+
+Lasse den betreffenden Flugtag geöffnet und die App im Vordergrund. Nach dem ersten Antippen kann der Browser den Ton freigeben. Beim erstmaligen Laden werden bereits laufende Flüge nicht nachträglich angesagt. Hintergrundbetrieb, Lautstärke und Browser-Sprachausgabe können die Wiedergabe begrenzen; die Start-Ansage ist keine Push-Mitteilung und ersetzt die vereinbarte Teamkommunikation nicht.
+
 ### Am Landeplatz und Übungshang
 
 1. Öffne die Ansicht **Landeplatz**. Bei einem laufenden Flug tippe **Gelandet**, um die Landung mit Rückmeldung zu erfassen.
@@ -424,7 +436,7 @@ Die Zusammenfassung speichert automatisch und beim Verlassen des Feldes. Warte a
 
 ### Den Flugtag abschliessen
 
-**Tag abschliessen** ist für berechtigte Fluglehrer ab dem Datum des Flugtags verfügbar. Der Assistent führt durch vier Schritte:
+**Tag abschliessen** ist für berechtigte Fluglehrer ab dem Datum des Flugtags verfügbar. Sind bereits Schulflüge erfasst, kann der Tag auch vor seinem geplanten Datum abgeschlossen werden; so lassen sich vorgezogene oder zu Prüfzwecken erfasste Tage abschliessen. Der Assistent führt durch vier Schritte:
 
 1. **Alle gelandet?** Prüfe die Liste der noch in der Luft erfassten Personen. Erfasse zuerst die tatsächliche Landung oder einen tatsächlichen Startabbruch; laufende Flüge blockieren den Abschluss. Kläre noch offene Anwesenheiten. Bei fehlenden Startplätzen kannst du **Startplatz des Tages einsetzen** verwenden, sofern die Tagesvorgabe stimmt.
 2. **Zusammenfassungen:** Prüfe die Vorschläge aus den heutigen Flugrückmeldungen, passe sie an und bestätige einzeln **Als Zusammenfassung übernehmen**. Du kannst Vorschläge auch überspringen. Allein das Weiterblättern speichert einen Vorschlag nicht.
@@ -1006,3 +1018,24 @@ Bearbeiten oder Löschen eines persönlichen Eintrags verändert den Schulflug n
 | Zu wenige Fluggebiete | Fehlende oder falsch zugeordnete Startplätze der Schulflüge prüfen. |
 | PDF konnte nicht erstellt werden | Verbindung, Schulzugang und Zeitraum prüfen; bleibt der Fehler, die Administration auf den fehlgeschlagenen PDF-Export hinweisen. CSV bleibt ein eigener Exportweg. |
 | Nach Wiederöffnen sind Posten noch vorhanden | Das ist vorgesehen. Buchungen gesondert prüfen; Wiederöffnen storniert sie nicht. |
+
+
+## 32. Persönliche Ausbildungsflüge bestätigen
+
+**Weg:** Schulstartseite → **Flugbestätigungen**. Diese Ansicht behandelt von Schülern eingereichte persönliche Flugbucheinträge. Die Flugtag-Erfassung, der Tagesabschluss und die Übernahme aus Kapitel 31 bleiben eigene Abläufe.
+
+::: schritte Eingereichte Flüge prüfen
+![Offene persönliche Ausbildungsflüge in der Schulansicht](handbook/school-mobile/59-confirmations.png)
+
+1. Öffne **Flugbestätigungen** und prüfe die ausgewählte Schule. **Offen** zeigt die eingereichten Flüge, **Bestätigt** bereits entschiedene Einträge.
+2. Prüfe pro Person Datum, Start- und Landeplatz, Flugart, Disziplin und weitere Flugdaten. Öffne den Flug bei Bedarf für die vollständigen Angaben.
+3. Wähle die tatsächlich geprüften Flüge. Die Sammelbestätigung gibt jedem gewählten Flug eine eigene Bestätigung. Ein als SHV Soloflug markierter Eintrag wird einzeln behandelt.
+4. Verwende bei falschen Angaben **Zurückgeben** und gib eine verständliche Begründung an. Die Person sieht sie und kann den korrigierten Flug erneut einreichen.
+5. Kontrolliere das Ergebnis unter **Bestätigt**. Bei später nötiger Rücknahme verwende **Widerrufen** mit Begründung. Ein Widerruf löscht den Flug nicht.
+:::
+
+Bestätigen dürfen berechtigte Schulmitarbeitende mit gültigem, zur Disziplin passendem Fluglehrer-Zertifikat. Eine Starthelferfunktion genügt nicht; ein fehlendes Zertifikat wird in der Ansicht angezeigt. Die Softwarebestätigung ersetzt weder den gestempelten Ausdruck noch den Zulassungsentscheid der Prüfungsexperten.
+
+**Überwachter Soloflug:** Öffne die einzelne Soloflugbestätigung. Prüfe die angebotenen Punkte zu Briefing, Kontakt und Bereitschaft, ergänze bei Bedarf eine Notiz und bestätige erst nach der tatsächlichen Kontrolle. Ohne die drei bestätigten Punkte bleibt die Abschlussaktion gesperrt. Ein gesetztes Solo-Kennzeichen durch den Schüler allein erfüllt diese Prüfung nicht.
+
+**Flugart und Änderungen:** Fehlt die Flugart, kann die Bestätigungsansicht eine ausdrückliche Zuordnung als Höhenflug anbieten. Verwende sie nur für zutreffende Einträge. Nachträgliche Änderungen und Stornierungen sind gekennzeichnet; prüfe sie vor der Verwendung als Nachweis. Die Anzahl persönlicher Einträge ist nicht automatisch gleich der Anzahl bestätigter Ausbildungsflüge.

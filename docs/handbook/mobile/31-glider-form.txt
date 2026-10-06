@@ -1,6 +1,6 @@
 Profil
 
-Level 3
+LEVEL 3
 
 Pilot
 
@@ -10,7 +10,8 @@ XP
 
 300
 600
-Rangliste anzeigen →Öffentliches Profil ansehen →
+Rangliste anzeigen
+Öffentliches Profil ansehen
 Errungenschaften
 Alle anzeigen
 
@@ -26,7 +27,21 @@ AB
 Pilotenname
 Bio
 E-Mail
-SHV-Informationen
+Ausbildung und Brevets
+
+AUSBILDUNGSSTAND
+
+Schüler
+
+Grundausbildung
+Höhenflüge
+Prüfungsreif
+Ich habe das Pilotenbrevet
+
+KURSE UND NACHWEISE
+
+Noch kein Nachweis erfasst.
+
 SHV-Nummer
 Flugschule / Verein
 Theorieprüfung bestanden
@@ -65,18 +80,6 @@ Tandemgerät
 Standardschirm
 Speichern
 Abbrechen
-Ausweise und Nachweise
-
-Pilotenausweise mit Ausstellungsdatum und Kurse wie das Sicherheitstraining. Der Ausbildungsstand zählt damit «seit dem Ausweis» und prüft Fristen.
-
-AUSWEISE
-
-Noch kein Ausweis erfasst.
-
-KURSE UND NACHWEISE
-
-Noch kein Nachweis erfasst.
-
 Notfall-Informationen
 
 Sichtbar für Admins und Teilnehmer deiner Termine

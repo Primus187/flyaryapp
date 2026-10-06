@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-30T19:33:04.156Z",
+  "capturedAt": "2026-10-06T18:37:50.034Z",
   "screenshots": [
     {
       "name": "01-overview",
@@ -745,6 +745,19 @@
     {
       "name": "58-shop-activation",
       "path": "/school/shop",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pixels": {
+        "width": 780,
+        "height": 1688
+      },
+      "demo": true
+    },
+    {
+      "name": "59-confirmations",
+      "path": "/school/confirmations",
       "viewport": {
         "width": 390,
         "height": 844

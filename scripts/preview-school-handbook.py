@@ -10,7 +10,7 @@ source=ROOT/('.handbook-preview/school' if pages else 'docs/handbook/school-mobi
 out=ROOT/'.handbook-preview/school'
 out.mkdir(parents=True,exist_ok=True)
 if pages:
-    index=json.loads((source/'v1.4-pages.json').read_text(encoding='utf-8-sig'))
+    index=json.loads((source/'v1.5-pages.json').read_text(encoding='utf-8-sig'))
     files=[source/f"page{entry['page']:02d}.emf" for entry in index]
 else:
     index=json.loads((source/'manifest.json').read_text(encoding='utf-8'))
