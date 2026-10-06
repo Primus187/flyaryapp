@@ -19,7 +19,7 @@ import {
   User, Users, Settings, LogOut, RefreshCw, Map, GraduationCap, MapPin, Scale, Trophy, Search,
   CloudSun, Calendar, BarChart3, MessageCircle, Package, Wallet, Receipt, ClipboardList, MessageSquare, Bell, Store, ShieldCheck, ChevronRight } from "lucide-react";
 
-type Tile = { path: string; icon: any; labelKey: string };
+type Tile = { path: string; icon: import("lucide-react").LucideIcon; labelKey: string };
 type Group = { titleKey: string; tiles: Tile[] };
 
 const pilotGroups: Group[] = [

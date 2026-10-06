@@ -109,7 +109,7 @@ export default function Locations() {
           if (code && code.length === 2) {
             await supabase.from("locations").update({ country_code: code }).eq("id", loc.id);
           }
-        } catch {}
+        } catch { /* no country for this site: it stays empty and can be set by hand */ }
         setBackfillProgress({ current: i + 1, total: toUpdate.length });
         if (i < toUpdate.length - 1) await new Promise((r) => setTimeout(r, 1100));
       }
@@ -174,7 +174,7 @@ export default function Locations() {
       const { data, error } = await supabase.functions.invoke('reverse-geocode', { body: { lat, lon: lng } });
       const code = data?.country_code;
       if (code && code.length === 2) setForm((prev) => ({ ...prev, country_code: code }));
-    } catch {}
+    } catch { /* the country is a convenience: the form works without it */ }
   };
   const handleMapSelect = (lat: number, lng: number) => { setForm((prev) => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() })); reverseGeocode(lat, lng); };
 

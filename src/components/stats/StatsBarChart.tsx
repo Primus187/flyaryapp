@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface StatsBarChartProps {
   title: string;
-  data: Record<string, any>[];
+  data: Record<string, string | number>[];
   dataKey: string;
   config: Record<string, { label: string; color: string }>;
   xInterval?: number;

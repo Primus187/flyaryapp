@@ -53,7 +53,7 @@ export default function Events() {
       if (members) {
         const g = members.map((m) => m.groups).filter(Boolean); setGroups(g);
         const adminMap: Record<string, boolean> = {}; const canCreateMap: Record<string, boolean> = {};
-        members.forEach((m: any) => { if (m.groups) { adminMap[m.groups.id] = m.role === "admin"; canCreateMap[m.groups.id] = m.role === "admin" || m.groups.group_type === "pilot_group"; } });
+        members.forEach((m) => { if (m.groups) { adminMap[m.groups.id] = m.role === "admin"; canCreateMap[m.groups.id] = m.role === "admin" || m.groups.group_type === "pilot_group"; } });
         setIsAdmin(adminMap); setCanCreate(canCreateMap);
       }
       setLoading(false);

@@ -61,7 +61,7 @@ export default function Profile() {
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [badges, setBadges] = useState<{ badge_key: string; unlocked_at: string }[]>([]);
-  const [badgeStats, setBadgeStats] = useState<any>(null);
+  const [badgeStats, setBadgeStats] = useState<React.ComponentProps<typeof BadgeGrid>["stats"] | null>(null);
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
   const [coverSignedUrl, setCoverSignedUrl] = useState("");

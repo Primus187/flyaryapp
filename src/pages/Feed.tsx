@@ -176,7 +176,7 @@ export default function Feed() {
     if (!item) return;
 
     const likes = item.data.likes || [];
-    const existingReaction = likes.find((l: any) => l.user_id === user.id && l.reaction_type === reactionType);
+    const existingReaction = likes.find((l) => l.user_id === user.id && l.reaction_type === reactionType);
 
     if (existingReaction) {
       // Remove this reaction
@@ -184,7 +184,7 @@ export default function Feed() {
       setItems(prev => prev.map(i => {
         if (i.data.id !== itemId) return i;
         const currentLikes = i.data.likes || [];
-        return { ...i, data: { ...i.data, likes: currentLikes.filter((l: any) => !(l.user_id === user.id && l.reaction_type === reactionType)) } } as FeedItem;
+        return { ...i, data: { ...i.data, likes: currentLikes.filter((l) => !(l.user_id === user.id && l.reaction_type === reactionType)) } } as FeedItem;
       }));
     } else {
       // Remove any existing reaction from this user first, then add new one

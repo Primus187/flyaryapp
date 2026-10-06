@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { buildEventMessage, BriefingTaskLike } from "@/lib/event-message";
 
 interface Props {
-  event: any;
+  event: import("@/lib/event-message").EventForMessage & { id: string };
   profiles: Record<string, string>;
   briefingTasks: BriefingTaskLike[];
   maneuverNames: string[];

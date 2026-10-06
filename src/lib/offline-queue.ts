@@ -9,7 +9,7 @@ const STORE_NAME = "pending-flights";
 
 export interface OfflineFlight {
   id: string; // client-generated UUID
-  flightData: Record<string, any>;
+  flightData: Record<string, unknown>;
   youtubeUrls: string[];
   selectedTrainingIds: string[];
   createdAt: string;

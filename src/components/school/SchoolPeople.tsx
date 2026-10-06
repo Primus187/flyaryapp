@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown, Users, Store, Scale } from "lucide-react";
+import { type LucideIcon, Search, Download, Pencil, GraduationCap, ShieldCheck, HandHelping, User, Crown, Users, Store, Scale } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 // shop / market_moderator: marketplace (plan 4.7/4.8) – sells for the school / handles reports on private listings
@@ -22,7 +22,7 @@ export type GroupFunction = (typeof GROUP_FUNCTIONS)[number];
 // Im Team-Bereich werden nur Schulleitung, Fluglehrer und Starthelfer angezeigt
 const TEAM_FUNCTIONS: GroupFunction[] = ["school_lead", "instructor", "launch_helper", "shop", "market_moderator"];
 
-const FUNCTION_ICONS: Record<GroupFunction, any> = {
+const FUNCTION_ICONS: Record<GroupFunction, LucideIcon> = {
   student: GraduationCap,
   licensed: ShieldCheck,
   launch_helper: HandHelping,
@@ -88,7 +88,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
     setSelfDeclared(selfDeclaredPilots(history || []));
     const memberList = members || [];
     const userIds = memberList.map((m) => m.user_id);
-    let profileMap: Record<string, { pilot_name: string | null; training_level: string | null }> = {};
+    const profileMap: Record<string, { pilot_name: string | null; training_level: string | null }> = {};
     if (userIds.length > 0) {
       const { data: profs } = await supabase.from("profiles").select("user_id, pilot_name, training_level").in("user_id", userIds);
       (profs || []).forEach((p) => { profileMap[p.user_id] = p; });

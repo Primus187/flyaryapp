@@ -10,8 +10,21 @@ export interface BriefingTaskLike {
   sort_order?: number;
 }
 
+/** The fields of an event the announcement text is built from. */
+export interface EventForMessage {
+  title: string;
+  event_date: string;
+  status: string;
+  meeting_point?: string | null;
+  departure_info?: string | null;
+  flight_area?: string | null;
+  day_topic?: string | null;
+  flight_prep_notes?: string | null;
+  description?: string | null;
+}
+
 interface BuildArgs {
-  event: any;
+  event: EventForMessage;
   profiles: Record<string, string>;
   briefingTasks: BriefingTaskLike[];
   maneuverNames?: string[];

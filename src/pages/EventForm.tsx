@@ -86,7 +86,7 @@ export default function EventForm() {
     const fetchGroups = async () => {
       const { data } = await supabase.from("group_members").select("group_id, role, groups(id, name, group_type)").eq("user_id", user.id);
       if (data) {
-        const eligible = data.filter((m: any) => m.role === "admin" || m.groups?.group_type === "pilot_group");
+        const eligible = data.filter((m) => m.role === "admin" || m.groups?.group_type === "pilot_group");
         const availableGroups = eligible.map((m) => m.groups).filter(Boolean);
         setGroups(availableGroups);
         if (!isEdit && schoolGroupId && availableGroups.some((group) => group.id === schoolGroupId)) {

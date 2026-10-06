@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, GraduationCap } from "lucide-react";
+import type { TFunction } from "i18next";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -149,7 +150,7 @@ function FeedbackItem({
   onEdit: () => void;
   onCancel: () => void;
   onSave: (itemId: string, rating: number, note: string) => void;
-  t: any;
+  t: TFunction;
 }) {
   const [rating, setRating] = useState(item.instructor_rating || 0);
   const [note, setNote] = useState(item.instructor_note || "");
