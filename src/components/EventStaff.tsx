@@ -166,17 +166,17 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.staff.title")}</h2>
+      <h2 className="eyebrow">{t("events.staff.title")}</h2>
       <Card>
         <CardContent className="p-3 space-y-2">
           {showCertWarning && (
-            <p className="text-xs text-amber-500 flex items-start gap-1.5">
+            <p className="text-xs text-warning flex items-start gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               {t("events.staff.certWarning")}
             </p>
           )}
           {showNoCertifiedAvailableWarning && (
-            <p className="text-xs text-amber-500 flex items-start gap-1.5">
+            <p className="text-xs text-warning flex items-start gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               {t("events.staff.noCertifiedAvailable")}
             </p>
@@ -188,7 +188,7 @@ export default function EventStaff({ eventId, groupId, canManage, isSchool = fal
           ].map(({ list, icon: Icon, label }) =>
             list.length > 0 ? (
               <div key={label}>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
                   <Icon className="h-3 w-3" /> {label}
                 </p>
                 <div className="space-y-1">

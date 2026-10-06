@@ -145,8 +145,8 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
             key={p.userId}
             className={cn(
               "relative flex min-h-14 items-stretch rounded-lg border bg-card",
-              p.presence === "present" && !p.pause && "border-green-600/60 bg-green-50 dark:bg-green-950/30",
-              p.pause && "border-amber-500/60 bg-amber-50 dark:bg-amber-950/30",
+              p.presence === "present" && !p.pause && "border-success/40 bg-success-soft",
+              p.pause && "border-warning/40 bg-warning-soft",
               p.presence === "expected" && "border-dashed",
               p.presence === "absent" && "opacity-60",
             )}
@@ -161,7 +161,7 @@ export default function DayCheckIn({ eventId, signups, profiles, onChanged }: Pr
               <span className="block text-sm font-medium truncate">{p.name || t("events.pilot")}</span>
               <span className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
                 {p.pause
-                  ? <><PauseCircle className="h-3 w-3 text-amber-600 shrink-0" />{t(`flightDay.reasons.${p.pause.reason}`)}</>
+                  ? <><PauseCircle className="h-3 w-3 text-warning-soft-foreground shrink-0" />{t(`flightDay.reasons.${p.pause.reason}`)}</>
                   : t(`flightDay.status.${p.presence}`)}
               </span>
             </button>

@@ -41,7 +41,7 @@ export default function DuplicatePlaces({ locations, flightCounts, onMerged }: {
   };
 
   return (
-    <Card className="border-primary/40 bg-primary/5 shadow-sm">
+    <Card className="border-primary/40 bg-primary/5">
       <CardContent className="p-3 space-y-2">
         <p className="text-sm font-medium flex items-center gap-1.5"><Combine className="h-4 w-4 text-primary" />{t("locations.merge.duplicatesTitle")}</p>
         {groups.map(({ site, places }) => (

@@ -219,7 +219,7 @@ export default function EventDetail() {
   const totalSignedUp = confirmedSignups.length;
   const deadlinePassed = !!event.signup_deadline && new Date(event.signup_deadline) < new Date();
   const statusLabel = event.status === "confirmed" ? t("events.statusConfirmed") : event.status === "cancelled" ? t("events.statusCancelled") : t("events.statusAnnounced");
-  const statusColor = event.status === "confirmed" ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400" : event.status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400" : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
+  const statusColor = event.status === "confirmed" ? "bg-success-soft text-success-soft-foreground " : event.status === "cancelled" ? "bg-destructive-soft text-destructive-soft-foreground " : "bg-accent text-accent-foreground ";
   const isPast = new Date(event.event_date) < new Date();
 
   const isSchool = event.groups?.group_type === "school";
@@ -283,7 +283,7 @@ export default function EventDetail() {
       {showDayTab && presenceLabel(s) && (
         <Badge variant={s.presence === "present" ? "secondary" : "outline"} className="text-[9px] px-1.5 py-0 h-4 shrink-0">{presenceLabel(s)}</Badge>
       )}
-      {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />}
+      {s.confirmed_by_school && <ShieldCheck className="h-4 w-4 text-success-soft-foreground shrink-0" />}
       {isStaff && <EmergencyInfoDialog eventId={id!} userId={s.user_id} pilotName={profiles[s.user_id] || t("events.pilot")} />}
       {isStaff && (
         <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 shrink-0" onClick={() => toggleSchoolConfirm(s)}>
@@ -294,7 +294,7 @@ export default function EventDetail() {
   );
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-3">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-3">
       {/* Header: title, one compact meta line; admin actions in one menu */}
       <div className="flex items-start gap-1">
         <Button variant="ghost" size="icon" className="shrink-0 -ml-2" onClick={() => navigate("/events")}><ArrowLeft className="h-5 w-5" /></Button>
@@ -359,7 +359,7 @@ export default function EventDetail() {
 
       {/* Sign-up strip: participants, deadline and the pilot's own action in one row */}
       {canSignUp && (
-        <div className="flex items-center gap-3 rounded-xl bg-card shadow-sm px-3 py-2.5">
+        <div className="flex items-center gap-3 rounded-xl bg-card px-3 py-2.5">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium flex items-center gap-1.5">
               <Users className="h-4 w-4 text-primary" />{totalSignedUp}{event.max_participants ? ` / ${event.max_participants}` : ""} {t("events.signedUpShort")}
@@ -367,14 +367,14 @@ export default function EventDetail() {
             {(event.signup_deadline || (isSignedUp && mySignup?.confirmed_by_school)) && (
               <p className="text-[11px] text-muted-foreground truncate">
                 {isSignedUp && mySignup?.confirmed_by_school
-                  ? <span className="text-green-600 dark:text-green-400">{t("events.confirmedBySchool")}</span>
+                  ? <span className="text-success-soft-foreground">{t("events.confirmedBySchool")}</span>
                   : `${t("events.signupDeadline")}: ${new Date(event.signup_deadline).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}`}
               </p>
             )}
           </div>
           <Button
             size="sm"
-            className={`shrink-0 gap-1.5 ${isSignedUp && !myWaitlist ? "bg-green-600 hover:bg-green-700" : ""}`}
+            className={`shrink-0 gap-1.5 ${isSignedUp && !myWaitlist ? "bg-success hover:bg-success" : ""}`}
             variant={isSignedUp ? "default" : "outline"}
             onClick={toggleSignup}
             disabled={!isSignedUp && deadlinePassed}
@@ -428,13 +428,13 @@ export default function EventDetail() {
           <EventBriefingTasks tasks={briefingTasks} profiles={profiles} maneuverNames={maneuverNames} />
           {!isStaff && <EventProgram eventId={id!} eventDate={event.event_date} endDate={event.end_date || null} canManage={false} />}
           {event.departure_info && (
-            <Card><CardContent className="p-3"><h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
+            <Card><CardContent className="p-3"><h3 className="eyebrow mb-1">{t("events.departureInfo")}</h3><p className="text-sm whitespace-pre-wrap">{event.departure_info}</p></CardContent></Card>
           )}
           <EventCarpools eventId={id!} isSignedUp={isSignedUp} />
           {event.flight_prep_notes && (
-            <Collapsible className="rounded-lg bg-card shadow-sm">
+            <Collapsible className="rounded-lg bg-card">
               <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left group">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.flightPrep")}</span>
+                <span className="eyebrow">{t("events.flightPrep")}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent className="px-3 pb-3"><p className="text-sm whitespace-pre-wrap">{event.flight_prep_notes}</p></CollapsibleContent>
@@ -442,7 +442,7 @@ export default function EventDetail() {
           )}
           {isCreator && photos.length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("events.photos")}</h2>
+              <h2 className="eyebrow">{t("events.photos")}</h2>
               <div className="grid grid-cols-3 gap-2">
                 {photos.map(p => (
                   <div key={p.id} className="relative aspect-square">
@@ -474,7 +474,7 @@ export default function EventDetail() {
             : <Card><CardContent className="px-3 py-1 divide-y">{visibleConfirmed.map(participantRow)}</CardContent></Card>}
           {visibleWaitlist.length > 0 && (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
+              <h2 className="eyebrow mb-2 flex items-center gap-1.5"><Hourglass className="h-3 w-3" /> {t("events.waitlist")}</h2>
               <Card><CardContent className="px-3 py-1 divide-y">{visibleWaitlist.map(s => (
                 <div key={s.user_id} className="flex items-center gap-2 py-2">
                   <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">#{s.waitlist_position || "?"}</Badge>

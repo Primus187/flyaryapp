@@ -69,18 +69,18 @@ export default function PublishPreviewDialog({
 
         {/* Preview card */}
         <div className="px-4">
-          <Card className="border shadow-sm overflow-hidden">
+          <Card className="border overflow-hidden">
             {/* Header */}
-            <div className="flex items-center gap-3 p-3 pb-2">
-              <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
-                <Avatar className="h-8 w-8 border-2 border-background">
+            <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
+              <div className="rounded-[34%]">
+                <Avatar className="h-11 w-11">
                   <AvatarImage src={avatarUrl} />
-                  <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+                  <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
                 </Avatar>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{pilotName}</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="truncate text-[13px] font-medium text-muted-foreground">
                   {groupName && <span>{groupName} · </span>}
                   {flight.takeoff?.name && <><MapPin className="h-3 w-3 inline mr-0.5" />{siteName(flight.takeoff.name)} · </>}
                   {t("feed.justNow")}

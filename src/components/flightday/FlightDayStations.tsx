@@ -49,7 +49,7 @@ export default function FlightDayStations({ eventId, eventCategory, eventDate, r
       <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1" role="radiogroup" aria-label={t("flightDay.view.label")}>
         {(["landing", "takeoff"] as const).map((s) => (
           <button key={s} type="button" role="radio" aria-checked={station === s} onClick={() => choose(s)}
-            className={cn("rounded-md py-2 text-sm font-medium", station === s ? "bg-background shadow-sm" : "text-muted-foreground")}>
+            className={cn("rounded-md py-2 text-sm font-medium", station === s ? "bg-background" : "text-muted-foreground")}>
             {t(`flightDay.view.${s}`)}
           </button>
         ))}

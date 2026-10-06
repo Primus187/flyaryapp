@@ -49,7 +49,7 @@ export default function PushPromptCard() {
   };
 
   return (
-    <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+    <Card className="border-border bg-card/80 backdrop-blur-sm">
       <CardContent className="p-4 flex items-start gap-3">
         <Bell className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="flex-1 space-y-2">

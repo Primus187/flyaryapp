@@ -78,10 +78,10 @@ export default function TrainingItemDetail() {
   }
 
   const sections = [
-    { icon: Target, label: t("training.goal"), text: item.goal, color: "text-emerald-500" },
-    { icon: BookOpen, label: t("training.content"), text: item.content, color: "text-blue-500" },
-    { icon: AlertTriangle, label: t("training.mistakes"), text: item.mistakes, color: "text-amber-500" },
-    { icon: ShieldAlert, label: t("training.danger"), text: item.danger, color: "text-red-500" },
+    { icon: Target, label: t("training.goal"), text: item.goal, color: "text-success-soft-foreground" },
+    { icon: BookOpen, label: t("training.content"), text: item.content, color: "text-link" },
+    { icon: AlertTriangle, label: t("training.mistakes"), text: item.mistakes, color: "text-warning" },
+    { icon: ShieldAlert, label: t("training.danger"), text: item.danger, color: "text-destructive" },
   ];
 
   return (
@@ -95,8 +95,8 @@ export default function TrainingItemDetail() {
         {item.is_exam_maneuver && (
           <div className="mt-2 space-y-1.5">
             <div className="flex items-center gap-1.5">
-              <Shield className="h-4 w-4 text-amber-500" />
-              <span className="text-xs text-amber-600 font-medium">{t("training.shvExamManeuver")}</span>
+              <Shield className="h-4 w-4 text-warning" />
+              <span className="text-xs text-warning-soft-foreground font-medium">{t("training.shvExamManeuver")}</span>
             </div>
             <a
               href="https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Ausbildung/Weisungen/Gleitschirm_Pilot_Juli2025_DE.pdf"
@@ -115,7 +115,7 @@ export default function TrainingItemDetail() {
               <Star
                 className={cn(
                   "h-7 w-7 transition-colors",
-                  star <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+                  star <= rating ? "fill-warning text-warning" : "text-muted-foreground/30"
                 )}
               />
             </button>

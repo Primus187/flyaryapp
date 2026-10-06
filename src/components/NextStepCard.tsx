@@ -30,7 +30,7 @@ export default function NextStepCard({ hasProfileName, flightCount, goalCount, o
 
   return (
     <section aria-label={t("nextStep.title")}>
-      <Card className="border border-primary/25 bg-primary/5 shadow-sm">
+      <Card className="border border-primary/25 bg-primary/5">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">

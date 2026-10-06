@@ -95,7 +95,7 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("flightDay.takeoff.title")}</h2>
+        <h2 className="eyebrow">{t("flightDay.takeoff.title")}</h2>
         <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
           <MapPin className="h-3 w-3 shrink-0" />{siteName(site) || t("flightDay.sites.notSet")}
         </span>
@@ -113,8 +113,8 @@ export default function TakeoffBoard({ eventId, signups, profiles, settingsVersi
               <p className="truncate text-sm font-medium">{name}</p>
               <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
                 <span className="flex items-center gap-0.5"><Plane className="h-3 w-3" />{counts[p.userId] || 0}</span>
-                {current && <span className="text-sky-600 dark:text-sky-400">{t("flightDay.board.inAir", { minutes: airborneMinutes(current, now) ?? 0 })}</span>}
-                {!current && p.pause && <span className="flex items-center gap-0.5 text-amber-600"><PauseCircle className="h-3 w-3" />{t(`flightDay.reasons.${p.pause.reason}`)}</span>}
+                {current && <span className="text-link">{t("flightDay.board.inAir", { minutes: airborneMinutes(current, now) ?? 0 })}</span>}
+                {!current && p.pause && <span className="flex items-center gap-0.5 text-warning-soft-foreground"><PauseCircle className="h-3 w-3" />{t(`flightDay.reasons.${p.pause.reason}`)}</span>}
                 {!current && !p.pause && last?.start_note && <span className="truncate">{last.start_note}</span>}
               </p>
             </div>

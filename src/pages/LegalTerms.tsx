@@ -8,7 +8,7 @@ export default function LegalTerms() {
   const { t } = useTranslation();
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />

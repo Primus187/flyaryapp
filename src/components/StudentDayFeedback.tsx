@@ -27,7 +27,7 @@ interface MyFlight {
   items: { name: string; rating: 1 | 2 | 3 }[];
 }
 
-const ratingClass = { 1: "bg-red-500", 2: "bg-amber-500", 3: "bg-green-600" } as const;
+const ratingClass = { 1: "bg-destructive-soft0", 2: "bg-warning-soft0", 3: "bg-success" } as const;
 
 /** The student's feedback of a flying day: the school's flights with rated maneuvers and feedback,
  *  former coaching slots and the day summary. Everything appears once the day is released (E8). */
@@ -67,7 +67,7 @@ export default function StudentDayFeedback({ eventId }: Props) {
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <h2 className="eyebrow">
         {t("events.yourFeedback")}
       </h2>
       {flights.map((f) => (

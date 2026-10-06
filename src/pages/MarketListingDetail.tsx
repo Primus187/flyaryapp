@@ -204,8 +204,8 @@ export default function MarketListingDetail() {
       )}
 
       {reviewState && (
-        <Card className="border-amber-500/40"><CardContent className="flex items-center gap-3 p-3">
-          <Star className="h-5 w-5 shrink-0 fill-amber-500 text-amber-500" />
+        <Card className="border-warning/40"><CardContent className="flex items-center gap-3 p-3">
+          <Star className="h-5 w-5 shrink-0 fill-warning text-warning" />
           <p className="flex-1 text-sm">{t(`market.reviews.prompt_${reviewState}`)}</p>
           <Button size="sm" onClick={() => setReviewing(true)}>{t("market.reviews.rate")}</Button>
         </CardContent></Card>
@@ -216,8 +216,8 @@ export default function MarketListingDetail() {
       )}
 
       {fit && (
-        <p className={fit === "fits" ? "rounded-md bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300"
-          : "rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300"}>
+        <p className={fit === "fits" ? "rounded-md bg-success-soft0/10 px-3 py-2 text-xs text-success-soft-foreground"
+          : "rounded-md bg-warning-soft0/10 px-3 py-2 text-xs text-warning-soft-foreground dark:text-warning"}>
           {t(fit === "fits" ? "market.radius.weightFits" : "market.radius.weightOutside", { kg: myWeight })}
         </p>
       )}
@@ -226,7 +226,7 @@ export default function MarketListingDetail() {
           {hints.map((h) => (
             <p key={h.code} className="flex items-start gap-2 text-xs">
               {h.severity === "warning"
-                ? <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+                ? <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
                 : <Info className="h-4 w-4 shrink-0 text-muted-foreground" />}
               {t(`market.safety.${h.code}`, { months: h.months })}
             </p>

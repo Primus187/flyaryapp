@@ -39,14 +39,14 @@ export default function Legal() {
         <button
           type="button"
           onClick={() => navigate("/legal/terms")}
-          className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.99] transition-all"
+          className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-muted/50 active:scale-[0.99] transition-all"
         >
           <span className="text-sm font-medium">{t("legal.termsTitle")}</span>
         </button>
         <button
           type="button"
           onClick={() => navigate("/legal/licenses")}
-          className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-muted/50 active:scale-[0.99] transition-all"
+          className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-muted/50 active:scale-[0.99] transition-all"
         >
           <span className="text-sm font-medium">{t("legal.licensesTitle")}</span>
         </button>

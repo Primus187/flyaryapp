@@ -18,8 +18,8 @@ export default function InAirBar({ flights, names, now, hintMinutes, onSelect }:
   const inAir = flightsInAir(flights);
   if (inAir.length === 0) return null;
   return (
-    <div className="rounded-lg border border-sky-500/40 bg-sky-50 px-3 py-2 dark:bg-sky-950/30" role="status" aria-live="polite">
-      <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300">
+    <div className="rounded-lg border border-sky-500/40 bg-accent px-3 py-2" role="status" aria-live="polite">
+      <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-link">
         <Plane className="h-3.5 w-3.5" />{t("flightDay.inAir.title", { count: inAir.length })}
       </p>
       <div className="flex flex-wrap gap-1.5">
@@ -29,7 +29,7 @@ export default function InAirBar({ flights, names, now, hintMinutes, onSelect }:
           return (
             <button key={f.id} type="button" disabled={!onSelect} onClick={() => onSelect?.(f)}
               className={cn("rounded-full border px-3 py-1.5 text-xs font-medium",
-                due ? "border-orange-500 bg-orange-500 text-white" : "border-sky-500/50 bg-background")}>
+                due ? "border-warning/40 bg-warning-soft0 text-white" : "border-sky-500/50 bg-background")}>
               {label}{due && ` · ${t("flightDay.inAir.hint")}`}
             </button>
           );

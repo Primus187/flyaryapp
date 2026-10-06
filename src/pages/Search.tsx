@@ -98,7 +98,7 @@ export default function SearchPage() {
   const showPilots = tab === "all" || tab === "pilots";
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ChevronLeft className="h-5 w-5" /></Button>
         <h1 className="text-xl font-bold tracking-tight">{t("search.title")}</h1>
@@ -132,7 +132,7 @@ export default function SearchPage() {
 
       {q && showFlights && filteredFlights.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <h2 className="eyebrow mb-2 flex items-center gap-1.5">
             <Plane className="h-3 w-3" /> {t("dashboard.flights")} ({filteredFlights.length})
           </h2>
           <div className="space-y-1.5">
@@ -154,7 +154,7 @@ export default function SearchPage() {
 
       {q && showLocations && filteredLocations.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <h2 className="eyebrow mb-2 flex items-center gap-1.5">
             <MapPin className="h-3 w-3" /> {t("locations.title")} ({filteredLocations.length})
           </h2>
           <div className="space-y-1.5">
@@ -174,7 +174,7 @@ export default function SearchPage() {
 
       {q && showEvents && filteredEvents.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <h2 className="eyebrow mb-2 flex items-center gap-1.5">
             <Calendar className="h-3 w-3" /> {t("events.title")} ({filteredEvents.length})
           </h2>
           <div className="space-y-1.5">
@@ -192,7 +192,7 @@ export default function SearchPage() {
 
       {q && showPilots && filteredPilots.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <h2 className="eyebrow mb-2 flex items-center gap-1.5">
             <User className="h-3 w-3" /> {t("search.pilots")} ({filteredPilots.length})
           </h2>
           <div className="space-y-1.5">

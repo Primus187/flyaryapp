@@ -66,9 +66,9 @@ export default function SchoolShop({ groupId }: { groupId: string }) {
 
   return (
     <div className="space-y-4">
-      <Card className={shop.ready ? "border-green-500/40" : "border-amber-500/40"}>
+      <Card className={shop.ready ? "border-success/40" : "border-warning/40"}>
         <CardContent className="flex items-start gap-3 p-3">
-          {shop.ready ? <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" /> : <Store className="h-5 w-5 shrink-0 text-amber-600" />}
+          {shop.ready ? <CheckCircle2 className="h-5 w-5 shrink-0 text-success-soft-foreground" /> : <Store className="h-5 w-5 shrink-0 text-warning-soft-foreground" />}
           <p className="text-sm">{shop.ready ? t("market.shop.ready") : t("market.shop.notReady")}</p>
         </CardContent>
       </Card>

@@ -332,7 +332,7 @@ export default function MarketListingForm() {
             </Select>
           ))}
           {sellerGroup && shops.some((s) => s.group_id === sellerGroup && !s.ready) && (
-            <p className="rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">{t("market.shop.notReadyForm")}</p>
+            <p className="rounded-md bg-warning-soft0/10 px-3 py-2 text-xs text-warning-soft-foreground dark:text-warning">{t("market.shop.notReadyForm")}</p>
           )}
           <div className="grid grid-cols-2 gap-2">
             {LISTING_TYPES.map((type) => (
@@ -414,7 +414,7 @@ export default function MarketListingForm() {
               <p className="text-xs text-muted-foreground">{t("market.form.safetyPreview")}</p>
               {hints.map((h) => (
                 <p key={h.code} className="flex items-start gap-1.5 text-xs">
-                  {h.severity === "warning" ? <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" /> : <Info className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+                  {h.severity === "warning" ? <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" /> : <Info className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
                   {t(`market.safety.${h.code}`, { months: h.months })}
                 </p>
               ))}

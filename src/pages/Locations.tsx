@@ -180,7 +180,7 @@ export default function Locations() {
   const toggleSection = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const sectionConfig = [
-    { key: "takeoff", icon: ArrowUpCircle, label: t("locations.takeoff"), color: "text-secondary" },
+    { key: "takeoff", icon: ArrowUpCircle, label: t("locations.takeoff"), color: "text-success" },
     { key: "landing", icon: ArrowDownCircle, label: t("locations.landingPlace"), color: "text-destructive" },
     { key: "both", icon: Combine, label: t("locations.both"), color: "text-primary" },
   ] as const;
@@ -192,14 +192,14 @@ export default function Locations() {
         <CardContent className="p-3 flex items-center justify-between">
           <div>
             <p className="font-medium text-sm flex items-center gap-1.5">
-              {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+              {loc.latitude === 0 && loc.longitude === 0 && <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0" />}
               {loc.country_code && <span>{getFlagEmoji(loc.country_code)}</span>}
               {siteName(loc.name)}
               {loc.official_site_id && <BadgeCheck className="h-3.5 w-3.5 text-primary shrink-0" aria-label={t("locations.official.badge")} />}
             </p>
             <p className="text-xs text-muted-foreground">
               {loc.altitude && <span>{loc.altitude}m</span>}
-              {loc.latitude === 0 && loc.longitude === 0 && <span className="text-amber-500"> · {t("common.noPosition")}</span>}
+              {loc.latitude === 0 && loc.longitude === 0 && <span className="text-warning"> · {t("common.noPosition")}</span>}
               {stats && stats.count > 0 && (
                 <span>
                   {(loc.altitude || (loc.latitude === 0 && loc.longitude === 0)) && " · "}

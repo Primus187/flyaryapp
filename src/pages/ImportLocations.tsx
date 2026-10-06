@@ -106,7 +106,7 @@ export default function ImportLocations() {
   const updateCount = toProcess.filter(l => !l.isNew).length;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <button onClick={() => navigate("/profile")} className="flex items-center gap-1 text-sm text-muted-foreground mb-2"><ArrowLeft className="h-4 w-4" /> {t("import.backToProfile")}</button>
       <h1 className="text-2xl font-bold tracking-tight">{t("import.importLocations")}</h1>
 
@@ -180,7 +180,7 @@ export default function ImportLocations() {
       {state === "done" && (
         <Card>
           <CardContent className="pt-6 space-y-4 text-center">
-            <CheckCircle2 className="h-12 w-12 mx-auto text-green-600" />
+            <CheckCircle2 className="h-12 w-12 mx-auto text-success-soft-foreground" />
             <div className="text-sm font-medium space-y-1">
               {resultInserted > 0 && <p>{resultInserted} {t("import.newLocations")} {t("import.importDone")}</p>}
               {resultUpdated > 0 && <p>{resultUpdated} {t("import.locationsUpdated")}</p>}

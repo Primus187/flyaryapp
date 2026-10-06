@@ -82,7 +82,7 @@ export default function WaitingRoom({ access }: { access: AppAccess }) {
   };
 
   const toggle = (d: string) => setDisciplines((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
-  const chip = (active: boolean) => `rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground"}`;
+  const chip = (active: boolean) => `rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${active ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground"}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "linear-gradient(145deg, hsl(199 89% 28%) 0%, hsl(199 89% 38%) 35%, hsl(152 44% 40%) 100%)" }}>

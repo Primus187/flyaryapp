@@ -107,7 +107,7 @@ export default function ReactionPicker({ reactions, currentUserId, onReact, size
             {getReactionEmoji(myReaction!.reaction_type)}
           </span>
         ) : (
-          <Heart className={cn(iconSize, "transition-transform", isLiked ? "fill-red-500 text-red-500" : "text-foreground", likeAnimating && "animate-like-bounce")} />
+          <Heart className={cn(iconSize, "transition-transform", isLiked ? "fill-destructive text-destructive" : "text-foreground", likeAnimating && "animate-like-bounce")} />
         )}
       </button>
     </div>

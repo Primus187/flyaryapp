@@ -57,7 +57,7 @@ export default function AlternativeDateSuggestion({ eventId, groupId, eventDate 
   if (dates === null) return null;
 
   return (
-    <Card className="border-amber-500/40 bg-amber-500/5">
+    <Card className="border-warning/40 bg-warning-soft0/5">
       <CardContent className="p-3 space-y-2">
         <p className="text-xs font-semibold flex items-center gap-1.5">
           <CalendarClock className="h-3.5 w-3.5" />

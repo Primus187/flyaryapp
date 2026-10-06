@@ -35,9 +35,9 @@ interface Entry {
 }
 
 const STATUS_STYLES: Record<AvailabilityStatus, string> = {
-  available: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/40",
-  unsure: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40",
-  unavailable: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/40",
+  available: "bg-success-soft0/15 text-success-soft-foreground border-success/40",
+  unsure: "bg-warning-soft0/15 text-warning-soft-foreground dark:text-warning border-warning/40",
+  unavailable: "bg-destructive-soft0/15 text-destructive border-destructive/40",
 };
 
 export default function TeamAvailability({ groupId, canManage = true }: Props) {
@@ -163,9 +163,9 @@ export default function TeamAvailability({ groupId, canManage = true }: Props) {
         <EmptyState icon={CalendarClock} title={t("school.availability.noTeam")} description={t("school.availability.noTeamHint")} />
       ) : (
         dates.map((date) => (
-          <Card key={date} className="border-border/60 bg-card/80">
+          <Card key={date} className="border-border bg-card/80">
             <CardContent className="p-3 space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <p className="eyebrow">
                 {parseIsoDateLocal(date).toLocaleDateString("de-CH", { weekday: "long", day: "numeric", month: "short" })}
               </p>
               <div className="space-y-1.5">

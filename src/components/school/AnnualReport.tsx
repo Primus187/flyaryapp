@@ -173,7 +173,7 @@ export default function AnnualReport({ groupId }: Props) {
   };
 
   return (
-    <Card className="border-border/60 bg-card/80">
+    <Card className="border-border bg-card/80">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
@@ -191,7 +191,7 @@ export default function AnnualReport({ groupId }: Props) {
         </div>
 
         {previousOpen && new Date().getMonth() === 0 && (
-          <p className="text-xs text-amber-500 flex items-center gap-1.5">
+          <p className="text-xs text-warning flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5" />
             {t("school.annual.reminder", { year: currentYear - 1 })}
           </p>

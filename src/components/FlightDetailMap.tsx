@@ -64,7 +64,7 @@ export default function FlightDetailMap({ takeoff, landing, trackPoints = [] }: 
   const mapKey = `${center[0].toFixed(3)}-${center[1].toFixed(3)}-${boundsPoints.length}`;
 
   return (
-    <div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 250 }}>
+    <div className="rounded-xl overflow-hidden border border-border" style={{ height: 250 }}>
       <MapContainer key={mapKey} center={center} zoom={12} className="h-full w-full" zoomControl={false}>
         <TileLayer
           url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"

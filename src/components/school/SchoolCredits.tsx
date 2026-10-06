@@ -159,7 +159,7 @@ export default function SchoolCredits({ groupId }: Props) {
 
   return (
     <div className="space-y-4 pt-3">
-      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+      <Card className="border-border bg-card/80 backdrop-blur-sm">
         <CardContent className="p-4 flex items-center justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("school.credits.totalOpen")}</p>
@@ -184,7 +184,7 @@ export default function SchoolCredits({ groupId }: Props) {
         ) : (
           <div className="space-y-2">
             {balances.map((b) => (
-              <Card key={b.user_id} className="border-border/60 bg-card/80 shadow-sm">
+              <Card key={b.user_id} className="border-border bg-card/80">
                 <CardContent className="p-3 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{nameOf(b.user_id)}</p>
@@ -207,7 +207,7 @@ export default function SchoolCredits({ groupId }: Props) {
         <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("school.credits.bookings")}</h2>
         <div className="space-y-2">
           {rows.slice(0, 30).map((r) => (
-            <Card key={r.id} className="border-border/60 bg-card/80 shadow-sm">
+            <Card key={r.id} className="border-border bg-card/80">
               <CardContent className="p-3 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">

@@ -18,9 +18,9 @@ interface Props {
 }
 
 const SHV_AMPEL_STYLES: Record<ShvMinimumPerformanceStatus, string> = {
-  ok: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  warning: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  critical: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+  ok: "bg-success-soft0/10 text-success-soft-foreground",
+  warning: "bg-warning-soft0/10 text-warning-soft-foreground dark:text-warning",
+  critical: "bg-destructive-soft0/10 text-destructive",
 };
 
 export default function SchoolOverview({ groupId, studentCount, nextEvent, openNotesCount, openBilling, nextSignups, licensedCount }: Props) {
@@ -73,7 +73,7 @@ export default function SchoolOverview({ groupId, studentCount, nextEvent, openN
       {nextEvent && (
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground uppercase font-semibold">{t("school.nextFlightDay")}</p>
+            <p className="eyebrow">{t("school.nextFlightDay")}</p>
             <p className="font-medium mt-1">{nextEvent.title}</p>
             <p className="text-sm text-muted-foreground">
               {new Date(nextEvent.event_date).toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short" })}

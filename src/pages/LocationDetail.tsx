@@ -18,9 +18,9 @@ import MergeLocationDialog from "@/components/MergeLocationDialog";
 const markerIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
 const WIND_MATCH_STYLES: Record<WindMatchStatus, string> = {
-  match: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  borderline: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  unsuitable: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+  match: "bg-success-soft0/10 text-success-soft-foreground",
+  borderline: "bg-warning-soft0/10 text-warning-soft-foreground dark:text-warning",
+  unsuitable: "bg-destructive-soft0/10 text-destructive",
 };
 
 export default function LocationDetail() {
@@ -39,7 +39,7 @@ export default function LocationDetail() {
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
 
   const typeLabel = (ty: string) => ty === "takeoff" ? t("locations.takeoff") : ty === "landing" ? t("locations.landingPlace") : t("locations.both");
-  const typeColor = (ty: string) => ty === "takeoff" ? "text-secondary" : ty === "landing" ? "text-destructive" : "text-primary";
+  const typeColor = (ty: string) => ty === "takeoff" ? "text-success" : ty === "landing" ? "text-destructive" : "text-primary";
 
   useEffect(() => {
     if (!user || !id) return;
@@ -100,7 +100,7 @@ export default function LocationDetail() {
   const getCounterLocation = (flight: any) => { if (flight.takeoff_location_id === id) return flight.landing?.name ? `→ ${siteName(flight.landing.name)}` : ""; return flight.takeoff?.name ? `${siteName(flight.takeoff.name)} →` : ""; };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/locations")}><ArrowLeft className="h-4 w-4" /></Button>{location.country_code && <span className="text-lg">{getFlagEmoji(location.country_code)}</span>}<h1 className="text-xl font-bold tracking-tight">{siteName(location.name)}</h1>{location.official_site_id && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label={t("locations.official.badge")} />}</div>
         <div className="flex gap-1">
@@ -113,7 +113,7 @@ export default function LocationDetail() {
       {location.official_site_id && location.custom_name && officialById.get(location.official_site_id) && (
         <p className="-mt-2 pl-10 text-xs text-muted-foreground">{t("locations.official.officialName", { name: siteName(officialName(officialById.get(location.official_site_id)!)) })}</p>
       )}
-      {hasCoords && (<div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 220 }}><MapContainer center={[location.latitude, location.longitude]} zoom={13} className="h-full w-full" zoomControl={false}><TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} /><Marker position={[location.latitude, location.longitude]} icon={markerIcon} /></MapContainer></div>)}
+      {hasCoords && (<div className="rounded-xl overflow-hidden border border-border" style={{ height: 220 }}><MapContainer center={[location.latitude, location.longitude]} zoom={13} className="h-full w-full" zoomControl={false}><TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" attribution="OpenTopoMap" maxZoom={17} /><Marker position={[location.latitude, location.longitude]} icon={markerIcon} /></MapContainer></div>)}
       {hasCoords && (
         <Button asChild variant="outline" size="sm" className="w-full gap-1.5">
           <a href={burnairMapUrl(location.latitude, location.longitude)} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t("locations.openBurnair")}</a>
@@ -183,9 +183,9 @@ export default function LocationDetail() {
         const hasInsight = (longest && (longest.distance_km || 0) > 0) || (longestDur && (longestDur.duration_minutes || 0) > 0);
         if (!hasInsight) return null;
         return (
-          <Card className="bg-gradient-to-br from-primary/5 via-card to-card">
+          <Card className="">
             <CardContent className="p-3 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 eyebrow">
                 <Trophy className="h-3 w-3" /> {t("locations.insights", "Highlights")}
               </div>
               {longest && (longest.distance_km || 0) > 0 && (

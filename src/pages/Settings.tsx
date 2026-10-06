@@ -305,7 +305,7 @@ export default function Settings() {
   ];
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
@@ -392,7 +392,7 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <Card className="border border-destructive/30 shadow-sm">
+      <Card className="border border-destructive/30">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-destructive">
             <ShieldAlert className="h-4 w-4" /> {t("settings.dangerZone")}

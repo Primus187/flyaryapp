@@ -177,7 +177,7 @@ function FeedbackItem({
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button key={star} type="button" onClick={() => setRating(rating === star ? 0 : star)} className="p-0.5">
-                <Star className={cn("h-5 w-5 transition-colors", star <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
+                <Star className={cn("h-5 w-5 transition-colors", star <= rating ? "fill-warning text-warning" : "text-muted-foreground/30")} />
               </button>
             ))}
           </div>
@@ -197,7 +197,7 @@ function FeedbackItem({
           {item.instructor_rating && (
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} className={cn("h-4 w-4", star <= (item.instructor_rating || 0) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/20")} />
+                <Star key={star} className={cn("h-4 w-4", star <= (item.instructor_rating || 0) ? "fill-warning text-warning" : "text-muted-foreground/20")} />
               ))}
             </div>
           )}

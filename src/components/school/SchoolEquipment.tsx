@@ -376,7 +376,7 @@ export default function SchoolEquipment({ groupId }: Props) {
           {maintenanceError && <p role="alert" className="text-sm text-destructive">{t("school.maintenance.loadFailed")}</p>}
           <div className="grid grid-cols-3 gap-2">
             {(["in_stock", "assigned", "retired"] as const).map((k) => (
-              <Card key={k} className="border-border/60 bg-card/80">
+              <Card key={k} className="border-border bg-card/80">
                 <CardContent className="p-3 text-center">
                   <p className="text-lg font-bold">{counts[k]}</p>
                   <p className="text-[11px] text-muted-foreground">{t(`school.equipment.status.${k}`)}</p>
@@ -421,7 +421,7 @@ export default function SchoolEquipment({ groupId }: Props) {
               {filteredEquipment.map((item) => {
                 const open = openAssignments.find((a) => a.equipment_id === item.id);
                 return (
-                  <Card key={item.id} className="border-border/60 bg-card/80">
+                  <Card key={item.id} className="border-border bg-card/80">
                     <CardContent className="p-3 space-y-2">
                       <div className="flex items-start gap-2">
                         <Package className="h-4 w-4 mt-0.5 text-primary shrink-0" />
@@ -498,7 +498,7 @@ export default function SchoolEquipment({ groupId }: Props) {
             assignments.map((a) => {
               const item = equipment.find((e) => e.id === a.equipment_id);
               return (
-                <Card key={a.id} className="border-border/60 bg-card/80">
+                <Card key={a.id} className="border-border bg-card/80">
                   <CardContent className="p-3 flex items-center gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{memberName(a.user_id)}</p>
@@ -526,7 +526,7 @@ export default function SchoolEquipment({ groupId }: Props) {
         <TabsContent value="rates" className="space-y-3 pt-3">
           <p className="text-xs text-muted-foreground">{t("school.equipment.ratesHint")}</p>
           {rates.length === 0 && (
-            <Card className="border-border/60 bg-card/80 shadow-sm">
+            <Card className="border-border bg-card/80">
               <CardContent className="p-3 space-y-2">
                 <p className="text-xs text-muted-foreground">{t("school.equipment.ratesSuggestHint")}</p>
                 <Button size="sm" className="w-full" onClick={applySuggestedRates} disabled={saving}>
@@ -687,7 +687,7 @@ function RateRow({
   const dirty = amount !== (existing ? String(existing.amount) : "") || unit !== (existing?.unit || "CHF");
 
   return (
-    <Card className="border-border/60 bg-card/80">
+    <Card className="border-border bg-card/80">
       <CardContent className="p-3 space-y-2">
         <p className="text-sm font-medium">{t(`school.equipment.rates.${rateKey}`)}</p>
         <div className="flex gap-2">

@@ -25,7 +25,7 @@ export default function EventBriefingTasks({ tasks, profiles, maneuverNames }: P
     <div className="space-y-3">
       {tasks.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <h2 className="eyebrow mb-2">
             {t("events.briefingLabel")}
           </h2>
           <div className="space-y-1.5">
@@ -49,7 +49,7 @@ export default function EventBriefingTasks({ tasks, profiles, maneuverNames }: P
 
       {maneuverNames.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <h2 className="eyebrow mb-2">
             {t("events.plannedManeuvers")}
           </h2>
           <div className="flex flex-wrap gap-1.5">

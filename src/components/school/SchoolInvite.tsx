@@ -64,7 +64,7 @@ export default function SchoolInvite({ groupId }: Props) {
   if (!code) return null;
 
   return (
-    <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+    <Card className="border-border bg-card/80 backdrop-blur-sm">
       <CardContent className="p-4 space-y-3">
         <div>
           <p className="font-semibold text-sm">{t("school.invite.title")}</p>

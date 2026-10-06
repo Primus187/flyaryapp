@@ -125,7 +125,7 @@ export default function EquipmentMaintenance({ groupId }: Props) {
       </Button>
 
       {dueSoon.length > 0 && (
-        <p className="text-xs text-amber-500 flex items-center gap-1.5">
+        <p className="text-xs text-warning flex items-center gap-1.5">
           <AlertTriangle className="h-3.5 w-3.5" />
           {t("school.maintenance.dueSoonCount", { count: dueSoon.length })}
         </p>
@@ -151,7 +151,7 @@ export default function EquipmentMaintenance({ groupId }: Props) {
         visibleRows.map((r) => {
           const overdue = maintenanceStatus(r.due_at, r.completed_at) === "overdue";
           return (
-            <Card key={r.id} className="border-border/60 bg-card/80">
+            <Card key={r.id} className="border-border bg-card/80">
               <CardContent className="p-3 flex items-center gap-2">
                 <Wrench className={`h-4 w-4 shrink-0 ${overdue ? "text-destructive" : "text-primary"}`} />
                 <div className="flex-1 min-w-0">

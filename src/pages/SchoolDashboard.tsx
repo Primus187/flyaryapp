@@ -118,7 +118,7 @@ export default function SchoolDashboard() {
 
   if (loading || (selectedGroupId && canManageSchool && sectionData.isPending)) {
     return (
-      <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+      <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
@@ -129,7 +129,7 @@ export default function SchoolDashboard() {
 
   if (schoolGroups.length === 0) {
     return (
-      <div className="px-4 pt-6 pb-4 max-w-lg mx-auto text-center space-y-3">
+      <div className="px-5 pt-5 pb-4 max-w-lg mx-auto text-center space-y-3">
         <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto" />
         <h1 className="text-xl font-bold">{t("school.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("school.noSchool")}</p>
@@ -230,7 +230,7 @@ export default function SchoolDashboard() {
                 key={key}
                 type="button"
                 onClick={() => navigate(`/school/${key}`)}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/60 shadow-sm hover:bg-muted/50 active:scale-[0.97] transition-all text-left"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border hover:bg-muted/50 active:scale-[0.97] transition-all text-left"
               >
                 <Icon className="h-5 w-5 text-primary shrink-0" />
                 <span className="text-sm font-medium leading-tight">{t(labelKey)}</span>

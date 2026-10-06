@@ -172,7 +172,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
 
   return (
     <section className="space-y-1.5">
-      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("flightDay.board.title")}</h2>
+      <h2 className="eyebrow">{t("flightDay.board.title")}</h2>
       <InAirBar flights={flights} names={profiles} now={now} hintMinutes={hint} onSelect={readOnly ? undefined : landFlight} />
       {participants.map((p) => {
         const own = byStudent[p.userId] || [];
@@ -195,8 +195,8 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                         <span key={f.id} className={cn("h-1.5 w-1.5 rounded-full", notes[f.id]?.feedback ? "bg-primary" : "bg-muted-foreground/30")} />
                       ))}
                     </span>
-                    {inAir && <span className="text-sky-600 dark:text-sky-400">{t("flightDay.board.inAir", { minutes: airborneMinutes(inAir, now) ?? 0 })}</span>}
-                    {p.pause && <span className="flex items-center gap-0.5 text-amber-600"><PauseCircle className="h-3 w-3" />{t(`flightDay.reasons.${p.pause.reason}`)}</span>}
+                    {inAir && <span className="text-link">{t("flightDay.board.inAir", { minutes: airborneMinutes(inAir, now) ?? 0 })}</span>}
+                    {p.pause && <span className="flex items-center gap-0.5 text-warning-soft-foreground"><PauseCircle className="h-3 w-3" />{t(`flightDay.reasons.${p.pause.reason}`)}</span>}
                   </span>
                 </span>
               </button>
@@ -230,7 +230,7 @@ export default function FlightBoard({ eventId, eventCategory, signups, profiles,
                       <span className="flex items-center gap-2 text-xs">
                         <span className="font-medium">{label}</span>
                         <span className="text-muted-foreground">{times}{minutes !== null ? ` · ${t("flightDay.board.minutes", { count: minutes })}` : ""}</span>
-                        {f.status === "in_air" && <span className="ml-auto text-sky-600 dark:text-sky-400">{t("flightDay.board.inAirShort")}</span>}
+                        {f.status === "in_air" && <span className="ml-auto text-link">{t("flightDay.board.inAirShort")}</span>}
                       </span>
                       {(notes[f.id]?.feedback || f.start_note) && (
                         <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-2">{notes[f.id]?.feedback || f.start_note}</span>

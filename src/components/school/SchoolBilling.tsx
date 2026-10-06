@@ -218,7 +218,7 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
   };
 
   const ItemCard = ({ i }: { i: Item }) => (
-    <Card className="border-border/60 bg-card/80 shadow-sm">
+    <Card className="border-border bg-card/80">
       <CardContent className="p-3 flex items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
 
   return (
     <div className="space-y-4 pt-3">
-      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+      <Card className="border-border bg-card/80 backdrop-blur-sm">
         <CardContent className="p-4 flex items-center justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("school.billing.openTotal")}</p>
@@ -283,7 +283,7 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
           <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("school.billing.perPerson")}</h2>
           <div className="space-y-2">
             {perPerson.map((p) => (
-              <Card key={p.user_id} className="border-border/60 bg-card/80 shadow-sm">
+              <Card key={p.user_id} className="border-border bg-card/80">
                 <CardContent className="p-3 flex items-center justify-between gap-2">
                   <button
                     type="button"
@@ -406,7 +406,7 @@ tfoot td{font-weight:700;border-top:2px solid #333;border-bottom:none}</style></
           </p>
           <div className="space-y-1.5">
             {statementItems.map((i) => (
-              <div key={i.id} className="flex items-center justify-between gap-2 border-b border-border/50 pb-1.5">
+              <div key={i.id} className="flex items-center justify-between gap-2 border-b border-border pb-1.5">
                 <div className="min-w-0">
                   <p className="text-sm truncate">
                     {t(`school.billing.types.${i.item_type}`)}

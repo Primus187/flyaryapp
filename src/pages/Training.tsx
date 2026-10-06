@@ -145,7 +145,7 @@ export default function Training() {
       {/* SHV Resources Card */}
       <div className="border rounded-xl bg-card p-4 space-y-3">
         <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-amber-500" />
+          <Shield className="h-4 w-4 text-warning" />
           <h2 className="font-semibold text-sm">{t("training.shvResources")}</h2>
         </div>
         <p className="text-xs text-muted-foreground">{t("training.shvResourcesDescription")}</p>
@@ -170,10 +170,10 @@ export default function Training() {
           const pct = categoryProgress(cat.id);
           const locked = isCategoryLocked(cat, progressByCategory);
           return (
-            <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-amber-500/50 bg-amber-500/5")}>
+            <AccordionItem key={cat.id} value={cat.id} className={cn("border rounded-xl bg-card overflow-hidden", cat.name === "SHV-Prüfungsmanöver" && "border-warning/40 bg-warning-soft0/5")}>
               <AccordionTrigger className="px-4 py-3 hover:no-underline">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  {cat.name === "SHV-Prüfungsmanöver" && <Shield className="h-4 w-4 text-amber-500 shrink-0" />}
+                  {cat.name === "SHV-Prüfungsmanöver" && <Shield className="h-4 w-4 text-warning shrink-0" />}
                   <span className="font-semibold text-sm truncate">{cat.name}</span>
                   {cat.training_level && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{levelLabels[cat.training_level as Level] || cat.training_level}</Badge>
@@ -200,7 +200,7 @@ export default function Training() {
                         <button type="button" onClick={() => navigate(`/training/${item.id}`)} className="text-sm min-w-0 flex-1 text-left pr-2">
                           <span className="flex items-center gap-1.5">
                             {item.name}
-                            {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600 shrink-0">SHV</Badge>}
+                            {item.is_exam_maneuver && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-warning/40 text-warning-soft-foreground shrink-0">SHV</Badge>}
                           </span>
                           {instructorRatings[item.id] && (
                             <span className="block text-[11px] text-muted-foreground">
@@ -214,7 +214,7 @@ export default function Training() {
                         <div className="flex gap-0.5 shrink-0">
                           {[1, 2, 3].map((star) => (
                             <button key={star} type="button" disabled={savingItem !== null} aria-label={t("journeys.rate", { name: item.name, count: star })} aria-pressed={star <= rating} onClick={(e) => handleRate(e, item.id, star)} className="p-1.5 disabled:opacity-50 active:scale-90 transition-transform">
-                              <Star className={cn("h-5 w-5 transition-colors", star <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
+                              <Star className={cn("h-5 w-5 transition-colors", star <= rating ? "fill-warning text-warning" : "text-muted-foreground/30")} />
                             </button>
                           ))}
                         </div>

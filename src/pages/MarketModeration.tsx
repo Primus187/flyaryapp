@@ -110,7 +110,7 @@ export default function MarketModeration() {
       {usage && (() => {
         const level = usageLevel(usage.total_bytes);
         return (
-          <Card className={level.warn ? "border-amber-500/50" : undefined}>
+          <Card className={level.warn ? "border-warning/40" : undefined}>
             <CardContent className="space-y-2 p-3">
               <p className="flex items-center gap-2 text-sm font-medium">
                 <HardDrive className="h-4 w-4" /> {t("market.storage.title", { used: formatBytes(usage.total_bytes), percent: level.percent })}
@@ -119,7 +119,7 @@ export default function MarketModeration() {
               <p className="text-[11px] text-muted-foreground">
                 {bucketsBySize(usage).map(([bucket, bytes]) => `${bucket}: ${formatBytes(bytes)}`).join(" · ")}
               </p>
-              {level.warn && <p className="text-xs text-amber-700 dark:text-amber-300">{t("market.storage.warn")}</p>}
+              {level.warn && <p className="text-xs text-warning-soft-foreground dark:text-warning">{t("market.storage.warn")}</p>}
             </CardContent>
           </Card>
         );

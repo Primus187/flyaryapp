@@ -57,7 +57,7 @@ export default function AdminFeedback() {
   };
 
   const chip = (active: boolean) => cn("rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-    active ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground");
+    active ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground");
 
   return (
     <PageContainer className="space-y-4">

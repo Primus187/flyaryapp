@@ -22,7 +22,7 @@ const PAGE_SIZE = 10;
 
 function FeedSkeleton() {
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <Skeleton className="h-6 w-20" />
       {[1, 2].map(i => (
         <div key={i} className="space-y-2">
@@ -301,7 +301,7 @@ export default function Feed() {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4"
+      className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4"
     >
       {/* Pull-to-refresh indicator */}
       <div
@@ -316,19 +316,19 @@ export default function Feed() {
       </div>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold tracking-tight">{t("feed.title")}</h1>
-        <div className="flex items-center gap-1"><MessagesButton /><NotificationBell /></div>
+        <h1 className="text-[28px] leading-[34px] font-extrabold tracking-tight">{t("feed.title")}</h1>
+        <div className="flex items-center gap-2"><MessagesButton /><NotificationBell /></div>
       </div>
 
       {tagFilter && (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
-          <p className="text-sm font-medium text-primary">
+        <div className="flex items-center justify-between gap-2 pl-3.5 pr-2 min-h-11 rounded-lg bg-accent border border-primary/30">
+          <p className="text-sm font-bold text-accent-foreground">
             {t("feed.filteringByTag", { tag: tagFilter, defaultValue: `Filter: #${tagFilter}` })}
           </p>
           <button
             type="button"
             onClick={() => { searchParams.delete("tag"); setSearchParams(searchParams); }}
-            className="text-primary active:scale-90 transition-transform"
+            className="flex h-9 w-9 items-center justify-center text-accent-foreground active:scale-90 transition-transform"
             aria-label={t("common.remove")}
           >
             <X className="h-4 w-4" />

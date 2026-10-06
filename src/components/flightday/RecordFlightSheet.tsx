@@ -118,7 +118,7 @@ export default function RecordFlightSheet({ eventId, studentId, studentName, mod
                       className={cn(
                         "h-12 min-w-[4.25rem] rounded-md border px-2 text-xs font-medium transition-colors",
                         draft.ratings[m.id] === r
-                          ? r === 1 ? "border-red-500 bg-red-500 text-white" : r === 2 ? "border-amber-500 bg-amber-500 text-white" : "border-green-600 bg-green-600 text-white"
+                          ? r === 1 ? "border-destructive/40 bg-destructive-soft0 text-white" : r === 2 ? "border-warning/40 bg-warning-soft0 text-white" : "border-success/40 bg-success text-white"
                           : "bg-background text-muted-foreground",
                       )}
                     >

@@ -113,10 +113,10 @@ export default function FeedStoryBar({ userId, groupIds }: { userId: string; gro
               className="flex flex-col items-center gap-1 min-w-[64px] active:scale-95 transition-transform"
               onClick={() => navigate(`/flights/${p.latest_flight_id}`)}
             >
-              <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
+              <div className="rounded-[34%]">
                 <Avatar className="h-14 w-14 border-2 border-background">
                   <AvatarImage src={p.avatar_url} />
-                  <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+                  <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
                 </Avatar>
               </div>
               <span className="text-[11px] text-muted-foreground truncate max-w-[64px]">

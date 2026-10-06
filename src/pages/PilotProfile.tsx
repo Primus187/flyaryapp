@@ -144,7 +144,7 @@ export default function PilotProfile() {
 
   if (!profile) {
     return (
-      <div className="px-4 pt-6 pb-4 max-w-lg mx-auto text-center">
+      <div className="px-5 pt-5 pb-4 max-w-lg mx-auto text-center">
         <p className="text-muted-foreground">{t("common.error")}</p>
       </div>
     );
@@ -176,7 +176,7 @@ export default function PilotProfile() {
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
           </div>
         ) : (
-          <div className="h-32 w-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20" />
+          <div className="h-32 w-full bg-hero" />
         )}
 
         {/* Back button */}
@@ -189,7 +189,7 @@ export default function PilotProfile() {
 
         {/* Avatar overlapping cover */}
         <div className="flex justify-center -mt-14 relative z-10">
-          <div className="p-[3px] rounded-full bg-gradient-to-tr from-primary via-accent to-secondary shadow-lg">
+          <div className="rounded-[34%]">
             <Avatar className="h-24 w-24 border-[3px] border-background">
               <AvatarImage src={avatarUrl} className="object-cover" />
               <AvatarFallback className="text-2xl bg-muted">{initials}</AvatarFallback>
@@ -243,9 +243,9 @@ export default function PilotProfile() {
           { value: stats.altitudeGain.toLocaleString(), label: t("pilotProfile.altitude") },
           { value: stats.uniqueSites, label: t("pilotProfile.sites") },
         ].map((s, i) => (
-          <div key={i} className="text-center p-2 rounded-xl bg-card border border-border/30">
+          <div key={i} className="text-center p-2 rounded-xl bg-card border border-border">
             <p className="text-lg font-bold tabular-nums">{s.value}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</p>
           </div>
         ))}
       </div>
@@ -270,7 +270,7 @@ export default function PilotProfile() {
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-amber-500" /> {t("pilotProfile.topBadges")}
+              <Trophy className="h-4 w-4 text-warning" /> {t("pilotProfile.topBadges")}
             </CardTitle>
             <button onClick={() => setShowAllBadges(!showAllBadges)} className="text-xs text-primary font-medium">
               {showAllBadges ? t("common.close") : t("badges.showAll")}

@@ -98,7 +98,7 @@ export default function GroupDetail() {
   if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" onClick={() => navigate("/groups")}><ArrowLeft className="h-5 w-5" /></Button>
         <h1 className="text-xl font-bold tracking-tight flex-1 truncate">{group?.name}</h1>

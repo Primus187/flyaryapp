@@ -225,19 +225,19 @@ export default function FlightDetail() {
   const formatDuration = (min: number) => { const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}m` : `${m} min`; };
 
   return (
-    <div className="px-4 pt-4 pb-4 max-w-lg mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/flights")}><ArrowLeft className="h-5 w-5" /></Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold">{siteName(flight.takeoff?.name) || t("flights.flight")}</h1>
-              {(flight as any).is_solo_shv && <Badge variant="default" className="text-[10px] px-1.5 py-0">SHV Solo</Badge>}
-              {flight.discipline === "hangglider" && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t("flightProof.discipline.hangglider")}</Badge>}
-              {flight.is_tandem && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{flight.tandem_kind ? t(`tandem.kind.${flight.tandem_kind}`) : t("flightProof.tandem")}</Badge>}
-              {flight.flight_kind && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`flightProof.kind.${flight.flight_kind}`)}</Badge>}
-              {flight.source === "flightbook" && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t("flightProof.fromFlightbook")}</Badge>}
-              {flight.cancelled_at && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{t("confirmations.cancelled")}</Badge>}
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
+      <div className="flex items-start justify-between gap-1">
+        <div className="flex min-w-0 items-start gap-3">
+          <Button variant="outline" size="icon" className="shrink-0" onClick={() => navigate("/flights")}><ArrowLeft className="h-5 w-5" /></Button>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{siteName(flight.takeoff?.name) || t("flights.flight")}</h1>
+              {(flight as any).is_solo_shv && <Badge variant="default" className="px-2 py-0">SHV Solo</Badge>}
+              {flight.discipline === "hangglider" && <Badge variant="secondary" className="px-2 py-0">{t("flightProof.discipline.hangglider")}</Badge>}
+              {flight.is_tandem && <Badge variant="secondary" className="px-2 py-0">{flight.tandem_kind ? t(`tandem.kind.${flight.tandem_kind}`) : t("flightProof.tandem")}</Badge>}
+              {flight.flight_kind && <Badge variant="outline" className="px-2 py-0">{t(`flightProof.kind.${flight.flight_kind}`)}</Badge>}
+              {flight.source === "flightbook" && <Badge variant="outline" className="px-2 py-0">{t("flightProof.fromFlightbook")}</Badge>}
+              {flight.cancelled_at && <Badge variant="destructive" className="px-2 py-0">{t("confirmations.cancelled")}</Badge>}
             </div>
             <p className="text-xs text-muted-foreground">
               {flight.flight_no != null && <span>{t("flightProof.number", { no: flight.flight_no })} · </span>}
@@ -246,8 +246,8 @@ export default function FlightDetail() {
             </p>
           </div>
         </div>
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" onClick={async () => {
+        <div className="flex shrink-0">
+          <Button variant="ghost" size="icon" className="h-10 w-9" onClick={async () => {
             try {
               let shareToken = (flight as any).share_token;
               if (!shareToken) {
@@ -284,9 +284,9 @@ export default function FlightDetail() {
               }
             }
           }}><Share2 className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/flights/${id}/edit`)}><Edit className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={handleDuplicate}><Copy className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={handleDelete}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          <Button variant="ghost" size="icon" className="h-10 w-9" onClick={() => navigate(`/flights/${id}/edit`)}><Edit className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-10 w-9" onClick={handleDuplicate}><Copy className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-10 w-9" onClick={handleDelete}><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       </div>
       {flight.cancelled_at && (
@@ -296,7 +296,7 @@ export default function FlightDetail() {
         </CardContent></Card>
       )}
       {(flight.takeoff || flight.landing) && (
-        <Card><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-secondary shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center gap-3"><MapPin className="h-5 w-5 text-success shrink-0" /><div className="text-sm"><span className="font-medium">{siteName(flight.takeoff?.name) || "–"}</span><span className="text-muted-foreground mx-2">→</span><span className="font-medium">{siteName(flight.landing?.name) || "–"}</span></div></CardContent></Card>
       )}
       {/* Map with 3D toggle */}
       {track?.track_data && (track.track_data as any).points?.length > 1 && (
@@ -323,7 +323,7 @@ export default function FlightDetail() {
       ) : (
         <FlightDetailMap takeoff={flight.takeoff ? { name: siteName(flight.takeoff.name), latitude: flight.takeoff.latitude, longitude: flight.takeoff.longitude } : null} landing={flight.landing ? { name: siteName(flight.landing.name), latitude: flight.landing.latitude, longitude: flight.landing.longitude } : null} trackPoints={track?.track_data ? ((track.track_data as any).points || []).map((p: any) => [p.lat, p.lng] as [number, number]) : []} />
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 rounded-card border bg-card p-4">
         {(() => {
           const igcStats = (track?.track_data as any)?.stats;
           const items = [
@@ -343,11 +343,11 @@ export default function FlightDetail() {
             );
           }
           return items.map(({ label, value }) => (
-            <Card key={label}><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p><p className="text-sm font-medium mt-0.5">{value}</p></CardContent></Card>
+            <div key={label} className="min-w-0"><p className="truncate text-lg stat-value">{value}</p><p className="text-[11px] font-semibold text-muted-foreground">{label}</p></div>
           ));
         })()}
       </div>
-      {flight.comments && (<Card><CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
+      {flight.comments && (<Card><CardHeader className="pb-2"><CardTitle className="text-base font-bold">{t("flights.comments")}</CardTitle></CardHeader><CardContent className="pt-0"><p className="text-sm text-muted-foreground">{flight.comments}</p></CardContent></Card>)}
       {Array.isArray((flight as any).tags) && (flight as any).tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {((flight as any).tags as string[]).map((tag) => (
@@ -355,14 +355,14 @@ export default function FlightDetail() {
               key={tag}
               type="button"
               onClick={() => navigate(`/feed?tag=${encodeURIComponent(tag)}`)}
-              className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors active:scale-95"
+              className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground transition-colors active:scale-95"
             >
               #{tag}
             </button>
           ))}
         </div>
       )}
-      {groupName && (<Card><CardContent className="p-3"><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
+      {groupName && (<Card><CardContent className="p-3"><p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t("flights.group")}</p><p className="text-sm font-medium mt-0.5">{groupName}</p></CardContent></Card>)}
       {id && user && flight.user_id === user.id && (
         <FlightConfirmationCard flightId={id} cancelled={!!flight.cancelled_at} preferredGroupId={flight.group_id} locale={locale} />
       )}
@@ -372,7 +372,7 @@ export default function FlightDetail() {
       {id && <FlightChangeHistory flightId={id} locale={locale} />}
       {trainedManeuvers.length > 0 && (
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base font-bold">{t("flights_training.trainedManeuvers")}</CardTitle></CardHeader>
           <CardContent className="pt-0">
             <div className="flex flex-wrap gap-1.5">
               {trainedManeuvers.map((name) => (
@@ -387,7 +387,7 @@ export default function FlightDetail() {
       <FlightCoachNote flightId={id!} flightUserId={flight.user_id} groupId={(flight as any).group_id || null} />
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm">{t("flights.photos")}</CardTitle>
+          <CardTitle className="text-base font-bold">{t("flights.photos")}</CardTitle>
           <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}>
             <Plus className="h-3.5 w-3.5" /> {t("flights.addPhotos2")}
           </Button>
@@ -422,7 +422,7 @@ export default function FlightDetail() {
       </Dialog>
       {videos.length > 0 && (
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">{t("flights.videos")}</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base font-bold">{t("flights.videos")}</CardTitle></CardHeader>
           <CardContent className="pt-0 space-y-3">
             {videos.map((v) => {
               const isOwner = flight.user_id === user?.id;

@@ -54,7 +54,7 @@ export default function TrainingStatusCard({ userId, defaultDiscipline = "paragl
                 <div key={`${r.rule}-${i}`} className="space-y-1">
                   <div className="flex items-center justify-between gap-2 text-sm">
                     <span className="flex items-center gap-1.5">
-                      {r.met ? <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" /> : <Circle className="h-4 w-4 text-muted-foreground shrink-0" />}
+                      {r.met ? <CheckCircle2 className="h-4 w-4 text-success-soft-foreground shrink-0" /> : <Circle className="h-4 w-4 text-muted-foreground shrink-0" />}
                       {t(requirementLabelKey(r), { threshold: r.threshold, kind: t(`trainingStatus.evidence.${r.params.kind}`, { defaultValue: r.params.kind ?? "" }) })}
                     </span>
                     <span className="tabular-nums text-xs text-muted-foreground shrink-0">
@@ -68,9 +68,9 @@ export default function TrainingStatusCard({ userId, defaultDiscipline = "paragl
                   {!["evidence_within_years", "evidence_present", "licence_held_years"].includes(r.rule) && <Progress value={progress(r) * 100} className="h-1.5" />}
                 </div>
               ))}
-              {allMet(status) && <p className="text-xs text-green-700 dark:text-green-400">{t("trainingStatus.allMet")}</p>}
+              {allMet(status) && <p className="text-xs text-success-soft-foreground">{t("trainingStatus.allMet")}</p>}
               {status.confirmedWithoutKind > 0 && (
-                <p className="text-xs text-amber-700 dark:text-amber-400">{t("trainingStatus.withoutKind", { count: status.confirmedWithoutKind })}</p>
+                <p className="text-xs text-warning-soft-foreground dark:text-warning">{t("trainingStatus.withoutKind", { count: status.confirmedWithoutKind })}</p>
               )}
               <p className="text-[11px] text-muted-foreground flex gap-1.5"><Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                 {t("trainingStatus.hint", { source: [...new Set(status.requirements.map((r) => r.source))].join("; ") })}</p>

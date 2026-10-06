@@ -72,8 +72,8 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
   const statusColor = isCancelled
     ? "bg-destructive/20 text-destructive"
     : event.status === "confirmed"
-    ? "bg-emerald-500/20 text-emerald-400"
-    : "bg-amber-500/20 text-amber-400";
+    ? "bg-success-soft0/20 text-success-soft-foreground"
+    : "bg-warning-soft0/20 text-warning";
 
   const statusLabel = isCancelled
     ? t("events.statusCancelled")
@@ -87,24 +87,24 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-3 p-3 pb-2">
+      <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
         <button onClick={() => navigate(`/pilot/${event.created_by}`)} className="shrink-0">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
-            <Avatar className="h-8 w-8 border-2 border-background">
+          <div className="rounded-[34%]">
+            <Avatar className="h-11 w-11">
               <AvatarImage src={event.avatar_url} />
-              <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+              <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
             </Avatar>
           </div>
         </button>
         <div className="flex-1 min-w-0">
-          <button onClick={() => navigate(`/pilot/${event.created_by}`)} className="text-sm font-semibold truncate block">
+          <button onClick={() => navigate(`/pilot/${event.created_by}`)} className="text-[15px] font-bold truncate block">
             {event.pilot_name}
           </button>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="truncate text-[13px] font-medium text-muted-foreground">
             {event.group_name} · {relativeTime(event.published_at || event.created_at, t)}
           </p>
         </div>
-        <Badge className={`${statusColor} border-0 shrink-0 text-[10px]`}>{statusLabel}</Badge>
+        <Badge className={`${statusColor} border-0 shrink-0`}>{statusLabel}</Badge>
       </div>
 
       {event.photos.length > 0 && (
@@ -130,7 +130,7 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
         </div>
       )}
 
-      <div className="relative px-4 py-3 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+      <div className="relative px-4 py-3 bg-accent">
         <h3 className="text-base font-bold truncate">{event.title}</h3>
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{eventDate.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}</span>
@@ -157,7 +157,7 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-1 border-t border-border/50">
+        <div className="flex items-center gap-3 pt-1 border-t border-border">
           <ReactionPicker
             reactions={event.likes}
             currentUserId={user?.id}
@@ -198,7 +198,7 @@ export default function FeedEventCard({ event, onSignup, onReact, onComment, onB
                 </p>
                 {onCommentLike && (
                   <button onClick={() => onCommentLike(c.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90">
-                    <span className="text-xs text-muted-foreground hover:text-red-500">❤️</span>
+                    <span className="text-xs text-muted-foreground hover:text-destructive">❤️</span>
                   </button>
                 )}
               </div>

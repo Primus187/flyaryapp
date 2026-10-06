@@ -57,7 +57,7 @@ export default function FeedbackDialog({ open, onOpenChange, mode }: { open: boo
             {FEEDBACK_KINDS.map((k) => (
               <button key={k} type="button" onClick={() => setKind(k)}
                 className={cn("rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                  kind === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground")}>
+                  kind === k ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground")}>
                 {t(`feedback.kind.${k}`)}
               </button>
             ))}

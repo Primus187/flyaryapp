@@ -44,9 +44,9 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
   const [saving, setSaving] = useState(false);
 
   const statusClasses: Record<StudentStatus, string> = {
-    active: "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20",
-    paused: "bg-amber-500/10 text-amber-700 border border-amber-500/20",
-    cancelled: "bg-rose-500/10 text-rose-700 border border-rose-500/20",
+    active: "bg-success-soft0/10 text-success-soft-foreground border border-success/40",
+    paused: "bg-warning-soft0/10 text-warning-soft-foreground border border-warning/40",
+    cancelled: "bg-destructive-soft0/10 text-destructive border border-destructive/40",
   };
 
   const openStatusChange = (student: StudentInfo, nextStatus: StudentStatus) => {
@@ -143,7 +143,7 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
             <CardContent className="p-3 flex items-center gap-3">
               <button type="button" disabled={!groupId} onClick={() => navigate(`/school/students/${groupId}/${s.userId}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
                 <Avatar className="h-9 w-9">
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                  <AvatarFallback className="text-xs bg-accent text-accent-foreground">
                     {(s.pilotName || "?").slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -154,7 +154,7 @@ export default function SchoolStudents({ groupId, students, onStatusChange }: Pr
                   </div>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     {s.trainingLevel && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">
                         {s.trainingLevel}
                       </span>
                     )}

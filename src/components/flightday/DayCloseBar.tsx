@@ -52,8 +52,8 @@ export default function DayCloseBar({ eventId, eventDate, profiles, onChanged, o
 
   if (closed) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-green-600/40 bg-green-50 px-3 py-2 text-sm dark:bg-green-950/30">
-        <Lock className="h-4 w-4 shrink-0 text-green-700 dark:text-green-400" />
+      <div className="flex items-center gap-2 rounded-lg border border-success/40 bg-success-soft px-3 py-2 text-sm">
+        <Lock className="h-4 w-4 shrink-0 text-success-soft-foreground" />
         <span className="flex-1">
           {t("flightDay.close.closedAt", { date: new Date(closed.at).toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) })}
           {closed.by && ` · ${closed.by}`}

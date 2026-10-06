@@ -90,7 +90,7 @@ export default function SharedListing() {
           <Card><CardContent className="space-y-1.5 p-3">
             {hints.map((h) => (
               <p key={h.code} className="flex items-start gap-2 text-xs">
-                {h.severity === "warning" ? <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /> : <Info className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                {h.severity === "warning" ? <AlertTriangle className="h-4 w-4 shrink-0 text-warning" /> : <Info className="h-4 w-4 shrink-0 text-muted-foreground" />}
                 {t(`market.safety.${h.code}`, { months: h.months })}
               </p>
             ))}

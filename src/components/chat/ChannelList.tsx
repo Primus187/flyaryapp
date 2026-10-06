@@ -35,7 +35,7 @@ export default function ChannelList({ channels, showGroup = true, emptyText }: {
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
   if (channels.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{emptyText ?? t("chat.noChannels")}</p>;
   return (
-    <div className="rounded-xl bg-card shadow-sm divide-y overflow-hidden">
+    <div className="rounded-xl bg-card divide-y overflow-hidden">
       {channels.map((c) => {
         const last = c.last_message;
         const preview = last

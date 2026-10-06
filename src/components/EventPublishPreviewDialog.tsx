@@ -54,18 +54,18 @@ export default function EventPublishPreviewDialog({
         </DialogHeader>
 
         <div className="px-4">
-          <Card className="border shadow-sm overflow-hidden">
+          <Card className="border overflow-hidden">
             {/* Header */}
-            <div className="flex items-center gap-3 p-3 pb-2">
-              <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
-                <Avatar className="h-8 w-8 border-2 border-background">
+            <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
+              <div className="rounded-[34%]">
+                <Avatar className="h-11 w-11">
                   <AvatarImage src={avatarUrl} />
-                  <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+                  <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
                 </Avatar>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{pilotName}</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="truncate text-[13px] font-medium text-muted-foreground">
                   {groupName && <span>{groupName} · </span>}
                   {t("feed.justNow")}
                 </p>
@@ -80,7 +80,7 @@ export default function EventPublishPreviewDialog({
             )}
 
             {/* Event info overlay */}
-            <div className="relative px-3 py-3 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+            <div className="relative px-3 py-3 bg-accent">
               <h3 className="text-base font-bold">{event.title}</h3>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">

@@ -459,7 +459,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
             const ownBubble = isMe && !msg.is_announcement;
             const msgReactions = groupReactions(reactions.filter((r) => r.message_id === msg.id), user?.id);
             return (
-              <div key={msg.id} id={`msg-${msg.id}`} className={`rounded-lg transition-colors duration-700 ${flashId === msg.id ? "bg-amber-300/30" : ""}`}>
+              <div key={msg.id} id={`msg-${msg.id}`} className={`rounded-lg transition-colors duration-700 ${flashId === msg.id ? "bg-warning-soft" : ""}`}>
                 {showDate && (
                   <div className="flex justify-center my-2">
                     <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{msgDate}</span>
@@ -471,7 +471,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                   }}>
                   <PopoverAnchor asChild>
                   <div {...bubbleHandlers(msg)}
-                    className={`group relative max-w-[78%] rounded-xl px-3 py-1.5 cursor-pointer select-none [-webkit-touch-callout:none] transition-transform ${menu?.id === msg.id ? "scale-[0.98] brightness-95" : ""} ${msg.is_announcement ? "bg-primary/10 border border-primary/30" : isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}${mentionsMe ? " ring-2 ring-amber-400/70" : ""}`}>
+                    className={`group relative max-w-[78%] rounded-xl px-3 py-1.5 cursor-pointer select-none [-webkit-touch-callout:none] transition-transform ${menu?.id === msg.id ? "scale-[0.98] brightness-95" : ""} ${msg.is_announcement ? "bg-primary/10 border border-primary/30" : isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}${mentionsMe ? " ring-2 ring-warning" : ""}`}>
                     {msg.is_announcement && (
                       <Badge variant="outline" className="mb-1 text-[9px] h-4 gap-1 border-primary/40 text-primary">
                         <Megaphone className="h-2.5 w-2.5" /> {t("chat.announcement")}
@@ -512,7 +512,7 @@ export default function ChannelChat({ channel, fullHeight = false, focusMessageI
                     {msg.is_announcement && msg.requires_confirmation && (
                       <div className="mt-1.5 pt-1.5 border-t border-primary/20 space-y-1">
                         {user && hasConfirmed(receipts[msg.id] || [], user.id) ? (
-                          <p className="text-[10px] flex items-center gap-1 text-green-600 dark:text-green-400">
+                          <p className="text-[10px] flex items-center gap-1 text-success-soft-foreground">
                             <CheckCheck className="h-3 w-3" /> {t("chat.confirmed")}
                           </p>
                         ) : (

@@ -37,10 +37,10 @@ export default function EventListItem({
       ? t("events.statusCancelled")
       : t("events.statusAnnounced");
   const statusColor = status === "confirmed"
-    ? "bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-400"
+    ? "bg-success-soft text-success-soft-foreground "
     : status === "cancelled"
-      ? "bg-red-100 text-red-800 hover:bg-red-100/80 dark:bg-red-900/30 dark:text-red-400"
-      : "bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-400";
+      ? "bg-destructive-soft text-destructive-soft-foreground "
+      : "bg-accent text-accent-foreground ";
 
   const meta = [
     new Date(date).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),

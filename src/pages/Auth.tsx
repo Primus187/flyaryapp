@@ -37,7 +37,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "linear-gradient(145deg, hsl(199 89% 28%) 0%, hsl(199 89% 38%) 35%, hsl(152 44% 40%) 100%)" }}>
       <Card className="w-full max-w-sm shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
         <CardHeader className="text-center space-y-3">
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Flyary</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Flyary</h2>
           <CardDescription>{t("auth.signIn")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

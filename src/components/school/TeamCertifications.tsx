@@ -208,10 +208,10 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
     <div className="space-y-3 pt-3">
       <p className="text-xs text-muted-foreground">{t("school.certs.daysExplanation")}</p>
       {warnings.length > 0 && (
-        <Card className="border-amber-500/40 bg-amber-500/5">
+        <Card className="border-warning/40 bg-warning-soft0/5">
           <CardContent className="p-3 space-y-1">
             {warnings.map((w) => (
-              <p key={w} className="text-xs text-amber-500 flex items-start gap-1.5">
+              <p key={w} className="text-xs text-warning flex items-start gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 {w}
               </p>
@@ -221,7 +221,7 @@ export default function TeamCertifications({ groupId, canManage = true }: Props)
       )}
 
       {people.map((p) => (
-        <Card key={p.userId} className="border-border/60 bg-card/80">
+        <Card key={p.userId} className="border-border bg-card/80">
           <CardContent className="p-3 space-y-2">
             <div className="flex items-center gap-2">
               <div className="flex-1 min-w-0">

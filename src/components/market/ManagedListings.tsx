@@ -129,7 +129,7 @@ export default function ManagedListings({ seller, newPath }: Props) {
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               <Badge variant={status === "active" ? "default" : "secondary"} className="text-[10px]">{t(`market.status.${status}`)}</Badge>
               {row.listing_type === "wanted" && <Badge variant="outline" className="text-[10px]">{t("market.listingTypes.wanted")}</Badge>}
-              {runtime && <span className={runtime.warn ? "text-[11px] text-amber-600" : "text-[11px] text-muted-foreground"}>{runtime.text}</span>}
+              {runtime && <span className={runtime.warn ? "text-[11px] text-warning-soft-foreground" : "text-[11px] text-muted-foreground"}>{runtime.text}</span>}
             </div>
             {status === "removed" && row.removed_reason && <p className="mt-1 text-[11px] text-destructive">{row.removed_reason}</p>}
           </button>

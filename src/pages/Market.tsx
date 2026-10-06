@@ -170,7 +170,7 @@ export default function Market() {
   const card = (item: SearchItem) => (
     <div key={item.id} className="relative">
     <button type="button" onClick={() => navigate(`/market/${item.id}`)}
-      className="w-full overflow-hidden rounded-xl border border-border/50 bg-card text-left shadow-sm active:scale-[0.99]">
+      className="w-full overflow-hidden rounded-xl border border-border bg-card text-left active:scale-[0.99]">
       <div className="relative aspect-square bg-muted">
         {thumbs[item.id]
           ? <img src={thumbs[item.id]} alt="" loading="lazy" className="h-full w-full object-cover" />

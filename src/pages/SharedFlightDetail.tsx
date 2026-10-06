@@ -85,12 +85,12 @@ function HeroCarousel({ slides, takeoff, landing, trackPoints, durationMin, dist
         </div>
         <div className="absolute bottom-3 left-3 flex gap-1.5 z-10">
           {durationMin != null && (
-            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
               ⏱ {formatDuration(durationMin)}
             </span>
           )}
           {distanceKm != null && (
-            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
               ↔ {Number(distanceKm).toFixed(1)}km
             </span>
           )}
@@ -230,7 +230,7 @@ export default function SharedFlightDetail() {
             />
             {/* Avatar overlay bottom-left */}
             <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2">
-              <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
+              <div className="rounded-[34%]">
                 <Avatar className="h-10 w-10 border-2 border-background">
                   {data.avatar_url && <AvatarImage src={data.avatar_url} />}
                   <AvatarFallback>{data.pilot_name?.charAt(0) || "P"}</AvatarFallback>

@@ -77,16 +77,16 @@ export default function FeedAchievementCard({ achievement, onReact, onComment, o
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-3 p-3 pb-2">
-        <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-orange-400 cursor-pointer" onClick={() => navigate(`/pilot/${achievement.user_id}`)}>
-          <Avatar className="h-8 w-8 border-2 border-background">
+      <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
+        <div className="rounded-[34%] cursor-pointer" onClick={() => navigate(`/pilot/${achievement.user_id}`)}>
+          <Avatar className="h-11 w-11">
             <AvatarImage src={achievement.avatar_url} />
-            <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+            <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
           </Avatar>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate cursor-pointer" onClick={() => navigate(`/pilot/${achievement.user_id}`)}>{achievement.pilot_name}</p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="truncate text-[13px] font-medium text-muted-foreground">
             {achievement.group_name} · {relativeTime(achievement.created_at, t)}
           </p>
         </div>
@@ -103,10 +103,10 @@ export default function FeedAchievementCard({ achievement, onReact, onComment, o
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]" />
           )}
           <div className="relative z-10 space-y-2">
-            <div className={cn("mx-auto h-14 w-14 rounded-2xl flex items-center justify-center", isComplete ? "bg-amber-500/30" : "bg-primary/20")}>
-              {isComplete ? <Trophy className="h-7 w-7 text-amber-500" /> : <Target className="h-7 w-7 text-primary" />}
+            <div className={cn("mx-auto h-14 w-14 rounded-2xl flex items-center justify-center", isComplete ? "bg-warning-soft0/30" : "bg-primary/20")}>
+              {isComplete ? <Trophy className="h-7 w-7 text-warning" /> : <Target className="h-7 w-7 text-primary" />}
             </div>
-            <Badge className={cn("border-0 text-xs font-bold px-3 py-1", isComplete ? "bg-amber-500/25 text-amber-600 dark:text-amber-400" : "bg-primary/20 text-primary")}>
+            <Badge className={cn("border-0 text-xs font-bold px-3 py-1", isComplete ? "bg-warning-soft0/25 text-warning-soft-foreground dark:text-warning" : "bg-primary/20 text-primary")}>
               {isComplete ? `🏆 ${t("feed.challengeCompleted")}` : `🎯 ${t("feed.goalReached")}`}
             </Badge>
             <h3 className="text-base font-bold">{achievement.challenge_title}</h3>
@@ -116,7 +116,7 @@ export default function FeedAchievementCard({ achievement, onReact, onComment, o
             {achievement.total_goals > 0 && (
               <div className="max-w-[200px] mx-auto space-y-1 pt-1">
                 <Progress value={progress} className="h-2" />
-                <p className="text-[11px] text-muted-foreground">
+                <p className="truncate text-[13px] font-medium text-muted-foreground">
                   {achievement.completed_goals}/{achievement.total_goals} {t("challenges.goals")}
                 </p>
               </div>
@@ -163,7 +163,7 @@ export default function FeedAchievementCard({ achievement, onReact, onComment, o
                 </p>
                 {onCommentLike && (
                   <button onClick={() => onCommentLike(c.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5 active:scale-90">
-                    <span className="text-xs text-muted-foreground hover:text-red-500">❤️</span>
+                    <span className="text-xs text-muted-foreground hover:text-destructive">❤️</span>
                   </button>
                 )}
               </div>

@@ -590,10 +590,10 @@ export default function Flight3DMap({ points, highlightIndex, onAnimIndex }: Pro
           </div>
           <div className="flex items-center gap-1.5 text-xs font-mono">
             {(animVario ?? 0) >= 0
-              ? <ArrowUp className="h-3.5 w-3.5 text-green-500" />
-              : <ArrowDown className="h-3.5 w-3.5 text-red-500" />
+              ? <ArrowUp className="h-3.5 w-3.5 text-success-soft-foreground" />
+              : <ArrowDown className="h-3.5 w-3.5 text-destructive" />
             }
-            <span className={`font-semibold ${(animVario ?? 0) >= 0 ? "text-green-500" : "text-red-500"}`}>
+            <span className={`font-semibold ${(animVario ?? 0) >= 0 ? "text-success-soft-foreground" : "text-destructive"}`}>
               {(animVario ?? 0) > 0 ? "+" : ""}{animVario}
             </span>
             <span className="text-muted-foreground">m/s</span>

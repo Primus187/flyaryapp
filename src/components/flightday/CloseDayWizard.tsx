@@ -110,11 +110,11 @@ export default function CloseDayWizard({ eventId, open, profiles, onOpenChange, 
           <div className="mt-4 space-y-3">
             {current === "landed" && <>
               {checklist.inAir > 0 ? (
-                <div role="alert" className="flex gap-2 rounded-lg border border-orange-500/50 bg-orange-50 p-3 text-sm dark:bg-orange-950/30">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-orange-600" />
+                <div role="alert" className="flex gap-2 rounded-lg border border-warning/40 bg-warning-soft p-3 text-sm">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-warning-soft-foreground" />
                   <span>{t("flightDay.close.inAir", { names: preview.inAir.map((f) => name(f.studentId)).join(", ") })}</span>
                 </div>
-              ) : <p className="flex items-center gap-1.5 text-sm"><Check className="h-4 w-4 text-green-600" />{t("flightDay.close.allLanded")}</p>}
+              ) : <p className="flex items-center gap-1.5 text-sm"><Check className="h-4 w-4 text-success-soft-foreground" />{t("flightDay.close.allLanded")}</p>}
               {preview.expected.length > 0 && (
                 <div className="space-y-1.5">
                   <p className="text-sm">{t("flightDay.close.expected")}</p>
@@ -138,7 +138,7 @@ export default function CloseDayWizard({ eventId, open, profiles, onOpenChange, 
             </>}
 
             {current === "summaries" && (checklist.missingSummaries === 0
-              ? <p className="flex items-center gap-1.5 text-sm"><Check className="h-4 w-4 text-green-600" />{t("flightDay.close.allSummaries")}</p>
+              ? <p className="flex items-center gap-1.5 text-sm"><Check className="h-4 w-4 text-success-soft-foreground" />{t("flightDay.close.allSummaries")}</p>
               : <>
                 <p className="text-sm text-muted-foreground">{t("flightDay.close.summariesHint")}</p>
                 {preview.summaries.filter((s) => !s.hasSummary).map((s) => (

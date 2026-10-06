@@ -356,7 +356,7 @@ export default function Profile() {
     : 100;
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <h1 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h1>
 
       {/* XP Card */}
@@ -403,7 +403,7 @@ export default function Profile() {
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-amber-500" /> {t("badges.title")}
+            <Trophy className="h-4 w-4 text-warning" /> {t("badges.title")}
           </CardTitle>
           <button onClick={() => setShowAllBadges(!showAllBadges)} className="text-xs text-primary font-medium">
             {showAllBadges ? t("common.close") : t("badges.showAll")}
@@ -442,7 +442,7 @@ export default function Profile() {
           ) : (
             <button
               onClick={() => coverInputRef.current?.click()}
-              className="w-full h-24 rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
+              className="w-full h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
               disabled={uploading}
             >
               <ImagePlus className="h-5 w-5" />
@@ -478,7 +478,7 @@ export default function Profile() {
           {profilePhotos.length === 0 ? (
             <button
               onClick={() => photoInputRef.current?.click()}
-              className="w-full h-20 rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
+              className="w-full h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/40 transition-colors active:scale-[0.98]"
               disabled={uploading}
             >
               <ImagePlus className="h-5 w-5" />
@@ -505,7 +505,7 @@ export default function Profile() {
 
       <Card><CardHeader className="pb-3"><CardTitle className="text-base">{t("profile.personal")}</CardTitle></CardHeader><CardContent className="space-y-4">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent">
+          <div className="relative rounded-[34%]">
             <Avatar className="h-24 w-24 border-[3px] border-background">
               <AvatarImage src={avatarSignedUrl} />
               <AvatarFallback className="text-2xl bg-muted">{initials}</AvatarFallback>
@@ -538,10 +538,10 @@ export default function Profile() {
           const usageMins = usage ? usage.totalMinutes % 60 : 0;
 
           return (
-            <div key={g.id} className={`p-3 rounded-lg space-y-2 ${hasWarning ? 'bg-destructive/10 border border-destructive/30' : hasCaution ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800' : 'bg-muted/50'}`}>
+            <div key={g.id} className={`p-3 rounded-lg space-y-2 ${hasWarning ? 'bg-destructive/10 border border-destructive/30' : hasCaution ? 'bg-warning-soft border border-warning/40' : 'bg-muted/50'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {g.is_default && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}
+                  {g.is_default && <Star className="h-3.5 w-3.5 text-warning fill-warning" />}
                   {hasWarning && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
                   <div>
                     <p className="text-sm font-medium">{g.manufacturer} {g.model}
@@ -579,14 +579,14 @@ export default function Profile() {
                 </div>
                 <div>
                   <p className="text-muted-foreground uppercase tracking-wider">{t("profile.nextCheck")}</p>
-                  <p className={`font-medium ${checkOverdue ? 'text-destructive' : checkSoon ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                  <p className={`font-medium ${checkOverdue ? 'text-destructive' : checkSoon ? 'text-warning-soft-foreground dark:text-warning' : ''}`}>
                     {g.next_check_date ? new Date(g.next_check_date).toLocaleDateString() : '–'}
                     {checkOverdue && <span className="ml-1">⚠️</span>}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground uppercase tracking-wider">{t("profile.reserveRepack")}</p>
-                  <p className={`font-medium ${reserveOverdue ? 'text-destructive' : reserveSoon ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                  <p className={`font-medium ${reserveOverdue ? 'text-destructive' : reserveSoon ? 'text-warning-soft-foreground dark:text-warning' : ''}`}>
                     {g.reserve_repack_date ? new Date(g.reserve_repack_date).toLocaleDateString() : '–'}
                     {reserveOverdue && <span className="ml-1">⚠️</span>}
                   </p>
@@ -660,7 +660,7 @@ export default function Profile() {
 
       <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-destructive" /> {t("profile.emergency")}</CardTitle><p className="text-xs text-muted-foreground">{t("profile.emergencyDesc")}</p></CardHeader><CardContent className="space-y-3">
         {!healthConsent && (
-          <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 space-y-2">
+          <div className="p-3 rounded-lg bg-warning-soft border border-warning/40 text-xs text-warning-soft-foreground dark:text-warning space-y-2">
             <p>{t("profile.healthConsentInfo")}</p>
             <Button size="sm" variant="outline" onClick={() => setShowConsentDialog(true)}>{t("profile.giveConsent")}</Button>
           </div>

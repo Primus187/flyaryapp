@@ -35,7 +35,7 @@ export default function LegalLicenses() {
   const { t } = useTranslation();
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-6">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
@@ -47,7 +47,7 @@ export default function LegalLicenses() {
 
       <ul className="space-y-2">
         {licenses.map((l) => (
-          <li key={l.name} className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-card p-3">
+          <li key={l.name} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
             <div className="min-w-0 flex-1">
               <a
                 href={l.url}

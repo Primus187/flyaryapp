@@ -233,7 +233,7 @@ export default function ChallengeDetail() {
   };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <button onClick={() => navigate(-1)} className="p-1"><ChevronLeft className="h-5 w-5" /></button>
         {editing ? (
@@ -254,7 +254,7 @@ export default function ChallengeDetail() {
       </div>
 
       {editing ? (
-        <div className="space-y-3 p-4 rounded-xl border border-border/50 bg-card">
+        <div className="space-y-3 p-4 rounded-xl border border-border bg-card">
           <div className="space-y-1.5">
             <Label className="text-xs">{t("challenges.challengeDescription")}</Label>
             <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2} />
@@ -289,10 +289,10 @@ export default function ChallengeDetail() {
       )}
 
       {/* Progress overview */}
-      <div className={`p-4 rounded-xl border ${isComplete ? "bg-amber-500/5 border-amber-500/20" : "bg-card border-border/30"}`}>
+      <div className={`p-4 rounded-xl border ${isComplete ? "bg-warning-soft0/5 border-warning/40" : "bg-card border-border"}`}>
         <div className="flex items-center gap-3 mb-3">
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isComplete ? "bg-amber-500/10" : "bg-primary/10"}`}>
-            {isComplete ? <Trophy className="h-5 w-5 text-amber-500" /> : <Target className="h-5 w-5 text-primary" />}
+          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isComplete ? "bg-warning-soft0/10" : "bg-primary/10"}`}>
+            {isComplete ? <Trophy className="h-5 w-5 text-warning" /> : <Target className="h-5 w-5 text-primary" />}
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold">
@@ -345,7 +345,7 @@ export default function ChallengeDetail() {
               key={goal.id}
               onClick={() => handleToggleGoal(goal.id)}
               className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${
-                done ? "bg-primary/5 border-primary/20" : "bg-card border-border/30 hover:bg-muted/30"
+                done ? "bg-primary/5 border-primary/20" : "bg-card border-border hover:bg-muted/30"
               }`}
             >
               <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
@@ -411,14 +411,14 @@ export default function ChallengeDetail() {
               <div
                 key={p.user_id}
                 className={`flex items-center gap-3 p-3 rounded-xl ${
-                  isMe ? "bg-primary/5 border border-primary/20" : "bg-card border border-border/30"
+                  isMe ? "bg-primary/5 border border-primary/20" : "bg-card border border-border"
                 }`}
               >
                 <span className={`w-5 text-center text-xs font-bold ${
-                  rank === 1 ? "text-amber-400" : rank === 2 ? "text-zinc-400" : rank === 3 ? "text-orange-400" : "text-muted-foreground"
+                  rank === 1 ? "text-warning" : rank === 2 ? "text-zinc-400" : rank === 3 ? "text-warning" : "text-muted-foreground"
                 }`}>
                   {rank <= 3 ? <Trophy className={`h-3.5 w-3.5 mx-auto ${
-                    rank === 1 ? "text-amber-400" : rank === 2 ? "text-zinc-400" : "text-orange-400"
+                    rank === 1 ? "text-warning" : rank === 2 ? "text-zinc-400" : "text-warning"
                   }`} /> : rank}
                 </span>
 

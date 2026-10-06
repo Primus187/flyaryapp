@@ -162,10 +162,10 @@ export default function NotificationBell() {
   return (
     <Sheet open={open} onOpenChange={handleOpen}>
       <SheetTrigger asChild>
-        <button className="relative p-2 active:scale-95 transition-transform">
+        <button className="relative flex h-11 w-11 items-center justify-center rounded-lg border bg-card active:scale-95 transition-transform">
           <Bell className="h-5 w-5 text-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-warning text-warning-foreground text-[11px] font-extrabold ring-2 ring-background flex items-center justify-center px-1">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}

@@ -72,13 +72,13 @@ export default function FlightConfirmationCard({ flightId, cancelled, preferredG
   return (
     <Card>
       <CardContent className="p-3 space-y-2">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("confirmations.title")}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t("confirmations.title")}</p>
         {status === "confirmed" && (
-          <p className="text-sm flex items-start gap-2"><BadgeCheck className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+          <p className="text-sm flex items-start gap-2"><BadgeCheck className="h-4 w-4 text-success-soft-foreground shrink-0 mt-0.5" />
             {t("confirmations.confirmedBy", { name: confirmation!.instructor_name || "—", school: confirmation!.school_name, date: date(confirmation!.decided_at) })}</p>
         )}
         {status === "submitted" && (
-          <p className="text-sm flex items-start gap-2"><Clock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-sm flex items-start gap-2"><Clock className="h-4 w-4 text-warning-soft-foreground shrink-0 mt-0.5" />
             {t("confirmations.submittedTo", { school: confirmation!.school_name, date: date(confirmation!.submitted_at) })}</p>
         )}
         {(status === "returned" || status === "revoked") && (

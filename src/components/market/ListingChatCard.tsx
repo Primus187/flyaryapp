@@ -26,7 +26,7 @@ export default function ListingChatCard({ info }: { info: ListingChatInfo }) {
   return (
     <div className="space-y-2">
       <button type="button" disabled={!info.listing_id} onClick={() => info.listing_id && navigate(`/market/${info.listing_id}`)}
-        className="flex w-full items-center gap-3 rounded-xl border border-border/50 bg-card p-2 text-left shadow-sm disabled:opacity-70">
+        className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-2 text-left disabled:opacity-70">
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
           {thumb ? <img src={thumb} alt="" className="h-full w-full object-cover" /> : <ImageOff className="m-3 h-6 w-6 text-muted-foreground" />}
         </div>
@@ -38,7 +38,7 @@ export default function ListingChatCard({ info }: { info: ListingChatInfo }) {
           <Badge variant={available ? "secondary" : "outline"} className="shrink-0 text-[10px]">{t(`market.status.${info.status}`)}</Badge>
         )}
       </button>
-      <p className="flex items-start gap-1.5 rounded-md bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-800 dark:text-amber-300">
+      <p className="flex items-start gap-1.5 rounded-md bg-warning-soft0/10 px-2.5 py-1.5 text-[11px] text-warning-soft-foreground dark:text-warning">
         <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-px" /> {t("market.chat.safety")}
       </p>
     </div>

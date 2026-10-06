@@ -227,7 +227,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
             <button
               key={f}
               onClick={() => setFilter(active ? "all" : f)}
-              className={`rounded-xl p-2 flex flex-col items-center gap-0.5 transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"}`}
+              className={`rounded-xl p-2 flex flex-col items-center gap-0.5 transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-card"}`}
             >
               <Icon className={`h-4 w-4 ${active ? "" : "text-primary"}`} />
               <span className="text-sm font-bold leading-none">{counts[f]}</span>
@@ -270,7 +270,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
         >
           <CardContent className="p-3 flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+              <AvatarFallback className="text-xs bg-accent text-accent-foreground">
                 {(p.pilotName || "?").slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -373,7 +373,7 @@ export default function SchoolPeople({ groupId, canManage, isAdmin = false }: Pr
                         className={`rounded-full px-2.5 py-1 text-[11px] border transition-colors ${
                           active
                             ? "bg-primary text-primary-foreground border-transparent"
-                            : "bg-muted/40 text-muted-foreground border-border/60"
+                            : "bg-muted/40 text-muted-foreground border-border"
                         }`}
                       >
                         {t(`school.functions.${f}`)}

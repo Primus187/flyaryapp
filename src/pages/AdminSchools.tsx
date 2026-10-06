@@ -183,7 +183,7 @@ export default function AdminSchools() {
               <div className="flex gap-2">
                 {LEAD_LANGUAGES.map((l) => (
                   <button key={l} type="button" onClick={() => setLanguage(l)}
-                    className={cn("rounded-full border px-3 py-1 text-xs font-medium", language === l ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground")}>
+                    className={cn("rounded-full border px-3 py-1 text-xs font-medium", language === l ? "border-primary bg-accent text-accent-foreground" : "border-border text-muted-foreground")}>
                     {l.toUpperCase()}
                   </button>
                 ))}

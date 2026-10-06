@@ -88,7 +88,7 @@ const queryClient = new QueryClient({
 
 function PageFallback() {
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <Skeleton className="h-8 w-32" />
       <Skeleton className="h-64 w-full rounded-2xl" />
       <Skeleton className="h-32 w-full rounded-2xl" />

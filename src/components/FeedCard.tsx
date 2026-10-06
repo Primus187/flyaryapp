@@ -210,12 +210,12 @@ function UnifiedMediaCarousel({
         {/* Stats overlay badges on map */}
         <div className="absolute bottom-3 left-3 flex gap-1.5 z-10">
           {durationMin != null && (
-            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
               ⏱ {formatDuration(durationMin)}
             </span>
           )}
           {distanceKm != null && (
-            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+            <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
               ↔ {Number(distanceKm).toFixed(1)}km
             </span>
           )}
@@ -346,21 +346,25 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
   const handleSubmitComment = (msg: string) => onComment(flight.id, msg);
 
   const likeCount = flight.likes.length;
+  const formatDuration = (min: number) => {
+    const h = Math.floor(min / 60); const m = min % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
 
   return (
     <>
       <Card className="overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-3 p-3 pb-2">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-primary via-secondary to-accent cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/pilot/${flight.user_id}`); }}>
-            <Avatar className="h-8 w-8 border-2 border-background">
+        <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
+          <div className="rounded-[34%] cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/pilot/${flight.user_id}`); }}>
+            <Avatar className="h-11 w-11">
               <AvatarImage src={flight.avatar_url} />
-              <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+              <AvatarFallback className="text-sm bg-hero text-hero-foreground">{initials}</AvatarFallback>
             </Avatar>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate cursor-pointer" onClick={() => navigate(`/pilot/${flight.user_id}`)}>{flight.pilot_name}</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[15px] font-bold truncate cursor-pointer" onClick={() => navigate(`/pilot/${flight.user_id}`)}>{flight.pilot_name}</p>
+            <p className="truncate text-[13px] font-medium text-muted-foreground">
               {flight.group_name && <span>{flight.group_name} · </span>}
               {flight.takeoff_name && <><MapPin className="h-3 w-3 inline mr-0.5" />{siteName(flight.takeoff_name)} · </>}
               {relativeTime(flight.published_at || flight.created_at, t)}
@@ -382,19 +386,19 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
         />
 
         {/* Actions */}
-        <CardContent className="p-3 space-y-2">
+        <CardContent className="px-3.5 pb-3.5 pt-2 space-y-2">
           <div className="flex items-center gap-3">
             <ReactionPicker
               reactions={flight.likes}
               currentUserId={user?.id}
               onReact={(type) => onReact(flight.id, type)}
             />
-            <button onClick={() => setShowComments(!showComments)} className="active:scale-90 transition-transform">
+            <button onClick={() => setShowComments(!showComments)} className="flex h-11 w-9 items-center justify-center active:scale-90 transition-transform" aria-label={t("flights.comments")}>
               <MessageCircle className="h-6 w-6" />
             </button>
             <div className="flex-1" />
             {onBookmarkToggle && (
-              <button onClick={() => onBookmarkToggle(flight.id)} className="active:scale-90 transition-transform">
+              <button onClick={() => onBookmarkToggle(flight.id)} className="flex h-11 w-9 items-center justify-center active:scale-90 transition-transform">
                 <Bookmark className={cn("h-6 w-6", flight.isBookmarked ? "fill-foreground text-foreground" : "text-foreground")} />
               </button>
             )}
@@ -402,7 +406,7 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
 
           {/* "Gefällt X Personen" */}
           {likeCount > 0 && (
-            <p className="text-sm font-semibold">
+            <p className="text-[13px] font-bold">
               {t("feed.likedBy", { count: likeCount, defaultValue: `Gefällt {{count}} Personen` })}
             </p>
           )}
@@ -411,16 +415,22 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
 
           {flight.feedDescription && (
             <p className="text-sm">
-              <span className="font-semibold mr-1">{flight.pilot_name}</span>
-              <span className="text-muted-foreground">{flight.feedDescription}</span>
+              <span className="font-bold mr-1">{flight.pilot_name}</span>
+              <span>{flight.feedDescription}</span>
             </p>
           )}
 
-          {flight.glider && (
-            <p className="text-sm text-muted-foreground">
-              🪂 {flight.glider}
-              {flight.altitude_gain ? ` · ↑${flight.altitude_gain}m` : ""}
-              {flight.landing_name ? ` · → ${siteName(flight.landing_name)}` : ""}
+          {(flight.duration_minutes || flight.altitude_gain || flight.distance_km) && (
+            <div className="grid grid-cols-3 gap-2 rounded-lg bg-background px-3 py-2.5">
+              {flight.duration_minutes ? <div><p className="text-[15px] stat-value">{formatDuration(flight.duration_minutes)}</p><p className="text-[11px] font-semibold text-muted-foreground">{t("dashboard.flightTime")}</p></div> : null}
+              {flight.altitude_gain ? <div><p className="text-[15px] stat-value">{flight.altitude_gain} m</p><p className="text-[11px] font-semibold text-muted-foreground">{t("stats.altitudeGain")}</p></div> : null}
+              {flight.distance_km ? <div><p className="text-[15px] stat-value">{Number(flight.distance_km).toFixed(1)} km</p><p className="text-[11px] font-semibold text-muted-foreground">{t("stats.distance")}</p></div> : null}
+            </div>
+          )}
+
+          {(flight.glider || flight.landing_name) && (
+            <p className="truncate text-[13px] font-medium text-muted-foreground">
+              {[flight.glider, flight.landing_name && `→ ${siteName(flight.landing_name)}`].filter(Boolean).join(" · ")}
             </p>
           )}
 
@@ -431,7 +441,7 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
                   key={tag}
                   type="button"
                   onClick={(e) => { e.stopPropagation(); navigate(`/feed?tag=${encodeURIComponent(tag)}`); }}
-                  className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors active:scale-95"
+                  className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground transition-colors active:scale-95"
                 >
                   #{tag}
                 </button>
@@ -451,15 +461,15 @@ export default function FeedCard({ flight, onReact, onComment, onBookmarkToggle,
                 <div key={c.id} className="flex items-start gap-2 group">
                   <div className="flex-1">
                     <p className="text-sm">
-                      <span className="font-semibold mr-1">{c.pilot_name}</span>
+                      <span className="font-bold mr-1">{c.pilot_name}</span>
                       {c.message}
                     </p>
                     <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-[10px] text-muted-foreground">{relativeTime(c.created_at, t)}</span>
+                      <span className="text-[11px] font-medium text-muted-foreground">{relativeTime(c.created_at, t)}</span>
                       {onCommentLike && (
                         <button
                           onClick={() => onCommentLike(c.id)}
-                          className="text-[10px] text-muted-foreground hover:text-red-500 font-medium active:scale-90 transition-transform"
+                          className="text-[11px] text-muted-foreground hover:text-destructive font-semibold active:scale-90 transition-transform"
                         >
                           ♥ {c.like_count ? c.like_count : ""}
                         </button>

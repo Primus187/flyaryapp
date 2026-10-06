@@ -65,7 +65,7 @@ export default function SchoolFlightImportCard() {
   return (
     <>
       {days.map((day) => (
-        <Card key={day.eventId} className="border-primary/40 shadow-sm">
+        <Card key={day.eventId} className="border-primary/40">
           <CardContent className="p-3 space-y-2">
             <div className="flex items-start gap-2">
               <GraduationCap className="h-5 w-5 text-primary shrink-0 mt-0.5" />

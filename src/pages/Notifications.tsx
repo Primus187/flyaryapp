@@ -101,7 +101,7 @@ export default function NotificationsPage() {
     <PageContainer>
       <PageHeader back="/more" title={t("push.pageTitle")} subtitle={t("push.pageSubtitle")} />
 
-      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+      <Card className="border-border bg-card/80 backdrop-blur-sm">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-start gap-3">
             {isSubscribed ? (
@@ -139,7 +139,7 @@ export default function NotificationsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+      <Card className="border-border bg-card/80 backdrop-blur-sm">
         <CardContent className="p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Smartphone className="h-4 w-4 text-primary" />
@@ -165,7 +165,7 @@ export default function NotificationsPage() {
             </p>
             <div className="space-y-1.5">
               {list.map((p) => (
-                <Card key={p.user_id} className="border-border/60 bg-card/80 shadow-sm">
+                <Card key={p.user_id} className="border-border bg-card/80">
                   <CardContent className="p-2.5 flex items-center gap-2">
                     <span className="text-sm flex-1 truncate">{p.pilot_name}</span>
                     {p.enabled ? (

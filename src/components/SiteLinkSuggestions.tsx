@@ -47,7 +47,7 @@ export default function SiteLinkSuggestions({ locations, onLinked }: { locations
   };
 
   return (
-    <Card className="border-primary/40 bg-primary/5 shadow-sm">
+    <Card className="border-primary/40 bg-primary/5">
       <CardContent className="p-3 space-y-2.5">
         <div className="flex items-start gap-2">
           <BadgeCheck className="h-5 w-5 text-primary shrink-0" />

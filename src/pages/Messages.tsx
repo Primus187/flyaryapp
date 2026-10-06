@@ -81,7 +81,7 @@ export default function Messages() {
               ) : (search.data || []).length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">{t("chat.noMessageHits")}</p>
               ) : (
-                <div className="rounded-xl bg-card shadow-sm divide-y overflow-hidden">
+                <div className="rounded-xl bg-card divide-y overflow-hidden">
                   {(search.data || []).map((hit) => (
                     <button key={hit.id} type="button" onClick={() => navigate(`/messages/${hit.channel_id}?m=${hit.id}`)}
                       className="w-full px-3 py-2.5 text-left hover:bg-muted/50 transition-colors">
@@ -115,7 +115,7 @@ function highlight(text: string, term: string) {
   return (
     <>
       {text.slice(0, index)}
-      <mark className="rounded bg-amber-200/70 px-0.5 text-foreground dark:bg-amber-500/40">{text.slice(index, index + term.length)}</mark>
+      <mark className="rounded bg-warning-soft px-0.5 text-foreground dark:bg-warning-soft0/40">{text.slice(index, index + term.length)}</mark>
       {text.slice(index + term.length)}
     </>
   );

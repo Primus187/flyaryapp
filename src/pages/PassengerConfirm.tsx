@@ -47,7 +47,7 @@ export default function PassengerConfirm() {
         {state === "loading" && <Skeleton className="h-40 w-full rounded-2xl" />}
         {state === "invalid" && <Card><CardContent className="p-4 flex gap-2 text-sm"><XCircle className="h-5 w-5 text-destructive shrink-0" />{t("tandem.publicInvalid")}</CardContent></Card>}
         {state === "error" && <Card><CardContent className="p-4 text-sm" role="alert">{t("tandem.publicError")}</CardContent></Card>}
-        {state === "confirmed" && <Card><CardContent className="p-4 flex gap-2 text-sm"><CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />{t("tandem.publicThanks")}</CardContent></Card>}
+        {state === "confirmed" && <Card><CardContent className="p-4 flex gap-2 text-sm"><CheckCircle2 className="h-5 w-5 text-success-soft-foreground shrink-0" />{t("tandem.publicThanks")}</CardContent></Card>}
         {state === "open" && info && (
           <Card>
             <CardContent className="p-4 space-y-3">

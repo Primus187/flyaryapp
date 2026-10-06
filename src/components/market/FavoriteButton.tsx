@@ -30,8 +30,8 @@ export default function FavoriteButton({ userId, listingId, active, onChange, cl
   return (
     <button type="button" onClick={(e) => void toggle(e)} aria-pressed={active}
       aria-label={active ? t("market.favorites.remove") : t("market.favorites.add")}
-      className={cn("rounded-full bg-background/80 p-1.5 shadow-sm", className)}>
-      <Heart className={cn("h-4 w-4", active ? "fill-red-500 text-red-500" : "text-foreground")} />
+      className={cn("rounded-full bg-background/80 p-1.5", className)}>
+      <Heart className={cn("h-4 w-4", active ? "fill-destructive text-destructive" : "text-foreground")} />
     </button>
   );
 }

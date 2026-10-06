@@ -12,19 +12,19 @@ const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, 
 const LEVEL_NAMES = ["Rookie", "Starter", "Pilot", "Flieger", "Thermiker", "Streckenflieger", "Adler", "Falke", "Kondor", "Ikarus", "Skywalker", "Legende", "Meister"];
 const LEVEL_COLORS = [
   "text-muted-foreground",
-  "text-emerald-400", "text-emerald-400",
-  "text-sky-400", "text-sky-400",
+  "text-success-soft-foreground", "text-success-soft-foreground",
+  "text-link", "text-link",
   "text-violet-400", "text-violet-400",
-  "text-amber-400", "text-amber-400",
-  "text-orange-400", "text-orange-400",
-  "text-rose-400", "text-rose-400",
+  "text-warning", "text-warning",
+  "text-warning", "text-warning",
+  "text-destructive", "text-destructive",
 ];
 
 function getLevelIcon(level: number) {
-  if (level >= 10) return <Trophy className="h-5 w-5 text-amber-400" />;
+  if (level >= 10) return <Trophy className="h-5 w-5 text-warning" />;
   if (level >= 7) return <Medal className="h-5 w-5 text-violet-400" />;
-  if (level >= 4) return <Award className="h-5 w-5 text-sky-400" />;
-  return <Star className="h-5 w-5 text-emerald-400" />;
+  if (level >= 4) return <Award className="h-5 w-5 text-link" />;
+  return <Star className="h-5 w-5 text-success-soft-foreground" />;
 }
 
 interface LeaderboardEntry {
@@ -112,7 +112,7 @@ export default function Leaderboard() {
   };
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-1"><ChevronLeft className="h-5 w-5" /></button>
         <h1 className="text-2xl font-bold tracking-tight">{t("leaderboard.title")}</h1>
@@ -147,18 +147,18 @@ export default function Leaderboard() {
                 key={entry.user_id}
                 onClick={() => navigate(`/pilot/${entry.user_id}`)}
                 className={`flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer active:scale-[0.98] ${
-                  isMe ? "bg-primary/10 border border-primary/20" : "bg-card border border-border/30"
+                  isMe ? "bg-primary/10 border border-primary/20" : "bg-card border border-border"
                 } ${rank <= 3 ? "shadow-sm" : ""}`}
               >
                 <div className={`w-7 text-center font-bold text-sm ${
-                  rank === 1 ? "text-amber-400" : rank === 2 ? "text-zinc-400" : rank === 3 ? "text-orange-400" : "text-muted-foreground"
+                  rank === 1 ? "text-warning" : rank === 2 ? "text-zinc-400" : rank === 3 ? "text-warning" : "text-muted-foreground"
                 }`}>
                   {rank <= 3 ? <Trophy className={`h-4 w-4 mx-auto ${
-                    rank === 1 ? "text-amber-400" : rank === 2 ? "text-zinc-400" : "text-orange-400"
+                    rank === 1 ? "text-warning" : rank === 2 ? "text-zinc-400" : "text-warning"
                   }`} /> : rank}
                 </div>
 
-                <div className="relative p-[2px] rounded-full bg-gradient-to-tr from-primary/60 to-accent/60">
+                <div className="relative rounded-[34%]">
                   <Avatar className="h-10 w-10 border-2 border-background">
                     <AvatarImage src={entry.avatar_signed} />
                     <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>

@@ -72,7 +72,7 @@ export default function TagsInput({ value, onChange, suggestions = [], placehold
               key={s}
               type="button"
               onClick={() => addTag(s)}
-              className="text-[11px] px-2 py-0.5 rounded-full border border-border/60 bg-card hover:bg-muted/50 text-muted-foreground"
+              className="text-[11px] px-2 py-0.5 rounded-full border border-border bg-card hover:bg-muted/50 text-muted-foreground"
             >
               #{s}
             </button>

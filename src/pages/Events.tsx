@@ -22,7 +22,7 @@ interface SignupRow { event_id: string; user_id: string; signed_up: boolean; }
 
 function EventsSkeleton() {
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between"><Skeleton className="h-8 w-24" /><Skeleton className="h-9 w-24 rounded-md" /></div>
       <Skeleton className="h-10 w-full rounded-md" />
       {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
@@ -178,7 +178,7 @@ function EventCard({ event, signups, userId, onToggle, onNavigate, t, locale, pa
         <Button
           variant={isSignedUp ? "default" : "outline"}
           size="sm"
-          className={`shrink-0 gap-1 ${isSignedUp ? "bg-green-600 hover:bg-green-700" : ""}`}
+          className={`shrink-0 gap-1 ${isSignedUp ? "bg-success hover:bg-success" : ""}`}
           onClick={(e) => { e.stopPropagation(); onToggle(event.id); }}
         >
           {isSignedUp ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}

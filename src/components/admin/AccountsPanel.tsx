@@ -61,7 +61,7 @@ export default function AccountsPanel() {
         {FILTERS.map((f) => (
           <button key={f} type="button" onClick={() => setFilter(f)}
             className={cn("rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-              filter === f ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground")}>
+              filter === f ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground")}>
             {t(`adminAccess.filter.${f}`)} · {counts[f]}
           </button>
         ))}

@@ -121,7 +121,7 @@ export default function IncidentReports({ groupId, presetEventId }: Props) {
       </Button>
 
       {openCount > 0 && (
-        <p className="text-xs text-amber-500 flex items-center gap-1.5">
+        <p className="text-xs text-warning flex items-center gap-1.5">
           <AlertTriangle className="h-3.5 w-3.5" />
           {t("school.safety.openCount", { count: openCount })}
         </p>
@@ -139,10 +139,10 @@ export default function IncidentReports({ groupId, presetEventId }: Props) {
         incidents.map((inc) => {
           const left = daysLeft(inc);
           return (
-            <Card key={inc.id} className="border-border/60 bg-card/80">
+            <Card key={inc.id} className="border-border bg-card/80">
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
+                  <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{new Date(inc.occurred_at).toLocaleString("de-CH")}</p>
                     <p className="text-xs text-muted-foreground line-clamp-2">{inc.description}</p>

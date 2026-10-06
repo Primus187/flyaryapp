@@ -85,7 +85,7 @@ export default function ChallengeGoalForm({ locations, onSave, onCancel, initial
   };
 
   return (
-    <div className="p-3 rounded-xl border border-border/50 space-y-3">
+    <div className="p-3 rounded-xl border border-border space-y-3">
       <div className="grid grid-cols-3 gap-2">
         <div className="col-span-2 space-y-1">
           <Label className="text-xs">{t("challenges.goalLabel")}</Label>

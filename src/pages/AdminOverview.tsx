@@ -18,8 +18,8 @@ function Tile({ icon: Icon, label, value, hint, tone, onClick }: {
 }) {
   return (
     <button type="button" onClick={onClick}
-      className={cn("flex flex-col gap-1 rounded-xl border p-4 text-left shadow-sm transition-all hover:bg-muted/50 active:scale-[0.98]",
-        tone === "alert" ? "border-destructive/40 bg-destructive/5" : tone === "open" ? "border-primary/40 bg-card" : "border-border/50 bg-card")}>
+      className={cn("flex flex-col gap-1 rounded-xl border p-4 text-left transition-all hover:bg-muted/50 active:scale-[0.98]",
+        tone === "alert" ? "border-destructive/40 bg-destructive/5" : tone === "open" ? "border-primary/40 bg-card" : "border-border bg-card")}>
       <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Icon className={cn("h-4 w-4", tone === "alert" ? "text-destructive" : "text-primary")} />{label}
       </span>

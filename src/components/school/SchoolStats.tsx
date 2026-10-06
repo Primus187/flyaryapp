@@ -221,7 +221,7 @@ export default function SchoolStats({ groupId }: Props) {
 
       <div className="grid grid-cols-2 gap-3">
         {kpis.map(({ icon: Icon, label, value }) => (
-          <Card key={label} className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+          <Card key={label} className="border-border bg-card/80 backdrop-blur-sm">
             <CardContent className="p-4 flex flex-col items-center gap-1">
               <Icon className="h-5 w-5 text-primary" />
               <span className="text-2xl font-bold tabular-nums">{value}</span>
@@ -242,7 +242,7 @@ export default function SchoolStats({ groupId }: Props) {
         <div>
           <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wider">{t("school.stats.performanceOverall")}</h2>
           <div className="grid grid-cols-2 gap-3">
-            <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+            <Card className="border-border bg-card/80 backdrop-blur-sm">
               <CardContent className="p-4 flex flex-col items-center gap-1">
                 <Percent className="h-5 w-5 text-primary" />
                 <span className="text-2xl font-bold tabular-nums">
@@ -251,7 +251,7 @@ export default function SchoolStats({ groupId }: Props) {
                 <span className="text-[10px] text-muted-foreground text-center">{t("school.stats.successRate")}</span>
               </CardContent>
             </Card>
-            <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
+            <Card className="border-border bg-card/80 backdrop-blur-sm">
               <CardContent className="p-4 flex flex-col items-center gap-1">
                 <Clock className="h-5 w-5 text-primary" />
                 <span className="text-2xl font-bold tabular-nums">

@@ -117,10 +117,10 @@ export default function StudentEquipmentCheck({ groupId, studentUserId }: Props)
       {students.map((s) => {
         const missing = CHECK_ITEMS.filter((i) => !checks[`${s.userId}:${i}`]).length;
         return (
-          <Card key={s.userId} className="border-border/60 bg-card/80">
+          <Card key={s.userId} className="border-border bg-card/80">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <ShieldCheck className={cn("h-4 w-4 shrink-0", missing === 0 ? "text-primary" : "text-amber-500")} />
+                <ShieldCheck className={cn("h-4 w-4 shrink-0", missing === 0 ? "text-primary" : "text-warning")} />
                 <p className="text-sm font-medium flex-1 truncate">{s.name}</p>
                 <span className="text-[10px] text-muted-foreground">
                   {missing === 0 ? t("school.gear.complete") : t("school.gear.missing", { count: missing })}
@@ -138,7 +138,7 @@ export default function StudentEquipmentCheck({ groupId, studentUserId }: Props)
                       onClick={() => toggle(s.userId, item)}
                       className={cn(
                         "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors disabled:opacity-50",
-                        on ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border/60",
+                        on ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border",
                       )}
                     >
                       {on && <Check className="h-3 w-3" />}
