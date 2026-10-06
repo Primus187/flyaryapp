@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,16 @@ import { isoToLocalTime } from "@/lib/flight-proof";
 const Flight3DMap = lazy(() => import("@/components/Flight3DMap"));
 const FlightAltitudeProfile = lazy(() => import("@/components/FlightAltitudeProfile"));
 
+type Site = { name: string; latitude: number; longitude: number };
+type FlightState = Tables<"flights"> & { takeoff?: Site | null; landing?: Site | null };
+/** A stored IGC track: its points and the figures computed at upload. */
+type TrackState = {
+  track_data: {
+    points?: { lat: number; lng: number; altitude?: number; time?: string }[];
+    stats?: { durationMinutes?: number; totalDistanceKm?: number; maxAltitude?: number; maxClimbRate?: number; avgSpeedKmh?: number; startTime?: string };
+  } | null;
+};
+
 export default function FlightDetail() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -36,12 +46,12 @@ export default function FlightDetail() {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const siteName = useSiteName();
-  const [flight, setFlight] = useState<any>(null);
-  const [photos, setPhotos] = useState<any[]>([]);
+  const [flight, setFlight] = useState<FlightState | null>(null);
+  const [photos, setPhotos] = useState<(Tables<"flight_photos"> & { url?: string })[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Tables<"flight_videos">[]>([]);
   const [videoUrls, setVideoUrls] = useState<Record<string, { video: string; poster: string }>>({});
-  const [track, setTrack] = useState<any>(null);
+  const [track, setTrack] = useState<TrackState | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [trainedManeuvers, setTrainedManeuvers] = useState<string[]>([]);
@@ -81,7 +91,8 @@ export default function FlightDetail() {
   useEffect(() => {
     if (!id) return;
     supabase.from("flights").select("*, takeoff:locations!flights_takeoff_location_id_fkey(name:display_name, latitude, longitude), landing:locations!flights_landing_location_id_fkey(name:display_name, latitude, longitude)").eq("id", id).single().then(({ data }) => {
-      setFlight(data);
+      // display_name is a computed field (migration 0065) the generated types do not know.
+      setFlight(data as unknown as FlightState);
       if (data) {
         setPublishedToFeed(data.published_to_feed || false);
         if (data.group_id) {
@@ -91,7 +102,7 @@ export default function FlightDetail() {
     });
     loadPhotos();
     supabase.from("flight_videos").select("*").eq("flight_id", id).then(({ data }) => setVideos(data || []));
-    supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data));
+    supabase.from("igc_tracks").select("*").eq("flight_id", id).maybeSingle().then(({ data }) => setTrack(data as unknown as TrackState));
     supabase.from("flight_training_items").select("item_id, training_items(name)").eq("flight_id", id).then(({ data }) => {
       if (data) setTrainedManeuvers(data.map((d) => d.training_items?.name).filter(Boolean));
     });
@@ -190,7 +201,7 @@ export default function FlightDetail() {
         fileContent: content,
         igcData: parsed,
       });
-      setTrack(newTrack);
+      setTrack(newTrack as TrackState);
       toast({ title: t("flights.igcUploaded"), description: `${parsed.points.length} ${t("flights.igcPointsLoaded")}` });
     } catch (err) { toast({ title: t("flights.igcUploadFailed"), description: err.message, variant: "destructive" }); }
     finally { setUploading(false); if (igcInputRef.current) igcInputRef.current.value = ""; }

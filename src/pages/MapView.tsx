@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -45,7 +46,7 @@ export default function MapView() {
   const siteName = useSiteName();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [locations, setLocations] = useState<any[]>([]);
+  const [locations, setLocations] = useState<Tables<"locations">[]>([]);
   const [trackPoints, setTrackPoints] = useState<[number, number][]>([]);
 
   const flightId = searchParams.get("flight");

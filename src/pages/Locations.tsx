@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export default function Locations() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
-  const [locations, setLocations] = useState<any[]>([]);
+  const [locations, setLocations] = useState<Tables<"locations">[]>([]);
   const [flightStats, setFlightStats] = useState<Record<string, { count: number; lastDate: string | null }>>({});
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -186,7 +186,7 @@ export default function Locations() {
     { key: "both", icon: Combine, label: t("locations.both"), color: "text-primary" },
   ] as const;
 
-  const renderLocationCard = (loc) => {
+  const renderLocationCard = (loc: (typeof locations)[number]) => {
     const stats = flightStats[loc.id];
     return (
       <Card key={loc.id} className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/locations/${loc.id}`)}>

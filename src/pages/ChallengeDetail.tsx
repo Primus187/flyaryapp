@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +49,7 @@ export default function ChallengeDetail() {
   const { t } = useTranslation();
   const siteName = useSiteName();
   const { toast } = useToast();
-  const [challenge, setChallenge] = useState<any>(null);
+  const [challenge, setChallenge] = useState<Tables<"challenges"> | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [myProgress, setMyProgress] = useState<Set<string>>(new Set());

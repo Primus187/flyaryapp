@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams, useLocation } from "react-rout
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ import EventBriefingTasks from "@/components/EventBriefingTasks";
 import DayCheckIn from "@/components/flightday/DayCheckIn";
 import FlightDayStations from "@/components/flightday/FlightDayStations";
 import LegacyCoachNotes from "@/components/flightday/LegacyCoachNotes";
-import { opensOnFlightDay, type FlightDayRole } from "@/lib/flight-day";
+import { opensOnFlightDay, type FlightDayRole, type Presence } from "@/lib/flight-day";
 import StudentDayFeedback from "@/components/StudentDayFeedback";
 import EventAnnounceDialog from "@/components/EventAnnounceDialog";
 import EmergencyInfoDialog from "@/components/EmergencyInfoDialog";
@@ -47,8 +48,8 @@ export default function EventDetail() {
   const rawTab = searchParams.get("tab") || (hash === "#coaching" ? "day" : null);
   const requestedTab = rawTab === "coaching" ? "day" : rawTab;
   const [dayRole, setDayRole] = useState<FlightDayRole | null>(null);
-  const [event, setEvent] = useState<any>(null);
-  const [signups, setSignups] = useState<any[]>([]);
+  const [event, setEvent] = useState<(Tables<"flight_events"> & { groups?: { name: string; group_type: string } | null }) | null>(null);
+  const [signups, setSignups] = useState<(Omit<Tables<"event_signups">, "presence"> & { presence: Presence | null })[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
@@ -66,7 +67,7 @@ export default function EventDetail() {
   const [pilotName, setPilotName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [groupName, setGroupName] = useState("");
-  const [briefingTasks, setBriefingTasks] = useState<any[]>([]);
+  const [briefingTasks, setBriefingTasks] = useState<Tables<"event_briefing_tasks">[]>([]);
   const [maneuverNames, setManeuverNames] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const locale = i18n.language === "fr" ? "fr-CH" : i18n.language === "en" ? "en-GB" : "de-CH";
@@ -174,7 +175,7 @@ export default function EventDetail() {
   const refetchSignups = async () => {
     if (!id) return;
     const { data: sups } = await supabase.from("event_signups").select("*").eq("event_id", id);
-    setSignups(sups || []);
+    setSignups((sups || []) as typeof signups);
   };
 
   const toggleSignup = async () => {
@@ -195,7 +196,7 @@ export default function EventDetail() {
     await refetchSignups();
   };
 
-  const toggleSchoolConfirm = async (signup) => {
+  const toggleSchoolConfirm = async (signup: (typeof signups)[number]) => {
     if (!id) return;
     // RPC: RLS only lets people update their own signup, so the direct UPDATE was silently ignored.
     const { error } = await supabase.rpc("set_signup_confirmed", { _event_id: id, _student_id: signup.user_id, _confirmed: !signup.confirmed_by_school });
@@ -276,7 +277,7 @@ export default function EventDetail() {
   ];
   const statusBadge = <Badge className={`${statusColor} text-[10px] px-1.5 py-0 gap-0.5`}>{statusLabel}{canChangeStatus && <ChevronDown className="h-3 w-3" />}</Badge>;
 
-  const participantRow = (s) => (
+  const participantRow = (s: (typeof signups)[number]) => (
     <div key={s.user_id} className="flex items-center gap-2 py-2">
       <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
       <span className="text-sm flex-1 truncate">{profiles[s.user_id] || t("events.pilot")}</span>

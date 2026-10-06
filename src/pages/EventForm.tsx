@@ -59,7 +59,7 @@ export default function EventForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [groups, setGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<{ id: string; name: string; group_type: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<MemberOption[]>([]);
   const [briefingTasks, setBriefingTasks] = useState<BriefingTask[]>([]);

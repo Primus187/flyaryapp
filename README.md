@@ -16,9 +16,18 @@ ein Durchgang auf dem Handy – siehe [Prüfliste](docs/pilottest-pruefliste.md)
   Sprachen, 8 überholte Typ-Umgehungen, die Stilklasse `.hero-card`, der Branch `design-system`.
 - **Ergänzt:** drei Texte, die ohne Rückfallwert fehlten und als Schlüssel angezeigt wurden
   (`common.saving`, `events.copyTelegramText`, `events.telegramCopied`).
-- Nicht angefasst: weitere 27 Texte, die nur über einen deutschen Rückfallwert im Code erscheinen
-  (Video schneiden und hochladen, «Alle Flüge löschen»), rund 30 unbenutzte Exporte und die
-  bestehenden Lint-Meldungen zu ungenauen Typen.
+- **Texte nachgezogen:** 27 Texte, die nur über deutsche Rückfallwerte im Code erschienen (Video
+  schneiden und hochladen, «Alle Flüge/Orte löschen»), stehen jetzt in allen drei Sprachen. 26 Texte
+  mit «?» statt Umlaut oder Akzent sind repariert («Weitere Fl?ge laden», Wartung,
+  Ausrüstungscheck; Deutsch und Französisch).
+- **Unbenutzte Exporte:** 14 Funktionen, Konstanten und Typen entfernt. Was nur Tests oder Skripte
+  brauchen (`backup-sql`, `dhv-sites`, `site-names`, Marktplatz-Regeln), bleibt.
+- **Lint:** von 348 Meldungen auf 0. 196 «as any» entfernt (162 waren seit der Typengenerierung
+  überflüssig), 117 «: any» entfernt oder ausgeschrieben, die Zustände der grossen Seiten
+  (Flugdetail, Termin, Gruppe, Orte) haben Typen aus `types.ts`. Reine Typänderungen ohne Wirkung
+  auf das Verhalten. 11 begründete Ausnahmen mit `eslint-disable` bleiben (dynamische RPC-Namen,
+  Abstimmungen, Import). Berechnete Felder wie `display_name` kennt `types.ts` nicht; dort steht
+  ein ausdrücklicher Cast mit Kommentar.
 
 ## Flugtag: Start-Ansage und Abschluss vor dem Termintag (2026-10-06)
 

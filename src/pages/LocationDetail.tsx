@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,8 +32,8 @@ export default function LocationDetail() {
   const { t, i18n } = useTranslation();
   const siteName = useSiteName();
   const { byId: officialById } = useOfficialSites();
-  const [location, setLocation] = useState<any>(null);
-  const [flights, setFlights] = useState<any[]>([]);
+  const [location, setLocation] = useState<Tables<"locations"> | null>(null);
+  const [flights, setFlights] = useState<(Tables<"flights"> & { takeoff?: { name: string } | null; landing?: { name: string } | null })[]>([]);
   const [loading, setLoading] = useState(true);
   const [mergeOpen, setMergeOpen] = useState(false);
   const [wind, setWind] = useState<{ status: WindMatchStatus; compass: string; speedKmh: number } | null | undefined>(undefined);
@@ -49,7 +50,7 @@ export default function LocationDetail() {
         supabase.from("flights").select("*, takeoff:takeoff_location_id(name), landing:landing_location_id(name)").eq("user_id", user.id).or(`takeoff_location_id.eq.${id},landing_location_id.eq.${id}`).order("date", { ascending: false }),
       ]);
       if (locRes.data) setLocation(locRes.data);
-      if (flightsRes.data) setFlights(flightsRes.data);
+      if (flightsRes.data) setFlights(flightsRes.data as unknown as typeof flights);
       setLoading(false);
     };
     load();
@@ -97,7 +98,7 @@ export default function LocationDetail() {
   const hasCoords = location.latitude !== 0 || location.longitude !== 0;
   const getFlagEmoji = (code: string) => { if (!code || code.length !== 2) return ""; return String.fromCodePoint(...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0))); };
   const formatDuration = (min: number | null) => { if (!min) return "—"; const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h}h ${m}min` : `${m}min`; };
-  const getCounterLocation = (flight) => { if (flight.takeoff_location_id === id) return flight.landing?.name ? `→ ${siteName(flight.landing.name)}` : ""; return flight.takeoff?.name ? `${siteName(flight.takeoff.name)} →` : ""; };
+  const getCounterLocation = (flight: (typeof flights)[number]) => { if (flight.takeoff_location_id === id) return flight.landing?.name ? `→ ${siteName(flight.landing.name)}` : ""; return flight.takeoff?.name ? `${siteName(flight.takeoff.name)} →` : ""; };
 
   return (
     <div className="px-5 pt-5 pb-4 max-w-lg mx-auto space-y-4">
