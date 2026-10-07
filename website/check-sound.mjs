@@ -23,7 +23,7 @@ try {
       const url = route.request().url();
       if (!url.startsWith(base)) { errors.push(`External request: ${url}`); return route.abort(); }
       if (url.endsWith('.mp3')) requests.push(url);
-      const response = await route.fetch();
+      const response = await route.fetch({ maxRetries: 2 });
       await route.fulfill({ response, headers: { ...response.headers(), 'content-security-policy': csp } });
     });
     await context.addInitScript(() => {
@@ -48,19 +48,17 @@ try {
     page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
     await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });
     const button = page.locator('.sound-toggle');
-    assert.equal(await button.getAttribute('aria-pressed'), 'false');
-    assert.equal(requests.length, 0, 'No audio downloads before opt-in');
-    assert.equal(await page.evaluate(() => audioProbe.contexts.length), 0);
-    await button.focus();
-    await page.keyboard.press('Enter');
-    await page.waitForFunction(() => document.querySelector('.sound-toggle').getAttribute('aria-pressed') === 'true' && !document.querySelector('.sound-toggle').hasAttribute('aria-busy') && audioProbe.sources.length >= 3);
+    assert.equal(await button.getAttribute('aria-pressed'), 'true', 'Sound defaults to enabled');
+    await page.keyboard.press('a'); // Trusted gesture unlocks browsers that block autoplay.
+    await page.waitForFunction(() => document.querySelector('.sound-toggle').getAttribute('aria-pressed') === 'true' && !document.querySelector('.sound-toggle').hasAttribute('aria-busy') && audioProbe.sources.length >= 4 && audioProbe.contexts[0].state === 'running');
     assert.equal(requests.length, 5);
     assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 4);
     assert.equal(await page.evaluate(() => audioProbe.contexts[0].state), 'running');
     assert(await button.getAttribute('aria-label'), 'Compact control retains its accessible name');
     assert.equal(await button.locator('span').isVisible(), false, 'Enabled control shows only the speaker icon');
     await page.waitForTimeout(300);
-    assert.equal(await page.evaluate(() => audioProbe.gains[0].gain.value), 0, 'Opt-in without scrolling is silent');
+    assert(await page.evaluate(() => audioProbe.gains[5].gain.value > 0), 'Music plays without scrolling');
+    assert.equal(await page.evaluate(() => audioProbe.gains[1].gain.value), 0, 'Stationary wind is silent');
     const decoded = await page.evaluate(() => audioProbe.decoded);
     assert(decoded.every((b) => b.duration > 0 && b.rms > 0), 'All five MP3s decode to audible samples');
     console.log(`${lang}: decoded audio ${JSON.stringify(decoded)}`);
@@ -74,12 +72,12 @@ try {
         music: rms(loops[3].buffer) * musicGain, master };
     });
     assert(mix.music > 0 && mix.music < mix.wind * .85, `Music stays below the moving wind: ${JSON.stringify(mix)}`);
-    assert(mix.music > .002, 'Music already exceeds the previous full level during its fade-in');
+    assert(mix.music > .001, 'Music fades in at the quieter background level');
     assert(mix.master > 1, 'Scrolling reaches the increased overall level');
     await page.waitForTimeout(3200);
     const idle = await page.evaluate(() => audioProbe.gains[1].gain.value);
     assert(flying > idle, 'Wind settles after scrolling stops');
-    assert(await page.evaluate(() => audioProbe.gains[0].gain.value < .002), 'All audio fades to silence while reading');
+    assert(await page.evaluate(() => audioProbe.gains[1].gain.value < .002 && audioProbe.gains[5].gain.value > .01), 'Wind fades while music continues during reading');
     assert(await page.evaluate(() => audioProbe.gains[2].gain.value < .036), 'Summit wind stays behind flight wind');
     const eagleCount = await page.evaluate(() => audioProbe.sources.filter((s) => !s.loop).length);
     assert(eagleCount <= 1);
@@ -95,12 +93,17 @@ try {
     await button.click();
     await page.waitForFunction(() => audioProbe.contexts[0].state === 'suspended');
     assert.equal(await button.getAttribute('aria-pressed'), 'false');
+    assert.equal(await button.locator('span').isVisible(), false, 'Muted control stays icon-only');
+    await page.keyboard.press('a');
+    await page.waitForTimeout(150);
+    assert.equal(await page.evaluate(() => audioProbe.contexts[0].state), 'suspended', 'A later gesture never reverses explicit mute');
     await button.click();
     await page.waitForFunction(() => audioProbe.contexts[0].state === 'running');
     assert.equal(requests.length, 5, 'Re-enabling uses loaded audio');
     assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 4, 'No duplicate loops');
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     assert.deepEqual(errors, []);
+    await context.unrouteAll({ behavior: 'wait' });
     await context.close();
     console.log(`PASS ${lang}: opt-in, CSP, real decoding, scroll wind, landing, video pause, mute and cached resume`);
   }

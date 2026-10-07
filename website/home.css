@@ -206,8 +206,8 @@ html.stage-on .chapter-valley { align-items: start; min-height: 140vh; min-heigh
   cursor: pointer;
 }
 .sound-toggle svg { width: 20px; height: 20px; flex: 0 0 auto; }
-.sound-toggle[aria-pressed="true"]:not([aria-busy="true"]) { width: 44px; padding: 10px; justify-content: center; }
-.sound-toggle[aria-pressed="true"]:not([aria-busy="true"]) span { display: none; }
+.sound-toggle { width: 44px; padding: 10px; justify-content: center; }
+.sound-toggle span { display: none; }
 .sound-toggle[aria-pressed="false"] .sound-waves { opacity: .35; }
 .sound-toggle:hover { background: #234248; }
 .sound-toggle:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }

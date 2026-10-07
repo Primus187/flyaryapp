@@ -11,4 +11,4 @@ Vom Betreiber am 7. Oktober 2026 bereitgestellte MP3-Dateien. Die Originaldateie
 | open-horizon.mp3 | Open Horizon.mp3 | Leise Hintergrundmusik, vom Betreiber nachgereicht |
 
 Download-Links und Lizenznachweise wurden nicht mitgeliefert; keine Lizenzzuordnung aus Dateinamen abgeleitet.
-Die Laufzeit erzeugt für die Atmosphären überblendete Schleifen im Speicher. Die Musik verwendet einen fünfsekündigen Übergang und einen anhand von RMS und Spitzenpegel begrenzten Mischpegel. Sie klingt zusammen mit den Geräuschen beim Lesen aus. Der Ruf wird nicht geloopt.
+Die Laufzeit erzeugt für die Atmosphären überblendete Schleifen im Speicher. Die Musik verwendet einen fünfsekündigen Übergang und einen anhand von RMS und Spitzenpegel begrenzten Mischpegel. Sie läuft unabhängig vom Scrollen weiter; Wind und Geräusche klingen beim Lesen aus. Der Ruf wird nicht geloopt.

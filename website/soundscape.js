@@ -1,4 +1,4 @@
-// Optional, local-only soundscape. No requests or AudioContext until the visitor opts in.
+// Sound is enabled by default; browsers may require a gesture before playback.
 (() => {
   if (!document.body.classList.contains('home') || !window.AudioContext) return;
   const labels = {
@@ -9,18 +9,18 @@
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'sound-toggle';
-  button.setAttribute('aria-pressed', 'false');
+  button.setAttribute('aria-pressed', 'true');
   button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M11 4 5 9H2v6h3l6 5V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg><span></span>';
   const text = button.querySelector('span');
-  text.textContent = labels[0];
-  button.setAttribute('aria-label', labels[0]);
+  text.textContent = labels[1];
+  button.setAttribute('aria-label', labels[1]);
   document.body.append(button);
   const clamp = (n) => Math.max(0, Math.min(1, n));
   const smooth = (n) => { const t = clamp(n); return t * t * (3 - 2 * t); };
   const videos = [...document.querySelectorAll('video')];
   const chapters = [...document.querySelectorAll('[data-chap]')];
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let context, master, tracks, loading, timer, enabled = false, operation = 0;
+  let context, master, tracks, loading, timer, enabled = true, operation = 0;
   let lastY = scrollY, lastTime = performance.now(), motion = 0, eaglePlayed = false, activeEagle;
   const natureScenes = new Set();
   let natureUntil = 0;
@@ -85,7 +85,7 @@
             }
           }
           const rms = Math.sqrt(energy / (source.buffer.length * source.buffer.numberOfChannels));
-          musicLevel = Math.min(.07, .004 / Math.max(.0001, rms), .025 / Math.max(.0001, peak));
+          musicLevel = Math.min(.05, .0028 / Math.max(.0001, rms), .020 / Math.max(.0001, peak));
         }
         source.loop = true;
         source.connect(gain);
@@ -106,10 +106,10 @@
     lastY = s.y; lastTime = now;
     const [summit, forest, hills, valley] = s.weights;
     const airborne = 1 - s.landing;
-    // Every sound follows movement. Reading restores silence, including any bird accents.
-    gainTo(master, 3.2 * motion, .25);
-    gainTo(tracks[0].gain, (.10 + .30 * motion) * airborne, .2);
-    gainTo(tracks[1].gain, .035 * summit * airborne, .4);
+    // Music continues while reading; only the effects follow movement.
+    gainTo(master, 3.2, .25);
+    gainTo(tracks[0].gain, (.10 + .30 * motion) * airborne * motion, .2);
+    gainTo(tracks[1].gain, .035 * summit * airborne * motion, .4);
     gainTo(tracks[4].gain, tracks[4].musicLevel, .7);
     const scene = s.weights.indexOf(Math.max(...s.weights));
     if (scene > 0 && motion > .08 && !natureScenes.has(scene)) {
@@ -117,7 +117,7 @@
       natureUntil = now + 1200;
     }
     const natureAccent = clamp((natureUntil - now) / 500);
-    gainTo(tracks[2].gain, (.018 * forest + .020 * hills + .022 * valley) * natureAccent, .15);
+    gainTo(tracks[2].gain, (.018 * forest + .020 * hills + .022 * valley) * natureAccent * motion, .15);
     // Only trigger while travelling through the first scene; enabling at an anchor never fires the call.
     if (!eaglePlayed && summit > .7 && motion > .12 && s.y > innerHeight * .35 && s.y < innerHeight * 1.2) {
       eaglePlayed = true;
@@ -159,19 +159,8 @@
     button.removeAttribute('aria-busy');
     label(labels[3]);
   }
-  button.addEventListener('click', async () => {
-    const current = ++operation;
-    enabled = !enabled;
-    button.setAttribute('aria-pressed', String(enabled));
-    button.removeAttribute('aria-busy');
-    label(enabled ? labels[1] : labels[0]);
-    if (!enabled) {
-      if (master) master.gain.value = 0;
-      clearInterval(timer);
-      if (activeEagle) { activeEagle.stop(); activeEagle = null; }
-      if (context) await context.suspend().catch(() => {});
-      return;
-    }
+  async function start() {
+    const current = operation;
     try {
       if (!context) {
         context = new AudioContext();
@@ -180,18 +169,39 @@
         master.connect(context.destination);
       }
       // Resume directly inside the click, before waiting for downloads (mobile autoplay policy).
-      const resume = context.resume();
+      // A blocked autoplay resume may stay pending: do not block loading or the mute button.
+      context.resume().then(() => {
+        if (enabled && tracks && current === operation) syncPlayback().catch(fail);
+      }).catch(() => {});
       if (!tracks) { label(labels[2]); button.setAttribute('aria-busy', 'true'); }
-      await Promise.all([resume, load()]);
+      await load();
       if (operation !== current || !enabled) return;
       button.removeAttribute('aria-busy');
       label(labels[1]);
-      await syncPlayback();
+      if (context.state === 'running') await syncPlayback();
     } catch (error) { if (current === operation) fail(error); }
+  }
+  button.addEventListener('click', async () => {
+    operation++;
+    enabled = !enabled;
+    button.setAttribute('aria-pressed', String(enabled));
+    button.removeAttribute('aria-busy');
+    label(enabled ? labels[1] : labels[0]);
+    if (enabled) { start(); return; }
+    if (master) master.gain.value = 0;
+    clearInterval(timer);
+    if (activeEagle) { activeEagle.stop(); activeEagle = null; }
+    if (context) await context.suspend().catch(() => {});
   });
+  const unlock = (event) => {
+    if (event.target.closest?.('.sound-toggle') || !enabled || quiet()) return;
+    if (!context || context.state !== 'running') start();
+  };
+  for (const event of ['pointerdown', 'touchend', 'keydown']) document.addEventListener(event, unlock, { passive: true });
   const sync = () => { syncPlayback().catch(fail); };
   document.addEventListener('visibilitychange', sync);
   for (const video of videos) for (const event of ['play', 'pause', 'ended']) video.addEventListener(event, sync);
   addEventListener('pagehide', () => { clearInterval(timer); if (context) { master.gain.value = 0; context.suspend().catch(() => {}); } });
   addEventListener('pageshow', sync);
+  start();
 })();
