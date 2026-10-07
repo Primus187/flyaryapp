@@ -21,6 +21,7 @@
   const chapters = [...document.querySelectorAll('[data-chap]')];
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let context, master, tracks, loading, timer, enabled = true, operation = 0;
+  let playbackAuthorized = false;
   let lastY = scrollY, lastTime = performance.now(), motion = 0, eaglePlayed = false, activeEagle;
   const natureScenes = new Set();
   let natureUntil = 0;
@@ -138,7 +139,7 @@
   function resetMotion() { lastY = state().y; lastTime = performance.now(); motion = 0; }
   async function syncPlayback() {
     if (!context || !tracks) return;
-    if (!enabled || quiet()) {
+    if (!enabled || !playbackAuthorized || quiet()) {
       clearInterval(timer);
       master.gain.value = 0;
       if (activeEagle) { activeEagle.stop(); activeEagle = null; }
@@ -176,7 +177,9 @@
       }
       // Resume directly inside the click, before waiting for downloads (mobile autoplay policy).
       // A blocked autoplay resume may stay pending: do not block loading or the mute button.
-      context.resume().then(() => {
+      if (gesture || context.state === 'running') playbackAuthorized = true;
+      if (!playbackAuthorized) await context.suspend();
+      else context.resume().then(() => {
         if (enabled && tracks && current === operation) syncPlayback().catch(fail);
       }).catch(() => {});
       // Some mobile engines require a source to start inside the trusted touch event as well.
@@ -209,11 +212,6 @@
     if (activeEagle) { activeEagle.stop(); activeEagle = null; }
     if (context) await context.suspend().catch(() => {});
   });
-  const unlock = (event) => {
-    if (event.target.closest?.('.sound-toggle') || !enabled || quiet()) return;
-    if (!context || context.state !== 'running') start(event.isTrusted);
-  };
-  for (const event of ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click', 'keydown']) document.addEventListener(event, unlock, { passive: true, capture: true });
   const sync = () => { syncPlayback().catch(fail); };
   document.addEventListener('visibilitychange', sync);
   for (const video of videos) for (const event of ['play', 'pause', 'ended']) video.addEventListener(event, sync);

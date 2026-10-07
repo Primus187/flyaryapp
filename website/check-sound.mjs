@@ -48,13 +48,19 @@ try {
     page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
     await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });
     const button = page.locator('.sound-toggle');
+    await page.waitForFunction(() => audioProbe.contexts.length > 0 && !document.querySelector('.sound-toggle').hasAttribute('aria-busy'));
+    if (await page.evaluate(() => audioProbe.contexts[0].state !== 'running')) {
+      await page.keyboard.press('a');
+      await page.mouse.click(10, 400);
+      await page.waitForTimeout(200);
+      assert.equal(await page.evaluate(() => audioProbe.contexts[0].state), 'suspended', 'Unrelated content interactions never start blocked audio');
+    }
     if (options.hasTouch) {
-      await page.waitForFunction(() => audioProbe.contexts.length > 0 && !document.querySelector('.sound-toggle').hasAttribute('aria-busy'));
       if (await page.evaluate(() => audioProbe.contexts[0].state !== 'running')) {
         assert.equal(await button.getAttribute('aria-pressed'), 'false', 'Blocked playback is not shown as playing');
         await button.tap(); // One tap starts blocked audio; it must not switch the intent off.
       }
-    } else await page.keyboard.press('a');
+    } else if (await page.evaluate(() => audioProbe.contexts[0].state !== 'running')) await button.click();
     await page.waitForFunction(() => document.querySelector('.sound-toggle').getAttribute('aria-pressed') === 'true' && !document.querySelector('.sound-toggle').hasAttribute('aria-busy') && audioProbe.sources.length >= 4 && audioProbe.contexts[0].state === 'running');
     assert.equal(requests.length, 5);
     assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 4);
