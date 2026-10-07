@@ -68,11 +68,14 @@ try {
     const flying = await page.evaluate(() => audioProbe.gains[1].gain.value);
     const mix = await page.evaluate(() => {
       const loops = audioProbe.sources.filter((s) => s.loop);
+      const windGain = audioProbe.gains[1].gain.value, musicGain = audioProbe.gains[5].gain.value, master = audioProbe.gains[0].gain.value;
       const rms = (buffer) => { const data = buffer.getChannelData(0); let energy = 0; for (const sample of data) energy += sample * sample; return Math.sqrt(energy / data.length); };
-      return { wind: rms(loops[0].buffer) * audioProbe.gains[1].gain.value,
-        music: rms(loops[3].buffer) * audioProbe.gains[5].gain.value };
+      return { wind: rms(loops[0].buffer) * windGain,
+        music: rms(loops[3].buffer) * musicGain, master };
     });
-    assert(mix.music > 0 && mix.music < mix.wind * .35, 'Music remains quietly behind the moving wind');
+    assert(mix.music > 0 && mix.music < mix.wind * .85, `Music stays below the moving wind: ${JSON.stringify(mix)}`);
+    assert(mix.music > .002, 'Music already exceeds the previous full level during its fade-in');
+    assert(mix.master > 1, 'Scrolling reaches the increased overall level');
     await page.waitForTimeout(3200);
     const idle = await page.evaluate(() => audioProbe.gains[1].gain.value);
     assert(flying > idle, 'Wind settles after scrolling stops');

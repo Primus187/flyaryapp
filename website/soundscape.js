@@ -85,7 +85,7 @@
             }
           }
           const rms = Math.sqrt(energy / (source.buffer.length * source.buffer.numberOfChannels));
-          musicLevel = Math.min(.03, .0012 / Math.max(.0001, rms), .008 / Math.max(.0001, peak));
+          musicLevel = Math.min(.07, .004 / Math.max(.0001, rms), .025 / Math.max(.0001, peak));
         }
         source.loop = true;
         source.connect(gain);
@@ -101,13 +101,13 @@
   function update() {
     if (!enabled || !tracks || quiet() || context.state !== 'running') return;
     const s = state(), now = performance.now(), dt = Math.max(1, now - lastTime);
-    const speed = Math.min(1, Math.abs(s.y - lastY) / dt / 1.8);
+    const speed = Math.min(1, Math.abs(s.y - lastY) / dt / .9);
     motion += (speed - motion) * (1 - Math.exp(-dt / 300));
     lastY = s.y; lastTime = now;
     const [summit, forest, hills, valley] = s.weights;
     const airborne = 1 - s.landing;
     // Every sound follows movement. Reading restores silence, including any bird accents.
-    gainTo(master, .8 * motion, .25);
+    gainTo(master, 3.2 * motion, .25);
     gainTo(tracks[0].gain, (.10 + .30 * motion) * airborne, .2);
     gainTo(tracks[1].gain, .035 * summit * airborne, .4);
     gainTo(tracks[4].gain, tracks[4].musicLevel, .7);
