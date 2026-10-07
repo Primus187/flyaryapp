@@ -56,14 +56,14 @@
   if (root.classList.contains('touch-on')) {
     if (!stage) return;
     const REST = [null, { anchorRow: 700, anchor: .42 }, { anchorRow: 720, anchor: .40 }, { anchorRow: 715, anchor: .60 }];
-    const TITLE_ROW = 748, CLAIM_ROW = 838, LAND = { col: 500, row: 1235 }, MEADOW_ROW = 1400;   // it lands beside the windsock, flying right, into the wind
+    const TITLE_ROW = 748, CLAIM_ROW = 838, RISE_ROWS = 48, LAND = { col: 500, row: 1235 }, MEADOW_ROW = 1400;   // it lands beside the windsock, flying right, into the wind
     const FLY = { start: [.80, .30], lead: .75, rise: .45, enter: .34, heroFront: .22, front: .42, peak: 1.5, arrive: [.14, .9], band: .11, small: .7, final: { x: .30, midX: .07, end: .1, enter: .70, h: .72, k: 1.1, midH: .71, midK: 1.1 } };
     const scenes = [...stage.querySelectorAll('.scene')].sort((a, b) => a.dataset.scene - b.dataset.scene).map((el, i) => ({
       el, layers: [...el.querySelectorAll('.ly')].map((img) => ({ el: img, crop: +img.dataset.crop, f: +img.dataset.f })).filter((l) => i === 3 || l.f < 1),
     }));
     const title = stage.querySelector('.stage-title'), claim = stage.querySelector('.stage-claim'), footer = document.querySelector('.footer');
     const chapters = [...document.querySelectorAll('[data-chap]')];
-    let W = 0, vh = 0, cw = 0, s = 1, T = [], B = [], A = [], end = 1, footH = 0, titleBottom = 0, keys = [], cur = 0, target = 0, running = false, meadow = 0, gw = 96, gh = 96;
+    let W = 0, vh = 0, cw = 0, s = 1, T = [], B = [], A = [], end = 1, footH = 0, titleBottom = 0, brandH = 0, claimH = 0, above = false, keys = [], cur = 0, target = 0, running = false, meadow = 0, gw = 96, gh = 96;
     const measure = () => {
       W = stage.clientWidth; vh = stage.clientHeight;
       cw = Math.max(W, vh * .78); s = cw / 1024;
@@ -72,7 +72,8 @@
       A = [0, B[0], B[1], T[3]];   // where each scene's window on the page begins
       end = Math.max(T[3] + 1, root.scrollHeight - innerHeight);
       footH = Math.min(footer ? footer.offsetHeight : 0, vh * .6);
-      titleBottom = vh / 2 + title.firstElementChild.offsetHeight / 2;
+      brandH = title.firstElementChild.offsetHeight; claimH = claim.offsetHeight; above = W <= 640;   // on narrow screens the claim stands above the name
+      titleBottom = vh / 2 + brandH / 2;
       gw = Math.max(88, Math.min(170, W * .22)); gh = gw * 636 / 640;
       glider.style.width = `${gw}px`; glider.style.transformOrigin = `${FEET[0] * 100}% ${FEET[1] * 100}%`;
       keys = flightPlan(T, B, vh, FLY);
@@ -94,7 +95,12 @@
         // The valley scene starts low, so that the closing lines rise through open sky before the lake comes up.
         const pan = i === 3 ? Math.max(0, MEADOW_ROW * s + base - (vh - footH)) * land : 0;   // down to the meadow above the footer
         for (const l of sc.layers) place(l.el, (W - cw) / 2, base + l.crop * s + (i === 3 ? (rel < 0 ? shift(l.f) - rel * .45 : 0) - pan * l.f : shift(l.f)));
-        if (i === 0) { place(title, 0, base + TITLE_ROW * s + shift(.4)); place(claim, 0, base + CLAIM_ROW * s + shift(.44)); }   // the claim moves with the ridge it lies on
+        if (i === 0) {
+          // The name starts a third hidden behind the ridge and rises clear of it over the first part of the scroll.
+          const out = ease(clamp(y / (.3 * vh))), ty = base + TITLE_ROW * s + shift(.44) + brandH * .3 * (1 - out) - RISE_ROWS * s * out;
+          place(title, 0, ty);
+          place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s + shift(.44));   // below the name it lies on the ridge and moves with it
+        }
         if (i === 3) meadow = base - pan;
       });
     };
@@ -141,7 +147,7 @@
   const LAND = { col: 500, row: 1235 };   // it lands beside the windsock, flying right, into the wind
   // The name stands in the middle of the first screen; the summit scene is placed so that this row of the painting meets
   // the lower edge of the name, which puts the snow ridge in front of its feet.
-  const TITLE_ROW = 748, CLAIM_ROW = 838;   // the claim lies on the snow below the name and moves with the ridge
+  const TITLE_ROW = 748, CLAIM_ROW = 838, RISE_ROWS = 48;   // the claim lies on the snow below the name and moves with the ridge
 
   const scenes = [...stage.querySelectorAll('.scene')].sort((a, b) => a.dataset.scene - b.dataset.scene).map((el, i) => ({
     el, c: CFG[i], ground: el.querySelector('.groundfill'),
@@ -150,7 +156,7 @@
   const title = stage.querySelector('.stage-title'), claim = stage.querySelector('.stage-claim'), footer = document.querySelector('.footer');
   const chapters = [...document.querySelectorAll('[data-chap]')];
   const fades = chapters.map((c) => c.querySelector('[data-fade]'));
-  let W, vh, cw, s, footH = 0, titleBottom = 0, T = [], B = [], fadeTop = [], keys = [], cur = 0, target = 0, running = false, meadow = 0, pan = 0, gw = 120, gh = 120;
+  let W, vh, cw, s, footH = 0, titleBottom = 0, T = [], B = [], fadeTop = [], brandH = 0, claimH = 0, above = false, keys = [], cur = 0, target = 0, running = false, meadow = 0, pan = 0, gw = 120, gh = 120;
 
   function measure() {
     W = stage.clientWidth; vh = stage.clientHeight;
@@ -160,7 +166,8 @@
       if (sc.ground) sc.ground.style.background = `linear-gradient(rgba(${sc.c.rgb},0) 0, rgb(${sc.c.rgb}) ${((sc.c.ground[1] - sc.c.ground[0]) * s).toFixed(0)}px)`;
     }
     chapters.forEach((c, i) => { const r = c.getBoundingClientRect(); T[i] = r.top + scrollY; B[i] = T[i] + r.height; fadeTop[i] = fades[i].getBoundingClientRect().top - r.top; });
-    titleBottom = vh / 2 + title.firstElementChild.offsetHeight / 2;
+    brandH = title.firstElementChild.offsetHeight; claimH = claim.offsetHeight; above = W <= 640;   // on narrow screens the claim stands above the name
+    titleBottom = vh / 2 + brandH / 2;
     footH = Math.min(footer ? footer.offsetHeight : 0, vh * .4);   // the valley scene ends above the footer
     gw = Math.max(96, Math.min(210, W * .14)); gh = gw * 636 / 640;
     glider.style.width = `${gw}px`;
@@ -202,8 +209,11 @@
       if (sc.ground) place(sc.ground, 0, coverY + c.ground[0] * s);
       if (i === 3) meadow = coverY;
       if (i === 0) {
-        place(title, 0, base + TITLE_ROW * s - D * .3 * t); place(claim, 0, base + CLAIM_ROW * s - D * .44 * t);
-        title.style.opacity = claim.style.opacity = (1 - clamp(rise[0] * 2.4)).toFixed(3);
+        // The name starts a third hidden behind the ridge and rises clear of it over the first part of the scroll.
+        const out = ease(clamp(y / (.22 * vh))), ty = base + TITLE_ROW * s + brandH * .3 * (1 - out) - RISE_ROWS * s * out - D * .3 * t;
+        place(title, 0, ty);
+        place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s - D * .44 * t);
+        title.style.opacity = claim.style.opacity = (1 - clamp((rise[0] - .2) * 3)).toFixed(3);   // it stands clear for a while before the clouds take it
       }
       // The leaving scene slides away upwards. Its lower edge is soft (a fixed mask in home.css, below the window while
       // the scene is at rest), so the next scene appears through a haze instead of along a line.

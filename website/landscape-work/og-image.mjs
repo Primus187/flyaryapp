@@ -12,7 +12,7 @@ try {
   for (const lang of ['de', 'fr', 'en']) {
     const page = await (await browser.newContext({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 })).newPage();
     await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });
-    await page.addStyleTag({ content: '.header { display: none !important; } .stage-title { top: -44px; }' });
+    await page.addStyleTag({ content: '.header { display: none !important; } .stage-title { top: -104px; }' });
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(800);
     await page.screenshot({ path: `assets/og-${lang}.jpg`, type: 'jpeg', quality: 86 });

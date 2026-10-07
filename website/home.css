@@ -175,6 +175,10 @@ html.stage-on .chapter-valley { align-items: start; min-height: 140vh; min-heigh
 }
 @media (max-width: 640px) {
   .home { --brand: 27vw; }
+  /* On phones the claim stands in the sky above the name: white, with a dark shadow. */
+  .hero-claim, .stage-claim { color: #fff; font-weight: 600; text-shadow: 0 1px 2px rgba(20, 33, 58, .6), 0 2px 14px rgba(20, 33, 58, .6), 0 0 34px rgba(20, 33, 58, .35); }
+  .hero h1 { flex-direction: column-reverse; top: calc(var(--base) + var(--cw) * .7305 - var(--brand) - var(--claim) * 1.5); }
+  .hero-claim { margin-top: 0; }
   .final-actions .button { width: 100%; }
   .preview-tab { padding: 12px 14px; }
   .preview-tab span { display: none; }
