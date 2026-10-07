@@ -10,6 +10,13 @@
   const FEET = [.447, .818];   // the point of the glider picture that is placed: the pilot's feet
   const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
   const ease = (t) => t * t * (3 - 2 * t);
+  // How far the name has sunk: starts gently and then keeps going at a steady pace, so it never comes to rest in view.
+  const sinking = (u) => (u <= .5 ? 2 * u * u : 2 * u - .5);
+  // Where the claim stands above the name (narrow screens) it goes behind the ridge together with it.
+  function orderClaim(title, claim, above) {
+    if (!claim.home) claim.home = claim.nextSibling;
+    if (above) title.after(claim); else if (claim.previousSibling === title) claim.home.before(claim);
+  }
   const place = (el, x, y, extra = '') => { el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)${extra}`; };
 
   // The glider's flight depends on the scroll position alone: it moves only while the page moves.
@@ -73,6 +80,7 @@
       end = Math.max(T[3] + 1, root.scrollHeight - innerHeight);
       footH = Math.min(footer ? footer.offsetHeight : 0, vh * .6);
       brandH = title.firstElementChild.offsetHeight; claimH = claim.offsetHeight; above = W <= 640;   // on narrow screens the claim stands above the name
+      orderClaim(title, claim, above);
       titleBottom = vh / 2 + brandH / 2;
       gw = Math.max(88, Math.min(170, W * .22)); gh = gw * 636 / 640;
       glider.style.width = `${gw}px`; glider.style.transformOrigin = `${FEET[0] * 100}% ${FEET[1] * 100}%`;
@@ -99,10 +107,10 @@
         const pan = i === 3 ? Math.max(0, MEADOW_ROW * s + base - (vh - footH)) * land : 0;   // down to the meadow above the footer
         for (const l of sc.layers) place(l.el, (W - cw) / 2, base + l.crop * s + (i === 3 ? (rel < 0 ? shift(l.f) - rel * .45 : 0) - pan * l.f : shift(l.f)));
         if (i === 0) {
-          // The name starts clear above the ridge and sinks more than half behind it over the first part of the scroll.
-          const sink = ease(clamp(y / (.45 * vh))), ty = base + (TITLE_ROW - RISE_ROWS) * s + shift(.44) + (RISE_ROWS * s + brandH * .6) * sink;
+          // The name starts clear above the ridge and keeps sinking behind it until it is gone and the clouds close over it.
+          const sunk = (RISE_ROWS * s + brandH * .6) * sinking(y / (.6 * vh)), ty = base + (TITLE_ROW - RISE_ROWS) * s + shift(.44) + sunk;
           place(title, 0, ty);
-          place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s + shift(.44));   // below the name it lies on the ridge and moves with it
+          place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s + shift(.44) + sunk * .5);   // below the name it sinks into the clouds
         }
         if (i === 3) meadow = base - pan;
       });
@@ -170,6 +178,7 @@
     }
     chapters.forEach((c, i) => { const r = c.getBoundingClientRect(); T[i] = r.top + scrollY; B[i] = T[i] + r.height; fadeTop[i] = fades[i].getBoundingClientRect().top - r.top; });
     brandH = title.firstElementChild.offsetHeight; claimH = claim.offsetHeight; above = W <= 640;   // on narrow screens the claim stands above the name
+    orderClaim(title, claim, above);
     titleBottom = vh / 2 + brandH / 2;
     footH = Math.min(footer ? footer.offsetHeight : 0, vh * .4);   // the valley scene ends above the footer
     gw = Math.max(96, Math.min(210, W * .14)); gh = gw * 636 / 640;
@@ -213,24 +222,25 @@
       if (sc.ground) place(sc.ground, 0, coverY + c.ground[0] * s);
       if (i === 3) meadow = coverY;
       if (i === 0) {
-        // The name starts clear above the ridge and sinks more than half behind it over the first part of the scroll.
-        const sink = ease(clamp(y / (.4 * vh))), ty = base + (TITLE_ROW - RISE_ROWS) * s + (RISE_ROWS * s + brandH * .6) * sink - D * .3 * t;
+        // The name starts clear above the ridge and keeps sinking behind it until it is gone; the claim below it sinks
+        // into the rising clouds.
+        const sunk = (RISE_ROWS * s + brandH * .6) * sinking(y / (.55 * vh)), ty = base + (TITLE_ROW - RISE_ROWS) * s + sunk - D * .3 * t;
         place(title, 0, ty);
-        place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s - D * .44 * t);
-        title.style.opacity = claim.style.opacity = (1 - clamp((rise[0] - .25) * 3)).toFixed(3);   // it has sunk behind the ridge before the clouds take it
+        place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s - D * .44 * t + sunk * .5);
+        title.style.opacity = claim.style.opacity = (1 - clamp((rise[0] - .8) * 5)).toFixed(3);   // by then the ridge and the clouds hide them
       }
       // The leaving scene slides away upwards. Its lower edge is soft (a fixed mask in home.css, below the window while
       // the scene is at rest), so the next scene appears through a haze instead of along a line.
       place(sc.el, 0, i < 3 ? -q[i] * 1.5 * vh : 0);
     });
 
-    // Content appears once its ground has risen and leaves early in the change of scene. It dissolves before it
-    // scrolls up into the strip of scenery, which belongs to the landscape and the glider (only the small gradient
-    // of the mask changes; the text itself is not painted again).
+    // Content appears once its ground has risen and leaves early in the change of scene. It stays whole almost to
+    // the top of the window, so that a chapter taller than the window can be read completely, and only dissolves
+    // along the very edge (only the small gradient of the mask changes; the text itself is not painted again).
     for (let i = 0; i < 3; i++) {
       fades[i].style.opacity = (clamp((rise[i] - .2) / .3) * (1 - clamp((ql[i] - .2) / .4))).toFixed(3);
-      const cut = Math.round(.18 * vh - (T[i] + fadeTop[i] - scrollY));
-      const mask = cut > -.1 * vh ? `linear-gradient(to bottom, transparent ${cut}px, #000 ${cut + Math.round(.09 * vh)}px)` : '';
+      const cut = Math.round(.02 * vh - (T[i] + fadeTop[i] - scrollY));
+      const mask = cut > -.08 * vh ? `linear-gradient(to bottom, transparent ${cut}px, #000 ${cut + Math.round(.06 * vh)}px)` : '';
       if (fades[i].mask !== mask) { fades[i].mask = mask; fades[i].style.webkitMaskImage = mask; fades[i].style.maskImage = mask; }
     }
     fades[3].style.opacity = clamp((ql[2] - .6) / .35).toFixed(3);

@@ -137,8 +137,8 @@
 
 /* ---------- The moving version ---------- */
 html.stage-on .home, html.touch-on .home { background: var(--dawn); }
-/* Text dissolves in the upper strip of the window, so a link reached by keyboard must come to rest below it. */
-html.stage-on { scroll-padding-top: 30vh; }
+/* Text dissolves along the top edge of the window, so a link reached by keyboard must come to rest below it. */
+html.stage-on { scroll-padding-top: 14vh; }
 html.stage-on .stage, html.touch-on .stage { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 0; height: 100vh; height: 100lvh; overflow: hidden; background: var(--dawn); }
 html.stage-on .stage, html.stage-on .glider, html.touch-on .stage, html.touch-on .glider { opacity: 0; transition: opacity .5s; }
 html.stage-ready .stage, html.stage-ready .glider { opacity: 1; }
