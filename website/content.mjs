@@ -21,17 +21,8 @@ export const content = {
       "Fragen"
     ],
     "open": "Zum Login",
-    "eyebrow": "ERINNERUNGEN · FORTSCHRITT · GEMEINSAM",
-    "hero": [
-      "Mehr als ein Flugbuch.",
-      "Dein Flugtagebuch."
-    ],
-    "intro": "Jeder Flug erzählt eine Geschichte: der Track, das Foto vom Startplatz, die Rückmeldung deiner Fluglehrerin, das Gefühl nach der Landung. Flyary hält alles zusammen und zeigt dir, wie du wächst, vom ersten Schulflug an.",
-    "phase": "Pilotphase mit ausgewählten Flugschulen und Testpiloten.",
     "start": "Als Pilot mitfliegen",
     "secondary": "Demo für Flugschulen",
-    "note": "Im Browser, auf dem Handy, direkt am Landeplatz. Daten in der Schweiz.",
-    "productLabel": "SO SIEHT FLYARY AUS",
     "tabsLabel": "App-Ansicht auswählen",
     "tabs": [
       "Erinnerungen",
@@ -83,7 +74,6 @@ export const content = {
         ]
       ]
     ],
-    "previewCaption": "Originalansichten der App mit Beispieldaten",
     "screenLanguage": "Ansichten auf Deutsch",
     "previewAlt": [
       "Ein Flug mit Flugdaten, persönlichem Kommentar und Fotos",
@@ -91,27 +81,7 @@ export const content = {
       "Ein Flug mit Bestätigung durch die Flugschule und Notiz des Fluglehrers",
       "Feed mit einem geteilten Flug, einer Reaktion und einem Kommentar"
     ],
-    "pilotLabel": "DEIN FLUGTAGEBUCH",
-    "pilotTitle": "Gelandet. Festgehalten.\nNie vergessen.",
     "pilotIntro": "Der Track liegt im Vario, das Foto auf dem Handy, die Rückmeldung irgendwo im Chat. In Flyary wird daraus eine Geschichte: dein Flug, vollständig und wiederauffindbar.",
-    "pilotFeatures": [
-      [
-        "Erinnerungen, die bleiben",
-        "Track direkt vom Handy teilen, Fotos und Videos ergänzen, festhalten, wie es sich angefühlt hat. Start- und Landeplätze kommen aus dem offiziellen Verzeichnis.",
-        "TRACKS · FOTOS · NOTIZEN"
-      ],
-      [
-        "Fortschritt, den du siehst",
-        "Saisonziele, Flugzeit und Strecke, und in der Ausbildung dein Stand nach SHV-Weisung: bestätigte Höhenflüge, Start- und Landeplätze, Soloflug.",
-        "ZIELE · STATISTIK · AUSBILDUNG"
-      ],
-      [
-        "Deins, ein Leben lang",
-        "Bestehende Flugbücher importieren, als PDF, CSV oder Excel exportieren und Flugdaten samt IGC-Dateien als ZIP sichern. Dein Tagebuch gehört dir, auch wenn du die Schule wechselst.",
-        "IMPORT · EXPORT"
-      ]
-    ],
-    "schoolLabel": "FÜR FLUGSCHULEN",
     "schoolTitle": "Hier beginnt\ndas Flugtagebuch.",
     "schoolIntro": "Für eure Schüler beginnt ihr Flugtagebuch mit dem ersten Schulflug. Für euch heisst das weniger Papier am Landeplatz: Planung, Flugtag und Ausbildungsnachweis in einer App, und jeder Schüler kennt seinen Stand.",
     "schoolFeatures": [
@@ -130,10 +100,7 @@ export const content = {
     ],
     "schoolCta": "Demo für eure Flugschule vereinbaren",
     "schoolNote": "Persönliche Demo mit Tobias, danach vereinbaren wir gemeinsam den Einstieg in die Pilotphase.",
-    "schoolRoles": "Schulleitung · Fluglehrer · Starthelfer",
-    "schoolBadge": "Für euren Schulalltag",
     "schoolImageAlt": "Flugtag-Cockpit mit Ausbildungsblatt und Rückmeldung zum Schulflug",
-    "aboutLabel": "ÜBER FLYARY",
     "aboutTitle": "Die Flyary Story",
     "aboutVideoPlay": "Video abspielen: Die Flyary Story",
     "faqTitle": "Häufige Fragen.",
@@ -180,43 +147,11 @@ export const content = {
     "top": "Nach oben",
     "emailSubject": "Demo für unsere Flugschule",
     "copyright": "Tobias Bolliger",
-    "heroChips": [
-      "Erinnerungen",
-      "Fortschritt",
-      "Flugschule"
-    ],
-    "highlights": [
-      "Tracks & IGC direkt vom Handy",
-      "Fotos & Videos",
-      "Persönliche Notizen",
-      "Offizielle Start- und Landeplätze",
-      "Saisonziele",
-      "Statistik",
-      "Ausbildungsstand nach SHV-Weisung",
-      "Bestätigte Schulflüge",
-      "Soloflug mit Checkliste",
-      "Rückmeldungen deiner Flugschule",
-      "Flugtag-Cockpit",
-      "Gruppen & Termine",
-      "Feed",
-      "Nachrichten",
-      "Marktplatz",
-      "Tandem mit Passagierbestätigung",
-      "Bestehende Flugbücher importieren",
-      "PDF, CSV, Excel & ZIP",
-      "Gleitschirm & Delta"
-    ],
-    "highlightsLabel": "Funktionen von Flyary",
-    "scrollHint": "Mehr entdecken",
-    "stepLabel": "Schritt",
     "explorerTitle": "Alles, was zu deinen Flügen gehört.",
-    "heroFrontAlt": "Das Flyary-Flugtagebuch mit gespeicherten Gleitschirmflügen",
-    "heroBackAlt": "Statistik der Saison mit Flügen, Flugzeit, Strecke und Höhenmetern",
     "sampleNote": "Alle App-Ansichten zeigen Beispieldaten.",
     "signup": {
       "title": "Testpilot werden – Flyary",
       "description": "Trag dich für die Pilotphase von Flyary ein, dem Flugtagebuch fürs Gleitschirm- und Deltafliegen.",
-      "label": "PILOTPHASE",
       "heading": [
         "Als Pilot",
         "mitfliegen."
@@ -245,7 +180,7 @@ export const content = {
       "school": "Flugschule",
       "comment": "Kommentar",
       "optional": "optional",
-      "commentPlaceholder": "Was wünschst du dir von einem Flugtagebuch?",
+      "commentPlaceholder": "Zum Beispiel: Ich möchte meine Schulflüge mit Fotos festhalten …",
       "consent": "Ich bin einverstanden, dass Flyary mich zur Pilotphase kontaktiert. Meine Angaben werden nur dafür verwendet und auf Wunsch gelöscht.",
       "privacy": "Datenschutz",
       "honeypot": "Website (bitte leer lassen)",
@@ -258,7 +193,6 @@ export const content = {
     },
     "thanks": {
       "title": "Danke – Flyary",
-      "label": "EINGETRAGEN",
       "heading": [
         "Danke!",
         "Du stehst auf der Testliste."
@@ -281,17 +215,8 @@ export const content = {
       "Questions"
     ],
     "open": "Se connecter",
-    "eyebrow": "SOUVENIRS · PROGRESSION · ENSEMBLE",
-    "hero": [
-      "Plus qu’un carnet de vol.",
-      "Votre journal de vol."
-    ],
-    "intro": "Chaque vol raconte une histoire : la trace, la photo au décollage, le retour de votre monitrice, la sensation après l’atterrissage. Flyary réunit tout et vous montre comment vous progressez, dès le premier vol d’école.",
-    "phase": "Phase pilote avec des écoles et des pilotes test sélectionnés.",
     "start": "Devenir pilote test",
     "secondary": "Démo pour les écoles",
-    "note": "Dans le navigateur, sur le téléphone, directement à l’atterrissage. Données en Suisse.",
-    "productLabel": "DÉCOUVREZ L’APPLICATION",
     "tabsLabel": "Choisir une vue de l’application",
     "tabs": [
       "Souvenirs",
@@ -343,7 +268,6 @@ export const content = {
         ]
       ]
     ],
-    "previewCaption": "Vraies vues de l’application avec données fictives",
     "screenLanguage": "Captures en allemand",
     "previewAlt": [
       "Un vol avec ses données, un commentaire personnel et des photos",
@@ -351,27 +275,7 @@ export const content = {
       "Un vol confirmé par l’école avec une note du moniteur",
       "Fil d’actualité avec un vol partagé, une réaction et un commentaire"
     ],
-    "pilotLabel": "VOTRE JOURNAL DE VOL",
-    "pilotTitle": "Atterri. Noté.\nJamais oublié.",
     "pilotIntro": "La trace est dans le vario, la photo sur le téléphone, le retour quelque part dans une conversation. Dans Flyary, tout cela devient une histoire : votre vol, complet et facile à retrouver.",
-    "pilotFeatures": [
-      [
-        "Des souvenirs qui restent",
-        "Partagez la trace directement depuis le téléphone, ajoutez photos et vidéos, notez ce que vous avez ressenti. Les décollages et atterrissages viennent du répertoire officiel.",
-        "TRACES · PHOTOS · NOTES"
-      ],
-      [
-        "Une progression visible",
-        "Objectifs de saison, temps de vol et distance et, en formation, votre niveau selon la directive FSVL : vols d’altitude confirmés, décollages et atterrissages, vol solo.",
-        "OBJECTIFS · STATISTIQUES · FORMATION"
-      ],
-      [
-        "À vous, pour la vie",
-        "Importez vos carnets existants, exportez en PDF, CSV ou Excel et sauvegardez vos données de vol avec les fichiers IGC dans une archive ZIP. Votre journal vous appartient, même si vous changez d’école.",
-        "IMPORT · EXPORT"
-      ]
-    ],
-    "schoolLabel": "POUR LES ÉCOLES",
     "schoolTitle": "Ici commence\nle journal de vol.",
     "schoolIntro": "Pour vos élèves, le journal de vol commence avec le premier vol d’école. Pour vous, cela signifie moins de papier à l’atterrissage : planification, journée de vol et justificatif de formation dans une seule app, et chaque élève connaît son niveau.",
     "schoolFeatures": [
@@ -390,10 +294,7 @@ export const content = {
     ],
     "schoolCta": "Convenir d’une démo pour votre école",
     "schoolNote": "Démo personnalisée avec Tobias, puis nous convenons ensemble de votre entrée dans la phase pilote.",
-    "schoolRoles": "Direction · Moniteurs · Aides au décollage",
-    "schoolBadge": "Pour votre école au quotidien",
     "schoolImageAlt": "Cockpit du jour de vol avec fiche de formation et retour sur le vol école",
-    "aboutLabel": "À PROPOS DE FLYARY",
     "aboutTitle": "L’histoire de Flyary",
     "aboutVideoPlay": "Lire la vidéo : L’histoire de Flyary",
     "faqTitle": "Questions fréquentes.",
@@ -440,43 +341,11 @@ export const content = {
     "top": "Retour en haut",
     "emailSubject": "Démo pour notre école de vol libre",
     "copyright": "Tobias Bolliger",
-    "heroChips": [
-      "Souvenirs",
-      "Progression",
-      "École"
-    ],
-    "highlights": [
-      "Traces et IGC depuis le téléphone",
-      "Photos et vidéos",
-      "Notes personnelles",
-      "Sites officiels de décollage et d’atterrissage",
-      "Objectifs de saison",
-      "Statistiques",
-      "Niveau de formation selon la directive FSVL",
-      "Vols d’école confirmés",
-      "Vol solo avec check-list",
-      "Retours de votre école",
-      "Cockpit du jour de vol",
-      "Groupes et sorties",
-      "Fil d’actualité",
-      "Messages",
-      "Marché",
-      "Biplace avec confirmation du passager",
-      "Importer vos carnets existants",
-      "PDF, CSV, Excel et ZIP",
-      "Parapente et delta"
-    ],
-    "highlightsLabel": "Fonctions de Flyary",
-    "scrollHint": "Découvrir",
-    "stepLabel": "Étape",
     "explorerTitle": "Tout ce qui appartient à vos vols.",
-    "heroFrontAlt": "Le journal de vol Flyary avec des vols de parapente enregistrés",
-    "heroBackAlt": "Statistiques de la saison avec vols, temps de vol, distance et dénivelé",
     "sampleNote": "Toutes les vues de l’app montrent des données d’exemple.",
     "signup": {
       "title": "Devenir pilote test – Flyary",
       "description": "Inscrivez-vous à la phase pilote de Flyary, le journal de vol pour le parapente et le delta.",
-      "label": "PHASE PILOTE",
       "heading": [
         "Devenez",
         "pilote test."
@@ -505,7 +374,7 @@ export const content = {
       "school": "École de vol",
       "comment": "Commentaire",
       "optional": "facultatif",
-      "commentPlaceholder": "Qu’attendez-vous d’un journal de vol ?",
+      "commentPlaceholder": "Par exemple : j’aimerais garder mes vols d’école avec leurs photos …",
       "consent": "J’accepte que Flyary me contacte au sujet de la phase pilote. Mes données sont utilisées uniquement à cette fin et supprimées sur demande.",
       "privacy": "Confidentialité",
       "honeypot": "Site web (laisser vide)",
@@ -518,7 +387,6 @@ export const content = {
     },
     "thanks": {
       "title": "Merci – Flyary",
-      "label": "INSCRIPTION REÇUE",
       "heading": [
         "Merci !",
         "Vous êtes sur la liste."
@@ -541,17 +409,8 @@ export const content = {
       "Questions"
     ],
     "open": "Log in",
-    "eyebrow": "MEMORIES · PROGRESS · TOGETHER",
-    "hero": [
-      "More than a logbook.",
-      "Your flight diary."
-    ],
-    "intro": "Every flight tells a story: the track, the photo from take-off, your instructor’s feedback, the feeling after landing. Flyary keeps it all together and shows you how you grow, from your first school flight.",
-    "phase": "Pilot phase with selected flight schools and test pilots.",
     "start": "Join as a pilot",
     "secondary": "Demo for flight schools",
-    "note": "In the browser, on your phone, right at the landing field. Data stored in Switzerland.",
-    "productLabel": "THIS IS FLYARY",
     "tabsLabel": "Choose an app view",
     "tabs": [
       "Memories",
@@ -603,7 +462,6 @@ export const content = {
         ]
       ]
     ],
-    "previewCaption": "Actual app screens with fictional sample data",
     "screenLanguage": "Screens shown in German",
     "previewAlt": [
       "A flight with its data, a personal comment and photos",
@@ -611,27 +469,7 @@ export const content = {
       "A flight confirmed by the flight school with a note from the instructor",
       "Feed with a shared flight, a reaction and a comment"
     ],
-    "pilotLabel": "YOUR FLIGHT DIARY",
-    "pilotTitle": "Landed. Recorded.\nNever forgotten.",
     "pilotIntro": "The track is on your vario, the photo on your phone, the feedback somewhere in a chat. Flyary turns it into a story: your flight, complete and easy to find.",
-    "pilotFeatures": [
-      [
-        "Memories that last",
-        "Share the track straight from your phone, add photos and videos, write down how it felt. Take-off and landing sites come from the official directory.",
-        "TRACKS · PHOTOS · NOTES"
-      ],
-      [
-        "Progress you can see",
-        "Season goals, flight time and distance, and during training your status under the SHV directive: confirmed high-altitude flights, take-off and landing sites, solo flight.",
-        "GOALS · STATISTICS · TRAINING"
-      ],
-      [
-        "Yours, for life",
-        "Import existing logbooks, export as PDF, CSV or Excel, and save flight data with IGC files in a ZIP archive. Your diary belongs to you, even if you change schools.",
-        "IMPORT · EXPORT"
-      ]
-    ],
-    "schoolLabel": "FOR FLIGHT SCHOOLS",
     "schoolTitle": "The flight diary\nstarts here.",
     "schoolIntro": "For your students, their flight diary begins with the first school flight. For you, it means less paper at the landing field: planning, the flying day and training records in one app, and every student knows where they stand.",
     "schoolFeatures": [
@@ -650,10 +488,7 @@ export const content = {
     ],
     "schoolCta": "Book a demo for your school",
     "schoolNote": "A personal demo with Tobias; afterwards we agree together on how you join the pilot phase.",
-    "schoolRoles": "School leaders · Instructors · Launch helpers",
-    "schoolBadge": "For your school’s day-to-day",
     "schoolImageAlt": "Flight-day cockpit with training sheet and feedback on the school flight",
-    "aboutLabel": "ABOUT FLYARY",
     "aboutTitle": "The Flyary story",
     "aboutVideoPlay": "Play video: The Flyary story",
     "faqTitle": "Frequently asked questions.",
@@ -700,43 +535,11 @@ export const content = {
     "top": "Back to top",
     "emailSubject": "Demo for our flight school",
     "copyright": "Tobias Bolliger",
-    "heroChips": [
-      "Memories",
-      "Progress",
-      "Flight school"
-    ],
-    "highlights": [
-      "Tracks & IGC from your phone",
-      "Photos & videos",
-      "Personal notes",
-      "Official take-off and landing sites",
-      "Season goals",
-      "Statistics",
-      "Training status under the SHV directive",
-      "Confirmed school flights",
-      "Solo flight with checklist",
-      "Feedback from your school",
-      "Flying-day cockpit",
-      "Groups & events",
-      "Feed",
-      "Messages",
-      "Marketplace",
-      "Tandem with passenger confirmation",
-      "Import existing logbooks",
-      "PDF, CSV, Excel & ZIP",
-      "Paraglider & hang glider"
-    ],
-    "highlightsLabel": "Flyary features",
-    "scrollHint": "Discover more",
-    "stepLabel": "Step",
     "explorerTitle": "Everything that belongs to your flights.",
-    "heroFrontAlt": "The Flyary flight diary with saved paragliding flights",
-    "heroBackAlt": "Season statistics with flights, flight time, distance and height gain",
     "sampleNote": "All app views show sample data.",
     "signup": {
       "title": "Become a test pilot – Flyary",
       "description": "Sign up for the pilot phase of Flyary, the flight diary for paragliding and hang gliding.",
-      "label": "PILOT PHASE",
       "heading": [
         "Join as",
         "a pilot."
@@ -765,7 +568,7 @@ export const content = {
       "school": "Flight school",
       "comment": "Comment",
       "optional": "optional",
-      "commentPlaceholder": "What would you like from a flight diary?",
+      "commentPlaceholder": "For example: I’d like to keep my school flights together with photos …",
       "consent": "I agree that Flyary may contact me about the pilot phase. My details are used only for this and deleted on request.",
       "privacy": "Privacy",
       "honeypot": "Website (leave empty)",
@@ -778,7 +581,6 @@ export const content = {
     },
     "thanks": {
       "title": "Thank you – Flyary",
-      "label": "SIGNED UP",
       "heading": [
         "Thank you!",
         "You’re on the test list."

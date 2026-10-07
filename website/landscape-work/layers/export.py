@@ -1,12 +1,11 @@
-"""Crop the split layers to the rows each scene uses (sky uncropped) and save them as WebP in two widths:
-1024 for phones and the full painted width for large screens. Also writes a small JSON with the geometry."""
+"""Crop the split layers to the rows each scene uses (sky uncropped) and save them as WebP: 1024 wide for phones, the
+full painted width for large screens, and 1536 in between so that ordinary laptops need not decode the largest files.
+Also writes a small JSON with the geometry. Only replaces the layer files; the other pictures come from extras.py."""
 import glob, json, os
 import numpy as np
 from PIL import Image
 CROP = {'gipfel': 380, 'wald': 400, 'huegel': 360, 'tal': 200}  # in rows of a 1024-wide scene
 os.makedirs('layers/web', exist_ok=True)
-for f in glob.glob('layers/web/*.webp'):
-    if 'schirm' not in f: os.remove(f)
 meta, total = {}, {'1024': 0, 'full': 0}
 per = {}
 for n, y0 in CROP.items():
@@ -16,15 +15,16 @@ for n, y0 in CROP.items():
         crop = 0 if f.endswith('himmel.png') else y0
         im = im.crop((0, int(crop * k), im.width, im.height))
         name = os.path.basename(f).replace('.png', '')
-        small = im.resize((1024, round(im.height * 1024 / im.width)), Image.LANCZOS)
+        widths = [1024] + ([1536] if im.width >= 2048 else []) + [im.width]
         sizes = {}
-        for tag, pic in (('1024', small), (str(im.width), im)):
+        for w in widths:
+            tag, pic = str(w), im if w == im.width else im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
             out = f'layers/web/{name}-{tag}.webp'
             pic.save(out, 'WEBP', quality=80, method=6)
             sizes[tag] = os.path.getsize(out)
         total['1024'] += sizes['1024']; total['full'] += sizes[str(im.width)]
-        per.setdefault(n, [0, 0]); per[n][0] += sizes['1024']; per[n][1] += sizes[str(im.width)]
-        meta[name] = dict(crop=crop, widths=[1024, im.width], ratio=round(im.height / im.width, 5))
+        per.setdefault(n, [0, 0, 0]); per[n][0] += sizes['1024']; per[n][1] += sizes[str(im.width)]; per[n][2] += sizes.get('1536', sizes[str(im.width)])
+        meta[name] = dict(crop=crop, widths=widths, ratio=round(im.height / im.width, 5))
 json.dump(meta, open('layers/web/layers.json', 'w'), indent=1)
-for n, (a, b) in per.items(): print(f'{n:7s} phone {a // 1024:4d} KB   large {b // 1024:4d} KB')
+for n, (a, b, c) in per.items(): print(f'{n:7s} phone {a // 1024:4d} KB   laptop {c // 1024:4d} KB   large {b // 1024:4d} KB')
 print(f'all     phone {total["1024"] // 1024:4d} KB   large {total["full"] // 1024:4d} KB')

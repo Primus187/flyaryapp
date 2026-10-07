@@ -1,4 +1,5 @@
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { content, languages } from './content.mjs';
@@ -62,6 +63,7 @@ function stage(c) {
 }
 
 /** Head, header and footer shared by the home page and the sign-up pages. `page` is '' (home), 'testpilot/' or 'danke/'. */
+// The browser bar takes the colour of the sky at the top edge of the hero: blue on upright screens, hazier on wide ones.
 function shell(lang, { page, title, description, indexed = true, bodyClass, main, head = '' }) {
   const c = content[lang];
   const home = page === '';
@@ -69,7 +71,7 @@ function shell(lang, { page, title, description, indexed = true, bodyClass, main
   const docsLink = `<a href="/${lang}/docs/">${esc(docsLabels[lang].name)}</a>`;
   const nav = c.nav.map((label, i) => `<a href="${anchor(ids[i])}">${esc(label)}</a>`).join('') + docsLink;
   const langs = Object.entries(languages).map(([code, label]) => `<a href="/${code}/${page}" lang="${code}" hreflang="${code}" aria-label="${label}" ${code === lang ? 'aria-current="page"' : ''}>${code.toUpperCase()}</a>`).join('');
-  const logo = `<a class="brand" href="${home ? '#top' : `/${lang}/`}" aria-label="Flyary"><img src="/assets/flyary-192.png" width="38" height="38" alt=""><span>Flyary</span></a>`;
+  const logo = `<a class="brand" href="${home ? '#top' : `/${lang}/`}" aria-label="Flyary"><img src="/assets/flyary-192.png" width="38" height="38" alt=""><span translate="no">Flyary</span></a>`;
   const arrow = icon('arrow');
   const seo = site && indexed ? `<link rel="canonical" href="${site}/${lang}/${page}"><meta property="og:url" content="${site}/${lang}/${page}">
   ${Object.keys(languages).map((l) => `<link rel="alternate" hreflang="${l}" href="${site}/${l}/${page}">`).join('\n  ')}
@@ -82,13 +84,15 @@ function shell(lang, { page, title, description, indexed = true, bodyClass, main
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
   ${indexed ? '' : '<meta name="robots" content="noindex">'}
-  <meta name="theme-color" content="${home ? '#d1b8af' : '#ffffff'}">
+  ${home ? '<meta name="theme-color" media="(orientation: portrait)" content="#6992d0"><meta name="theme-color" content="#a9aec7">' : '<meta name="theme-color" content="#ffffff">'}
   <meta property="og:type" content="website">
   <meta property="og:locale" content="${{ de: 'de_CH', fr: 'fr_CH', en: 'en_GB' }[lang]}">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
-  <meta property="og:image" content="${site}/assets/overview.png">
-  <meta property="og:image:alt" content="${esc(c.previewAlt[0])}">
+  <meta property="og:image" content="${site}/assets/og-${lang}.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Flyary. ${esc(c.claim)}">
   <meta name="twitter:card" content="summary_large_image">
   ${seo}
   <link rel="icon" href="/assets/flyary-192.png" type="image/png">
@@ -136,17 +140,17 @@ function render(lang) {
         <div class="explorer-copy">
           <h2 id="explorer-title">${esc(c.explorerTitle)}</h2>
           <p class="chapter-intro">${esc(c.pilotIntro)}</p>
-          <div class="preview-tabs" aria-label="${esc(c.tabsLabel)}">${c.tabs.map((label, i) => `<a id="tab-${i}" href="#preview-${i}" class="preview-tab" data-index="${i}" data-src="/assets/${screenshots[i]}" data-alt="${esc(c.previewAlt[i])}"><b>${esc(label)}</b><span>${esc(c.tabDescriptions[i])}</span></a>`).join('')}</div>
-          <div class="preview-panels">${c.panels.map(([title, text, points], i) => `<article id="preview-${i}" class="preview-panel" data-index="${i}"><h3>${esc(title)}</h3><p>${esc(text)}</p><ul class="panel-points">${points.map((point) => `<li>${esc(point)}</li>`).join('')}</ul><img class="fallback-screen" src="/assets/${screenshots[i]}" alt="${esc(c.previewAlt[i])}" width="780" height="1688" loading="lazy"></article>`).join('')}</div>
+          <div class="preview-tabs" aria-label="${esc(c.tabsLabel)}">${c.tabs.map((label, i) => `<a id="tab-${i}" href="#preview-${i}" class="preview-tab" data-index="${i}" data-src="${screenUrl[screenshots[i]]}" data-alt="${esc(c.previewAlt[i])}"><b>${esc(label)}</b><span>${esc(c.tabDescriptions[i])}</span></a>`).join('')}</div>
+          <div class="preview-panels">${c.panels.map(([title, text, points], i) => `<article id="preview-${i}" class="preview-panel" data-index="${i}"><h3>${esc(title)}</h3><p>${esc(text)}</p><ul class="panel-points">${points.map((point) => `<li>${esc(point)}</li>`).join('')}</ul><img class="fallback-screen" src="${screenUrl[screenshots[i]]}" alt="${esc(c.previewAlt[i])}" width="780" height="1688" loading="lazy"></article>`).join('')}</div>
         </div>
-        <figure class="explorer-stage">${phone(`<img id="preview-image" src="/assets/${screenshots[0]}" alt="${esc(c.previewAlt[0])}" width="780" height="1688" loading="lazy">`)}</figure>
+        <figure class="explorer-stage">${phone(`<img id="preview-image" src="${screenUrl[screenshots[0]]}" alt="${esc(c.previewAlt[0])}" width="780" height="1688" loading="lazy">`)}</figure>
       </div>
     </section>
     <div class="gap gap-forest"></div>
 
     <section id="schools" class="chapter chapter-forest" data-chap="1" aria-labelledby="school-title">
       <div class="wrap school" data-fade>
-        <figure class="school-visual">${phone(`<img src="/assets/cockpit.png" width="780" height="1688" alt="${esc(c.schoolImageAlt)}" loading="lazy">`)}</figure>
+        <figure class="school-visual">${phone(`<img src="${screenUrl['cockpit.png']}" width="780" height="1688" alt="${esc(c.schoolImageAlt)}" loading="lazy">`)}</figure>
         <div class="school-copy">
           <h2 id="school-title">${lines(c.schoolTitle)}</h2>
           <p class="chapter-intro">${esc(c.schoolIntro)}</p>
@@ -203,7 +207,7 @@ function renderSignup(lang) {
           <input type="hidden" name="lang" value="${lang}">
           <input type="hidden" name="started" value="">
           <div class="field"><label for="f-name">${esc(s.name)}</label><input id="f-name" name="name" required minlength="2" maxlength="100" autocomplete="name"></div>
-          <div class="field"><label for="f-email">${esc(s.email)}</label><input id="f-email" name="email" type="email" required maxlength="200" autocomplete="email"></div>
+          <div class="field"><label for="f-email">${esc(s.email)}</label><input id="f-email" name="email" type="email" required maxlength="200" autocomplete="email" spellcheck="false" autocapitalize="off"></div>
           <fieldset class="field"><legend>${esc(s.role)}</legend>${choices('role', 'radio', s.roles, true)}</fieldset>
           <fieldset class="field"><legend>${esc(s.disciplines)}</legend>${choices('discipline', 'checkbox', s.discipline, false)}</fieldset>
           <div class="field"><label for="f-school">${esc(s.school)} ${optional}</label><input id="f-school" name="school" maxlength="120" autocomplete="organization"></div>
@@ -235,13 +239,24 @@ await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 for (const file of ['site.css', 'home.css', 'site.js', 'stage.js', 'boot.js']) await cp(join(here, file), join(out, file));
-const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'overview.png', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png', 'plus-jakarta-sans-latin-wght-normal.woff2', 'plus-jakarta-sans-license.txt'];
+const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'og-de.jpg', 'og-fr.jpg', 'og-en.jpg', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png', 'plus-jakarta-sans-latin-wght-normal.woff2', 'plus-jakarta-sans-license.txt'];
 const appScreens = {
-  'overview.png': 'mobile/01-home.png', 'training.png': 'mobile/10-training.png',
+  'training.png': 'mobile/10-training.png',
   'memories.png': 'mobile/59-flight-memories.png', 'school-flight.png': 'mobile/20-flight-notes.png',
   'cockpit.png': 'school-mobile/34-coaching.png', 'feed.png': 'mobile/22-feed.png',
 };
+// The start page serves WebP copies of the app views (landscape-work/app-screens.py). A copy is used only while it was made
+// from the current handbook screenshot; after a recapture that view falls back to the PNG until the script has run again.
+const screenCopies = JSON.parse(await readFile(join(here, 'assets/screens/screens.json'), 'utf8'));
+const screenUrl = {};
+for (const name of Object.keys(appScreens)) {
+  const current = screenCopies[name] === createHash('sha256').update(await readFile(join(here, '../docs/handbook', appScreens[name]))).digest('hex');
+  if (!current) console.warn(`App view ${name} has changed: serving the PNG. Run "python landscape-work/app-screens.py" in website/ to refresh the WebP copy.`);
+  screenUrl[name] = current ? `/assets/screens/${name.replace('.png', '.webp')}` : `/assets/${name}`;
+}
 for (const asset of assets) await cp(appScreens[asset] ? join(here, '../docs/handbook', appScreens[asset]) : join(here, 'assets', asset), join(out, 'assets', asset));
+await mkdir(join(out, 'assets/screens'), { recursive: true });
+for (const file of (await readdir(join(here, 'assets/screens'))).filter((f) => f.endsWith('.webp'))) await cp(join(here, 'assets/screens', file), join(out, 'assets/screens', file));
 // The landscape layers ship as exported; the original scenes and the scripts stay in landscape-work.
 await mkdir(join(out, 'assets/landscape'), { recursive: true });
 for (const file of (await readdir(landscape)).filter((f) => f.endsWith('.webp'))) await cp(join(landscape, file), join(out, 'assets/landscape', file));
@@ -253,7 +268,28 @@ for (const lang of Object.keys(languages)) {
 }
 await writeFile(join(out, 'index.html'), render('de'));
 const docsUrls = await buildDocs({ out, site });
-await writeFile(join(out, '404.html'), '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Flyary — 404</title><body><h1>404</h1><p><a href="/">Flyary</a></p></body></html>');
+// One page for all languages: the host serves it for every unknown address.
+await writeFile(join(out, '404.html'), `<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flyary – Seite nicht gefunden</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="/assets/flyary-192.png" type="image/png">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body class="lost-page">
+  <div class="page-band page-band-hills" aria-hidden="true"></div>
+  <main class="wrap lost">
+    <a class="brand" href="/" aria-label="Flyary"><img src="/assets/flyary-192.png" width="38" height="38" alt=""><span translate="no">Flyary</span></a>
+    <h1>Diese Seite gibt es nicht.</h1>
+    <p lang="fr">Cette page n’existe pas.</p>
+    <p lang="en">This page does not exist.</p>
+    <nav aria-label="Flyary">${Object.entries(languages).map(([code, label]) => `<a class="button button-primary" href="/${code}/" lang="${code}">${label}</a>`).join('')}</nav>
+  </main>
+</body></html>`);
 await writeFile(join(out, 'robots.txt'), `User-agent: *\nAllow: /\n${site ? `Sitemap: ${site}/sitemap.xml\n` : ''}`);
 await writeFile(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${site ? [...Object.keys(languages).flatMap((l) => [`/${l}/`, signupPath(l)]), ...docsUrls].map((url) => `<url><loc>${esc(site + url)}</loc></url>`).join('') : ''}</urlset>`);
 // Ensure a build fails immediately if an expected runtime asset is missing.

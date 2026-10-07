@@ -90,7 +90,7 @@ export async function buildDocs({ out, site }) {
       html(token) { return esc(token.text); },
       table(token) {
         const row = (cells, tag) => `<tr>${cells.map((cell) => `<${tag}>${this.parser.parseInline(cell.tokens)}</${tag}>`).join('')}</tr>`;
-        return `<div class="doc-table" role="region" aria-label="Tabelle" tabindex="0"><table><thead>${row(token.header, 'th')}</thead><tbody>${token.rows.map((r) => row(r, 'td')).join('')}</tbody></table></div>`;
+        return `<div class="doc-table" role="region" aria-label="Tabelle: ${esc(plain(token.header.map((cell) => cell.text).join(', ')))}" tabindex="0"><table><thead>${row(token.header, 'th')}</thead><tbody>${token.rows.map((r) => row(r, 'td')).join('')}</tbody></table></div>`;
       },
     };
     const parser = new Marked({ gfm: true, renderer });
@@ -100,7 +100,7 @@ export async function buildDocs({ out, site }) {
 
   function shell({ lang = 'de', title, description = `${title} — Flyary Handbücher und technische Dokumentation.`, url, body, search = false }) {
     const l = docsLabels[lang], c = content[lang];
-    const brand = `<a class="brand" href="/${lang}/" aria-label="Flyary"><img src="/assets/flyary-192.png" width="38" height="38" alt=""><span>Flyary</span></a>`;
+    const brand = `<a class="brand" href="/${lang}/" aria-label="Flyary"><img src="/assets/flyary-192.png" width="38" height="38" alt=""><span translate="no">Flyary</span></a>`;
     return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)} | Flyary</title><meta name="description" content="${esc(description)}"><meta name="theme-color" content="#ffffff">${site ? `<link rel="canonical" href="${site}${esc(url)}">` : ''}<link rel="icon" href="/assets/flyary-192.png"><link rel="preload" href="/assets/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/site.css"><link rel="stylesheet" href="/docs.css">${search ? '<script src="/docs-search-index.js" defer></script>' : ''}<script src="/docs.js" defer></script></head><body id="top" class="docs-page${search ? ' docs-hub-page' : ''}"><a class="skip-link" href="#main">${esc(c.skip)}</a><header class="header"><div class="header-inner wrap">${brand}<a class="docs-home" href="/${lang}/docs/">${esc(l.name)}</a><div class="header-actions">${search ? `<nav class="languages" aria-label="${esc(c.language)}">${Object.entries(languages).map(([code, label]) => `<a href="/${code}/docs/" lang="${code}" aria-label="${label}" ${code === lang ? 'aria-current="page"' : ''}>${code.toUpperCase()}</a>`).join('')}</nav>` : ''}<a class="button button-primary button-small header-cta" href="https://app.flyary.ch">${esc(c.open)}</a></div></div></header>${search ? '<div class="page-band page-band-hills" aria-hidden="true"></div>' : ''}${body}<footer class="footer docs-footer"><div class="wrap"><a href="/${lang}/">${esc(l.home)} ↗</a><a href="/${lang}/docs/">${esc(l.name)}</a><a href="mailto:info@flyary.ch">${esc(c.contact)}</a></div></footer></body></html>`;
   }
 

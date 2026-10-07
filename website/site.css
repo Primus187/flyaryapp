@@ -63,11 +63,11 @@ p { text-wrap: pretty; }
 .languages a:hover { opacity: 1; }
 .languages a[aria-current="page"] { opacity: 1; background: rgba(11, 27, 43, .07); }
 .menu-toggle { display: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid currentColor; border-color: rgba(127, 140, 155, .35); background: transparent; color: inherit; position: relative; }
-.menu-toggle span { position: absolute; left: 12px; right: 12px; height: 2px; border-radius: 2px; background: currentColor; transition: transform .3s var(--ease), top .3s var(--ease); }
+.menu-toggle span { position: absolute; left: 12px; right: 12px; height: 2px; border-radius: 2px; background: currentColor; transition: transform .3s var(--ease); }
 .menu-toggle span:first-child { top: 16px; }
 .menu-toggle span:last-child { top: 25px; }
-.menu-toggle[aria-expanded="true"] span:first-child { top: 20.5px; transform: rotate(45deg); }
-.menu-toggle[aria-expanded="true"] span:last-child { top: 20.5px; transform: rotate(-45deg); }
+.menu-toggle[aria-expanded="true"] span:first-child { transform: translateY(4.5px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] span:last-child { transform: translateY(-4.5px) rotate(-45deg); }
 .mobile-nav { display: none; }
 
 /* ---------- Buttons & links ---------- */
@@ -81,6 +81,7 @@ p { text-wrap: pretty; }
 .text-link { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; color: var(--blue); }
 .text-link .icon { transition: transform .3s var(--ease); }
 .text-link:hover .icon { transform: translateX(4px); }
+.chapter-link:hover, .final-link:hover { text-decoration-thickness: 3px; }
 .small-note { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 
 /* ---------- Sections ---------- */
@@ -126,12 +127,19 @@ p { text-wrap: pretty; }
 .form-status:target { display: block; }
 
 /* Thank-you page: landed on the meadow */
-.thanks { position: relative; overflow: hidden; display: grid; align-items: start; justify-items: center; min-height: calc(100svh - 76px); padding: clamp(56px, 12vh, 130px) 0 0; text-align: center; background: var(--valley) url("/assets/landscape/tal-flach-1024.webp") center bottom / cover no-repeat; }
+.thanks { --focus: var(--ink); position: relative; overflow: hidden; display: grid; align-items: start; justify-items: center; min-height: calc(100svh - 76px); padding: clamp(56px, 12vh, 130px) 0 0; text-align: center; background: var(--valley) url("/assets/landscape/tal-flach-1024.webp") center bottom / cover no-repeat; }
 .thanks-inner { display: grid; justify-items: center; gap: 20px; max-width: 760px; }
 .thanks h1 { font-size: clamp(38px, 5vw, 66px); line-height: 1.04; font-weight: 800; }
 .thanks-inner p { max-width: 560px; font-size: 18px; font-weight: 500; color: #1f3558; }
 .thanks-glider { position: absolute; left: 44%; bottom: 12%; width: clamp(70px, 9vw, 120px); }
 @media (min-width: 1100px) { .thanks { background-image: url("/assets/landscape/tal-flach-2048.webp"); } }
+
+/* Page not found */
+.lost-page { background: var(--mist); }
+.lost { display: grid; gap: 16px; justify-items: start; padding-block: 8px 96px; }
+.lost h1 { font-size: clamp(34px, 5vw, 60px); line-height: 1.05; font-weight: 800; margin-top: 12px; }
+.lost p { font-size: 18px; color: var(--muted); }
+.lost nav { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
 
 /* ---------- Footer: the ground of the landscape ---------- */
 .footer { padding: 64px 0 36px; background: var(--ground); color: #d8e6d6; --focus: #fff; }
@@ -169,7 +177,6 @@ p { text-wrap: pretty; }
   .brand img { width: 32px; height: 32px; }
   .languages a { padding: 6px 6px; }
   .button { white-space: normal; text-align: center; padding-block: 12px; }
-  /* Two phones: 58 % of the stage wide, 2.16 times as tall, the back one set 60 px lower. */
   .signup-card .button { width: 100%; }
   .footer-top { flex-direction: column; }
 }

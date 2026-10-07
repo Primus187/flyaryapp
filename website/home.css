@@ -30,7 +30,7 @@
 .hero-front { top: calc(var(--base) + var(--cw) * .3711); height: calc(var(--cw) * 1.1289); background-image: url("/assets/landscape/gipfel-vorn-1024.webp"); }
 .hero h1 { position: absolute; left: 0; right: 0; top: calc(var(--base) + var(--cw) * .7305); transform: translateY(-100%); display: flex; flex-direction: column-reverse; align-items: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
 .hero-brand, .stage-title b { font-size: var(--brand); line-height: 1; font-weight: 800; }
-.hero-claim, .stage-title small { font-size: var(--claim); line-height: 1.5; font-weight: 600; letter-spacing: -.01em; margin-bottom: .1em; }
+.hero-claim, .stage-title small { font-size: var(--claim); line-height: 1.5; font-weight: 600; letter-spacing: -.01em; margin-bottom: .1em; text-shadow: 0 1px 2px rgba(20, 33, 58, .6), 0 2px 14px rgba(20, 33, 58, .6), 0 0 34px rgba(20, 33, 58, .35); }
 .final-link { color: var(--ink); font-weight: 700; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; }
 
 /* ---------- Chapters ---------- */
@@ -44,7 +44,7 @@
 .chapter-forest::before { height: calc(var(--cw) * .3809); background-image: url("/assets/landscape/kante-wald-1024.webp"); }
 .chapter-meadow { background: var(--meadow); color: #f1f6ec; --focus: #fff; }
 .chapter-meadow::before { height: calc(var(--cw) * .537); background-image: url("/assets/landscape/kante-wiese-1024.webp"); }
-.chapter-valley { min-height: 100vh; min-height: 100lvh; padding-top: clamp(110px, 20vh, 190px); text-align: center; background: linear-gradient(var(--meadow), rgba(44, 74, 53, 0) 12%), var(--valley) url("/assets/landscape/tal-hoch-1024.webp") center bottom / cover no-repeat; }
+.chapter-valley { --focus: var(--ink); min-height: 100vh; min-height: 100lvh; padding-top: clamp(110px, 20vh, 190px); text-align: center; background: linear-gradient(var(--meadow), rgba(44, 74, 53, 0) 12%), var(--valley) url("/assets/landscape/tal-hoch-1024.webp") center bottom / cover no-repeat; }
 /* Between two chapters the next scene stands still while the chapter after it rises over it. */
 .gap { position: sticky; top: 0; z-index: 0; height: 100vh; height: 100lvh; background: center / cover no-repeat; }
 .gap::before { content: ""; position: absolute; inset: 0 0 auto; height: 26%; background: linear-gradient(var(--from), transparent); }
@@ -132,6 +132,8 @@
 
 /* ---------- The moving version ---------- */
 html.stage-on .home, html.touch-on .home { background: var(--dawn); }
+/* Text dissolves in the upper strip of the window, so a link reached by keyboard must come to rest below it. */
+html.stage-on { scroll-padding-top: 30vh; }
 html.stage-on .stage, html.touch-on .stage { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 0; height: 100vh; height: 100lvh; overflow: hidden; background: var(--dawn); }
 html.stage-on .stage, html.stage-on .glider, html.touch-on .stage, html.touch-on .glider { opacity: 0; transition: opacity .5s; }
 html.stage-ready .stage, html.stage-ready .glider { opacity: 1; }
