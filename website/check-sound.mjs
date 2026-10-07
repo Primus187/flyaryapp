@@ -54,18 +54,25 @@ try {
     await button.focus();
     await page.keyboard.press('Enter');
     await page.waitForFunction(() => document.querySelector('.sound-toggle').getAttribute('aria-pressed') === 'true' && !document.querySelector('.sound-toggle').hasAttribute('aria-busy') && audioProbe.sources.length >= 3);
-    assert.equal(requests.length, 4);
-    assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 3);
+    assert.equal(requests.length, 5);
+    assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 4);
     assert.equal(await page.evaluate(() => audioProbe.contexts[0].state), 'running');
     assert(await button.getAttribute('aria-label'), 'Compact control retains its accessible name');
     assert.equal(await button.locator('span').isVisible(), false, 'Enabled control shows only the speaker icon');
     await page.waitForTimeout(300);
     assert.equal(await page.evaluate(() => audioProbe.gains[0].gain.value), 0, 'Opt-in without scrolling is silent');
     const decoded = await page.evaluate(() => audioProbe.decoded);
-    assert(decoded.every((b) => b.duration > 0 && b.rms > 0), 'All four MP3s decode to audible samples');
+    assert(decoded.every((b) => b.duration > 0 && b.rms > 0), 'All five MP3s decode to audible samples');
     console.log(`${lang}: decoded audio ${JSON.stringify(decoded)}`);
     for (let y = 100; y <= 900; y += 100) { await page.evaluate((pos) => scrollTo(0, pos), y); await page.waitForTimeout(90); }
     const flying = await page.evaluate(() => audioProbe.gains[1].gain.value);
+    const mix = await page.evaluate(() => {
+      const loops = audioProbe.sources.filter((s) => s.loop);
+      const rms = (buffer) => { const data = buffer.getChannelData(0); let energy = 0; for (const sample of data) energy += sample * sample; return Math.sqrt(energy / data.length); };
+      return { wind: rms(loops[0].buffer) * audioProbe.gains[1].gain.value,
+        music: rms(loops[3].buffer) * audioProbe.gains[5].gain.value };
+    });
+    assert(mix.music > 0 && mix.music < mix.wind * .35, 'Music remains quietly behind the moving wind');
     await page.waitForTimeout(3200);
     const idle = await page.evaluate(() => audioProbe.gains[1].gain.value);
     assert(flying > idle, 'Wind settles after scrolling stops');
@@ -87,8 +94,8 @@ try {
     assert.equal(await button.getAttribute('aria-pressed'), 'false');
     await button.click();
     await page.waitForFunction(() => audioProbe.contexts[0].state === 'running');
-    assert.equal(requests.length, 4, 'Re-enabling uses loaded audio');
-    assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 3, 'No duplicate loops');
+    assert.equal(requests.length, 5, 'Re-enabling uses loaded audio');
+    assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 4, 'No duplicate loops');
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     assert.deepEqual(errors, []);
     await context.close();

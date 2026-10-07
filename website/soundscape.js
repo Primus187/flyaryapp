@@ -43,8 +43,8 @@
   }
 
   // Overlap the tail and head in the decoded buffer: recorded ambience loops without a hard seam.
-  function loopBuffer(buffer) {
-    const overlap = Math.min(Math.round(buffer.sampleRate * 1.5), Math.floor(buffer.length / 4));
+  function loopBuffer(buffer, fadeSeconds = 1.5) {
+    const overlap = Math.min(Math.round(buffer.sampleRate * fadeSeconds), Math.floor(buffer.length / 4));
     const length = buffer.length - overlap;
     const result = context.createBuffer(buffer.numberOfChannels, length, buffer.sampleRate);
     for (let c = 0; c < buffer.numberOfChannels; c++) {
@@ -61,7 +61,7 @@
     if (tracks) return;
     if (loading) return loading;
     loading = (async () => {
-      const names = ['flight-wind', 'summit-wind', 'nature', 'eagle'];
+      const names = ['flight-wind', 'summit-wind', 'nature', 'eagle', 'open-horizon'];
       const buffers = await Promise.all(names.map(async (name) => {
         const response = await fetch(`/assets/audio/${name}.mp3`);
         if (!response.ok) throw new Error(`Audio unavailable: ${name}`);
@@ -73,11 +73,24 @@
         gain.connect(master);
         if (i === 3) return { buffer, gain };
         const source = context.createBufferSource();
-        source.buffer = loopBuffer(buffer);
+        source.buffer = loopBuffer(buffer, i === 4 ? 5 : 1.5);
+        // Keep music below the wind even when the supplied track is mastered loudly.
+        let musicLevel = 0;
+        if (i === 4) {
+          let energy = 0, peak = 0;
+          for (let c = 0; c < source.buffer.numberOfChannels; c++) {
+            for (const sample of source.buffer.getChannelData(c)) {
+              energy += sample * sample;
+              peak = Math.max(peak, Math.abs(sample));
+            }
+          }
+          const rms = Math.sqrt(energy / (source.buffer.length * source.buffer.numberOfChannels));
+          musicLevel = Math.min(.03, .0012 / Math.max(.0001, rms), .008 / Math.max(.0001, peak));
+        }
         source.loop = true;
         source.connect(gain);
         source.start();
-        return { source, gain };
+        return { source, gain, musicLevel };
       });
     })();
     try { await loading; } finally { loading = null; }
@@ -97,6 +110,7 @@
     gainTo(master, .8 * motion, .25);
     gainTo(tracks[0].gain, (.10 + .30 * motion) * airborne, .2);
     gainTo(tracks[1].gain, .035 * summit * airborne, .4);
+    gainTo(tracks[4].gain, tracks[4].musicLevel, .7);
     const scene = s.weights.indexOf(Math.max(...s.weights));
     if (scene > 0 && motion > .08 && !natureScenes.has(scene)) {
       natureScenes.add(scene);
