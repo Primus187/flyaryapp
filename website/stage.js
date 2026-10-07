@@ -81,6 +81,9 @@
     const landing = (y) => ease(clamp((y - T[3]) / (end - T[3])));
     const render = (y) => {
       const land = landing(y);
+      // Read by soundscape.js; audio follows the same scene switches as the painting.
+      const scene = T.slice(0, 3).filter((top) => y >= top).length;
+      window.flyaryFlightState = { y, weights: [0, 1, 2, 3].map((i) => i === scene ? 1 : 0), landing: land };
       scenes.forEach((sc, i) => {
         // On screen from one screen before its window until the chapter after it covers everything.
         const visible = (i === 3 || y < T[i]) && (i === 0 || y > T[i - 1] - vh);
@@ -186,6 +189,7 @@
       q[i] = ease(ql[i]);
     }
     pan = ease(clamp((y - (T[3] - .15 * vh)) / Math.max(1, B[3] - T[3] - .85 * vh)));
+    window.flyaryFlightState = { y, weights: [1 - q[0], q[0] * (1 - q[1]), q[1] * (1 - q[2]), q[2]], landing: pan };
     const x0 = (W - cw) / 2;
     scenes.forEach((sc, i) => {
       // A scene is switched on long before it is seen: as soon as the chapter above it comes near, it lies finished

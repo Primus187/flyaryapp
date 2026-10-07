@@ -185,7 +185,7 @@ function render(lang) {
         <div class="final-actions"><a class="button button-primary" href="${signup}">${esc(c.start)}</a><a class="final-link" href="${schoolMail}">${esc(c.secondary)}</a></div>
       </div>
     </section>`;
-  return shell(lang, { page: '', title: c.title, description: c.description, bodyClass: 'home', main, head: '<link rel="stylesheet" href="/home.css">\n  <script src="/stage.js" defer></script>' });
+  return shell(lang, { page: '', title: c.title, description: c.description, bodyClass: 'home', main, head: '<link rel="stylesheet" href="/home.css">\n  <script src="/stage.js" defer></script>\n  <script src="/soundscape.js" defer></script>' });
 }
 
 /** Pilot sign-up form. Plain HTML POST (works without JavaScript); errors come back as #status-… anchors. */
@@ -239,7 +239,8 @@ function renderThanks(lang) {
 await ensureCurrentScreenshots();
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
-for (const file of ['site.css', 'home.css', 'site.js', 'stage.js', 'boot.js']) await cp(join(here, file), join(out, file));
+for (const file of ['site.css', 'home.css', 'site.js', 'stage.js', 'soundscape.js', 'boot.js']) await cp(join(here, file), join(out, file));
+await cp(join(here, 'assets/audio'), join(out, 'assets/audio'), { recursive: true });
 const assets = ['flyary-192.png', 'video-poster.jpg', 'flyary-story.mp4', 'og-de.jpg', 'og-fr.jpg', 'og-en.jpg', 'memories.png', 'training.png', 'school-flight.png', 'cockpit.png', 'feed.png', 'plus-jakarta-sans-latin-wght-normal.woff2', 'plus-jakarta-sans-license.txt'];
 const appScreens = {
   'training.png': 'mobile/10-training.png',

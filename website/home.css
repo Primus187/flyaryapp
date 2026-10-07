@@ -185,3 +185,27 @@ html.stage-on .chapter-valley { align-items: start; min-height: 140vh; min-heigh
   .phone { width: min(270px, 52vw); }
   html.stage-on .chapter { padding-block: 22vh 8vh; }
 }
+.sound-toggle {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100vw - 32px);
+  min-height: 44px;
+  padding: 10px 15px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 28px;
+  background: #14262a;
+  color: #fff;
+  box-shadow: 0 3px 16px rgba(0, 0, 0, .15);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sound-toggle svg { width: 20px; height: 20px; flex: 0 0 auto; }
+.sound-toggle[aria-pressed="false"] .sound-waves { opacity: .35; }
+.sound-toggle:hover { background: #234248; }
+.sound-toggle:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
