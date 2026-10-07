@@ -13,6 +13,7 @@
   button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M11 4 5 9H2v6h3l6 5V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg><span></span>';
   const text = button.querySelector('span');
   text.textContent = labels[0];
+  button.setAttribute('aria-label', labels[0]);
   document.body.append(button);
   const clamp = (n) => Math.max(0, Math.min(1, n));
   const smooth = (n) => { const t = clamp(n); return t * t * (3 - 2 * t); };
@@ -21,6 +22,13 @@
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let context, master, tracks, loading, timer, enabled = false, operation = 0;
   let lastY = scrollY, lastTime = performance.now(), motion = 0, eaglePlayed = false, activeEagle;
+  const natureScenes = new Set();
+  let natureUntil = 0;
+  function label(value) {
+    text.textContent = value;
+    button.setAttribute('aria-label', value);
+    button.title = value;
+  }
 
   function quiet() { return document.hidden || videos.some((video) => !video.paused && !video.ended); }
   function fallbackState() {
@@ -85,17 +93,26 @@
     lastY = s.y; lastTime = now;
     const [summit, forest, hills, valley] = s.weights;
     const airborne = 1 - s.landing;
-    gainTo(tracks[0].gain, (.045 + .19 * motion) * airborne);
-    gainTo(tracks[1].gain, .10 * summit * airborne, .6);
-    gainTo(tracks[2].gain, .09 * forest + .12 * hills + .16 * valley, .6);
+    // Every sound follows movement. Reading restores silence, including any bird accents.
+    gainTo(master, .8 * motion, .25);
+    gainTo(tracks[0].gain, (.10 + .30 * motion) * airborne, .2);
+    gainTo(tracks[1].gain, .035 * summit * airborne, .4);
+    const scene = s.weights.indexOf(Math.max(...s.weights));
+    if (scene > 0 && motion > .08 && !natureScenes.has(scene)) {
+      natureScenes.add(scene);
+      natureUntil = now + 1200;
+    }
+    const natureAccent = clamp((natureUntil - now) / 500);
+    gainTo(tracks[2].gain, (.018 * forest + .020 * hills + .022 * valley) * natureAccent, .15);
     // Only trigger while travelling through the first scene; enabling at an anchor never fires the call.
     if (!eaglePlayed && summit > .7 && motion > .12 && s.y > innerHeight * .35 && s.y < innerHeight * 1.2) {
       eaglePlayed = true;
       activeEagle = context.createBufferSource();
       activeEagle.buffer = tracks[3].buffer;
       activeEagle.connect(tracks[3].gain);
-      gainTo(tracks[3].gain, .075, .08);
-      activeEagle.start();
+      gainTo(tracks[3].gain, .018, .04);
+      tracks[3].gain.gain.setTargetAtTime(0, context.currentTime + .3, .08);
+      activeEagle.start(context.currentTime, 0, Math.min(.65, tracks[3].buffer.duration));
       activeEagle.onended = () => { activeEagle = null; };
     }
   }
@@ -112,7 +129,7 @@
       await context.resume();
       // A visibility/video event can arrive while resume is pending.
       if (!enabled || quiet()) { master.gain.value = 0; await context.suspend(); return; }
-      gainTo(master, .8, .2);
+      master.gain.value = 0;
       update();
       clearInterval(timer);
       timer = setInterval(update, 80);
@@ -126,14 +143,14 @@
     if (context) context.suspend().catch(() => {});
     button.setAttribute('aria-pressed', 'false');
     button.removeAttribute('aria-busy');
-    text.textContent = labels[3];
+    label(labels[3]);
   }
   button.addEventListener('click', async () => {
     const current = ++operation;
     enabled = !enabled;
     button.setAttribute('aria-pressed', String(enabled));
     button.removeAttribute('aria-busy');
-    text.textContent = enabled ? labels[1] : labels[0];
+    label(enabled ? labels[1] : labels[0]);
     if (!enabled) {
       if (master) master.gain.value = 0;
       clearInterval(timer);
@@ -150,11 +167,11 @@
       }
       // Resume directly inside the click, before waiting for downloads (mobile autoplay policy).
       const resume = context.resume();
-      if (!tracks) { text.textContent = labels[2]; button.setAttribute('aria-busy', 'true'); }
+      if (!tracks) { label(labels[2]); button.setAttribute('aria-busy', 'true'); }
       await Promise.all([resume, load()]);
       if (operation !== current || !enabled) return;
       button.removeAttribute('aria-busy');
-      text.textContent = labels[1];
+      label(labels[1]);
       await syncPlayback();
     } catch (error) { if (current === operation) fail(error); }
   });

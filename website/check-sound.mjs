@@ -57,16 +57,23 @@ try {
     assert.equal(requests.length, 4);
     assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 3);
     assert.equal(await page.evaluate(() => audioProbe.contexts[0].state), 'running');
+    assert(await button.getAttribute('aria-label'), 'Compact control retains its accessible name');
+    assert.equal(await button.locator('span').isVisible(), false, 'Enabled control shows only the speaker icon');
+    await page.waitForTimeout(300);
+    assert.equal(await page.evaluate(() => audioProbe.gains[0].gain.value), 0, 'Opt-in without scrolling is silent');
     const decoded = await page.evaluate(() => audioProbe.decoded);
     assert(decoded.every((b) => b.duration > 0 && b.rms > 0), 'All four MP3s decode to audible samples');
     console.log(`${lang}: decoded audio ${JSON.stringify(decoded)}`);
     for (let y = 100; y <= 900; y += 100) { await page.evaluate((pos) => scrollTo(0, pos), y); await page.waitForTimeout(90); }
     const flying = await page.evaluate(() => audioProbe.gains[1].gain.value);
-    await page.waitForTimeout(1600);
+    await page.waitForTimeout(3200);
     const idle = await page.evaluate(() => audioProbe.gains[1].gain.value);
     assert(flying > idle, 'Wind settles after scrolling stops');
+    assert(await page.evaluate(() => audioProbe.gains[0].gain.value < .002), 'All audio fades to silence while reading');
+    assert(await page.evaluate(() => audioProbe.gains[2].gain.value < .036), 'Summit wind stays behind flight wind');
     const eagleCount = await page.evaluate(() => audioProbe.sources.filter((s) => !s.loop).length);
     assert(eagleCount <= 1);
+    assert(await page.evaluate(() => audioProbe.sources.filter((s) => !s.loop).every((s) => s.buffer.duration > 0)), 'Bird accent source remains valid');
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(1800);
     assert(await page.evaluate(() => audioProbe.gains[1].gain.value < .01), 'Flight wind fades at landing');
