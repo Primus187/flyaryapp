@@ -96,8 +96,8 @@
         const pan = i === 3 ? Math.max(0, MEADOW_ROW * s + base - (vh - footH)) * land : 0;   // down to the meadow above the footer
         for (const l of sc.layers) place(l.el, (W - cw) / 2, base + l.crop * s + (i === 3 ? (rel < 0 ? shift(l.f) - rel * .45 : 0) - pan * l.f : shift(l.f)));
         if (i === 0) {
-          // The name starts a third hidden behind the ridge and rises clear of it over the first part of the scroll.
-          const out = ease(clamp(y / (.3 * vh))), ty = base + TITLE_ROW * s + shift(.44) + brandH * .3 * (1 - out) - RISE_ROWS * s * out;
+          // The name starts clear above the ridge and sinks more than half behind it over the first part of the scroll.
+          const sink = ease(clamp(y / (.45 * vh))), ty = base + (TITLE_ROW - RISE_ROWS) * s + shift(.44) + (RISE_ROWS * s + brandH * .6) * sink;
           place(title, 0, ty);
           place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s + shift(.44));   // below the name it lies on the ridge and moves with it
         }
@@ -209,11 +209,11 @@
       if (sc.ground) place(sc.ground, 0, coverY + c.ground[0] * s);
       if (i === 3) meadow = coverY;
       if (i === 0) {
-        // The name starts a third hidden behind the ridge and rises clear of it over the first part of the scroll.
-        const out = ease(clamp(y / (.22 * vh))), ty = base + TITLE_ROW * s + brandH * .3 * (1 - out) - RISE_ROWS * s * out - D * .3 * t;
+        // The name starts clear above the ridge and sinks more than half behind it over the first part of the scroll.
+        const sink = ease(clamp(y / (.4 * vh))), ty = base + (TITLE_ROW - RISE_ROWS) * s + (RISE_ROWS * s + brandH * .6) * sink - D * .3 * t;
         place(title, 0, ty);
         place(claim, 0, above ? ty - brandH - claimH / 2 : base + CLAIM_ROW * s - D * .44 * t);
-        title.style.opacity = claim.style.opacity = (1 - clamp((rise[0] - .2) * 3)).toFixed(3);   // it stands clear for a while before the clouds take it
+        title.style.opacity = claim.style.opacity = (1 - clamp((rise[0] - .25) * 3)).toFixed(3);   // it has sunk behind the ridge before the clouds take it
       }
       // The leaving scene slides away upwards. Its lower edge is soft (a fixed mask in home.css, below the window while
       // the scene is at rest), so the next scene appears through a haze instead of along a line.
