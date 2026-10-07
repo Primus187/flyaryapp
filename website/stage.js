@@ -12,6 +12,44 @@
   const ease = (t) => t * t * (3 - 2 * t);
   const place = (el, x, y, extra = '') => { el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)${extra}`; };
 
+  // The glider's flight depends on the scroll position alone: it moves only while the page moves.
+  // On the first screen it hangs at the right and heads left. From then on it alternates: in each open scene it comes in
+  // from one edge, crosses the picture large and in front, and climbs into the band above the next chapter; while that
+  // chapter is read it keeps flying across and leaves at the far edge. It turns round out of sight and enters the next
+  // scene from that side. Positions are shares of the window; c holds the sizes and heights of one version of the page.
+  function flightPlan(T, B, vh, c) {
+    const OUT = .16, edge = (d) => (d > 0 ? 1 + OUT : -OUT);   // where it is out of sight when flying in direction d
+    const keys = [{ y: 0, x: c.start[0], h: c.start[1], k: 1 }];
+    let dir = -1;
+    for (let i = 0; i < 3; i++) {
+      const a = i === 0 ? 0 : B[i - 1] - c.lead * vh, b = T[i] - c.rise * vh;   // the open scene before chapter i
+      if (i > 0) keys.push({ y: a, x: edge(-dir), h: c.enter, k: 1 });
+      const from = keys[keys.length - 1].x, to = .5 + dir * .2;
+      keys.push({ y: (a + b) / 2, x: (from + to) / 2, h: i === 0 ? c.heroFront : c.front, k: c.peak });   // large, in front (on the first screen above the name)
+      keys.push({ y: b, x: to, h: c.band, k: c.small });                           // up into the band above the chapter
+      keys.push({ y: B[i] - (c.lead + .25) * vh, x: edge(dir), h: c.band, k: c.small });   // across, and out of sight
+      dir = -dir;
+    }
+    // The last open scene: in from the edge, across in front, and on to where the landing approach begins.
+    const f = c.final, a = B[2] - c.lead * vh, b = T[3] + f.end * vh;   // there before the closing lines scroll in
+    keys.push({ y: a, x: edge(-dir), h: f.enter, k: 1 });
+    keys.push({ y: (a + b) / 2, x: (edge(-dir) + f.x) / 2, h: f.midH, k: f.midK });
+    keys.push({ y: b, x: f.x, h: f.h, k: f.k });
+    return keys;
+  }
+  // Where the glider is at scroll position y: [x, height, size, heading] with heading 1 = flying left.
+  function flightAt(keys, y) {
+    let n = 0; while (n < keys.length - 2 && y > keys[n + 1].y) n++;
+    const a = keys[n], b = keys[n + 1], u = clamp((y - a.y) / Math.max(1, b.y - a.y)), e = ease(u);
+    return [a.x + (b.x - a.x) * u, a.h + (b.h - a.h) * e, a.k + (b.k - a.k) * e, b.x < a.x ? 1 : -1];
+  }
+  // The picture faces left; it is mirrored when the glider flies right. Turns between scenes happen out of sight; the
+  // one before the landing is flown in view, `heading` then passes from one side to the other as the page scrolls.
+  function drawGlider(px, py, k, heading, gw, gh, tilt) {
+    heading = heading < 0 ? Math.min(heading, -.2) : Math.max(heading, .2);
+    place(glider, px - FEET[0] * gw, py - FEET[1] * gh, ` scale(${(k * heading).toFixed(3)},${k.toFixed(3)}) rotate(${tilt.toFixed(2)}deg)`);
+  }
+
   // Touch devices. There the browser scrolls the page on the graphics chip, and a script can only follow. So everything
   // that has to stay in step with the text is plain page content: each chapter brings its own ground and its painted
   // upper edge (home.css). This script only moves what lies behind, where being a moment late cannot be seen: the far
@@ -20,14 +58,14 @@
   if (root.classList.contains('touch-on')) {
     if (!stage) return;
     const REST = [null, { anchorRow: 700, anchor: .42 }, { anchorRow: 720, anchor: .40 }, { anchorRow: 715, anchor: .60 }];
-    const TITLE_ROW = 748, LAND = { col: 430, row: 1250 }, MEADOW_ROW = 1400;
-    const SCENE = [[.80, .30], [.30, .40], [.70, .40], [.70, .62]], CORNER = [.9, .085];
+    const TITLE_ROW = 748, CLAIM_ROW = 838, LAND = { col: 430, row: 1250 }, MEADOW_ROW = 1400;
+    const FLY = { start: [.80, .30], lead: .75, rise: .45, enter: .34, heroFront: .22, front: .42, peak: 1.5, band: .1, small: .5, final: { x: .30, end: .1, enter: .70, h: .72, k: 1.1, midH: .71, midK: 1.1 } };
     const scenes = [...stage.querySelectorAll('.scene')].sort((a, b) => a.dataset.scene - b.dataset.scene).map((el, i) => ({
       el, layers: [...el.querySelectorAll('.ly')].map((img) => ({ el: img, crop: +img.dataset.crop, f: +img.dataset.f })).filter((l) => i === 3 || l.f < 1),
     }));
-    const title = stage.querySelector('.stage-title'), footer = document.querySelector('.footer');
+    const title = stage.querySelector('.stage-title'), claim = stage.querySelector('.stage-claim'), footer = document.querySelector('.footer');
     const chapters = [...document.querySelectorAll('[data-chap]')];
-    let W = 0, vh = 0, cw = 0, s = 1, T = [], B = [], A = [], end = 1, footH = 0, titleBottom = 0, keys = [], cur = 0, target = 0, running = false, gw = 96, gh = 96, face = 1;
+    let W = 0, vh = 0, cw = 0, s = 1, T = [], B = [], A = [], end = 1, footH = 0, titleBottom = 0, keys = [], cur = 0, target = 0, running = false, meadow = 0, gw = 96, gh = 96;
     const measure = () => {
       W = stage.clientWidth; vh = stage.clientHeight;
       cw = Math.max(W, vh * .78); s = cw / 1024;
@@ -39,16 +77,11 @@
       titleBottom = vh / 2 + title.firstElementChild.offsetHeight / 2;
       gw = Math.max(88, Math.min(170, W * .22)); gh = gw * 636 / 640;
       glider.style.width = `${gw}px`; glider.style.transformOrigin = `${FEET[0] * 100}% ${FEET[1] * 100}%`;
-      keys = [{ y: 0, p: SCENE[0], k: 1 }];
-      for (let i = 0; i < 3; i++) {
-        keys.push({ y: T[i] - .45 * vh, p: CORNER, k: .45 });      // the chapter has risen half way
-        keys.push({ y: B[i] - .75 * vh, p: CORNER, k: .45 });      // the next scene comes into view
-        keys.push({ y: B[i] + .05 * vh, p: SCENE[i + 1], k: 1 });
-      }
+      keys = flightPlan(T, B, vh, FLY);
     };
+    const landing = (y) => ease(clamp((y - T[3]) / (end - T[3])));
     const render = (y) => {
-      let meadow = 0;
-      const land = ease(clamp((y - T[3]) / (end - T[3])));
+      const land = landing(y);
       scenes.forEach((sc, i) => {
         // On screen from one screen before its window until the chapter after it covers everything.
         const visible = (i === 3 || y < T[i]) && (i === 0 || y > T[i - 1] - vh);
@@ -63,36 +96,35 @@
         // The valley scene starts low, so that the closing lines rise through open sky before the lake comes up.
         const pan = i === 3 ? Math.max(0, MEADOW_ROW * s + base - (vh - footH)) * land : 0;   // down to the meadow above the footer
         for (const l of sc.layers) place(l.el, (W - cw) / 2, base + l.crop * s + (i === 3 ? (rel < 0 ? shift(l.f) - rel * .45 : 0) - pan * l.f : shift(l.f)));
-        if (i === 0) place(title, 0, base + TITLE_ROW * s + shift(.4));
+        if (i === 0) { place(title, 0, base + TITLE_ROW * s + shift(.4)); place(claim, 0, base + CLAIM_ROW * s + shift(.44)); }   // the claim moves with the ridge it lies on
         if (i === 3) meadow = base - pan;
       });
-      let n = 0; while (n < keys.length - 2 && y > keys[n + 1].y) n++;
-      const a = keys[n], b = keys[n + 1], u = ease(clamp((y - a.y) / Math.max(1, b.y - a.y)));
-      let px = (a.p[0] + (b.p[0] - a.p[0]) * u) * W, py = (a.p[1] + (b.p[1] - a.p[1]) * u) * vh + Math.sin(y / 170) * 5 * (1 - land), k = a.k + (b.k - a.k) * u;
-      let heading = u > 0 && u < 1 && Math.abs(b.p[0] - a.p[0]) > .05 ? (b.p[0] < a.p[0] ? 1 : -1) : 0;   // the picture faces left
+    };
+    const glide = (y) => {
+      const land = landing(y);
+      let [fx, fy, k, heading] = flightAt(keys, y);
+      let px = fx * W, py = fy * vh + Math.sin(y / 170) * 5 * (1 - land);
       if (land > 0) {
         const lx = W / 2 + (LAND.col - 512) * s, ly = meadow + LAND.row * s;
-        px += (lx - px) * land; py += (ly - py) * land; k += (.62 - k) * land; heading = lx < px ? 1 : -1;
+        px += (lx - px) * land; py += (ly - py) * land; k += (.62 - k) * land;
       }
-      if (heading) face += (heading - face) * .12;
-      const turn = face < 0 ? Math.min(face, -.25) : Math.max(face, .25);
-      place(glider, px - FEET[0] * gw, py - FEET[1] * gh, ` scale(${(k * turn).toFixed(3)},${k.toFixed(3)})`);
-      return heading !== 0 && Math.abs(heading - face) > .02;
+      drawGlider(px, py, k, heading, gw, gh, 0);
     };
     const frame = () => {
       cur += (target - cur) * .3;
       if (Math.abs(target - cur) < .4) cur = target;
-      const turning = render(cur);
-      if (cur !== target || turning) requestAnimationFrame(frame); else running = false;
+      render(cur); glide(cur);
+      if (cur !== target) requestAnimationFrame(frame); else running = false;
     };
     const follow = () => { target = Math.max(0, scrollY); if (!running) { running = true; requestAnimationFrame(frame); } };
+    const refresh = () => { measure(); render(cur); glide(cur); follow(); };
     let width = 0;
-    const setup = () => { if (root.clientWidth === width) return; width = root.clientWidth; measure(); follow(); };   // the address bar sliding away is not a resize
+    const setup = () => { if (root.clientWidth === width) return; width = root.clientWidth; refresh(); };   // the address bar sliding away is not a resize
     addEventListener('scroll', follow, { passive: true });
     addEventListener('resize', setup);
-    addEventListener('load', () => { measure(); follow(); });
-    if ('ResizeObserver' in window) new ResizeObserver(() => { measure(); follow(); }).observe(document.querySelector('main'));
-    setup(); cur = target = Math.max(0, scrollY); render(cur);
+    addEventListener('load', refresh);
+    if ('ResizeObserver' in window) new ResizeObserver(refresh).observe(document.querySelector('main'));
+    setup(); cur = target = Math.max(0, scrollY); render(cur); glide(cur);
     root.classList.add('stage-ready');
     return;
   }
@@ -107,24 +139,20 @@
     { anchorRow: 720, anchor: .40, coverRow: 1345, target: .10, ground: [1310, 1510], rgb: '44,74,53' },
     { anchorRow: 715, anchor: .60, panRow: 1400 },
   ];
-  // The glider's flight, as shares of window width and height. In each open scene it hangs at VIEW; while a chapter is on
-  // screen it soars along the strip of scenery above it, from STRIP[i][0] to STRIP[i][1]; at the end it lands on LAND in
-  // the valley scene.
-  const VIEW = [[.88, .36], [.30, .40], [.72, .40], [.30, .34]];
-  const STRIP = [[[.82, .15], [.40, .16]], [[.22, .16], [.66, .15]], [[.80, .15], [.38, .16]]];
+  const FLY = { start: [.88, .36], lead: .3, rise: .4, enter: .30, heroFront: .28, front: .42, peak: 1.6, band: .11, small: .6, final: { x: .84, end: -.85, enter: .30, h: .46, k: 1.2, midH: .42, midK: 1.5 } };   // the glider's flight, see flightPlan
   const LAND = { col: 430, row: 1250 };
   // The name stands in the middle of the first screen; the summit scene is placed so that this row of the painting meets
   // the lower edge of the name, which puts the snow ridge in front of its feet.
-  const TITLE_ROW = 748;
+  const TITLE_ROW = 748, CLAIM_ROW = 838;   // the claim lies on the snow below the name and moves with the ridge
 
   const scenes = [...stage.querySelectorAll('.scene')].sort((a, b) => a.dataset.scene - b.dataset.scene).map((el, i) => ({
     el, c: CFG[i], ground: el.querySelector('.groundfill'),
     layers: [...el.querySelectorAll('.ly')].map((img) => ({ el: img, crop: +img.dataset.crop, f: +img.dataset.f })),
   }));
-  const title = stage.querySelector('.stage-title'), footer = document.querySelector('.footer');
+  const title = stage.querySelector('.stage-title'), claim = stage.querySelector('.stage-claim'), footer = document.querySelector('.footer');
   const chapters = [...document.querySelectorAll('[data-chap]')];
   const fades = chapters.map((c) => c.querySelector('[data-fade]'));
-  let W, vh, cw, s, footH = 0, titleBottom = 0, T = [], B = [], fadeTop = [], keys = [], cur = 0, target = 0, running = false, gw = 120, gh = 120, face = 1;
+  let W, vh, cw, s, footH = 0, titleBottom = 0, T = [], B = [], fadeTop = [], keys = [], cur = 0, target = 0, running = false, meadow = 0, pan = 0, gw = 120, gh = 120;
 
   function measure() {
     W = stage.clientWidth; vh = stage.clientHeight;
@@ -139,13 +167,7 @@
     gw = Math.max(96, Math.min(210, W * .14)); gh = gw * 636 / 640;
     glider.style.width = `${gw}px`;
     glider.style.transformOrigin = `${FEET[0] * 100}% ${FEET[1] * 100}%`;
-    // Flight plan: scroll position -> place and size. Between two entries the glider glides smoothly.
-    keys = [{ y: 0, p: VIEW[0], k: 1 }];
-    for (let i = 0; i < 3; i++) {
-      keys.push({ y: T[i] - .40 * vh, p: STRIP[i][0], k: .72 });   // its ground has risen: up into the strip
-      keys.push({ y: B[i] - .30 * vh, p: STRIP[i][1], k: .72 });   // has crossed the strip while the chapter was read
-      keys.push({ y: B[i] + .45 * vh, p: VIEW[i + 1], k: 1 });     // down into the next scene
-    }
+    keys = flightPlan(T, B, vh, FLY);
   }
 
   function render(y) {
@@ -158,9 +180,8 @@
       ql[i] = clamp((.30 * vh - (B[i] - y)) / (1.05 * vh));
       q[i] = ease(ql[i]);
     }
-    const pan = ease(clamp((y - (T[3] - .15 * vh)) / Math.max(1, B[3] - T[3] - .85 * vh)));
+    pan = ease(clamp((y - (T[3] - .15 * vh)) / Math.max(1, B[3] - T[3] - .85 * vh)));
     const x0 = (W - cw) / 2;
-    let meadow = 0;
     scenes.forEach((sc, i) => {
       // A scene is switched on long before it is seen: as soon as the chapter above it comes near, it lies finished
       // beneath the scene in front. Its pictures are fetched and decoded one chapter earlier still.
@@ -182,7 +203,10 @@
       const coverY = base - D * t + drop;
       if (sc.ground) place(sc.ground, 0, coverY + c.ground[0] * s);
       if (i === 3) meadow = coverY;
-      if (i === 0) { place(title, 0, base + TITLE_ROW * s - D * .3 * t); title.style.opacity = (1 - clamp(rise[0] * 2.4)).toFixed(3); }
+      if (i === 0) {
+        place(title, 0, base + TITLE_ROW * s - D * .3 * t); place(claim, 0, base + CLAIM_ROW * s - D * .44 * t);
+        title.style.opacity = claim.style.opacity = (1 - clamp(rise[0] * 2.4)).toFixed(3);
+      }
       // The leaving scene slides away upwards. Its lower edge is soft (a fixed mask in home.css, below the window while
       // the scene is at rest), so the next scene appears through a haze instead of along a line.
       place(sc.el, 0, i < 3 ? -q[i] * 1.5 * vh : 0);
@@ -198,36 +222,34 @@
       if (fades[i].mask !== mask) { fades[i].mask = mask; fades[i].style.webkitMaskImage = mask; fades[i].style.maskImage = mask; }
     }
     fades[3].style.opacity = clamp((ql[2] - .6) / .35).toFixed(3);
+  }
 
-    // The glider is always on screen: it follows its flight plan and finally lands.
-    let n = 0; while (n < keys.length - 2 && y > keys[n + 1].y) n++;
-    const a = keys[n], b = keys[n + 1], u = ease(clamp((y - a.y) / Math.max(1, b.y - a.y)));
-    let px = (a.p[0] + (b.p[0] - a.p[0]) * u) * W, py = (a.p[1] + (b.p[1] - a.p[1]) * u) * vh + Math.sin(y / 170) * 7, k = a.k + (b.k - a.k) * u;
-    let heading = u > 0 && u < 1 && Math.abs(b.p[0] - a.p[0]) > .05 ? (b.p[0] < a.p[0] ? 1 : -1) : 0;   // the picture faces left
+  function glide(y) {
+    let [fx, fy, k, heading] = flightAt(keys, y);
+    let px = fx * W, py = fy * vh + Math.sin(y / 170) * 7 * (1 - pan);
     if (pan > 0) {
       const lx = W / 2 + (LAND.col - 512) * s, ly = meadow + LAND.row * s;
-      px += (lx - px) * pan; py += (ly - py) * pan; k += (.6 - k) * pan; heading = lx < px ? 1 : -1;
+      // The approach leads back across the meadow: it turns into it over the first part of the descent.
+      heading += ((lx < px ? 1 : -1) - heading) * ease(clamp(pan / .3));
+      px += (lx - px) * pan; py += (ly - py) * pan; k += (.6 - k) * pan;
     }
-    if (heading) face += (heading - face) * .12;   // turns by swinging round, not by flipping
-    const turn = face < 0 ? Math.min(face, -.25) : Math.max(face, .25);
-    place(glider, px - FEET[0] * gw, py - FEET[1] * gh, ` scale(${(k * turn).toFixed(3)},${k.toFixed(3)}) rotate(${(Math.sin(y / 260) * 3 * (1 - pan)).toFixed(2)}deg)`);
-    return heading !== 0 && Math.abs(heading - face) > .02;
+    drawGlider(px, py, k, heading, gw, gh, Math.sin(y / 260) * 3 * (1 - pan));
   }
 
   // The stage follows the scroll position with some inertia, which is what makes the layers feel fluid.
   function frame() {
     cur += (target - cur) * .1;
     if (Math.abs(target - cur) < .4) cur = target;
-    const turning = render(cur);
-    if (cur !== target || turning) requestAnimationFrame(frame); else running = false;
+    render(cur); glide(cur);
+    if (cur !== target) requestAnimationFrame(frame); else running = false;
   }
   function follow() { target = Math.max(0, scrollY); if (!running) { running = true; requestAnimationFrame(frame); } }
-  function setup() { measure(); target = cur = Math.max(0, scrollY); render(cur); }
+  function setup() { measure(); target = cur = Math.max(0, scrollY); render(cur); glide(cur); }
   addEventListener('scroll', follow, { passive: true });
   addEventListener('resize', setup);
   addEventListener('load', setup);
   // Opening a question or switching a tab changes the chapter heights.
-  if ('ResizeObserver' in window) new ResizeObserver(() => { measure(); follow(); }).observe(document.querySelector('main'));
+  if ('ResizeObserver' in window) new ResizeObserver(() => { measure(); render(cur); glide(cur); follow(); }).observe(document.querySelector('main'));
   setup();
   root.classList.add('stage-ready');
 })();

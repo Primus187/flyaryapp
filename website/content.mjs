@@ -185,6 +185,7 @@ export const content = {
       "privacy": "Datenschutz",
       "honeypot": "Website (bitte leer lassen)",
       "submit": "Eintragen",
+      "sending": "Wird gesendet …",
       "errors": {
         "invalid": "Bitte prüfe deine Angaben: Name, eine gültige E-Mail-Adresse, deine Rolle und die Einwilligung sind nötig.",
         "rate_limited": "Gerade kommen sehr viele Anmeldungen an. Bitte versuche es in einer Stunde noch einmal.",
@@ -379,6 +380,7 @@ export const content = {
       "privacy": "Confidentialité",
       "honeypot": "Site web (laisser vide)",
       "submit": "M’inscrire",
+      "sending": "Envoi en cours …",
       "errors": {
         "invalid": "Veuillez vérifier vos données : nom, adresse e-mail valide, votre rôle et le consentement sont nécessaires.",
         "rate_limited": "Nous recevons actuellement beaucoup d’inscriptions. Veuillez réessayer dans une heure.",
@@ -573,6 +575,7 @@ export const content = {
       "privacy": "Privacy",
       "honeypot": "Website (leave empty)",
       "submit": "Sign up",
+      "sending": "Sending …",
       "errors": {
         "invalid": "Please check your details: name, a valid e-mail address, your role and your consent are required.",
         "rate_limited": "We are receiving a lot of sign-ups right now. Please try again in an hour.",

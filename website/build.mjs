@@ -49,11 +49,12 @@ function layer(name, f, eager) {
   return stagePicture(`<img class="ly" data-crop="${crop}" data-f="${f}" src="/assets/landscape/${name}-1024.webp" srcset="${srcset}" sizes="(max-width: 700px) 60vw, 100vw" width="1024" height="${Math.round(1024 * ratio)}" alt=""${eager ? '' : ' loading="lazy"'}>`);
 }
 function stage(c) {
-  const title = `<div class="stage-title"><div><small>${esc(c.claim)}</small><b translate="no">Flyary</b></div></div>`;
+  const title = `<div class="stage-title"><div><b translate="no">Flyary</b></div></div>`;
+  const claim = `<div class="stage-claim">${esc(c.claim)}</div>`;
   const html = scenes.map(([scene, layers], i) => {
     const n = scenes.length - 1 - i;
     const parts = layers.map(([name, f]) => layer(`${scene}-${name}`, f, n === 0));
-    if (n === 0) parts.splice(2, 0, title); // the name stands behind the snow ridge
+    if (n === 0) { parts.splice(2, 0, title); parts.splice(5, 0, claim); } // the name stands behind the snow ridge, the claim in front of it and behind the clouds
     return `<div class="scene" data-scene="${n}"${n ? ' hidden' : ''}>${parts.join('')}${n < 3 ? '<div class="groundfill"></div>' : ''}</div>`;
   }).join('\n      ');
   return `<div class="stage" aria-hidden="true">
@@ -214,7 +215,7 @@ function renderSignup(lang) {
           <div class="field"><label for="f-comment">${esc(s.comment)} ${optional}</label><textarea id="f-comment" name="comment" rows="3" maxlength="1000" placeholder="${esc(s.commentPlaceholder)}"></textarea></div>
           <div class="hp" aria-hidden="true"><label for="f-website">${esc(s.honeypot)}</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
           <label class="consent"><input type="checkbox" name="consent" value="yes" required><span>${esc(s.consent)} <a href="${app}/legal">${esc(s.privacy)}</a></span></label>
-          <button class="button button-primary" type="submit">${esc(s.submit)} ${icon('arrow')}</button>
+          <button class="button button-primary" type="submit" data-busy-label="${esc(s.sending)}">${esc(s.submit)} ${icon('arrow')}</button>
         </form>
       </div>
     </section>`;

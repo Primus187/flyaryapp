@@ -160,15 +160,18 @@ try {
     assert(await stagePage.locator('html.stage-on.stage-ready').count(), `stage ${width}: running`);
     assert.equal(await stagePage.locator('h1').count(), 1);
     const total = await stagePage.evaluate(() => document.documentElement.scrollHeight);
+    // The glider may leave the screen for a moment between two scenes, but never for long, and not at the start.
+    let away = 0;
     for (let y = 0; y <= total; y += Math.round(height * 0.6)) {
       await stagePage.evaluate((v) => scrollTo(0, v), y);
       await stagePage.waitForTimeout(350);
       const state = await stagePage.evaluate(() => {
         const g = document.querySelector('.glider').getBoundingClientRect();
         const shown = [...document.querySelectorAll('.scene:not([hidden]) .ly')];
-        return { glider: g.width > 40 && g.right > 0 && g.left < innerWidth && g.bottom > 0 && g.top < innerHeight, layers: shown.length, loaded: shown.every((im) => im.complete && im.naturalWidth > 1), overflow: document.documentElement.scrollWidth - innerWidth };
+        return { glider: g.height > 40 && g.right > 0 && g.left < innerWidth && g.bottom > 0 && g.top < innerHeight, layers: shown.length, loaded: shown.every((im) => im.complete && im.naturalWidth > 1), overflow: document.documentElement.scrollWidth - innerWidth };
       });
-      assert(state.glider, `stage ${width} at ${y}: glider on screen`);
+      away = state.glider ? 0 : away + 1;
+      assert(away < 2 && (y > 0 || state.glider), `stage ${width} at ${y}: glider on screen`);
       assert(state.layers >= 5 && state.loaded, `stage ${width} at ${y}: scene pictures loaded`);
       assert(state.overflow <= 0, `stage ${width} at ${y}: horizontal overflow`);
     }
@@ -187,6 +190,7 @@ try {
     assert(await touchPage.locator('html.touch-on.stage-ready').count(), 'touch: version for touch devices');
     assert(await touchPage.locator('.stage').isVisible(), 'touch: stage with the far layers');
     const total = await touchPage.evaluate(() => document.documentElement.scrollHeight);
+    let away = 0;
     for (let y = 0; y <= total; y += 500) {
       await touchPage.evaluate((v) => scrollTo(0, v), y);
       await touchPage.waitForTimeout(250);
@@ -196,7 +200,8 @@ try {
         const shown = [...document.querySelectorAll('.scene:not([hidden]) .ly')].filter((im) => getComputedStyle(im).display !== 'none');
         return { layers: shown.length, loaded: shown.every((im) => im.complete && im.naturalWidth > 1), glider: g.height > 25 && g.right > 0 && g.left < innerWidth && g.bottom > 0 && g.top < innerHeight, faded, overflow: document.documentElement.scrollWidth - innerWidth };
       });
-      assert(state.glider, `touch at ${y}: glider on screen`);
+      away = state.glider ? 0 : away + 1;
+      assert(away < 2 && (y > 0 || state.glider), `touch at ${y}: glider on screen`);
       assert.equal(state.faded, 0, `touch at ${y}: content fully opaque`);
       assert(state.layers >= 4 && state.loaded, `touch at ${y}: scene pictures loaded`);
       assert(state.overflow <= 0, `touch at ${y}: horizontal overflow`);

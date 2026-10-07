@@ -94,7 +94,7 @@ p { text-wrap: pretty; }
 .page-band-hills { background-image: url("/assets/landscape/huegel-flach-1024.webp"); background-position: center 55%; }
 @media (min-width: 1100px) {
   .page-band-summit { background-image: url("/assets/landscape/gipfel-flach-2048.webp"); }
-  .page-band-hills { background-image: url("/assets/landscape/huegel-flach-1365.webp"); }
+  .page-band-hills { background-image: url("/assets/landscape/huegel-flach-2048.webp"); }
 }
 .signup { background: var(--mist); padding-bottom: clamp(72px, 9vw, 120px); }
 .signup-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 72px; align-items: start; }
@@ -121,13 +121,17 @@ p { text-wrap: pretty; }
 .consent input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--blue); }
 .consent a, .form-status a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
 .signup-card .button { justify-self: start; }
+.button[aria-busy="true"] { cursor: progress; background: #a93313; }
+.spinner { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgba(255, 255, 255, .4); border-top-color: #fff; }
+@media (prefers-reduced-motion: no-preference) { .spinner { animation: spin .8s linear infinite; } }
+@keyframes spin { to { transform: rotate(360deg); } }
 .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 /* The Edge Function redirects back with #status-…; :target shows the message without JavaScript. */
 .form-status { display: none; scroll-margin-top: 110px; padding: 14px 16px; border-radius: 14px; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; font-size: 14px; line-height: 1.6; }
 .form-status:target { display: block; }
 
-/* Thank-you page: landed on the meadow */
-.thanks { --focus: var(--ink); position: relative; overflow: hidden; display: grid; align-items: start; justify-items: center; min-height: calc(100svh - 76px); padding: clamp(56px, 12vh, 130px) 0 0; text-align: center; background: var(--valley) url("/assets/landscape/tal-flach-1024.webp") center bottom / cover no-repeat; }
+/* Thank-you page: the valley, seen from the top of the picture so that the text stands in the open sky */
+.thanks { --focus: var(--ink); position: relative; overflow: hidden; display: grid; align-items: start; justify-items: center; min-height: calc(100svh - 76px); padding: clamp(56px, 12vh, 130px) 0 0; text-align: center; background: var(--valley) url("/assets/landscape/tal-flach-1024.webp") center top / cover no-repeat; }
 .thanks-inner { display: grid; justify-items: center; gap: 20px; max-width: 760px; }
 .thanks h1 { font-size: clamp(38px, 5vw, 66px); line-height: 1.04; font-weight: 800; }
 .thanks-inner p { max-width: 560px; font-size: 18px; font-weight: 500; color: #1f3558; }

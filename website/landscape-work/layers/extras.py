@@ -23,7 +23,7 @@ def flat(scene, rows, widths, name):
         pic.resize((w, round(w * pic.height / pic.width)), Image.LANCZOS).save(f'layers/web/{name}-{w}.webp', 'WEBP', quality=78, method=6)
         print(name, w, os.path.getsize(f'layers/web/{name}-{w}.webp') // 1024, 'KB')
 flat('tal', (430, 1536), (1024, 2048), 'tal-flach')
-flat('huegel', (520, 1180), (1024, 1365), 'huegel-flach')
+flat('huegel', (520, 1180), (1024, 2048), 'huegel-flach')
 
 # Pictures for the version that scrolls without script (touch devices, reduced motion, no JavaScript):
 # each scene without its nearest layer stands still as a picture, and the nearest layer is the painted upper edge of the
@@ -56,8 +56,8 @@ def edge(layer, top, ground, rgb, name, widths):
 stack('gipfel', ['himmel', '1-fern'], (0, 1536), 'gipfel-hinten', (1024, 2048))
 stack('gipfel', ['2-grat', '3-wald'], (380, 1536), 'gipfel-vorn', (1024, 2048), alpha=True)
 stack('wald', ['himmel', '1-fern', '2-mitte', '3-nah'], (250, 1536), 'wald-hinten', (1024, 2048))
-stack('huegel', ['himmel', '1-fern', '2-weide', '3-wald'], (250, 1536), 'huegel-hinten', (1024, 1365))
+stack('huegel', ['himmel', '1-fern', '2-weide', '3-wald'], (250, 1536), 'huegel-hinten', (1024, 2048))
 stack('tal', ['himmel', '1-fern', '2-see', '3-tannen', '4-wiese'], (150, 1536), 'tal-hoch', (1024, 2048))
 edge('gipfel-4-nebel', 1150, (1270, 1480), (233, 235, 245), 'kante-nebel', (1024, 2048))
 edge('wald-4-vorn', 950, (1190, 1340), (20, 38, 42), 'kante-wald', (1024, 2048))
-edge('huegel-4-wiese', 960, (1310, 1510), (44, 74, 53), 'kante-wiese', (1024, 1365))
+edge('huegel-4-wiese', 960, (1310, 1510), (44, 74, 53), 'kante-wiese', (1024, 2048))

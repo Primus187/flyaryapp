@@ -98,6 +98,21 @@ document.querySelectorAll('.languages a').forEach((link) => {
 // Pilot sign-up: when the page was opened, so the server can reject bots that submit instantly.
 const started = document.querySelector('#form input[name="started"]');
 if (started) started.value = String(Date.now());
+// Pilot sign-up: show that the form is on its way and ignore a second click. (The submit event only fires once the
+// browser has accepted every field.)
+const signupForm = document.querySelector('#form');
+const submitButton = signupForm?.querySelector('button[type="submit"]');
+if (submitButton) {
+  const idle = submitButton.innerHTML;
+  signupForm.addEventListener('submit', (e) => {
+    if (submitButton.getAttribute('aria-busy') === 'true') { e.preventDefault(); return; }
+    submitButton.setAttribute('aria-busy', 'true');
+    submitButton.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
+    submitButton.append(submitButton.dataset.busyLabel);
+  });
+  // Coming back with the browser's back button shows the page as it was left; make the button usable again.
+  addEventListener('pageshow', () => { submitButton.removeAttribute('aria-busy'); submitButton.innerHTML = idle; });
+}
 // A server-side error comes back as #status-…; move focus there so it is announced and in view.
 // (The message is not focusable yet while this script runs, so focus waits for load.)
 const formStatus = document.getElementById(location.hash.slice(1));

@@ -93,41 +93,46 @@
   "crop": 0,
   "widths": [
    1024,
-   1365
+   1536,
+   2048
   ],
-  "ratio": 1.50037
+  "ratio": 1.5
  },
  "huegel-1-fern": {
   "crop": 360,
   "widths": [
    1024,
-   1365
+   1536,
+   2048
   ],
-  "ratio": 1.14945
+  "ratio": 1.14844
  },
  "huegel-2-weide": {
   "crop": 360,
   "widths": [
    1024,
-   1365
+   1536,
+   2048
   ],
-  "ratio": 1.14945
+  "ratio": 1.14844
  },
  "huegel-3-wald": {
   "crop": 360,
   "widths": [
    1024,
-   1365
+   1536,
+   2048
   ],
-  "ratio": 1.14945
+  "ratio": 1.14844
  },
  "huegel-4-wiese": {
   "crop": 360,
   "widths": [
    1024,
-   1365
+   1536,
+   2048
   ],
-  "ratio": 1.14945
+  "ratio": 1.14844
  },
  "tal-himmel": {
   "crop": 0,

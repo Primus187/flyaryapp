@@ -11,10 +11,10 @@
   --cw: max(100vw, 78vh);
   --brand: min(16.5vw, 300px);
   --claim: clamp(18px, 2.7vw, 44px);
-  --title-bottom: calc(50vh + (var(--brand) + var(--claim) * 1.6) / 2);
+  --title-bottom: calc(50vh + var(--brand) / 2);
   --base: min(0px, calc(var(--title-bottom) - var(--cw) * .7305));
 }
-@supports (height: 100lvh) { .home { --cw: max(100vw, 78lvh); --title-bottom: calc(50lvh + (var(--brand) + var(--claim) * 1.6) / 2); } }
+@supports (height: 100lvh) { .home { --cw: max(100vw, 78lvh); --title-bottom: calc(50lvh + var(--brand) / 2); } }
 .home h2 { font-size: clamp(30px, 4vw, 54px); line-height: 1.06; font-weight: 800; }
 .home h3 { font-size: clamp(21px, 2vw, 26px); line-height: 1.2; font-weight: 800; letter-spacing: -.02em; }
 
@@ -23,14 +23,19 @@
 .home .header:not(.is-scrolled) { background: transparent; border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .home .header.is-away { transform: translateY(-110%); }
 
-/* ---------- Hero: the name stands between the far range and the snow ridge ---------- */
-.hero { position: sticky; top: 0; z-index: 0; height: 100vh; height: 100lvh; overflow: hidden; color: #fff; text-align: center; background: var(--dawn); }
+/* ---------- Hero: the name stands between the far range and the snow ridge, the claim below it in front of the snow ---------- */
+/* The hero is as tall as the painting down to the foot of its clouds, so the first chapter's cloud edge starts where the
+   clouds are painted and does not cover the ridge on wide screens. */
+.hero { position: sticky; top: 0; z-index: 0; height: max(100vh, calc(var(--base) + var(--cw) * 1.4453)); height: max(100lvh, calc(var(--base) + var(--cw) * 1.4453)); overflow: hidden; color: #fff; text-align: center; background: var(--dawn); }
 .hero-back, .hero-front { position: absolute; left: calc(50% - var(--cw) / 2); width: var(--cw); background: center top / 100% auto no-repeat; }
 .hero-back { top: var(--base); height: calc(var(--cw) * 1.5); background-image: url("/assets/landscape/gipfel-hinten-1024.webp"); }
 .hero-front { top: calc(var(--base) + var(--cw) * .3711); height: calc(var(--cw) * 1.1289); background-image: url("/assets/landscape/gipfel-vorn-1024.webp"); }
-.hero h1 { position: absolute; left: 0; right: 0; top: calc(var(--base) + var(--cw) * .7305); transform: translateY(-100%); display: flex; flex-direction: column-reverse; align-items: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
+.hero h1 { position: absolute; left: 0; right: 0; top: calc(var(--base) + var(--cw) * .7305 - var(--brand)); display: flex; flex-direction: column; align-items: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
 .hero-brand, .stage-title b { font-size: var(--brand); line-height: 1; font-weight: 800; }
-.hero-claim, .stage-title small { font-size: var(--claim); line-height: 1.5; font-weight: 600; letter-spacing: -.01em; margin-bottom: .1em; text-shadow: 0 1px 2px rgba(20, 33, 58, .6), 0 2px 14px rgba(20, 33, 58, .6), 0 0 34px rgba(20, 33, 58, .35); }
+/* The claim lies on the sunlit snow, so it is dark with a light halo. .0879 of the scene width below the name = row 838 of the painting. */
+.hero-claim, .stage-claim { font-size: var(--claim); line-height: 1.5; font-weight: 700; letter-spacing: -.02em; color: var(--ink); text-shadow: 0 0 3px rgba(255, 255, 255, .9), 0 0 16px rgba(255, 255, 255, .95), 0 0 34px rgba(255, 255, 255, .7); }
+.hero-claim { position: relative; z-index: 1; margin-top: calc(var(--cw) * .0879 - var(--claim) * .75); }
+.hero-front { z-index: 0; }
 .final-link { color: var(--ink); font-weight: 700; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; }
 
 /* ---------- Chapters ---------- */
@@ -56,9 +61,9 @@
   html:not(.stage-on) .hero-front { background-image: url("/assets/landscape/gipfel-vorn-2048.webp"); }
   html:not(.stage-on) .chapter-mist::before { background-image: url("/assets/landscape/kante-nebel-2048.webp"); }
   html:not(.stage-on) .chapter-forest::before { background-image: url("/assets/landscape/kante-wald-2048.webp"); }
-  html:not(.stage-on) .chapter-meadow::before { background-image: url("/assets/landscape/kante-wiese-1365.webp"); }
+  html:not(.stage-on) .chapter-meadow::before { background-image: url("/assets/landscape/kante-wiese-2048.webp"); }
   html:not(.stage-on) .gap-forest { background-image: url("/assets/landscape/wald-hinten-2048.webp"); }
-  html:not(.stage-on) .gap-hills { background-image: url("/assets/landscape/huegel-hinten-1365.webp"); }
+  html:not(.stage-on) .gap-hills { background-image: url("/assets/landscape/huegel-hinten-2048.webp"); }
   html:not(.stage-on) .chapter-valley { background-image: linear-gradient(var(--meadow), rgba(44, 74, 53, 0) 12%), url("/assets/landscape/tal-hoch-2048.webp"); }
 }
 .chapter-intro { font-size: 18px; line-height: 1.6; color: var(--muted); max-width: 56ch; }
@@ -145,13 +150,14 @@ html.stage-ready .stage, html.stage-ready .glider { opacity: 1; }
 .groundfill { position: absolute; left: 0; right: 0; top: 0; height: 600vh; }
 .stage-title { position: absolute; left: 0; right: 0; top: 0; height: 0; color: #fff; text-align: center; letter-spacing: -.055em; text-shadow: 0 2px 30px rgba(60, 70, 120, .35); }
 .stage-title div { position: absolute; left: 0; right: 0; bottom: 0; display: grid; justify-items: center; }
+.stage-claim { position: absolute; left: 0; right: 0; top: 0; margin-top: calc(var(--claim) * -.75); padding-inline: 16px; text-align: center; will-change: transform; }
 html.stage-on .glider, html.touch-on .glider { display: block; position: fixed; left: 0; top: 0; z-index: 3; max-width: none; height: auto; pointer-events: none; will-change: transform; }
 html.stage-on [data-fade] { will-change: opacity; }
 html.stage-on .hero, html.stage-on .chapter, html.stage-on .gap { z-index: 1; }
 html.stage-on .hero { position: relative; overflow: visible; height: 112vh; height: 112lvh; background: none; }
 html.stage-on .hero-back, html.stage-on .hero-front, html.stage-on .chapter::before, html.stage-on .gap::before { display: none; }
 /* The name is painted into the stage; the heading stays for screen readers and search engines. */
-html.stage-on .hero h1, html.touch-on .hero h1 { top: 0; transform: none; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+html.stage-on .hero h1, html.touch-on .hero h1 { top: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 html.stage-on .gap { display: block; position: relative; height: 140vh; height: 140lvh; background: none; }
 /* Touch: the stage shows through the hero, the gaps and the last chapter; its nearest layers are the chapters' own edges. */
 html.touch-on .scene:not([data-scene="3"]) { height: 100%; -webkit-mask-image: none; mask-image: none; }
