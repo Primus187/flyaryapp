@@ -26,14 +26,14 @@
       if (i > 0) keys.push({ y: a, x: edge(-dir), h: c.enter, k: 1 });
       const from = keys[keys.length - 1].x, to = .5 + dir * .2;
       keys.push({ y: (a + b) / 2, x: (from + to) / 2, h: i === 0 ? c.heroFront : c.front, k: c.peak });   // large, in front (on the first screen above the name)
-      keys.push({ y: b, x: to, h: c.band, k: c.small });                           // up into the band above the chapter
-      keys.push({ y: B[i] - (c.lead + .25) * vh, x: edge(dir), h: c.band, k: c.small });   // across, and out of sight
+      keys.push({ y: b, x: to, h: c.arrive[0], k: c.arrive[1] });                  // up above the chapter, still large
+      keys.push({ y: B[i] - (c.lead + .25) * vh, x: edge(dir), h: c.band, k: c.small });   // across, getting a little smaller, and out of sight
       dir = -dir;
     }
-    // The last open scene: in from the edge, across in front, and on to where the landing approach begins.
+    // The last open scene: in from the left edge, large, to where the landing approach begins (beside the closing lines).
     const f = c.final, a = B[2] - c.lead * vh, b = T[3] + f.end * vh;   // there before the closing lines scroll in
     keys.push({ y: a, x: edge(-dir), h: f.enter, k: 1 });
-    keys.push({ y: (a + b) / 2, x: (edge(-dir) + f.x) / 2, h: f.midH, k: f.midK });
+    keys.push({ y: (a + b) / 2, x: f.midX, h: f.midH, k: f.midK });
     keys.push({ y: b, x: f.x, h: f.h, k: f.k });
     return keys;
   }
@@ -43,10 +43,8 @@
     const a = keys[n], b = keys[n + 1], u = clamp((y - a.y) / Math.max(1, b.y - a.y)), e = ease(u);
     return [a.x + (b.x - a.x) * u, a.h + (b.h - a.h) * e, a.k + (b.k - a.k) * e, b.x < a.x ? 1 : -1];
   }
-  // The picture faces left; it is mirrored when the glider flies right. Turns between scenes happen out of sight; the
-  // one before the landing is flown in view, `heading` then passes from one side to the other as the page scrolls.
+  // The picture faces left; it is mirrored when the glider flies right. Every turn happens out of sight.
   function drawGlider(px, py, k, heading, gw, gh, tilt) {
-    heading = heading < 0 ? Math.min(heading, -.2) : Math.max(heading, .2);
     place(glider, px - FEET[0] * gw, py - FEET[1] * gh, ` scale(${(k * heading).toFixed(3)},${k.toFixed(3)}) rotate(${tilt.toFixed(2)}deg)`);
   }
 
@@ -58,8 +56,8 @@
   if (root.classList.contains('touch-on')) {
     if (!stage) return;
     const REST = [null, { anchorRow: 700, anchor: .42 }, { anchorRow: 720, anchor: .40 }, { anchorRow: 715, anchor: .60 }];
-    const TITLE_ROW = 748, CLAIM_ROW = 838, LAND = { col: 430, row: 1250 }, MEADOW_ROW = 1400;
-    const FLY = { start: [.80, .30], lead: .75, rise: .45, enter: .34, heroFront: .22, front: .42, peak: 1.5, band: .1, small: .5, final: { x: .30, end: .1, enter: .70, h: .72, k: 1.1, midH: .71, midK: 1.1 } };
+    const TITLE_ROW = 748, CLAIM_ROW = 838, LAND = { col: 500, row: 1235 }, MEADOW_ROW = 1400;   // it lands beside the windsock, flying right, into the wind
+    const FLY = { start: [.80, .30], lead: .75, rise: .45, enter: .34, heroFront: .22, front: .42, peak: 1.5, arrive: [.14, .9], band: .11, small: .7, final: { x: .30, midX: .07, end: .1, enter: .70, h: .72, k: 1.1, midH: .71, midK: 1.1 } };
     const scenes = [...stage.querySelectorAll('.scene')].sort((a, b) => a.dataset.scene - b.dataset.scene).map((el, i) => ({
       el, layers: [...el.querySelectorAll('.ly')].map((img) => ({ el: img, crop: +img.dataset.crop, f: +img.dataset.f })).filter((l) => i === 3 || l.f < 1),
     }));
@@ -106,7 +104,7 @@
       let px = fx * W, py = fy * vh + Math.sin(y / 170) * 5 * (1 - land);
       if (land > 0) {
         const lx = W / 2 + (LAND.col - 512) * s, ly = meadow + LAND.row * s;
-        px += (lx - px) * land; py += (ly - py) * land; k += (.62 - k) * land;
+        px += (lx - px) * land; py += (ly - py) * land; k += (.95 - k) * land;
       }
       drawGlider(px, py, k, heading, gw, gh, 0);
     };
@@ -139,8 +137,8 @@
     { anchorRow: 720, anchor: .40, coverRow: 1345, target: .10, ground: [1310, 1510], rgb: '44,74,53' },
     { anchorRow: 715, anchor: .60, panRow: 1400 },
   ];
-  const FLY = { start: [.88, .36], lead: .3, rise: .4, enter: .30, heroFront: .28, front: .42, peak: 1.6, band: .11, small: .6, final: { x: .84, end: -.85, enter: .30, h: .46, k: 1.2, midH: .42, midK: 1.5 } };   // the glider's flight, see flightPlan
-  const LAND = { col: 430, row: 1250 };
+  const FLY = { start: [.88, .36], lead: .3, rise: .4, enter: .30, heroFront: .28, front: .42, peak: 1.6, arrive: [.2, 1], band: .15, small: .8, final: { x: .15, midX: .07, end: -.85, enter: .30, h: .46, k: 1.2, midH: .42, midK: 1.4 } };   // the glider's flight, see flightPlan
+  const LAND = { col: 500, row: 1235 };   // it lands beside the windsock, flying right, into the wind
   // The name stands in the middle of the first screen; the summit scene is placed so that this row of the painting meets
   // the lower edge of the name, which puts the snow ridge in front of its feet.
   const TITLE_ROW = 748, CLAIM_ROW = 838;   // the claim lies on the snow below the name and moves with the ridge
@@ -229,9 +227,7 @@
     let px = fx * W, py = fy * vh + Math.sin(y / 170) * 7 * (1 - pan);
     if (pan > 0) {
       const lx = W / 2 + (LAND.col - 512) * s, ly = meadow + LAND.row * s;
-      // The approach leads back across the meadow: it turns into it over the first part of the descent.
-      heading += ((lx < px ? 1 : -1) - heading) * ease(clamp(pan / .3));
-      px += (lx - px) * pan; py += (ly - py) * pan; k += (.6 - k) * pan;
+      px += (lx - px) * pan; py += (ly - py) * pan; k += (1 - k) * pan;
     }
     drawGlider(px, py, k, heading, gw, gh, Math.sin(y / 260) * 3 * (1 - pan));
   }
