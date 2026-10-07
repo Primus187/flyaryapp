@@ -29,6 +29,11 @@
     button.setAttribute('aria-label', value);
     button.title = value;
   }
+  function showPlayback() {
+    const playing = enabled && tracks && context?.state === 'running' && !quiet();
+    button.setAttribute('aria-pressed', String(Boolean(playing)));
+    label(playing ? labels[1] : labels[0]);
+  }
 
   function quiet() { return document.hidden || videos.some((video) => !video.paused && !video.ended); }
   function fallbackState() {
@@ -159,7 +164,7 @@
     button.removeAttribute('aria-busy');
     label(labels[3]);
   }
-  async function start() {
+  async function start(gesture = false) {
     const current = operation;
     try {
       if (!context) {
@@ -167,27 +172,38 @@
         master = context.createGain();
         master.gain.value = 0;
         master.connect(context.destination);
+        context.addEventListener('statechange', showPlayback);
       }
       // Resume directly inside the click, before waiting for downloads (mobile autoplay policy).
       // A blocked autoplay resume may stay pending: do not block loading or the mute button.
       context.resume().then(() => {
         if (enabled && tracks && current === operation) syncPlayback().catch(fail);
       }).catch(() => {});
+      // Some mobile engines require a source to start inside the trusted touch event as well.
+      if (gesture) {
+        const primer = context.createBufferSource();
+        primer.buffer = context.createBuffer(1, 1, context.sampleRate);
+        primer.connect(context.destination);
+        primer.start();
+        primer.onended = () => primer.disconnect();
+      }
       if (!tracks) { label(labels[2]); button.setAttribute('aria-busy', 'true'); }
       await load();
       if (operation !== current || !enabled) return;
       button.removeAttribute('aria-busy');
-      label(labels[1]);
+      showPlayback();
       if (context.state === 'running') await syncPlayback();
     } catch (error) { if (current === operation) fail(error); }
   }
   button.addEventListener('click', async () => {
+    // A blocked automatic start is not audible playback: the first tap must enable it, not mute it.
+    if (enabled && context?.state !== 'running' && !quiet()) { start(true); return; }
     operation++;
     enabled = !enabled;
     button.setAttribute('aria-pressed', String(enabled));
     button.removeAttribute('aria-busy');
     label(enabled ? labels[1] : labels[0]);
-    if (enabled) { start(); return; }
+    if (enabled) { start(true); return; }
     if (master) master.gain.value = 0;
     clearInterval(timer);
     if (activeEagle) { activeEagle.stop(); activeEagle = null; }
@@ -195,9 +211,9 @@
   });
   const unlock = (event) => {
     if (event.target.closest?.('.sound-toggle') || !enabled || quiet()) return;
-    if (!context || context.state !== 'running') start();
+    if (!context || context.state !== 'running') start(event.isTrusted);
   };
-  for (const event of ['pointerdown', 'touchend', 'keydown']) document.addEventListener(event, unlock, { passive: true });
+  for (const event of ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click', 'keydown']) document.addEventListener(event, unlock, { passive: true, capture: true });
   const sync = () => { syncPlayback().catch(fail); };
   document.addEventListener('visibilitychange', sync);
   for (const video of videos) for (const event of ['play', 'pause', 'ended']) video.addEventListener(event, sync);

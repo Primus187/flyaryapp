@@ -48,8 +48,13 @@ try {
     page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
     await page.goto(`${base}/${lang}/`, { waitUntil: 'networkidle' });
     const button = page.locator('.sound-toggle');
-    assert.equal(await button.getAttribute('aria-pressed'), 'true', 'Sound defaults to enabled');
-    await page.keyboard.press('a'); // Trusted gesture unlocks browsers that block autoplay.
+    if (options.hasTouch) {
+      await page.waitForFunction(() => audioProbe.contexts.length > 0 && !document.querySelector('.sound-toggle').hasAttribute('aria-busy'));
+      if (await page.evaluate(() => audioProbe.contexts[0].state !== 'running')) {
+        assert.equal(await button.getAttribute('aria-pressed'), 'false', 'Blocked playback is not shown as playing');
+        await button.tap(); // One tap starts blocked audio; it must not switch the intent off.
+      }
+    } else await page.keyboard.press('a');
     await page.waitForFunction(() => document.querySelector('.sound-toggle').getAttribute('aria-pressed') === 'true' && !document.querySelector('.sound-toggle').hasAttribute('aria-busy') && audioProbe.sources.length >= 4 && audioProbe.contexts[0].state === 'running');
     assert.equal(requests.length, 5);
     assert.equal(await page.evaluate(() => audioProbe.sources.filter((s) => s.loop).length), 4);
@@ -79,7 +84,7 @@ try {
     assert(flying > idle, 'Wind settles after scrolling stops');
     assert(await page.evaluate(() => audioProbe.gains[1].gain.value < .002 && audioProbe.gains[5].gain.value > .01), 'Wind fades while music continues during reading');
     assert(await page.evaluate(() => audioProbe.gains[2].gain.value < .036), 'Summit wind stays behind flight wind');
-    const eagleCount = await page.evaluate(() => audioProbe.sources.filter((s) => !s.loop).length);
+    const eagleCount = await page.evaluate(() => audioProbe.sources.filter((s) => !s.loop && s.buffer.length > 1).length);
     assert(eagleCount <= 1);
     assert(await page.evaluate(() => audioProbe.sources.filter((s) => !s.loop).every((s) => s.buffer.duration > 0)), 'Bird accent source remains valid');
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
@@ -105,6 +110,6 @@ try {
     assert.deepEqual(errors, []);
     await context.unrouteAll({ behavior: 'wait' });
     await context.close();
-    console.log(`PASS ${lang}: opt-in, CSP, real decoding, scroll wind, landing, video pause, mute and cached resume`);
+    console.log(`PASS ${lang}: autoplay unlock, single-tap start, CSP, decoding, scroll wind, continuous music, mute and resume`);
   }
 } finally { await browser?.close(); server.kill(); }
