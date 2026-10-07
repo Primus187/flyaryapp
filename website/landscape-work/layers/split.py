@@ -79,8 +79,16 @@ def split(name, specs, sky=True):
     for i, spec in enumerate(specs):
         own = regions[i]
         if i > 0:
-            hidden = (np.arange(H)[:, None] >= (tops[i - 1] + int(6 * K))[None, :]) & own
-            rgb = fill_hidden(img, own, hidden, tops[i - 1])
+            if i == 1:
+                # The layer directly behind the nearest one is also shown WITHOUT it (on touch devices the nearest layer
+                # is replaced by the chapter's own edge). So nothing of the nearest layer may remain in it: it is filled
+                # in from just above the nearest layer's skyline, not from just below it.
+                edge = ndi.minimum_filter1d(tops[0], int(13 * K) | 1) - int(7 * K)
+                hidden = (np.arange(H)[:, None] >= edge[None, :]) & own
+                rgb = fill_hidden(img, own, hidden, edge)
+            else:
+                hidden = (np.arange(H)[:, None] >= (tops[i - 1] + int(6 * K))[None, :]) & own
+                rgb = fill_hidden(img, own, hidden, tops[i - 1])
         else: rgb = img
         alpha = ndi.gaussian_filter(own.astype(np.float32), .6 * K)
         rgba = np.dstack([rgb, alpha * 255]).clip(0, 255).astype(np.uint8)
